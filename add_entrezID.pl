@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 ################################################################################
 # add_entrezID.pl
-#	author: Ying Li
+#	author: Ying Li   
 #	the script will look for "geneList" column which should contain gene symbols
 #	inputs: 
 #		1. a file containing gene symbol. 
