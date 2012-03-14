@@ -1,0 +1,2 @@
+dbSNP130	dbSNP132
+

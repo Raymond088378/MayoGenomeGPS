@@ -1,0 +1,6 @@
+s_normal=normal_1_R1.fastq	normal_1_R2.fastq	normal_R1.fastq	normal_R2.fastq
+
+s_tumor=tumor_1_R1.fastq	tumor_1_R2.fastq	tumor_R1.fastq	tumor_R2.fastq
+
+
+pair1=s_normal s_tumor

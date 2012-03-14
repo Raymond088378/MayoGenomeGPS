@@ -1,0 +1,3 @@
+s_normal=normal.bam
+s_tumor=tumor.bam
+pair1=s_normal s_tumor

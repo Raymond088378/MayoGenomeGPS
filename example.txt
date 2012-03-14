@@ -1,0 +1,22 @@
+### EXAMPLE TO RUN SINGLE READ
+##################################################
+###		$1	= </path/to/run_info file>
+#################################################
+
+qsub -V -cwd -q ngs-nahalem -m a -M baheti.saurabh@mayo.edu /projects/bsi/bictools/scripts/wholegenome/0.1/whole_genome.sh /data2/bsi/RandD/WG_test/config/run_info.sr.txt
+
+
+### EXAMPLE TO RUN PAIRED END
+
+qsub -V -cwd -q ngs-nahalem -m a -M baheti.saurabh@mayo.edu /projects/bsi/bictools/scripts/wholegenome/0.1/whole_genome.sh /data2/bsi/RandD/WG_test/config/run_info.pe.txt
+
+
+### EXAMPLE TO RUN INPUT AS BAM
+
+qsub -V -cwd -q ngs-nahalem -m a -M baheti.saurabh@mayo.edu /projects/bsi/bictools/scripts/wholegenome/0.1/whole_genome.sh /data2/bsi/RandD/WG_test/config/run_info.bam.txt
+
+
+Questions ??
+
+contact : baheti.saurabh@mayo.edu
+BIC PI Support
