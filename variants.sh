@@ -11,9 +11,10 @@ else
     output=$3
     chopped=$4
     run_info=$5
-    #SGE_TASK_ID=21
+    #SGE_TASK_ID=2
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)	
+    tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
+	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)	
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
@@ -41,11 +42,11 @@ else
     TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
 	threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2)
 	version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
-	bam=chr${chr}.cleaned.bam
 	SNV_caller=$( cat $run_info | grep -w '^SNV_CALLER' | cut -d '=' -f2)
     bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
     PATH=$bedtools/:$PATH
 
+	bam=chr${chr}.cleaned.bam
 	if [ $SGE_TASK_ID == 1 ]
     then
         if [ $analysis == "mayo" ]
@@ -136,7 +137,7 @@ else
 		if [ $SNV_caller == "GATK" ]
 		then	
 			## call variants using gatk UnifiedGenotyper module
-			if [ $all_sites == "YES" ]
+			if [[ $all_sites == "YES"  && $tool == "exome" ]] 
 			then
                 cat $TargetKit | grep -w chr$chr > $output/$sample.$chr.target.bed
                 len=`cat $output/$sample.$chr.target.bed |wc -l`
@@ -240,8 +241,8 @@ else
 
 				if [ -s $output/$sample.variants.chr${chr}.raw.all.vcf ]
 				then
-						rm $output/$sample.variants.chr${chr}.raw.snv.all.vcf $output/$sample.variants.chr${chr}.raw.indel.all.vcf
-                        rm $output/$sample.variants.chr${chr}.raw.snv.all.vcf.idx $output/$sample.variants.chr${chr}.raw.indel.all.vcf.idx    
+					rm $output/$sample.variants.chr${chr}.raw.snv.all.vcf $output/$sample.variants.chr${chr}.raw.indel.all.vcf
+                    rm $output/$sample.variants.chr${chr}.raw.snv.all.vcf.idx $output/$sample.variants.chr${chr}.raw.indel.all.vcf.idx    
 				else
 					echo "ERROR: merging indels and snvs failed for $sample (variant_calls_per_chr.sh)"
 					exit 1;
@@ -496,13 +497,12 @@ else
     ## remove files
     if [ ${#sampleArray[@]} == 1 ]
     then
-            rm $output/$bam.$chr.bam
-            rm $output/$bam.$chr.bam.bai
-            rm $output/${sampleArray[1]}.chr$chr.bam
-            rm $output/${sampleArray[1]}.chr$chr.bam.bai
-            rm $output/${sampleArray[1]}.chr$chr-sorted.bam
-            rm $output/${sampleArray[1]}.chr$chr-sorted.bam.bai
-            echo `date`
+		rm $output/$bam.$chr.bam
+		rm $output/$bam.$chr.bam.bai
+		rm $output/${sampleArray[1]}.chr$chr.bam
+		rm $output/${sampleArray[1]}.chr$chr.bam.bai
+		rm $output/${sampleArray[1]}.chr$chr-sorted.bam
+		rm $output/${sampleArray[1]}.chr$chr-sorted.bam.bai
     fi
     if [ ${#sampleArray[@]} -gt 1 ]
     then
@@ -515,7 +515,6 @@ else
             rm $output/${sampleArray[$i]}.chr$chr.bam.bai
             rm  $output/${sampleArray[$i]}.chr$chr-sorted.bam
             rm  $output/${sampleArray[$i]}.chr$chr-sorted.bam.bai
-            echo `date`
         done	
     fi
 	if [ $SGE_TASK_ID == 1 ]

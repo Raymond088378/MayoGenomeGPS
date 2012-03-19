@@ -92,7 +92,7 @@ else
     fi
 	
 	## update the dash board
-	if [ $line_number == 1 ]
+	if [ $SGE_TASK_ID == 1 ]
     then
         if [ $analysis -eq "mayo" ]
         then

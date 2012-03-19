@@ -15,31 +15,37 @@ else
 
 	if [ $analysis != "annotation" ]
 	then
-		if [ $analysis == "external" -o $analysis == "mayo" ]
+		if [ $analysis == "external" -o $analysis == "mayo" -o $analysis == "alignment" ]
 		then
 			mkdir $output_dir/fastq
 			mkdir $output_dir/fastqc
 		fi
 		mkdir $output_dir/alignment
-		mkdir $output_dir/realign
-		mkdir $output_dir/IGV_BAM
-		mkdir $output_dir/variants
-		if [ $tool == "whole_genome" ]
-		then
-			mkdir $output_dir/cnv
-			mkdir $output_dir/struct
-			mkdir $output_dir/circos
-		fi
-	fi
+		if [ $analysis != "alignment" ]
+        then
+            mkdir $output_dir/realign
+            mkdir $output_dir/IGV_BAM
+            mkdir $output_dir/variants
+            if [ $tool == "whole_genome" ]
+            then
+                mkdir $output_dir/cnv
+                mkdir $output_dir/struct
+                mkdir $output_dir/circos
+            fi
+        fi
+    fi
 	
-	mkdir $output_dir/OnTarget
-	mkdir $output_dir/numbers
-	mkdir $output_dir/annotation
-	output_annot=$output_dir/annotation
-	mkdir $output_annot/SIFT
-	mkdir $output_annot/SSEQ
-	mkdir $output_dir/TempReports
-	mkdir $output_dir/Reports_per_Sample
-	mkdir $output_dir/Reports
-	echo `date`
+	if [ $analysis != "alignment" ]
+    then
+        mkdir $output_dir/OnTarget
+        mkdir $output_dir/annotation
+        output_annot=$output_dir/annotation
+        mkdir $output_annot/SIFT
+        mkdir $output_annot/SSEQ
+        mkdir $output_dir/TempReports
+        mkdir $output_dir/Reports_per_Sample
+        mkdir $output_dir/Reports
+    fi
+    mkdir $output_dir/numbers
+    echo `date`
 fi	

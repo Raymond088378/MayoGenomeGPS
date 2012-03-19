@@ -28,15 +28,12 @@ else
 ########################################################	
 ######		Reading run_info.txt and assigning to variables
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-     analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2)
-    analysis=`echo "$analysis" | tr "[A-Z]" "[a-z]"`
+    analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
-    dup=$( cat $run_info | grep -w '^MARKDUP' | cut -d '=' -f2)
+    dup=$( cat $run_info | grep -w '^MARKDUP' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
-    dup=`echo "$dup" | tr "[a-z]" "[A-Z]"`
-    reorder=$( cat $run_info | grep -w '^REORDERSAM' | cut -d '=' -f2)
-    reorder=`echo "$reorder" | tr "[a-z]" "[A-Z]"`
+    reorder=$( cat $run_info | grep -w '^REORDERSAM' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 ) 
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     ref_path=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
@@ -122,7 +119,7 @@ else
         TMP_DIR=$input/
 
         if [ -s $input/$sample.sorted.rmdup.bam ]
-            then
+        then
             mv $input/$sample.sorted.rmdup.bam $input/$sample.sorted.bam
         else
             echo "ERROR: convert.bam.sh $input/$sample.sorted.rmdup.bam not generated"
@@ -174,14 +171,13 @@ else
         echo "ERROR: convert.bam.sh flagstat failed for $input/$sample.flagstat"
     fi
     ## update secondary dahboard
-    id=`echo $sample | awk -F'.' '{print $NF}'`
-    sam=`echo $sample | awk -F'.' '{print $1}'`
-    pos=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | grep -n $sam | cut -d ":" -f1)
-    lane=$( cat $run_info | grep -w '^LANEINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tr "," "\n" | head -n $SGE_TASK_ID | tail -n 1)
-    index=$( cat $run_info | grep -w '^LABINDEXES' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tr "," "\n" | head -n $SGE_TASK_ID | tail -n 1)
-    
     if [ $analysis == "mayo" ]
-    then
+	then
+		id=`echo $sample | awk -F'.' '{print $NF}'`
+		sam=`echo $sample | awk -F'.' '{print $1}'`
+		pos=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | grep -n $sam | cut -d ":" -f1)
+		lane=$( cat $run_info | grep -w '^LANEINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tr "," "\n" | head -n $SGE_TASK_ID | tail -n 1)
+		index=$( cat $run_info | grep -w '^LABINDEXES' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tr "," "\n" | head -n $SGE_TASK_ID | tail -n 1)
         if [ $index == "-" ]
         then
             $java/java -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -c -f $flowcell -r $run_num -s Alignment -a WholeGenome -v $version
@@ -189,8 +185,5 @@ else
             $java/java -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -c -f $flowcell -i $index -r $run_num -s Alignment -a WholeGenome -v $version
         fi    
     fi
-    
-    
-    
     echo `date`
 fi

@@ -62,9 +62,11 @@ while (my $line2 = <IN>){
 		print OUT "$col[0]\t$col[1]\t$id\t$col[2]\t$alt\t.\t$pass\t";
 		print OUT "NS=$s_num;DP=$total_dp";
 		print OUT "\t";
-		print OUT "GT:SC:CQ:SNVQ:RMS:DP:BRQ:MRQ:DR:BVQ:MVQ:DV\t";
-		print OUT "$n_gt:0:$col[9]:$col[10]:$col[11]:$col[13]:$col[20]:$col[21]:$col[22]:$col[23]:$col[24]:$col[25]\t";
-		print OUT "$t_gt:$col[5]:$col[6]:$col[7]:$col[8]:$col[12]:$col[14]:$col[15]:$col[16]:$col[17]:$col[18]:$col[19]\n";		
+		print OUT "GT:SC:CQ:SNVQ:RMS:DP:BRQ:MRQ:AD:BVQ:MVQ:DV\t";
+		my $ref_reads=$col[13]-$col[22];
+		print OUT "$n_gt:0:$col[9]:$col[10]:$col[11]:$col[13]:$col[20]:$col[21]:$ref_reads,$col[22]:$col[23]:$col[24]:$col[25]\t";
+		$ref_reads=$col[12]-$col[16];
+		print OUT "$t_gt:$col[5]:$col[6]:$col[7]:$col[8]:$col[12]:$col[14]:$col[15]:$ref_reads,$col[16]:$col[17]:$col[18]:$col[19]\n";		
 	}
 }
 close OUT;
@@ -90,6 +92,7 @@ my $header = qq{##fileformat=VCFv4.1
 ##FORMAT=<ID=BRQ,Number=1,Type=Integer,Description="Mean base Quality of reads supporting reference">
 ##FORMAT=<ID=MRQ,Number=1,Type=Integer,Description="Mean mapping Quality of reads supporting reference">
 ##FORMAT=<ID=DR,Number=1,Type=Integer,Description="Depth of reads supporting reference">
+##FORMAT=<ID=AD,Number=.,Type=Integer,Description="Allelic depths for the ref and alt alleles in the order listed">
 ##FORMAT=<ID=BVQ,Number=1,Type=Integer,Description="Mean base Quality of reads supporting variant">
 ##FORMAT=<ID=MVQ,Number=1,Type=Integer,Description="Mean mapping Quality of reads supporting variant">
 ##FORMAT=<ID=DV,Number=1,Type=Integer,Description="Depth of reads supporting variant">

@@ -13,11 +13,11 @@
 
 if [ $# != 5 ];
 then
-    echo "Usage:<sseq dir> <samplename><input dir><email><run_info> ";
+    echo "Usage:<snpeff dir> <input dir><email><run_info> ";
 else
     set -x
     echo `date`
-    sseq=$1
+    snpeff=$1
     input=$2
     email=$3
 	sample=$4

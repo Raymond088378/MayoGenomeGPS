@@ -39,9 +39,10 @@ REPEATREGIONS=/data2/bsi/reference/misc/repeat.bed
 miRbase=/data4/bsi/refdata/mirbase/v18/hsa.gff.bed
 SNP_SR=/data2/bsi/reference/annotation/dbSNP/hg19/ssr.bed
 SNP_CS=/data2/bsi/reference/annotation/dbSNP/hg19/scs.bed
+BLACKLIST_SV=/data2/bsi/reference/misc/hg19.STRUCTURAL_BALCKLIST.bed
 
 ## tools
-WHOLEGENOME_PATH=/projects/bsi/bictools/scripts/dev/WholeGenome/
+WHOLEGENOME_PATH=/projects/bsi/bictools/scripts/dnaseq/Genome_GPS/trunk/
 NOVOALIGN=/projects/bsi/bictools/apps/alignment/novoalign/2.07.13/novoalign
 BWA=/projects/bsi/bictools/apps/alignment/bwa/0.5.9/
 JAVA=/usr/java/latest/bin
@@ -78,12 +79,12 @@ BLAT_PORT=50000
 BLAT_SERVER=crick7
 HTTP_SERVER=bmidev2
 THREADS=4
-EMIT_ALL_SITES=YES
+EMIT_ALL_SITES=NO
 PERLLIB=/data2/bsi/RandD/s100943.whole_genome/crest/bin:/data2/bsi/RandD/s100943.whole_genome/crest/bin/modules/lib/5.10.0:/projects/bsi/bictools/lib/perl/usr/local/biotools/perl/5.8.8-64/lib/site_perl/5.8.8/lib/perl5
 STRUCT_DIST_GENE=1000
 STRUCT_MIN_SUPPORT=10
 DEPTH_FILTER=4
 TARGETTED=YES
 PROB_FILTER=0.8
-STRUCT_MIN_INDENTITY=0.9
-
+STRUCT_MIN_IDENTITY=0.9
+STRUCT_PCT_BLACKLIST=1

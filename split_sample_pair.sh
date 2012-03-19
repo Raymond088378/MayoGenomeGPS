@@ -19,24 +19,27 @@ else
 
 	cd $input/$sample
     pair=$( cat $sample_info | grep -w "$sample" | cut -d '=' -f2)
-	$samtools/samtools view -H chr$chr.cleaned.bam > $output/$sample.chr$chr.header.sam
-	for i in $pair
-    do
-        sam=`echo $pair | tr " " "\n" | grep -v $i | tr "\n" " "`
-        gr=""
-        for s in $sam
-        do
-            a="ID:$s|";
-            gr="$gr $a"
-        done
-        gr=`echo $gr |  sed "s/|$//"`
-        cat $output/$sample.chr$chr.header.sam |grep -E -v $gr > $output/$sample.chr$chr.$i.header.sam
-		$samtools/samtools view -b -r $i $input/$sample//chr$chr.cleaned.bam > $output/$sample.$i.chr$chr.bam
-		$samtools/samtools reheader $output/$sample.chr$chr.$i.header.sam $output/$sample.$i.chr$chr.bam > $output/$sample.$i.chr$chr.re.bam
-		mv $output/$sample.$i.chr$chr.re.bam $output/$sample.$i.chr$chr.bam
-		rm $output/$sample.chr$chr.$i.header.sam
-	done
-    rm $output/$sample.chr$chr.header.sam
+	if [ -f $input/$sample/chr$chr.cleaned.bam ]
+	then
+		$samtools/samtools view -H chr$chr.cleaned.bam > $output/$sample.chr$chr.header.sam
+		for i in $pair
+		do
+			sam=`echo $pair | tr " " "\n" | grep -v $i | tr "\n" " "`
+			gr=""
+			for s in $sam
+			do
+				a="ID:$s|";
+				gr="$gr $a"
+			done
+			gr=`echo $gr |  sed "s/|$//"`
+			cat $output/$sample.chr$chr.header.sam |grep -E -v $gr > $output/$sample.chr$chr.$i.header.sam
+			$samtools/samtools view -b -r $i $input/$sample//chr$chr.cleaned.bam > $output/$sample.$i.chr$chr.bam
+			$samtools/samtools reheader $output/$sample.chr$chr.$i.header.sam $output/$sample.$i.chr$chr.bam > $output/$sample.$i.chr$chr.re.bam
+			mv $output/$sample.$i.chr$chr.re.bam $output/$sample.$i.chr$chr.bam
+			rm $output/$sample.chr$chr.$i.header.sam
+		done
+		rm $output/$sample.chr$chr.header.sam
+	fi
 	echo `date`
 fi
 

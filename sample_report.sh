@@ -59,7 +59,7 @@ else
 	
 	### update the dash board
 	
-	if [ $analysis -eq "mayo" ]
+	if [ $analysis == "mayo" ]
 	then
 		pos=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | grep -n $sample | cut -d ":" -f1)
 		lanes=$( cat $run_info | grep -w '^LANEINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tail -n 1 | tr "," " ")

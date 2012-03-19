@@ -41,9 +41,16 @@ else
 	-et NO_ET \
 	-T CombineVariants \
 	$inputargs \
-	-o $var_dir/raw.SNV.vcf
+	-o $var_dir/raw.vcf
+	### raw SNV
+	cat $var_dir/raw.vcf | awk '(length($4) == 1 && length($5) == 1 ) || $0 ~ /#/' > $var_dir/raw.SNV.vcf  
+	### raw INDEL
+	cat $var_dir/raw.vcf | awk '(length($4) > 1 || length($5) > 1 ) || $0 ~ /#/' > $var_dir/raw.INDEL.vcf 
 	
-	gzip $var_dir/raw.SNV.vcf
+	rm $var_dir/raw.vcf
+	gzip $var_dir/raw.SNV.vcf   
+	gzip $var_dir/raw.INDEL.vcf 
+	#gzip $var_dir/raw.SNV.vcf
 	if [ -s $var_dir/raw.SNV.vcf.gz ]
 	then
 		file=`echo $inputargs | sed -e '/-V/s///g'`

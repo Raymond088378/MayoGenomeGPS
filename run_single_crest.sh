@@ -50,8 +50,26 @@ else
 	PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
 	tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
 	run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
+
 	min_read=$( cat $tool_info | grep -w '^STRUCT_MIN_SUPPORT' | cut -d '=' -f2)
-	min_id=$( cat $tool_info | grep -w '^STRUCT_MIN_INDENTITY' | cut -d '=' -f2)
+	min_id=$( cat $tool_info | grep -w '^STRUCT_MIN_IDENTITY' | cut -d '=' -f2)
+	blacklist_sv=$( cat $tool_info | grep -w '^BLACKLIST_SV' | cut -d '=' -f2 )
+	bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
+    PATH=$bedtools/:$PATH
+#filter_sv_crest ()
+#{
+    # Filter SV's from file ($1), that have at leat $min_read supporting reads with
+    # $min_id identity and that do not intersect $blacklist_sv and puts the result in
+    # outfile ($2)
+#    file=$1
+#    outfile=$2
+    
+#    awk "((\$10>=$min_read)&&(\$11>=$min_read)&&(\$14>=$min_id)&&(\$16>=$min_id))" $file |\
+#	awk '{ print $1"\t"$2"\t"$2+1"\t"$5"\t"$6"\t"$6+1}' |\ 
+#	$bedtools/pairToBed -a stdin -b $blacklist_sv -type neither |\ 
+#	$script_path/report_original.pl $file > $outfile
+#}
+
 ########################################################	
 ######		
 	input_bam=$input/chr${chr}.cleaned.bam
@@ -63,8 +81,8 @@ else
 	SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input_bam -s $samtools`
 	if [ $SORT_FLAG == 0 ]
 	then
-	echo "ERROR : run_crest_multi $file should be sorted"
-	exit 1;
+		echo "ERROR : run_crest_multi $file should be sorted"
+		exit 1;
 	fi
 
 
@@ -127,8 +145,11 @@ else
 		perl $script_path/vcfsort.pl ${ref_genome}.fai $output_dir/$sample/$sample.$chr.raw.vcf > $output_dir/$sample/$sample.$chr.raw.vcf.sort
 		mv $output_dir/$sample/$sample.$chr.raw.vcf.sort $output_dir/$sample/$sample.$chr.raw.vcf
 		
-		awk "((\$10>=$min_read)&&(\$11>=$min_read)&&(\$14>=$min_id)&&(\$16>=$min_id))" $output_dir/$sample/$sample.$chr.predSV.txt >> $output_dir/$sample/$sample.$chr.filter.predSV.txt
-		
+		awk "((\$10>=$min_read)&&(\$11>=$min_read)&&(\$14>=$min_id)&&(\$16>=$min_id))" $output_dir/$sample/$sample.$chr.predSV.txt | awk '{print $1"\t"$2"\t"$2+1"\t"$5"\t"$6"\t"$6+1}' | $bedtools/pairToBed -a stdin -b $blacklist_sv -type neither | $script_path/report_original.pl $output_dir/$sample/$sample.$chr.predSV.txt > $output_dir/$sample/$sample.$chr.filter.predSV.txt
+	
+		#awk "((\$10>=$min_read)&&(\$11>=$min_read)&&(\$14>=$min_id)&&(\$16>=$min_id))" $output_dir/$sample/$sample.$chr.predSV.txt >> $output_dir/$sample/$sample.$chr.filter.predSV.txt
+		#filter_sv_crest $output_dir/$sample/$sample.$chr.predSV.txt $output_dir/$sample/$sample.$chr.filter.predSV.txt
+				
 		### convert the output to VCF format
 		perl $script_path/CREST2VCF.pl -i $output_dir/$sample/$sample.$chr.filter.predSV.txt -f $ref_genome -o $output_dir/$sample/$sample.$chr.filter.vcf -s $sample -t $samtools
 		if [ ! -s $output_dir/$sample/$sample.$chr.filter.vcf.fail ]

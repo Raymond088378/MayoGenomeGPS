@@ -63,8 +63,11 @@ else
                 for j in $(seq 1 ${#chrArray[@]})
                 do
                     chr=${chrArray[$j]}
-                    input_bam="$input_bam $output/$sample.$i.chr$chr.bam"
-                done
+                    if [ -f $output/$sample.$i.chr$chr.bam ]
+					then
+						input_bam="$input_bam $output/$sample.$i.chr$chr.bam"
+					fi
+				done
                 $samtools/samtools merge -h $output/$sample.$i.header.sam $output/$i.igv-sorted.bam $input_bam
             else
                 mv $output/$i.igv-sorted.re.bam $output/$i.igv-sorted.bam
@@ -73,13 +76,13 @@ else
             then
                 $samtools/samtools index $output/$i.igv-sorted.bam
                 rm $output/$sample.$i.header.sam
-				rm $alignment/$sample/$sample.sorted.bam $alignment/$sample/$sample.sorted.bam.bai
-				rm $alignment/$sample/snappy-1.0.33-libsnappyjava.so
+				rm $alignment/$i/$i.sorted.bam $alignment/$i/$i.sorted.bam.bai
             else
                 echo "ERROR: $output/$i.igv-sorted.bam not exist Merging fails for $i to create IGV BAM"
                 exit 1;
             fi
         done
+		rm $output/$sample.header.sam
     else
         cd $input/$sample/
         for i in *.cleaned.bam
@@ -94,9 +97,12 @@ else
             index=""
             for i in $(seq 1 ${#chrArray[@]})
             do
-                input_bam="$input_bam $input/$sample//chr${chrArray[$i]}.cleaned.bam"
-                index="$index $input/$sample/chr${chrArray[$i]}.cleaned.bam.bai"
-            done
+                if [ -f $input/$sample/chr${chrArray[$i]}.cleaned.bam ]
+				then
+					input_bam="$input_bam $input/$sample//chr${chrArray[$i]}.cleaned.bam"
+					index="$index $input/$sample/chr${chrArray[$i]}.cleaned.bam.bai"
+				fi
+			done
             $samtools/samtools merge -h $output/$sample.header.sam $output/$sample.igv-sorted.bam $input_bam
         else
             cp  $input/$sample/chr${chrArray[1]}.cleaned.bam $output/$sample.igv-sorted.bam
@@ -107,7 +113,6 @@ else
             $samtools/samtools index $output/$sample.igv-sorted.bam
             rm $output/$sample.header.sam
 			rm $alignment/$sample/$sample.sorted.bam $alignment/$sample/$sample.sorted.bam.bai
-			rm $alignment/$sample/snappy-1.0.33-libsnappyjava.so
         else
             echo "ERROR: Merging fails for $sample to create IGV BAM"
             exit 1;
@@ -116,7 +121,7 @@ else
     out=$delivery_folder/IGV_BAM
     if [ $delivery_folder != "NA" ]
     then
-         if [ -d $delivery_folder ]
+        if [ -d $delivery_folder ]
         then
             if [ ! -d $out ]
             then

@@ -34,7 +34,7 @@ else
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
 	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2 )
 	
-	if [ $analysis eq "mayo" ]
+	if [ $analysis == "mayo" ]
 	then
 		if [ $SGE_TASK_ID == 1 ]
 		then

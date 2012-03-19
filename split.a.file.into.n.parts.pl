@@ -8,7 +8,7 @@ my $parts = $ARGV[0];
 my $source = $ARGV[1]; # passed via command line
 my $total = $ARGV[2];
 
-my $num = '001';
+my $num=1;
 my $dest = $source.".";
 my $count = 0;
 my $divide=0;

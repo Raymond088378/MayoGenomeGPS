@@ -33,9 +33,10 @@ else
     split_genome=$( cat $tool_info | grep -w '^SPLIT_GENOME' | cut -d '=' -f2)
     email=$( cat $run_info | grep -w '^EMAIL' | cut -d '=' -f2)
     queue=$( cat $run_info | grep -w '^QUEUE' | cut -d '=' -f2)
-    lqueue=$( cat $run_info | grep -w '^LQUEUE' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     gap=$( cat $tool_info | grep -w '^GAP_GENOME' | cut -d '=' -f2 )
+    blacklist_sv=$( cat $tool_info | grep -w '^BLACKLIST_SV' | cut -d '=' -f2 )
+    pct_overlap=$(cat $tool_info | grep -w '^STRUCT_PCT_BLACKLIST' | cut -d "=" -f 2)
     bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
     distgap=$( cat $tool_info | grep -w '^DISTGAP' | cut -d '=' -f2 )
     cnvnator=$( cat $tool_info | grep -w '^CNVNATOR' | cut -d '=' -f2 )
@@ -50,7 +51,7 @@ else
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2 )
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
-	PATH=$bedtools/:$PATH
+    PATH=$bedtools:$PATH
 ########################################################	
 ######		
 
@@ -90,13 +91,18 @@ else
             then
                 rm $output_dir/$sample.$chr.dup.vcf.fail
             fi   
-            $bedtools/closestBed -a $output_dir/$sample.$chr.del.bed -b $gap -d | awk "\$13>$distgap" | cut -f 1-6 > $output_dir/$sample.$chr.filter.del.bed
+
+            $bedtools/closestBed -a $output_dir/$sample.$chr.del.bed -b $gap -d | awk "\$13>$distgap" | cut -f 1-6 |\
+			$bedtools/intersectBed -a stdin -b $blacklist_sv -v -f $pct_overlap -wa  > $output_dir/$sample.$chr.filter.del.bed
+
             perl $script_path/CNVnator2VCF.pl -i $output_dir/$sample.$chr.filter.del.bed -f $ref -o $output_dir/$sample.$chr.filter.del.vcf -s $sample -t $samtools
             if [ ! -s $output_dir/$sample.$chr.filter.del.vcf.fail ]
             then
                 rm $output_dir/$sample.$chr.filter.del.vcf.fail
             fi  
-            $bedtools/closestBed -a $output_dir/$sample.$chr.dup.bed -b $gap -d | awk "\$13>$distgap" | cut -f 1-6 > $output_dir/$sample.$chr.filter.dup.bed
+            $bedtools/closestBed -a $output_dir/$sample.$chr.dup.bed -b $gap -d | awk "\$13>$distgap" | cut -f 1-6 |\
+			$bedtools/intersectBed -a stdin -b $blacklist_sv -v -f $pct_overlap -wa > $output_dir/$sample.$chr.filter.dup.bed
+
             perl $script_path/CNVnator2VCF.pl -i $output_dir/$sample.$chr.filter.dup.bed -f $ref -o $output_dir/$sample.$chr.filter.dup.vcf -s $sample -t $samtools
             if [ ! -s $output_dir/$sample.$chr.filter.dup.vcf.fail ]
             then

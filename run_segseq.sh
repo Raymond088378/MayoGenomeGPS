@@ -47,13 +47,15 @@ else
 	gap=$( cat $tool_info | grep -w '^GAP_GENOME' | cut -d '=' -f2 )
 	bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
 	distgap=$( cat $tool_info | grep -w '^DISTGAP' | cut -d '=' -f2 )
+	blacklist_sv=$( cat $tool_info | grep -w '^BLACKLIST_SV' | cut -d '=' -f2 )
+	pct_overlap=$(cat $tool_info | grep -w '^STRUCT_PCT_BLACKLIST' | cut -d "=" -f2)
 	PATH=$bedtools/:$PATH
 
 	outdir=$output_dir/$group
 	mkdir -p $outdir
 	mkdir -p $outdir/info
 	mkdir -p $outdir/map
-	input_bam=$input/chr${chr}.cleaned.bam
+    #input_bam=$input/chr${chr}.cleaned.bam
 	let num_tumor=`echo $samples|tr " " "\n"|wc -l`-1
 	normal_bam=`echo $samples| tr " " "\n" | head -n 1 `
 	tumor_list=`echo $samples | tr " " "\n" | tail -$num_tumor`
@@ -68,30 +70,32 @@ else
 		infofile=$outdir/info/$sample_tumor.$chr.info
 		echo -e "File\tSample\tType" > $infofile
 		#Create info and map files for normal
-		$samtools/samtools view -b -r $sample_normal $input_bam > $outdir/$sample_normal.bam
-		$samtools/samtools index $outdir/$sample_normal.bam
-		for lane in `$samtools/samtools view $outdir/$sample_normal.bam | cut -f 1 | sed -e "s/:/\t/g" | cut -f 1-2 | awk '{print $1":"$2}'| head -n 1000000 | sort | uniq | tail -n 2`
+		# $samtools/samtools view -b -r $sample_normal $input_bam > $outdir/$sample_normal.bam
+		ln -s $input/$group.$sample_normal.chr$chr.bam $outdir/$sample_normal.$chr.bam
+		$samtools/samtools index $outdir/$sample_normal.$chr.bam
+		for lane in `$samtools/samtools view $outdir/$sample_normal.$chr.bam | cut -f1 | sed -e "s/:/\t/g" | cut -f 1-2 | awk '{print $1":"$2}'| head -n 1000000 | sort | uniq | tail -n 2`
 		do
 			echo "Lane:$lane"
 			echo -e "$outdir/map/$sample_normal.$lane.$chr.map\t$sample_normal\tNormal" >> $infofile
-			$samtools/samtools view $outdir/$sample_normal.bam | awk "\$1~/$lane/" | awk '{print $3,"\t",$4,"\t",$9}'\
+			$samtools/samtools view $outdir/$sample_normal.$chr.bam | awk "\$1~/$lane/" | awk '{print $3,"\t",$4,"\t",$9}'\
 			|sed -e "s/chr//g" | sed -e "s/X/23/g" | sed -e "s/Y/24/g" | sed -e "s/M/25/g" \
 			|awk 'BEGIN{OFS="\t"} {if ($3>0) print $1,$2,0; else print $1,$2,1}' > $outdir/map/$sample_normal.$lane.$chr.map
 		done
-		rm $outdir/$sample_normal.bam $outdir/$sample_normal.bam.bai
-		$samtools/samtools view -b -r $sample_tumor $input_bam > $outdir/$sample_tumor.bam
-		$samtools/samtools index $outdir/$sample_tumor.bam 
+        rm $outdir/$sample_normal.$chr.bam $outdir/$sample_normal.$chr.bam.bai
+		# $samtools/samtools view -b -r $sample_tumor $input_bam > $outdir/$sample_tumor.bam
+		ln -s $input/$group.$sample_tumor.chr$chr.bam $outdir/$sample_tumor.$chr.bam
+		$samtools/samtools index $outdir/$sample_tumor.$chr.bam 
 		#Create info and map files for tumor
-		for lane in `$samtools/samtools view $outdir/$sample_tumor.bam | cut -f 1 | sed -e "s/:/\t/g" | cut -f 1-2 | awk '{print $1":"$2}' | head -n 1000000 | sort | uniq | tail -n 2`
+		for lane in `$samtools/samtools view $outdir/$sample_tumor.$chr.bam | cut -f1 | sed -e "s/:/\t/g" | cut -f 1-2 | awk '{print $1":"$2}' | head -n 1000000 | sort | uniq | tail -n 2`
 		do
 			echo -e "$outdir/map/$sample_tumor.$lane.$chr.map\t$sample_tumor\tTumor" >> $infofile;
 
-			$samtools/samtools view $outdir/$sample_tumor.bam chr$chr | awk "\$1~/$lane/" |awk '{print $3,"\t",$4,"\t",$9}'\
+			$samtools/samtools view $outdir/$sample_tumor.$chr.bam | awk "\$1~/$lane/" |awk '{print $3,"\t",$4,"\t",$9}'\
 			|sed -e "s/chr//g" | sed -e "s/X/23/g" | sed -e "s/Y/24/g" | sed -e "s/M/25/g" \
 			|awk 'BEGIN{OFS="\t"} {if ($3>0) print $1,$2,0; else print $1,$2,1}' > $outdir/map/$sample_tumor.$lane.$chr.map
 		done
 		
-		rm $outdir/$sample_tumor.bam $outdir/$sample_tumor.bam.bai
+        rm $outdir/$sample_tumor.$chr.bam $outdir/$sample_tumor.$chr.bam.bai
 		export MATLABPATH=$MATLABPATH:$segseq
 		cd $outdir
 		$matlab/matlab -nodisplay -nojvm -nodesktop -nosplash -r "addpath $segseq;SegSeq -a 500 -i $infofile -s $sample_tumor.$chr;exit;"
@@ -126,8 +130,12 @@ else
 		
 		## filter the raw file
 		
-		$bedtools/closestBed -a $outdir/$sample_tumor.$chr.del.bed -b $gap -d | awk "\$13>$distgap" | cut -f 1-6 > $outdir/$sample_tumor.$chr.filter.del.bed
-		$bedtools/closestBed -a $outdir/$sample_tumor.$chr.dup.bed -b $gap -d | awk "\$13>$distgap" | cut -f 1-6 > $outdir/$sample_tumor.$chr.filter.dup.bed
+		$bedtools/closestBed -a $outdir/$sample_tumor.$chr.del.bed -b $gap -d | awk "\$13>$distgap" | cut -f 1-6 |\
+		    $bedtools/intersectBed -a stdin -b $blacklist_sv -v -f $pct_overlap -wa > $outdir/$sample_tumor.$chr.filter.del.bed
+
+		$bedtools/closestBed -a $outdir/$sample_tumor.$chr.dup.bed -b $gap -d | awk "\$13>$distgap" | cut -f 1-6 |\
+		    $bedtools/intersectBed -a stdin -b $blacklist_sv -v -f $pct_overlap -wa > $outdir/$sample_tumor.$chr.filter.dup.bed
+
 		### convert to vcf files
 		perl $script_path/SegSeq2vcf.pl -i $outdir/$sample_tumor.$chr.filter.del.bed -s $sample_tumor -o $outdir/$sample_tumor.$chr.filter.del.vcf -r $ref_genome -t $samtools
 		if [ ! -s $outdir/$sample_tumor.$chr.filter.del.vcf.fail ]

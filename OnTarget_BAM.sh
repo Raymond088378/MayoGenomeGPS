@@ -20,7 +20,7 @@ else
     output=$2
     sample=$3
     run_info=$4
-    #SGE_TASK_ID=10
+   # SGE_TASK_ID=2
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     bed=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
@@ -44,7 +44,7 @@ else
         kit=$CaptureKit
     fi    
     
-    bam=$input/chr$chr.cleaned.bam
+    
     if [ ! -s $bam ]
     then
         echo " ERROR: OnTarget.BAM.sh $bam not found"
@@ -55,14 +55,15 @@ else
         pair=$( cat $sample_info | grep -w "$sample" | cut -d '=' -f2)
         for i in $pair
         do
-            $samtools/samtools view -b -r $i $bam | $bed/intersectBed -abam stdin -b $kit | $samtools/samtools view -  | wc -l > $output/$i.chr$chr.bam.i.out
+            $bed/intersectBed -abam $input/$sample.$i.chr$chr.bam -b $kit | $samtools/samtools view -  | wc -l > $output/$i.chr$chr.bam.i.out
             if [ ! -s $output/$i.chr$chr.bam.i.out ]
             then
                 echo "ERROR: $output/$i.chr$chr.bam.i.out is empty"
             fi    
         done
     else   
-        #intersect with the target kit
+        bam=$input/chr$chr.cleaned.bam
+		#intersect with the target kit
         $bed/intersectBed -abam $bam -b $kit | $samtools/samtools view -  | wc -l > $output/$sample.chr$chr.bam.i.out
         if [ ! -s $output/$sample.chr$chr.bam.i.out ]
         then

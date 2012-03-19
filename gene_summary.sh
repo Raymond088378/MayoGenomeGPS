@@ -204,8 +204,8 @@
 			rm $INDEL_dir/$sample.*.tmp $INDEL_dir/$sample.join*.txt $INDEL_dir/$sample.coding.txt $INDEL_dir/$sample.frameshift.txt $INDEL_dir/$sample.splice3.txt $INDEL_dir/$sample.splice5.txt $INDEL_dir/$sample.utr3.txt $INDEL_dir/$sample.utr5.txt	
 
 #################################################################################################					### generating gene summary file
-			cat $master_gene_file | awk '{print $4"\t"$1"\t"$2"\t"$3"\t"$5}' > $report_dir/GeneList.forsummary.txt
-			cat $master_entrez_file | awk '{print $2}' > $report_dir/EntrezID.txt
+			cat $master_gene_file | awk '{print $4"\t"$1"\t"$2"\t"$3"\t"$5}' > $report_dir/$sample.GeneList.forsummary.txt
+			cat $master_entrez_file | awk '{print $2}' > $report_dir/$sample.EntrezID.txt
 			touch $report_dir/$sample.Gene.Summary.txt
 			echo -e "\t\t\t\t\t\t\t\t\t\t$sample" >> $report_dir/$sample.Gene.Summary.txt
 			echo -e "\t\t\t\t\t\t\t\t\t\tSNV_breakdown\t\t\t\t\t\t\t\tINDEL_breakdown\t\t\t\t\t\t" >> $report_dir/$sample.Gene.Summary.txt
@@ -215,17 +215,15 @@
 			cat $SNV_dir/$sample.SNV.summary | cut -f2,3,4,5,6,7,8,9 > $SNV_dir/$sample.SNV.tmp
 			cat $INDEL_dir/$sample.INDEL.summary | cut -f2,3,4,5,6,7,8,9 > $INDEL_dir/$sample.INDEL.tmp
 			
-			paste $report_dir/GeneList.forsummary.txt $report_dir/EntrezID.txt $SNV_dir/$sample.SNV.sum $INDEL_dir/$sample.INDEL.sum $SNV_dir/$sample.SNV.tmp $INDEL_dir/$sample.INDEL.tmp >> $report_dir/$sample.Gene.Summary.txt
+			paste $report_dir/$sample.GeneList.forsummary.txt $report_dir/EntrezID.txt $SNV_dir/$sample.SNV.sum $INDEL_dir/$sample.INDEL.sum $SNV_dir/$sample.SNV.tmp $INDEL_dir/$sample.INDEL.tmp >> $report_dir/$sample.Gene.Summary.txt
 			
-			rm $SNV_dir/$sample.SNV.tmp $INDEL_dir/$sample.INDEL.tmp $report_dir/GeneList.forsummary.txt $INDEL_dir/$sample.INDEL.summary $INDEL_dir/$sample.INDEL.sum $SNV_dir/$sample.SNV.summary $SNV_dir/$sample.SNV.sum $report_dir/EntrezID.txt
-		rm $report_dir/$sample.gene.temp
+			rm $SNV_dir/$sample.SNV.tmp $INDEL_dir/$sample.INDEL.tmp $report_dir/$sample.GeneList.forsummary.txt $INDEL_dir/$sample.INDEL.summary $INDEL_dir/$sample.INDEL.sum $SNV_dir/$sample.SNV.summary $SNV_dir/$sample.SNV.sum $report_dir/$sample.EntrezID.txt
+			rm $report_dir/$sample.gene.temp
 			
 #################################################################################################	
 
 		else
 			echo "Whole Genome Anlaysis"
-		
-#################################################################################################		
 			### summarizing SNV files
 			file=$SNV_dir/$sample.SNV.cleaned_annot_filtered.xls
 			function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "functionGVS") {print i} } }' $file`
@@ -453,7 +451,7 @@
 			rm $SV_dir/$sample.*.tmp $SV_dir/$sample.join*.txt $SV_dir/$sample.ITX.txt $SV_dir/$sample.INV.txt $SV_dir/$sample.DEL.txt $SV_dir/$sample.INS.txt $SV_dir/$sample.CTX.txt 
 #################################################################################################					### generating gene summary file
 			cat $master_gene_file | awk '{print $4"\t"$1"\t"$2"\t"$3"\t"$5}' > $report_dir/$sample.GeneList.forsummary.txt
-			cat $master_entrez_file | awk '{print $2}' > $report_dir/EntrezID.txt
+			cat $master_entrez_file | awk '{print $2}' > $report_dir/$sample.EntrezID.txt
 			touch $report_dir/$sample.Gene.Summary.txt
 			echo -e "\t\t\t\t\t\t\t\t\t\t$sample" >> $report_dir/$sample.Gene.Summary.txt
 			echo -e "\t\t\t\t\t\t\t\t\t\tSNV_breakdown\t\t\t\t\t\t\t\tINDEL_breakdown\t\t\t\t\t\tCNV_breakdown\t\tSV_breakdown\t\t\t\t" >> $report_dir/$sample.Gene.Summary.txt
@@ -467,10 +465,10 @@
 			cat $CNV_dir/$sample.CNV.summary | cut -f2,3,4,5,6,7,8,9 > $CNV_dir/$sample.CNV.tmp
 			cat $SV_dir/$sample.SV.summary | cut -f2,3,4,5,6,7,8,9 > $SV_dir/$sample.SV.tmp
 			
-			paste $report_dir/$sample.GeneList.forsummary.txt $report_dir/EntrezID.txt $SNV_dir/$sample.SNV.sum $INDEL_dir/$sample.INDEL.sum $CNV_dir/$sample.CNV.sum $SV_dir/$sample.SV.sum $SNV_dir/$sample.SNV.tmp $INDEL_dir/$sample.INDEL.tmp $CNV_dir/$sample.CNV.tmp $SV_dir/$sample.SV.tmp >> $report_dir/$sample.Gene.Summary.txt
+			paste $report_dir/$sample.GeneList.forsummary.txt $report_dir/$sample.EntrezID.txt $SNV_dir/$sample.SNV.sum $INDEL_dir/$sample.INDEL.sum $CNV_dir/$sample.CNV.sum $SV_dir/$sample.SV.sum $SNV_dir/$sample.SNV.tmp $INDEL_dir/$sample.INDEL.tmp $CNV_dir/$sample.CNV.tmp $SV_dir/$sample.SV.tmp >> $report_dir/$sample.Gene.Summary.txt
 			
 			rm $SNV_dir/$sample.SNV.tmp $INDEL_dir/$sample.INDEL.tmp $CNV_dir/$sample.CNV.tmp $SV_dir/$sample.SV.tmp $report_dir/$sample.GeneList.forsummary.txt $SV_dir/$sample.SV.summary 
-			rm $SV_dir/$sample.SV.sum $CNV_dir/$sample.CNV.summary $CNV_dir/$sample.CNV.sum $INDEL_dir/$sample.INDEL.summary $INDEL_dir/$sample.INDEL.sum $SNV_dir/$sample.SNV.summary $SNV_dir/$sample.SNV.sum $report_dir/EntrezID.txt
+			rm $SV_dir/$sample.SV.sum $CNV_dir/$sample.CNV.summary $CNV_dir/$sample.CNV.sum $INDEL_dir/$sample.INDEL.summary $INDEL_dir/$sample.INDEL.sum $SNV_dir/$sample.SNV.summary $SNV_dir/$sample.SNV.sum $report_dir/$sample.EntrezID.txt
 			rm $report_dir/$sample.gene.temp
 	fi
 		

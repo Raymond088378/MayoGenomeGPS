@@ -20,7 +20,7 @@ else
     output=$2
     sample=$3
     run_info=$4
-    #SGE_TASK_ID=10
+    #SGE_TASK_ID=2
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     bed=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
     CaptureKit=$( cat $tool_info | grep -w '^CAPTUREKIT' | cut -d '=' -f2 )
@@ -47,7 +47,7 @@ else
         kit=$CaptureKit
     fi
     
-    bam=$input/chr$chr.cleaned.bam
+    
     if [ ! -s $bam ]
     then
         echo "ERROR : OnTarget.PILEUP.sh $bam not found"
@@ -59,65 +59,88 @@ else
         pair=$( cat $sample_info | grep -w "$sample" | cut -d '=' -f2)
         for i in $pair
         do
-            $samtools/samtools view -b -r $i $bam | $samtools/samtools pileup -s -f $ref - | awk '{if ($1 ~ /chr/) {print $1"\t"$2-1"\t"$2"\t"$4"\t"$3}}'  > $output/$i.chr$chr.pileup.bed
-            total=`cat $output/$i.chr$chr.pileup.bed | wc -l`
+			$samtools/samtools index $input/$sample.$i.chr$chr.bam
+			$samtools/samtools pileup -s -f $ref $input/$sample.$i.chr$chr.bam | awk '{if ($1 ~ /chr/) {print $1"\t"$2-1"\t"$2"\t"$4"\t"$3}}'  > $output/$i.chr$chr.pileup.bed
+            rm $input/$sample.$i.chr$chr.bam.bai
+			total=`cat $output/$i.chr$chr.pileup.bed | wc -l`
             perl $script_path/split.a.file.into.n.parts.pl 25 $output/$i.chr$chr.pileup.bed $total
             rm $output/$i.chr$chr.pileup.bed
             cd $output
             # intersect the pileup with the intersect kit
-            for j in $i.chr$chr.pileup.bed.*.txt
+            for ((j=1;j<=26; j++))
             do
-                $bed/intersectBed -a $kit -b $output/$j -wa -wb > $output/$j.i
-                rm $output/$j	
-            done
+                if [ -f $output/$i.chr$chr.pileup.bed.$j.txt ]
+				then
+					$bed/intersectBed -a $kit -b $output/$i.chr$chr.pileup.bed.$j.txt -wa -wb > $output/$i.chr$chr.pileup.bed.$j.txt.i
+					rm $output/$i.chr$chr.pileup.bed.$j.txt	
+				fi
+			done
         
             #merge all the interscted pileup
             for((j=0; j<=39; j++))
             do
                 total=0
-                for k in $i.chr$chr.pileup.bed.*.txt.i
-                do
+                for((k=1; k<=26; k++))
+				do
                     a=0
-                    a=`awk '$(NF-1)>'$j'' $k | wc -l`
-                    total=`expr $total "+" $a`
+                    if [ -f $i.chr$chr.pileup.bed.$k.txt.i ]
+					then
+						a=`awk '$(NF-1)>'$j'' $i.chr$chr.pileup.bed.$k.txt.i | wc -l`
+						total=`expr $total "+" $a`
+					fi	
                 done
                 echo $total >> $output/$i.chr$chr.pileup.i.out
             done    
-            rm $output/$i.chr$chr.pileup.bed.*.txt.i
+            for((k=1; k<=26; k++))
+			do
+				if [ -f $output/$i.chr$chr.pileup.bed.$k.txt.i ]
+				then
+					rm $output/$i.chr$chr.pileup.bed.$k.txt.i
+				fi
+			done	
         done    
-    else
-        if [ -s $input/chr$chr.pileup ]
-		then
-			cat $input/chr$chr.pileup | awk '{if ($1 ~ /chr/) {print $1"\t"$2-1"\t"$2"\t"$4"\t"$3}}'  > $output/$sample.chr$chr.pileup.bed
-		else	
-			$samtools/samtools pileup -s -f $ref $bam | awk '{if ($1 ~ /chr/) {print $1"\t"$2-1"\t"$2"\t"$4"\t"$3}}'  > $output/$sample.chr$chr.pileup.bed
-        fi
+    else	
+		bam=$input/chr$chr.cleaned.bam
+		$samtools/samtools pileup -s -f $ref $bam | awk '{if ($1 ~ /chr/) {print $1"\t"$2-1"\t"$2"\t"$4"\t"$3}}'  > $output/$sample.chr$chr.pileup.bed
 		#split the file into 25 parts to use less memory
         total=`cat $output/$sample.chr$chr.pileup.bed | wc -l`
         perl $script_path/split.a.file.into.n.parts.pl 25 $output/$sample.chr$chr.pileup.bed $total
         rm $output/$sample.chr$chr.pileup.bed
         cd $output
         # intersect the pileup with the intersect kit
-        for i in $sample.chr$chr.pileup.bed.*.txt
+        for ((i=1;i<=26; i++))
         do
-                $bed/intersectBed -a $kit -b $output/$i -wa -wb > $output/$i.i
-                rm $output/$i	
+			if [ -f $output/$sample.chr$chr.pileup.bed.$i.txt ]
+			then
+				$bed/intersectBed -a $kit -b $output/$sample.chr$chr.pileup.bed.$i.txt -wa -wb > $output/$sample.chr$chr.pileup.bed.$i.txt.i
+				rm $output/$sample.chr$chr.pileup.bed.$i.txt	
+			fi	
         done
         
         #merge all the interscted pileup
         for((j=0; j<=39; j++))
         do
             total=0
-            for i in $sample.chr$chr.pileup.bed.*.txt.i
+            for ((i=1;i<=26; i++))
             do
                 a=0
-                a=`awk '$(NF-1)>'$j'' $i | wc -l`
-                total=`expr $total "+" $a`
-            done
+                if [ -f $sample.chr$chr.pileup.bed.$i.txt.i ]
+				then
+					a=`awk '$(NF-1)>'$j'' $sample.chr$chr.pileup.bed.$i.txt.i | wc -l`
+					total=`expr $total "+" $a`
+				fi
+			done
             echo $total >> $output/$sample.chr$chr.pileup.i.out
         done    
-        rm $output/$sample.chr$chr.pileup.bed.*.txt.i
-    fi
+        
+		for((k=1; k<=26; k++))
+		do
+			if [ -f $output/$sample.chr$chr.pileup.bed.$k.txt.i ]
+			then
+				rm $output/$sample.chr$chr.pileup.bed.$k.txt.i
+			fi
+		done	
+	fi
     echo `date`
 fi	
     
