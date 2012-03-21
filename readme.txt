@@ -1,3 +1,13 @@
+## March 20 2012
+
+Problem: if there are less number of reads to realign for any Chromosome then GATK fails most of the time. 
+Solution: workflow copies aligned bam as realigned bam with a warning message in the log
+
+
+
+
+
+
 ## Saurabh Baheti
 ## Feb 28th 2012
 

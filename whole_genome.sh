@@ -80,7 +80,7 @@ else
 	if [ -d $output/$PI/$tool/$run_num ]
 	then
 		echo "ERROR : $run_num folder exists"
-		#exit 1;
+		exit 1;
 	else 
 		mkdir $output/$PI/$tool/$run_num
 	fi
@@ -209,13 +209,14 @@ else
 					done
 					REFORMAT=`qsub $args -N $type.$version.reformat_BAM.$sample.$run_num -l h_vmem=8G $script_path/reformat_BAM.sh $realign_dir $sample $run_info`	
 					job_id_convert=`echo $REFORMAT | cut -d ' ' -f3`
-					VARIANTS=`qsub $args -N $type.$version.split_bam_chr.$sample.$run_num -hold_jid $job_id_convert -l h_vmem=8G -t 1-$numchrs:1 $script_path/split_bam_chr.sh $realign_dir $sample $run_info`					
+					VARIANT=`qsub $args -N $type.$version.split_bam_chr.$sample.$run_num -hold_jid $job_id_convert -l h_vmem=8G -t 1-$numchrs:1 $script_path/split_bam_chr.sh $realign_dir $sample $run_info`					
 				else
 					VARIANT=`qsub $args -N $type.$version.realign_recal.$sample.$run_num -hold_jid $job_id_convert -l h_vmem=8G -t 1-$numchrs:1 $script_path/realign_recal.sh $align_dir $bamfile $sample $realign_dir $variant_dir $run_info 1`	
 				fi
 				variant_id=`echo $VARIANT | cut -d ' ' -f3  | tr "\n" "," | sed -e "s/\..*,//g"`
 				IGV=`qsub $args -N $type.$version.igv_bam.$sample.$run_num -l h_vmem=8G -hold_jid $variant_id $script_path/igv_bam.sh $output_dir/realign $output_dir/IGV_BAM $sample $output_dir/alignment $run_info`
                 igv_id=`echo $IGV | cut -d ' ' -f3 ` 
+				echo -e $IGV >> $job_ids_dir/IGV	
                 CALLS=`qsub $args -N $type.$version.variants.$sample.$run_num -hold_jid $variant_id -pe threaded $threads -l h_vmem=8G -t 1-$numchrs:1 $script_path/variants.sh $realign_dir $sample $variant_dir 1 $run_info`
 				calls_id=`echo $CALLS | cut -d ' ' -f3  | tr "\n" "," | sed -e "s/\..*,//g"`
 				MERGEVARIANT=`qsub $args -N $type.$version.merge_variant_single.$sample.$run_num -l h_vmem=8G -hold_jid $calls_id $script_path/merge_variant_single.sh $output_dir/variants $sample $output_dir/Reports_per_Sample/ $run_info`
@@ -278,7 +279,7 @@ else
 					BREAKDANCER_IN=`qsub $args -N $type.$version.run_breakdancer.$sample.$run_num -hold_jid $igv_id -l h_vmem=8G -t $nump-$nump:$nump $script_path/run_breakdancer.sh $sample $output_dir/IGV_BAM $break $run_info`
 					job_id_break_in=`echo $BREAKDANCER_IN | cut -d ' ' -f3 |  tr "\n" "," | sed -e "s/\..*,//g"`
 					### merge the structural variants
-					MERGESTRUCT=`qsub $args -N $type.$version.summaryze_struct_single.$sample.$run_num -l h_vmem=8G -hold_jid $job_id_break_in,$job_id_sv,$job_id_cnv,$job_id_break $script_path/summaryze_struct_single.sh $sample $output_dir $run_info`
+					MERGESTRUCT=`qsub $args -N $type.$version.summaryze_struct_single.$sample.$run_num -l h_vmem=8G -hold_jid $job_id_break_in,$job_ids_coverage,$job_id_sv,$job_id_cnv,$job_id_break $script_path/summaryze_struct_single.sh $sample $output_dir $run_info`
 					echo -e $MERGESTRUCT >> $job_ids_dir/SV
 					job_id_mergestruct=`echo $MERGESTRUCT | cut -d ' ' -f3`
 					RUNCIRCOS=`qsub $args -N $type.$version.plot_circos_cnv_sv.$sample.$run_num -hold_jid $job_id_mergestruct -l h_vmem=8G $script_path/plot_circos_cnv_sv.sh $break/$sample/$sample.break $crest/$sample/$sample.filter.crest $cnv/$sample.cnv.filter.bed $sample $output_dir/circos $run_info` 
@@ -316,9 +317,15 @@ else
 			## annotate merged report
 			MERGE_SAMPLE=`qsub $args -N $type.$version.annotate_merged_report.$run_num -hold_jid $job_ids_report -l h_vmem=8G $script_path/annotate_merged_report.sh $output_dir $TempReports $run_info`
 			job_ids_merge_sample=`echo $MERGE_SAMPLE | cut -d ' ' -f3 | tr "\n" ","`
+			if [ $analysis != "annotation" ]
+			then
+				job_ids_igv=$( cat $job_ids_dir/IGV | cut -d ' ' -f3  | tr "\n" ",")
+				hold="-hold_jid $job_ids_report,$job_ids_annot_sample,$job_ids_merge_sample,$job_ids_sample,$job_ids_annn,$job_ids_igv"
+			else
+				hold="-hold_jid $job_ids_report,$job_ids_annot_sample,$job_ids_merge_sample,$job_ids_sample,$job_ids_annn"
+			fi	
 			### variant distance
 			qsub $args -N $type.$version.variant_distance.$run_num -hold_jid $job_ids_report -l h_vmem=4G $script_path/variant_distance.sh $TempReports $output_dir $run_info
-			hold="-hold_jid $job_ids_report,$job_ids_annot_sample,$job_ids_merge_sample,$job_ids_sample,$job_ids_annn"
 			NUMBERS=`qsub $args -N $type.$version.sample_numbers.$run_num $hold -t 1-$numsamples:1 $script_path/sample_numbers.sh $output_dir $run_info`
 			GENE_SUMMARY=`qsub $args -N $type.$version.gene_summary.$run_num $hold -t 1-$numsamples:1 $script_path/gene_summary.sh $output_dir $run_info $output_dir/Reports_per_Sample`
 			job_ids=`echo $NUMBERS | cut -d ' ' -f3 | cut -d '.' -f1 | tr "\n" ","`
@@ -326,7 +333,7 @@ else
 			HTML=`qsub $args -N $type.$version.generate_html.$run_num -hold_jid ${job_ids}${job_ids_summary} $script_path/generate_html.sh $output_dir $run_info`
 			if [[  $tool == "exome"  && $all_sites == "YES" ]]
 			then
-				qsub $args -N $type.$version.merge_raw_variants.$run_num -hold_jid -hold_jid ${job_ids}${job_ids_summary} $script_path/merge_raw_variants.sh $output_dir $run_info
+				qsub $args -N $type.$version.merge_raw_variants.$run_num -hold_jid ${job_ids}${job_ids_summary} $script_path/merge_raw_variants.sh $output_dir $run_info
 			fi	
 			
 		else
@@ -346,7 +353,7 @@ else
 			#bam_files=""
 			bam_samples=""
 			input_dirs=""
-			names_samples=""
+            names_samples=""
 			for sample in $samples
 			do
 				align_dir=$output_dir/alignment/$sample;
@@ -490,7 +497,11 @@ else
 			job_id_mergestruct=`echo $MERGESTRUCT | cut -d ' ' -f3`
 			echo -e $MERGESTRUCT >> $job_ids_dir/SV
 			mkdir -p $output_dir/circos;
-            RUNCIRCOS=`qsub $args -N $type.$version.plot_circos_cnv_sv.$group.$run_num -hold_jid $job_id_mergestruct -l h_vmem=8G $script_path/plot_circos_cnv_sv.sh $break/$sample/$sample.break $output_dir/cnv/$sample/$sample.cnv.filter.bed $sample $output_dir/circos $run_info` 
+            for i in $(seq 2 ${#sampleArray[@]})
+			do  
+				tumor=${sampleArray[$i]}
+				RUNCIRCOS=`qsub $args -N $type.$version.plot_circos_cnv_sv.$group.$run_num -hold_jid $job_id_mergestruct -l h_vmem=8G $script_path/plot_circos_cnv_sv.sh $output_dir/struct/$group.$tumor.somatic.break $output_dir/struct/$group.$tumor.somatic.filter.crest $output_dir/cnv/$group/$tumor.cnv.filter.bed $tumor $output_dir/circos $run_info` 
+			done
 		done
 
 		job_ids_annn=$( cat $job_ids_dir/ANNOT |  cut -d ' ' -f3 | cut -d '.' -f1 | tr "\n" ",")

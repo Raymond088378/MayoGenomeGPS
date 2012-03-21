@@ -74,15 +74,12 @@ else
         if [ $num_times -gt 1 ]
 		then
 			rm $files
+			mv $input/$sample.sorted.bai $input/$sample.sorted.bam.bai
         fi
 		if [ $analysis != "realignment" ]
         then
             rm $indexes
         fi
-        if [ $num_times -lt 1 ]
-		then
-			mv $input/$sample.sorted.bai $input/$sample.sorted.bam.bai
-		fi
 	fi
     
     ### add read grouup information

@@ -51,6 +51,7 @@ else
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
     flowcell=`echo $run_num | awk -F'_' '{print $NF}' | sed 's/.\(.*\)/\1/'`
+	threads=$( cat $tool_info | grep -w '^THREADS'| cut -d '=' -f2)
     paired=$( cat $run_info | grep -w '^PAIRED' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
@@ -142,20 +143,20 @@ else
     then
         if [ $ILL2SANGER1 -gt 65 ] && [ $ILL2SANGER2 -gt 65 ]
         then
-            $novoalign --hdrhd off -v 120 -c 4 -i PE 425,80 -x 5 -r Random -d $genome_novo -F ILMFQ -f $fastq/$filename1 $fastq/$filename2 \
+            $novoalign --hdrhd off -v 120 -c $threads -i PE 425,80 -x 5 -r Random -d $genome_novo -F ILMFQ -f $fastq/$filename1 $fastq/$filename2 \
             -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$sample\tPL:$platform\tCN:$center" > $output_dir_sample/$sample.$SGE_TASK_ID.sam
         
         else
-            $novoalign --hdrhd off -v 120 -c 4 -i PE 425,80 -x 5 -r Random -d $genome_novo -F STDFQ -f $fastq/$filename1 $fastq/$filename2 \
+            $novoalign --hdrhd off -v 120 -c $threads -i PE 425,80 -x 5 -r Random -d $genome_novo -F STDFQ -f $fastq/$filename1 $fastq/$filename2 \
             -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$sample\tPL:$platform\tCN:$center" > $output_dir_sample/$sample.$SGE_TASK_ID.sam   
         fi
     else
         if [ $ILL2SANGER1 -gt 65 ]
         then
-            $novoalign --hdrhd off -v 120 -c 4 -i PE 425,80 -x 5 -r Random -d $genome_novo -F ILMFQ -f $fastq/$filename1 \
+            $novoalign --hdrhd off -v 120 -c $threads -i PE 425,80 -x 5 -r Random -d $genome_novo -F ILMFQ -f $fastq/$filename1 \
             -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" > $output_dir_sample/$sample.$SGE_TASK_ID.sam
         else
-            $novoalign --hdrhd off -v 120 -c 4 -i PE 425,80 -x 5 -r Random -d $genome_novo -F STDFQ -f $fastq/$filename1 \
+            $novoalign --hdrhd off -v 120 -c $threads -i PE 425,80 -x 5 -r Random -d $genome_novo -F STDFQ -f $fastq/$filename1 \
             -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" > $output_dir_sample/$sample.$SGE_TASK_ID.sam   
         fi        
     fi    

@@ -88,7 +88,7 @@ else
 	if [ "$status" -eq 0 ]
 	then
 		$blat/gfServer start localhost $blat_port -log=$output_dir/$group/log/blat.$group.$chr.txt $blat_ref  &
-		sleep 3m
+		sleep 2m
 	fi
 
 #i=1

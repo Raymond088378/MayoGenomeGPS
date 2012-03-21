@@ -108,33 +108,51 @@ else
 
     if [ ! -s $output/chr${chr}.forRealigner.intervals ]
     then
-        echo "ERROR : realign_per_chr. File $output/chr${chr}.forRealigner.intervals not created"
-        exit 1
-    fi
-
-    ## Realignment
-    $java/java -XX:+UseConcMarkSweepGC  -Xmx6g -Xms512m -Djava.io.tmpdir=$output/temp/ \
-    -jar $gatk/GenomeAnalysisTK.jar \
-    -R $ref \
-    -et NO_ET \
-    --known $dbSNP \
-    --known $Kgenome \
-    -L chr${chr} \
-    -T IndelRealigner \
-    $input_bam \
-    --maxReadsForRealignment $maxreads \
-    --maxReadsInMemory $maxreadsmem \
-    --out $output/chr${chr}.realigned.bam  \
-    -targetIntervals $output/chr${chr}.forRealigner.intervals
+        echo "WARNING : realign_per_chr. File $output/chr${chr}.forRealigner.intervals not created"
+		bams=`echo $input_bam | sed -e '/-I/s///g'`
+		num_bams=`echo $bams | tr " " "\n" | wc -l`
+		if [ $num_bams -eq 1 ]
+		then
+			cp $bams $output/chr${chr}.realigned.bam
+			cp $bams.bai $output/chr${chr}.realigned.bam.bai
+		else
+			INPUTARGS=`echo $bams | tr " " "\n" | awk '{print "I="$1}'` 
+			$java/java -Xmx6g -Xms512m \
+			-jar $picard/MergeSamFiles.jar \
+			$INPUTARGS\
+			OUTPUT=$output/chr${chr}.realigned.bam \
+			TMP_DIR=$output \
+			CREATE_INDEX=true \
+			VALIDATION_STRINGENCY="SILENT"
+			
+            mv $output/chr${chr}.realigned.bai $output/chr${chr}.realigned.bam.bai
+		fi
+	else
+		## Realignment
+		$java/java -XX:+UseConcMarkSweepGC  -Xmx6g -Xms512m -Djava.io.tmpdir=$output/temp/ \
+		-jar $gatk/GenomeAnalysisTK.jar \
+		-R $ref \
+		-et NO_ET \
+		--known $dbSNP \
+		--known $Kgenome \
+		-L chr${chr} \
+		-T IndelRealigner \
+		$input_bam \
+		--maxReadsForRealignment $maxreads \
+		--maxReadsInMemory $maxreadsmem \
+		--out $output/chr${chr}.realigned.bam  \
+		-targetIntervals $output/chr${chr}.forRealigner.intervals
+		
+		mv $output/chr${chr}.realigned.bai $output/chr${chr}.realigned.bam.bai
+	fi
 
     if [ -s $output/chr${chr}.realigned.bam ]
     then
-        mv $output/chr${chr}.realigned.bai $output/chr${chr}.realigned.bam.bai
-		if [ $realign == 0 ]
+        if [ $realign == 0 ]
 		then
-			$output/chr${chr}.realigned.bam	$output/chr${chr}.cleaned.bam
-			$output/chr${chr}.realigned.bam.bai $output/chr${chr}.cleaned.bam.bai
-			$samtools/samtools $output/chr${chr}.cleaned.bam > $output/chr${chr}.flagstat
+			cp $output/chr${chr}.realigned.bam	$output/chr${chr}.cleaned.bam
+			cp $output/chr${chr}.realigned.bam.bai $output/chr${chr}.cleaned.bam.bai
+			$samtools/samtools flagstat $output/chr${chr}.cleaned.bam > $output/chr${chr}.flagstat
 		fi	
     else
         echo "ERROR : realign_per_chr. File $output/chr${chr}.realigned.bam not created" 

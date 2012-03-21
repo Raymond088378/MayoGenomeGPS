@@ -22,6 +22,7 @@ else
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
 	lanes=$( cat $run_info | grep -w '^LANEINDEX' | cut -d '=' -f2)
 	tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2)
+	type=$( cat $run_info | grep -w '^TOOL' | cut -d '=' -f2|tr "[a-z]" "[A-Z]")
 	email=$( cat $run_info | grep -w '^EMAIL' | cut -d '=' -f2)
 	GenomeBuild=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2)
 	variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2)
@@ -45,9 +46,12 @@ else
 	# generate Coverage plot
 	
 	cd $output_dir/numbers
-	region=`awk '{sum+=$3-$2+1; print sum}' $kit | tail -1`
-	Rscript $script_path/coverage_plot.r $region $samples
-	mv $output_dir/numbers/coverage.jpeg $output_dir/Coverage.JPG
+	if [[ $analysis != "alignment" && $analysis != "annotation" ]] 
+	then
+		region=`awk '{sum+=$3-$2+1; print sum}' $kit | tail -1`
+		Rscript $script_path/coverage_plot.r $region $samples
+		mv $output_dir/numbers/coverage.jpeg $output_dir/Coverage.JPG
+	fi
 	#rm $output_dir/bed_file.bed
 	if [ $analysis != "annotation" -a $analysis != "alignment" ]
 	then
@@ -68,7 +72,7 @@ else
 			$java/java -Xmx7g -Xms512m -jar $script_path/TREATUploader.jar -n $PI_LANID -u $run_num -i $output_dir/Reports/INDEL.cleaned_annot.xls -s $output_dir/Reports/SNV.cleaned_annot.xls -r $run_num
 		fi		
 		echo -e "Variants uploaded to TableBrowser" >> $output_dir/log.txt
-		else
+	else
 		echo -e "Variants Not uploaded to TableBrowser" >> $output_dir/log.txt
 	fi	
 	END=`date`
@@ -78,7 +82,7 @@ else
     logs=`find -name 'logs' | sed -e '/\.\//s///g'`
     for i in $logs
     do
-        cat $i/* >> $output_dir/LOG
+        cat $i/$type* >> $output_dir/LOG
     done
     cat $output_dir/LOG | grep -w 'ERROR' > $output_dir/errorlog
 	cat $output_dir/LOG | grep -w 'WARNING' > $output_dir/warninglog	

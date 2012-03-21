@@ -119,7 +119,7 @@ else
 				exit 1
 			fi
         
-			cat $crest/$group.$tumor.somatic.crest.vcf | awk '$0 !~ /#/' | tr ";" "\t" | tr "=" "\t" | awk '{ print $1"\t"$2"\t"$1"\t"$12"\t"$10"\t"$16}' > $crest/$group.$tumor.crest.tmp
+			cat $crest/$group.$tumor.somatic.filter.crest.vcf | awk '$0 !~ /#/' | tr ";" "\t" | tr "=" "\t" | awk '{ print $1"\t"$2"\t"$1"\t"$12"\t"$10"\t"$16}' > $crest/$group.$tumor.crest.tmp
 			cat $crest/$group.$tumor.crest.tmp | awk 'gsub($5, "crest_"$5,$5)1' | tr " " "\t" > $crest/$group.$tumor.crest.txt
 			cat $break/$group.$tumor.somatic.break.vcf | awk '$0 !~ /#/' | tr ";" "\t" | tr "=" "\t" | awk '{ print $1"\t"$2"\t"$1"\t"$12"\t"$10"\t"$16}' > $break/$group.$tumor.break.tmp
 			cat $break/$group.$tumor.break.tmp | awk 'gsub($5, "breakdancer_"$5,$5)1' | tr " " "\t" > $break/$group.$tumor.breakdancer.txt

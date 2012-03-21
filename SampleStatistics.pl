@@ -58,12 +58,33 @@
 			return $n;
 		}
 		# row header
-		if ( $analysis eq 'alignment' )	{
-			@To_find=("Total Reads","Mapped Reads","Mapped Reads (Q >= 20)");
-		}		
-		elsif ( ( $analysis eq 'mayo' ) || ( $analysis eq 'variant' ) ) {
-			@To_find=("Total Reads","Mapped Reads","Percent duplication","Realigned Reads (Q >= 20)","Mapped Reads (Coding Region)","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","Coding SNVs","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","Coding INDELs","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5","Total CNVs","Coding CNVs","Coding Deletions","Coding Duplications","Total SVs","Coding SVs","Intra-chr translocations","Inversions","Deletions","Insertions","Inter-chr translocations");
+		# header name
+	if ( ( $analysis ne 'alignment' ) && ( $analysis ne 'annotation' ) ) {
+		if ($tool eq 'whole_genome')	{
+			if ($analysis eq 'variant')	{
+				@To_find=("Total Reads","Mapped Reads","Mapped Reads(CodingRegion)","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","INDELs in CodingRegion","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5","Total CNVs","Coding CNVs","Coding Deletions","Coding Duplications","Total SVs","Coding SVs","Intra-chr translocations","Inversions","Deletions","Insertions","Inter-chr translocations");
+			}
+			else	{
+				@To_find=("Total Reads","Mapped Reads","Percent duplication","Realigned Mapped Reads","Mapped Reads(CodingRegion)","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","INDELs in CodingRegion","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5","Total CNVs","Coding CNVs","Coding Deletions","Coding Duplications","Total SVs","Coding SVs","Intra-chr translocations","Inversions","Deletions","Insertions","Inter-chr translocations");
+			}
 		}
+		elsif ($tool eq 'exome')	{
+			if ($analysis eq 'variant')	{
+				@To_find=("Total Reads","Mapped Reads","Percent duplication","Realigned Mapped Reads","Mapped Reads(in CaptureRegion)","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","SNVs in CaptureRegion","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","INDELs in CodingRegion","INDELs in CaptureRegion","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
+			}
+			else	{
+				@To_find=("Total Reads","Mapped Reads","Mapped Reads(in CaptureRegion)","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","SNVs in CaptureRegion","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","INDELs in CodingRegion","INDELs in CaptureRegion","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
+			}
+		}	
+	}
+	if ($analysis eq 'alignment')	{
+		@To_find=("Total Reads","Mapped Reads","Percent duplication");
+	}
+
+	if ($analysis eq 'annotation')	{
+		@what=("Total SNVs","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs" ,"In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
+	}
+	
 		my %sample_numbers=();
 		my $uniq;
 		# storing all the numbers in a Hash per sample (one hash)

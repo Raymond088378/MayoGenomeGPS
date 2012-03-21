@@ -103,24 +103,39 @@ else
 
     if [ ! -s $output/chr${chr}.recal_data.csv ]
     then
-        echo "ERROR : recal_per_chr. File $output/chr${chr}.recal_data.csv not created"
-        exit 1
-    fi
-    
-    ## recailbartion
-    echo `date`
-    $java/java -Xmx6g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-    -R $ref \
-    -et NO_ET \
-    -L chr${chr} \
-    $input_bam \
-    -T TableRecalibration \
-    --out $output/chr${chr}.recalibrated.bam \
-    -recalFile $output/chr${chr}.recal_data.csv 
-
+        echo "WARNING : recal_per_chr. File $output/chr${chr}.recal_data.csv not created"
+        bams=`echo $input_bam | sed -e '/-I/s///g'`
+		num_bams=`echo $bams | tr " " "\n" | wc -l`
+		if [ $num_bams -eq 1 ]
+		then
+			cp $bams $output/chr${chr}.recalibrated.bam
+			cp $bams.bai $output/chr${chr}.recalibrated.bam.bai
+		else
+			INPUTARGS=`echo $bams | tr " " "\n" | awk '{print "I="$1}'` 
+			$java/java -Xmx6g -Xms512m \
+			-jar $picard/MergeSamFiles.jar \
+			$INPUTARGS\
+			OUTPUT=$output/chr${chr}.recalibrated.bam \
+			TMP_DIR=$output \
+			CREATE_INDEX=true \
+			VALIDATION_STRINGENCY="SILENT"
+			mv $output/chr${chr}.recalibrated.bai $output/chr${chr}.recalibrated.bam.bai
+		fi
+	else	
+		## recailbartion
+		$java/java -Xmx6g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+		-R $ref \
+		-et NO_ET \
+		-L chr${chr} \
+		$input_bam \
+		-T TableRecalibration \
+		--out $output/chr${chr}.recalibrated.bam \
+		-recalFile $output/chr${chr}.recal_data.csv 
+	
+		mv $output/chr${chr}.recalibrated.bai $output/chr${chr}.recalibrated.bam.bai
+	fi	
     if [ -s $output/chr${chr}.recalibrated.bam ]
     then
-        mv $output/chr${chr}.recalibrated.bai $output/chr${chr}.recalibrated.bam.bai
         rm $input/$bam $input/$bam.bai
 		if [ $recal == 0 ]
 		then
@@ -144,7 +159,6 @@ else
             rm $output/${sampleArray[$i]}.chr${chr}.bam.bai
             rm $output/${sampleArray[$i]}.chr${chr}-sorted.bam
             rm $output/${sampleArray[$i]}.chr${chr}-sorted.bam.bai
-            rm $output/${sampleArray[$i]}.chr${chr}-sorted.bam.bai
         done
     else
         rm $output/$bam.$chr.bam
@@ -152,7 +166,6 @@ else
         rm $output/$samples.chr${chr}.bam
         rm $output/$samples.chr${chr}.bam.bai
         rm $output/$samples.chr${chr}-sorted.bam
-        rm $output/$samples.chr${chr}-sorted.bam.bai
         rm $output/$samples.chr${chr}-sorted.bam.bai
     fi
     rm $output/chr${chr}.recal_data.csv 		

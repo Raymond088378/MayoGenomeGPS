@@ -65,16 +65,8 @@ else
 ########################################################	
 ######		
 
-    echo `date`
     PERL5LIB=$perllib;
     PATH=$samtools:$PATH;
-
-#i=1
-#   for sample in `echo $samples | tr ":" "\n"`
-#   do
-#     sampleArray[$i]=$sample
-#     let i=i+1
-#   done
 
     if [ $multi != "YES" ]
     then
@@ -89,24 +81,32 @@ else
 			
 	    if [ -s $out/$samples.$chr.cfg ]
 	    then
-		$breakdancer/cpp/breakdancer_max -c 5 -r 10 $out/$samples.$chr.cfg > $out/$samples.$chr.break
-		cat $out/$samples.$chr.break |  sort -n -k 2,12n > $out/$samples.$chr.break.sorted
-		#mv $out/$sample.$chr.break.sorted $out/$sample.$chr.break
+			$breakdancer/cpp/breakdancer_max -c 5 -r 10 $out/$samples.$chr.cfg > $out/$samples.$chr.break
+			cat $out/$samples.$chr.break |  sort -n -k 2,12n > $out/$samples.$chr.break.sorted
+			#mv $out/$sample.$chr.break.sorted $out/$sample.$chr.break
+			if [ -s $out/$samples.$chr.break.sorted ]
+			then
+				cat $out/$samples.$chr.break.sorted | awk '{print $1"\t"$2"\t"$2+1"\t"$4"\t"$5"\t"$5+1}' | $bedtools/pairToBed -a stdin -b $blacklist_sv -type neither | $script_path/report_original.pl $out/$samples.$chr.break.sorted > $out/$samples.$chr.break
+			else
+				touch $out/$samples.$chr.break
+			fi	
+			perl $script_path/Breakdancer2VCF.pl -i $out/$samples.$chr.break -f $ref_genome -o $out/$samples.$chr.break.vcf -s $samples -t $samtools
+			perl $script_path/vcfsort.pl ${ref_genome}.fai $out/$samples.$chr.break.vcf > $out/$samples.$chr.break.vcf.sort
+			mv $out/$samples.$chr.break.vcf.sort $out/$samples.$chr.break.vcf
+			rm $out/$samples.$chr.cfg $out/$samples.$chr.bam
 
-		cat $out/$samples.$chr.break.sorted | awk '{print $1"\t"$2"\t"$2+1"\t"$4"\t"$5"\t"$5+1}' | $bedtools/pairToBed -a stdin -b $blacklist_sv -type neither | $script_path/report_original.pl $out/$samples.$chr.break.sorted > $out/$samples.$chr.break
-
-		perl $script_path/Breakdancer2VCF.pl -i $out/$samples.$chr.break -f $ref_genome -o $out/$samples.$chr.break.vcf -s $samples -t $samtools
-		perl $script_path/vcfsort.pl ${ref_genome}.fai $out/$samples.$chr.break.vcf > $out/$samples.$chr.break.vcf.sort
-		mv $out/$samples.$chr.break.vcf.sort $out/$samples.$chr.break.vcf
-		rm $out/$samples.$chr.cfg $out/$samples.$chr.bam
-
-		if [ ! -s $out/$samples.$chr.break.vcf.fail ]
-		then
-		    rm $out/$samples.$chr.break.vcf.fail
-		fi  
-	    else
-			echo "Error Breakdancer: File $out/$sample.$chr.cfg not created"
-			exit 1
+			if [ ! -s $out/$samples.$chr.break.vcf.fail ]
+			then
+				rm $out/$samples.$chr.break.vcf.fail
+			fi  
+		else
+			echo "ERROR Breakdancer: File $out/$samples.$chr.cfg not created"
+			touch $out/$samples.$chr.break
+			touch $out/$samples.$chr.break.sorted
+			perl $script_path/Breakdancer2VCF.pl -i $out/$samples.$chr.break -f $ref_genome -o $out/$samples.$chr.break.vcf -s $samples -t $samtools
+			rm $out/$samples.$chr.break.vcf.fail
+			perl $script_path/vcfsort.pl ${ref_genome}.fai $out/$samples.$chr.break.vcf > $out/$samples.$chr.break.vcf.sort
+			mv $out/$samples.$chr.break.vcf.sort $out/$samples.$chr.break.vcf
 	    fi
     else	
 		out=$output_dir/$samples/
@@ -122,7 +122,12 @@ else
 				$breakdancer/cpp/breakdancer_max -t $out/$samples.inter.cfg > $out/$samples.inter.break
 				cat $out/$samples.inter.break |  sort -n -k 2,12n > $out/$samples.inter.break.sorted
 				# mv $out/$sample.inter.break.sorted $out/$sample.inter.break
-				cat $out/$samples.inter.break.sorted | awk '{ print $1"\t"$2"\t"$2+1"\t"$4"\t"$5"\t"$5+1}' | $bedtools/pairToBed -a stdin -b $blacklist_sv -type neither | $script_path/report_original.pl $out/$samples.inter.break.sorted > $out/$samples.inter.break
+				if [ -s $out/$samples.inter.break.sorted  ]
+				then
+					cat $out/$samples.inter.break.sorted | awk '{ print $1"\t"$2"\t"$2+1"\t"$4"\t"$5"\t"$5+1}' | $bedtools/pairToBed -a stdin -b $blacklist_sv -type neither | $script_path/report_original.pl $out/$samples.inter.break.sorted > $out/$samples.inter.break
+				else
+					touch $out/$samples.inter.break
+				fi	
 				#filter_sv_break $out/$samples.inter.break.sorted $out/$samples.inter.break
 		
 				perl $script_path/Breakdancer2VCF.pl -i $out/$samples.inter.break -f $ref_genome -o $out/$samples.inter.break.vcf -s $samples -t $samtool
@@ -135,17 +140,20 @@ else
 				fi  
 				rm $out/$samples.inter.cfg $out/$samples.tmp.bam
 			else
-				echo "Error Breakdancer: File $output_dir/$samples/$samples.inter.cfg not created"
-				exit 1
+				echo "ERROR Breakdancer: File $output_dir/$samples/$samples.inter.cfg not created"
+				touch $out/$samples.inter.break
+				touch $out/$samples.inter.break.sorted
+				perl $script_path/Breakdancer2VCF.pl -i $out/$samples.inter.break -f $ref_genome -o $out/$samples.inter.break.vcf -s $samples -t $samtool
+				rm $out/$samples.inter.break.vcf.fail
+				perl $script_path/vcfsort.pl ${ref_genome}.fai $out/$samples.$chr.break.vcf > $out/$samples.$chr.break.vcf.sort
+				mv $out/$samples.$chr.break.vcf.sort $out/$samples.$chr.break.vcf
 			fi
 		else
-			echo "Error Breakdancer: File $output_dir/$samples/$samples.tmp.bam not created" 
+			echo "ERROR Breakdancer: File $output_dir/$samples/$samples.tmp.bam not created" 
 			exit 1
 		fi
 	fi
 	else
-#for i in `cat $sample_info| grep -w "^$samples" | cut -d '=' -f2`
-#	  do
 	    sample=$samples
 	    mkdir -p $output_dir/$sample
 	    input_bam=$input/$group.$sample.chr${chr}.bam
@@ -161,8 +169,13 @@ else
                 cat $out/$sample.$chr.break |  sort -n -k 2,12n > $out/$sample.$chr.break.sorted
                 #mv $out/$sample.$chr.break.sorted $out/$sample.$chr.break
                 # filter_sv_break $out/$sample.$chr.break.sorted $out/$sample.$chr.break
-                cat $out/$sample.$chr.break.sorted | awk '{ print $1"\t"$2"\t"$2+1"\t"$4"\t"$5"\t"$5+1}' | $bedtools/pairToBed -a stdin -b $blacklist_sv -type neither | $script_path/report_original.pl $out/$sample.$chr.break.sorted > $out/$sample.$chr.break
-                perl $script_path/Breakdancer2VCF.pl -i $out/$sample.$chr.break -f $ref_genome -o $out/$sample.$chr.break.vcf -s $sample -t $samtools
+                if [ -s $out/$sample.$chr.break.sorted  ]
+				then
+					cat $out/$sample.$chr.break.sorted | awk '{ print $1"\t"$2"\t"$2+1"\t"$4"\t"$5"\t"$5+1}' | $bedtools/pairToBed -a stdin -b $blacklist_sv -type neither | $script_path/report_original.pl $out/$sample.$chr.break.sorted > $out/$sample.$chr.break
+                else
+					touch $out/$sample.$chr.break 
+				fi
+				perl $script_path/Breakdancer2VCF.pl -i $out/$sample.$chr.break -f $ref_genome -o $out/$sample.$chr.break.vcf -s $sample -t $samtools
                 perl $script_path/vcfsort.pl ${ref_genome}.fai $out/$sample.$chr.break.vcf > $out/$sample.$chr.break.vcf.sort
                 mv $out/$sample.$chr.break.vcf.sort $out/$sample.$chr.break.vcf
                 rm $out/$sample.$chr.cfg $out/$sample.${chr}.bam
@@ -171,8 +184,13 @@ else
                     rm $out/$sample.$chr.break.vcf.fail
                 fi  
             else
-                echo "Error Breakdancer: File $out/$sample.$chr.cfg not created"
-                exit 1
+                echo "ERROR Breakdancer: File $out/$sample.$chr.cfg not created"
+                touch $out/$sample.$chr.break
+				touch $out/$sample.$chr.break.sorted
+				perl $script_path/Breakdancer2VCF.pl -i $out/$sample.$chr.break -f $ref_genome -o $out/$sample.$chr.break.vcf -s $sample -t $samtools
+				rm $out/$sample.$chr.break.vcf.fail
+                perl $script_path/vcfsort.pl ${ref_genome}.fai $out/$sample.$chr.break.vcf > $out/$sample.$chr.break.vcf.sort
+                mv $out/$sample.$chr.break.vcf.sort $out/$sample.$chr.break.vcf
             fi
 	    else	
             out=$output_dir/$sample/
@@ -190,8 +208,13 @@ else
                     cat $out/$sample.inter.break |  sort -n -k 2,12n > $out/$sample.inter.break.sorted
                     # mv $out/$sample.inter.break.sorted $out/$sample.inter.break
                     #filter_sv_break $out/$sample.inter.break.sorted $out/$sample.inter.break
-                    cat $out/$sample.inter.break.sorted | awk '{ print $1"\t"$2"\t"$2+1"\t"$4"\t"$5"\t"$5+1}' | $bedtools/pairToBed -a stdin -b $blacklist_sv -type neither | $script_path/report_original.pl $out/$sample.inter.break.sorted > $out/$sample.inter.break
-                    perl $script_path/Breakdancer2VCF.pl -i $out/$sample.inter.break -f $ref_genome -o $out/$sample.inter.break.vcf -s $sample -t $samtools
+                    if [ -s $out/$sample.inter.break.sorted ]
+					then
+						cat $out/$sample.inter.break.sorted | awk '{ print $1"\t"$2"\t"$2+1"\t"$4"\t"$5"\t"$5+1}' | $bedtools/pairToBed -a stdin -b $blacklist_sv -type neither | $script_path/report_original.pl $out/$sample.inter.break.sorted > $out/$sample.inter.break
+                    else
+						touch $out/$sample.inter.break
+					fi
+					perl $script_path/Breakdancer2VCF.pl -i $out/$sample.inter.break -f $ref_genome -o $out/$sample.inter.break.vcf -s $sample -t $samtools
                     perl $script_path/vcfsort.pl ${ref_genome}.fai $out/$sample.$chr.break.vcf > $out/$sample.$chr.break.vcf.sort
                     mv $out/$sample.$chr.break.vcf.sort $out/$sample.$chr.break.vcf
                     if [ ! -s $out/$sample.inter.break.vcf.fail ]
@@ -200,14 +223,19 @@ else
                     fi  
                     rm $out/$sample.inter.cfg $out/$sample.tmp.bam
                 else
-                    echo "Error Breakdancer: File $output_dir/$sample/$sample.inter.cfg not created"
-                    exit 1
+                    echo "ERROR Breakdancer: File $output_dir/$sample/$sample.inter.cfg not created"
+                    touch $out/$sample.inter.break
+					touch $out/$sample.inter.break.sorted
+					perl $script_path/Breakdancer2VCF.pl -i $out/$sample.inter.break -f $ref_genome -o $out/$sample.inter.break.vcf -s $sample -t $samtools
+					rm  $out/$sample.inter.break.vcf.fail
+                    perl $script_path/vcfsort.pl ${ref_genome}.fai $out/$sample.$chr.break.vcf > $out/$sample.$chr.break.vcf.sort
+                    mv $out/$sample.$chr.break.vcf.sort $out/$sample.$chr.break.vcf
                 fi
             else
-                echo "Error Breakdancer: File $output_dir/$sample/$sample.tmp.bam not created" 
+                echo "ERROR Breakdancer: File $output_dir/$sample/$sample.tmp.bam not created" 
                 exit 1
             fi
 	    fi
-# done
     fi
+	echo `date`
 fi

@@ -14,6 +14,7 @@ else
     #SGE_TASK_ID=2
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
+	tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2)
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)	
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
@@ -180,7 +181,7 @@ else
                 fi
 				sed '/^$/d' $output/$sample.variants.chr${chr}.raw.all.vcf > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
 				mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
-                #gzip $output/$sample.variants.chr${chr}.raw.all.vcf   
+                $tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf   
 			else
 				$java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
 				-R $ref \
@@ -249,7 +250,7 @@ else
 				fi		
 				cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "N" || $0 ~ /^#/' | grep -v "\./\." > $output/$sample.variants.chr${chr}.raw.vcf
                 rm $output/$sample.variants.chr${chr}.raw.all.vcf.idx
-               # gzip $output/$sample.variants.chr${chr}.raw.all.vcf	
+				$tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf	
 			else
 				## call indeles using GATK
 				$java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \

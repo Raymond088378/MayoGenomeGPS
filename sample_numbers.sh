@@ -12,6 +12,7 @@ else
 #SGE_TASK_ID=1
 ##############################################################		
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
+	sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     sample=$(cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     group=$(cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     aligner=$( cat $run_info | grep -w '^ALIGNER' | cut -d '=' -f2)
@@ -349,7 +350,7 @@ else
 		fi	
 	else
 	    echo "Multi sample"
-        for sample in $group
+        for sample in `cat $sample_info | grep -w "^$group" | cut -d '=' -f2`
         do
             #### alignment stats
             alignment=$input_dir/alignment/$sample	
@@ -414,9 +415,7 @@ else
             ## Genomic indels and SNVs
             #### SNV in target region anf capture kit
             genomic_snvs=0
-            capture_snvs=0
             genomic_indels=0
-            capture_indels=0
             for chr in $chrs
             do
                 s=`cat $ontarget/$sample.chr${chr}.raw.snvs.bed.i.ToMerge | wc -l`
@@ -525,14 +524,15 @@ else
             rm $sseq_indel/$sample.indels.sseq.formatted
             rm $sseq_snv/$sample.snv.sseq
         done
-        ### somatic calls
+        
+		### somatic calls
         sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
         samples=$( cat $sample_info | grep -w "^$group" | cut -d '=' -f2 )
         let num_tumor=`echo $samples|tr " " "\n"|wc -l`-1
         tumor_list=`echo $samples | tr " " "\n" | tail -$num_tumor`
         for tumor in $tumor_list    
         do
-            realignment=$input_dir/relignment/$group	
+            realignment=$input_dir/realign/$group	
             total_reads=0
             mapped_reads=0
             for chr in $chrs
@@ -567,8 +567,8 @@ else
             filtered_snvs=0
             filtered_indels=0
             col=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 ~ /#/' | tail -1 | awk -v s=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
-            a=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 !~ /#/' | awk -v num=$col '$num !~ /^\./' | awk 'length($4) == 1 && length($5) == 1' | grep -c PASS`
-            b=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 !~ /#/' | awk -v num=$col '$num !~ /^\./' | awk 'length($4) > 1 || length($5) > 1' | grep -c PASS`
+            a=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 !~ /#/' | awk -v num=$col '$num !~ /^\./' | awk 'length($4) == 1 && length($5) == 1' | wc -l`
+            b=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 !~ /#/' | awk -v num=$col '$num !~ /^\./' | awk 'length($4) > 1 || length($5) > 1' | wc -l `
             filtered_indels=`expr $filtered_indels "+" $b`
             filtered_snvs=`expr $filtered_snvs "+" $a`
 
@@ -600,7 +600,7 @@ else
 
             ### annotation 
             sseq_snv=$input_dir/annotation/SSEQ
-            touch $sseq_snv/$group.$tumore.snv.sseq
+            touch $sseq_snv/$group.$tumor.snv.sseq
             for chr in $chrs
             do
                 cat $sseq_snv/$group.$tumor.chr${chr}.snv.sseq >> $sseq_snv/$group.$tumor.snv.sseq
@@ -636,7 +636,7 @@ else
             echo -e "Total Novel SNVs" >> $numbers/$group.$tumor.out
             cat $sseq_snv/$group.$tumor.snv.sseq.formatted.novel | wc -l >> $numbers/$group.$tumor.out
             echo -e "NOVEL Transition To Transversion Ratio" >> $numbers/$group.$tumor.out
-            perl $script_path/transition.transversion.persample.pl $sseq_snv/$sample.snv.sseq.formatted.novel >> $numbers/$group.$tumor.out
+            perl $script_path/transition.transversion.persample.pl $sseq_snv/$group.$tumor.snv.sseq.formatted.novel >> $numbers/$group.$tumor.out
             echo -e "NOVEL Nonsense" >> $numbers/$group.$tumor.out
             cat $sseq_snv/$group.$tumor.snv.sseq.formatted.novel | awk '$7 ~ "nonsense"' | wc -l >> $numbers/$group.$tumor.out
             echo -e "NOVEL Missense" >> $numbers/$group.$tumor.out
@@ -666,7 +666,7 @@ else
             do
                 cat $sseq_indel/$group.$tumor.chr${chr}.indels.sseq >> $sseq_indel/$group.$tumor.indels.sseq
             done	
-            perl $script_path/to.parse.sseq.result.indel.per.sample.pl $sseq_indel/$group.$tumor.indels.sseq > $sseq_indel/$sample.indels.sseq.formatted
+            perl $script_path/to.parse.sseq.result.indel.per.sample.pl $sseq_indel/$group.$tumor.indels.sseq > $sseq_indel/$group.$tumor.indels.sseq.formatted
             echo -e "CODING bySSEQ INDELs" >> $numbers/$group.$tumor.out
             cat $sseq_indel/$group.$tumor.indels.sseq.formatted | awk '$7 ~ "coding"' | wc -l >> $numbers/$group.$tumor.out
             echo -e "FRAMESHIFT INDELs" >> $numbers/$group.$tumor.out
@@ -710,9 +710,45 @@ else
             echo "CODING duplications" >> $numbers/$group.$tumor.out
             echo $genomic_duplications >> $numbers/$group.$tumor.out
             #### SV by crest and break dancer
+			struct=$input_dir/Reports_per_Sample/ANNOT
+			break=$input_dir/Reports_per_Sample/ANNOT
+				
+			num_break=0;
+			num_crest=0;
+			num_sv=0;
+			genomic_sv=0;
+			ITX=0;
+			INV=0;
+			DEL=0;
+			INS=0;
+			CTX=0;
+            num_break=`cat $input_dir/Reports_per_Sample/SV/$group.$tumor.somatic.break.vcf | awk '$0 !~ /#/' | wc -l`
+			num_crest=`cat $input_dir/Reports_per_Sample/SV/$group.$tumor.somatic.filter.crest.vcf | awk '$0 !~ /#/'|wc -l`
+			num_sv=`expr $num_break "+" $num_crest`
+			genomic_sv=`cat $struct/$group.$tumor.SV.annotated.txt | wc -l`
+			genomic_sv=`expr $genomic_sv "-" 1`
+		
+			ITX=`cat $struct/$group.$tumor.SV.annotated.txt | grep ITX | wc -l`
+			INV=`cat $struct/$group.$tumor.SV.annotated.txt | grep INV | wc -l`
+			DEL=`cat $struct/$group.$tumor.SV.annotated.txt | grep DEL | wc -l`
+			INS=`cat $struct/$group.$tumor.SV.annotated.txt | grep INS | wc -l`
+			CTX=`cat $struct/$group.$tumor.SV.annotated.txt | grep CTX | wc -l`
 			
+			echo "TOTAL SVs" >> $numbers/$group.$tumor.out
+			echo $num_sv >> $numbers/$group.$tumor.out
+			echo "GENOMIC SVs" >> $numbers/$group.$tumor.out
+			echo $genomic_sv >> $numbers/$group.$tumor.out
+			echo "ITX" >>$numbers/$group.$tumor.out
+			echo $ITX >> $numbers/$group.$tumor.out
+			echo "INV" >> $numbers/$group.$tumor.out
+			echo $INV >> $numbers/$group.$tumor.out
+			echo "DEL" >> $numbers/$group.$tumor.out
+			echo $DEL >> $numbers/$group.$tumor.out
+			echo "INS" >> $numbers/$group.$tumor.out
+			echo $INS >> $numbers/$group.$tumor.out
+			echo "CTX" >> $numbers/$group.$tumor.out
+			echo $CTX >> $numbers/$group.$tumor.out
         done
-        
 	fi 
 	### update dash board
 	if [ $analysis == "mayo" ]
@@ -732,4 +768,5 @@ else
 			let i=i+1
 		done		
 	fi
+	echo `date`
 fi   

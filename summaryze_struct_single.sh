@@ -37,43 +37,45 @@ else
 		input=$basedir/cnv/$sample/$sample.$chr.del.bed
 		if [ ! -f $inputfile ]
 		then
-			echo "ERROR :summaryze_struct. CNV: File $inputfile does not exist "
-			exit 1
+			echo "WARNING :summaryze_struct. CNV: File $inputfile does not exist "
+		else
+			inputargs="-V $inputfile "$inputargs  
+			cat $input >> $basedir/cnv/$sample/$sample.cnv.bed
+			rm $input
 		fi
-		inputargs="-V $inputfile "$inputargs  
-		cat $input >> $basedir/cnv/$sample/$sample.cnv.bed
-		rm $input
+		
 		inputfile=$basedir/cnv/$sample/$sample.$chr.dup.vcf 
 		input=$basedir/cnv/$sample/$sample.$chr.dup.bed
 		if [ ! -f $inputfile ]
 		then	
-			echo "ERROR :summaryze_struct. CNV: File $inputfile does not exist "
-			exit 1
+			echo "WARNING :summaryze_struct. CNV: File $inputfile does not exist "
+		else
+			inputargs="-V $inputfile "$inputargs  
+			cat $input >> $basedir/cnv/$sample/$sample.cnv.bed
+			rm $input
 		fi
-	
-		inputargs="-V $inputfile "$inputargs  
-		cat $input >> $basedir/cnv/$sample/$sample.cnv.bed
-		rm $input
+		
 		inputfile=$basedir/cnv/$sample/$sample.$chr.filter.del.vcf
 		input=$basedir/cnv/$sample/$sample.$chr.filter.del.bed
 		if [ ! -f $inputfile ]
 		then	
-			echo "ERROR :summaryze_struct. CNV: File $inputfile does not exist "
-			exit 1
+			echo "WARNING :summaryze_struct. CNV: File $inputfile does not exist "
+		else
+			cat $input >> $basedir/cnv/$sample/$sample.cnv.filter.bed
+			rm $input
+			inputargs_filter="-V $inputfile "$inputargs_filter  
 		fi
-		cat $input >> $basedir/cnv/$sample/$sample.cnv.filter.bed
-		rm $input
-		inputargs_filter="-V $inputfile "$inputargs_filter  
+		
 		inputfile=$basedir/cnv/$sample/$sample.$chr.filter.dup.vcf
 		input=$basedir/cnv/$sample/$sample.$chr.filter.dup.bed
 		if [ ! -f $inputfile ]
 		then
-			echo "ERROR :summaryze_struct. CNV: File $inputfile does not exist "
-			exit 1
+			echo "WARNING :summaryze_struct. CNV: File $inputfile does not exist "
+		else
+			cat $input >> $basedir/cnv/$sample/$sample.cnv.filter.bed
+			rm $input
+			inputargs_filter="-V $inputfile "$inputargs_filter 
 		fi
-		cat $input >> $basedir/cnv/$sample/$sample.cnv.filter.bed
-		rm $input
-		inputargs_filter="-V $inputfile "$inputargs_filter 
 	done
 
 	$java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
@@ -113,8 +115,7 @@ else
 		input=$basedir/struct/break/$sample/$sample.$chr.break
 		if [ ! -s $inputfile ]
 		then      
-			echo "ERROR : summaryze_struct_single.sh SV file for sample $sample, chromosome $i: $inputfile does not exist "
-			exit 1
+			echo "WARNING : summaryze_struct_single.sh SV file for sample $sample, chromosome $i: $inputfile does not exist "
 		else
 			#inputargs="-V $inputfile "$inputargs
 			cat $inputfile | awk '$0 ~/^#/' > $basedir/struct/break/$sample/$sample.header.break
@@ -162,8 +163,7 @@ else
         input_filter=$basedir/struct/crest/$sample/$sample.$chr.filter.predSV.txt
         if [ ! -s $inputfile ]
         then      
-            echo "ERROR : summaryze_struct_single.sh SV file for sample $sample, chromosome $i: $inputfile does not exist "
-            exit 1
+            echo "WARNING : summaryze_struct_single.sh SV file for sample $sample, chromosome $i: $inputfile does not exist "
         else
 			#inputargs="-V $inputfile "$inputargs
 			#inputargs_filter="-V $inputfile_filter "$inputargs_filter

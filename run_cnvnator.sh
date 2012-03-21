@@ -92,17 +92,27 @@ else
                 rm $output_dir/$sample.$chr.dup.vcf.fail
             fi   
 
-            $bedtools/closestBed -a $output_dir/$sample.$chr.del.bed -b $gap -d | awk "\$13>$distgap" | cut -f 1-6 |\
-			$bedtools/intersectBed -a stdin -b $blacklist_sv -v -f $pct_overlap -wa  > $output_dir/$sample.$chr.filter.del.bed
-
+            if [ -s $output_dir/$sample.$chr.del.bed ]
+			then
+				$bedtools/closestBed -a $output_dir/$sample.$chr.del.bed -b $gap -d | awk "\$13>$distgap" | cut -f 1-6 |\
+				$bedtools/intersectBed -a stdin -b $blacklist_sv -v -f $pct_overlap -wa  > $output_dir/$sample.$chr.filter.del.bed
+			else
+				touch $output_dir/$sample.$chr.filter.del.bed
+			fi
+			
             perl $script_path/CNVnator2VCF.pl -i $output_dir/$sample.$chr.filter.del.bed -f $ref -o $output_dir/$sample.$chr.filter.del.vcf -s $sample -t $samtools
             if [ ! -s $output_dir/$sample.$chr.filter.del.vcf.fail ]
             then
                 rm $output_dir/$sample.$chr.filter.del.vcf.fail
             fi  
-            $bedtools/closestBed -a $output_dir/$sample.$chr.dup.bed -b $gap -d | awk "\$13>$distgap" | cut -f 1-6 |\
-			$bedtools/intersectBed -a stdin -b $blacklist_sv -v -f $pct_overlap -wa > $output_dir/$sample.$chr.filter.dup.bed
-
+            if [ -s $output_dir/$sample.$chr.dup.bed ]
+			then
+				$bedtools/closestBed -a $output_dir/$sample.$chr.dup.bed -b $gap -d | awk "\$13>$distgap" | cut -f 1-6 |\
+				$bedtools/intersectBed -a stdin -b $blacklist_sv -v -f $pct_overlap -wa > $output_dir/$sample.$chr.filter.dup.bed
+			else
+				touch $output_dir/$sample.$chr.filter.dup.bed
+			fi
+			
             perl $script_path/CNVnator2VCF.pl -i $output_dir/$sample.$chr.filter.dup.bed -f $ref -o $output_dir/$sample.$chr.filter.dup.vcf -s $sample -t $samtools
             if [ ! -s $output_dir/$sample.$chr.filter.dup.vcf.fail ]
             then

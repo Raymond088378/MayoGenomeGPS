@@ -12,7 +12,8 @@ else
 	bam=$input/$sample-sorted.bam
 	
 	chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
-    samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
+    tool_info=$(cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
+	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	
 	$samtools/samtools view -b $bam chr${chr} > $input/chr${chr}.cleaned.bam
 	$samtools/samtools index $input/chr${chr}.cleaned.bam
