@@ -1,0 +1,4 @@
+#Genome_GPS ToDo:
+1.  Annotate and hard filter Somatic SNPS
+2.  Blat and calculate edit distance to next best hit
+3.  Assembly support for fusion events
