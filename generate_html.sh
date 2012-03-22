@@ -84,8 +84,8 @@ else
     do
         cat $i/$type* >> $output_dir/LOG
     done
-    cat $output_dir/LOG | grep -w 'ERROR' > $output_dir/errorlog
-	cat $output_dir/LOG | grep -w 'WARNING' > $output_dir/warninglog	
+    cat $output_dir/LOG | grep -w '^ERROR' > $output_dir/errorlog
+	cat $output_dir/LOG | grep -w '^WARNING' > $output_dir/warninglog	
     rm $output_dir/LOG
 	
 	e_size=`ls -l $output_dir/errorlog | awk '{ print $5 }'`

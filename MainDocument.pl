@@ -58,10 +58,11 @@ else    {
 	$read_length=$line[$#line];chomp $read_length;
 	@line=split(/=/,`perl -ne "/^MULTISAMPLE/ && print" $run_info`);
 	my $multi=$line[$#line];chomp $multi;
-	
+	@line=split(/=/,`perl -ne "/^ALIGNER/ && print" $run_info`);
+	$Aligner=$line[$#line];chomp $Aligner;
+	@line=split(/=/,`perl -ne "/^FASTQC/ && print" $run_info`);
+	$fastqc=$line[$#line];chomp $fastqc;
 	if ( ( $analysis eq 'external' ) || ( $analysis eq 'variant' ) || ($analysis eq 'mayo') || ($analysis eq 'realignment') )	{
-		@line=split(/=/,`perl -ne "/^ALIGNER/ && print" $run_info`);
-		$Aligner=$line[$#line];chomp $Aligner;
 		@line=split(/=/,`perl -ne "/^VARIANT_TYPE/ && print" $run_info`);
 		$variant_type=$line[$#line];chomp $variant_type;
 		@line=split(/=/,`perl -ne "/^SNV_CALLER/ && print" $run_info`);
@@ -75,8 +76,6 @@ else    {
 			$ontarget=$path."/bed_file.bed";
 			$target_region=`awk '{sum+=\$3-\$2+1; print sum}' $ontarget | tail -1`;chomp $target_region;
 		}
-		@line=split(/=/,`perl -ne "/^FASTQC/ && print" $run_info`);
-		$fastqc=$line[$#line];chomp $fastqc;
 		@line=split(/=/,`perl -ne "/^HTTP_SERVER/ && print" $tool_info`);
 		$server=$line[$#line];chomp $server;	
 	}
@@ -304,7 +303,7 @@ else    {
 		}	
 	}
 	print OUT"
-	<ul><li><a name=\"Statistics based on per sample analysis\" id=\"Statistics based on per sample analysis\"></a>Statistics based on per Sample Analysis(<u><a href=\"StatiticsDesciption.html\"target=\"_blank\">ColumnDescription</a></u>)<br>\n";
+	<ul><li><a name=\"Statistics based on per sample analysis\" id=\"Statistics based on per sample analysis\"></a>Statistics based on per Sample Analysis(<u><a href=\"StatisticsDescription.html\"target=\"_blank\">ColumnDescription</a></u>)<br>\n";
 	print OUT "<br><table cellspacing=\"0\" class=\"sofT\"><tr><td class=\"helpHed\"><p align='center'></td>";
 	my %sample_numbers=();
 	my $pairs=();
@@ -370,7 +369,7 @@ else    {
 			}
 		}
 		elsif ($tool eq 'exome')	{
-			if ($analysis eq 'variant')	{
+			if ($analysis eq 'realignment' || $analysis eq 'mayo' || $analysis eq 'external')	{
 				@To_find=("Total Reads","Mapped Reads","Percent duplication","Realigned Mapped Reads","Mapped Reads(in CaptureRegion)","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","SNVs in CaptureRegion","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","INDELs in CodingRegion","INDELs in CaptureRegion","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
 			}
 			else	{
@@ -385,13 +384,19 @@ else    {
 	}	
 	
 	if ($analysis eq 'annotation')	{
-		@what=("Total SNVs","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs" ,"In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
-		@To_find=("Total number of SNVs obtained using","Total number of SNVs in dbSNP$dbsnp_v or 1000 Genomes", "Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Number of SeattleSeq annotated Nonsense mutations","Number of SeattleSeq annotated Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total number of  SNVs not in dbSNP$dbsnp_v or 1000 Genomes", "Novel Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Novel number of Nonsense mutations","Novel number of Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total  number of INDELs obtained using" , "Number of SeattleSeq annotated INDELs in coding regions with inserted or deleted bases being multiples of 3","Number of SeattleSeq annotated Frameshifft INDELs with inserted or deleted bases which are not multiples of 3","Number of SeattleSeq annotated Splice-3 INDELs","Number of SeattleSeq annotated Splice-5 INDELs","Number of SeattleSeq annotated UTR-3 INDELs","Number of SeattleSeq annotated UTR-5 INDELs");
+		@To_find=("Total SNVs","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs" ,"In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
+		@what=("Total number of SNVs obtained using","Total number of SNVs in dbSNP$dbsnp_v or 1000 Genomes", "Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Number of SeattleSeq annotated Nonsense mutations","Number of SeattleSeq annotated Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total number of  SNVs not in dbSNP$dbsnp_v or 1000 Genomes", "Novel Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Novel number of Nonsense mutations","Novel number of Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total  number of INDELs obtained using" , "Number of SeattleSeq annotated INDELs in coding regions with inserted or deleted bases being multiples of 3","Number of SeattleSeq annotated Frameshifft INDELs with inserted or deleted bases which are not multiples of 3","Number of SeattleSeq annotated Splice-3 INDELs","Number of SeattleSeq annotated Splice-5 INDELs","Number of SeattleSeq annotated UTR-3 INDELs","Number of SeattleSeq annotated UTR-5 INDELs");
 	}	
-	
+	if ($analysis eq 'annotation')	{
+		print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
+		for (my $c=0; $c < $num_samples;$c++)	{
+			print OUT "<td class=\"helpHed\"></td>";
+		}		
+		print OUT "</tr>\n";
+	}			
 	foreach my $key (sort {$a <=> $b} keys %sample_numbers)	{
 		print OUT "<td class=\"helpHed\"><p align='left'><a href=\"#$To_find[$key]\" title=\"$what[$key]\">$To_find[$key]</a></td>";
-		if ( $key eq '1')	{
+		if ( $key eq '1' && $analysis ne 'annotation' )	{
 				for (my $c=0; $c < $num_samples;$c++)	{
 					my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
 					my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
@@ -419,14 +424,23 @@ else    {
 				}
 			}	
 		}
-		if ($key eq '2')	{
+		if ($key eq '2' && $analysis ne 'annotation' && $analysis ne 'variant' )	{
 			for (my $c=0; $c < $num_samples;$c++)	{
 				my $print=sprintf("%.2f",$sample_numbers{$key}[$c]);
 				print OUT "<td class=\"helpBod\"> $print\%</td>";
 			}	
+			
 			print OUT "</tr>\n";
+		}
+		if ($key eq '2' && $analysis eq 'variant')	{
+			for (my $c=0; $c < $num_samples;$c++)	{
+				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c]/${$sample_numbers{0}}[$c])*100);
+				my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+				print OUT "<td class=\"helpBod\">$print <br><b>($per_mapped \%)<b></td>";
+			}
 		}	
-		if ( ( $key eq '3' ) )	{
+		
+		if ( ( $key eq '3' ) && ($analysis ne 'variant') )	{
 			if ( $analysis ne 'annotation' )	{
 				for (my $c=0; $c < $num_samples;$c++)	{
 					my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c]/${$sample_numbers{0}}[$c])*100);
@@ -436,7 +450,18 @@ else    {
 				print OUT "</tr>\n";
 			}
 		}	
-		if ( ( $key eq '4' ) )	{
+		if ( ( $key eq '3' ) && ($analysis eq 'variant'))	{
+			if ( $analysis ne 'annotation' )	{
+				for (my $c=0; $c < $num_samples;$c++)	{
+					#my $per_mapped_t = sprintf("%.1f",(${$sample_numbers{$key}}[$c]/${$sample_numbers{0}}[$c])*100);
+					my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+					print OUT "<td class=\"helpBod\">$print</td>\n";	
+				}
+				print OUT "</tr>\n";
+			}
+		}		
+		
+		if ( ( $key eq '4' ) && ($analysis ne 'variant'))	{
 			if ( $analysis ne 'annotation' )	{
 				for (my $c=0; $c < $num_samples;$c++)	{
 					my $per_mapped_t = sprintf("%.1f",(${$sample_numbers{$key}}[$c]/${$sample_numbers{0}}[$c])*100);
@@ -445,66 +470,192 @@ else    {
 				}
 				print OUT "</tr>\n";
 			}
-		}		
+		}	
+		
+		if ( ( $key eq '4' ) && ($analysis eq 'variant'))	{
+			if ( $analysis ne 'annotation' )	{
+				for (my $c=0; $c < $num_samples;$c++)	{
+					#my $per_mapped_t = sprintf("%.1f",(${$sample_numbers{$key}}[$c]/${$sample_numbers{0}}[$c])*100);
+					my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+					print OUT "<td class=\"helpBod\">$print</td>\n";	
+				}
+				print OUT "</tr>\n";
+			}
+		}			
+		
 		if ($analysis ne 'annotation' )	{
 			for ( my $c=0; $c < $num_samples; $c++ )	{
-				if ( ( $key eq '1') || ( $key eq '3' ) || ($key eq '2') || ($key eq '4') || ( $key eq '39' ) || ( $key eq '40' ) )	{
-				}
-				else	{
+				if ( ( $key ne '1') && ( $key ne '3' ) && ($key ne '2') && ($key ne '4') && ( $key ne '39' ) && ( $key ne '40' ) )	{
 					my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 					print OUT "<td class=\"helpBod\">$print</td>\n";	
 				}
 			}
 		}
+		else	{
+			for ( my $c=0; $c < $num_samples; $c++ )	{
+					my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+					print OUT "<td class=\"helpBod\">$print</td>\n";
+			}
+		}
 		print OUT "</tr>";
 		# key 1 is for mapped reads
 		# key 2 is for mapped reads ontarget
-		if ( ( $analysis eq 'external' ) || ( $analysis eq 'variant' ) || ($analysis eq 'realignment') || ($analysis eq 'mayo') ) {	
-			if ($key eq '4' )	{
-				print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
-				for (my $c=0; $c < $num_samples;$c++)	{
-					print OUT "<td class=\"helpHed\"></td>";
-				}		
-				print OUT "</tr>\n";
+		if ( ( $analysis eq 'external' ) || ($analysis eq 'realignment') || ($analysis eq 'mayo') ) {	
+			if ($tool eq 'whole_genome')	{
+				if ($key eq '4' )	{
+					print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
+					for (my $c=0; $c < $num_samples;$c++)	{
+						print OUT "<td class=\"helpHed\"></td>";
+					}		
+					print OUT "</tr>\n";
+				}	
+				if ($key eq '7' )	{
+					print OUT "<td class=\"helpBod\"><b>Known SNVs<b></td>";
+					for (my $c=0; $c < $num_samples;$c++)	{
+						print OUT "<td class=\"helpHed\"></td>";
+					}		
+					print OUT "</tr>\n";
+				}	
+				if ($key eq '17' )	{
+					print OUT "<td class=\"helpBod\"><b>Novel SNVs<b></td>";
+					for (my $c=0; $c < $num_samples;$c++)	{
+						print OUT "<td class=\"helpHed\"></td>";
+					}		
+					print OUT "</tr>\n";
+				}	
+
+				if ($key eq '27' )	{
+					print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
+					for (my $c=0; $c < $num_samples;$c++)	{
+						print OUT "<td class=\"helpHed\"></td>";
+					}		
+					print OUT "</tr>\n";
+				}
+				if ($tool eq 'whole_genome')	{
+					if ($key eq '36' )	{
+						print OUT "<th class=\"helpBod\">Copy Number Variants (CNVs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '40' )	{
+						print OUT "<th class=\"helpBod\">Structural Variants (SVs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+				}
+			}
+			else	{
+				if ($key eq '4' )	{
+					print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
+					for (my $c=0; $c < $num_samples;$c++)	{
+						print OUT "<td class=\"helpHed\"></td>";
+					}		
+					print OUT "</tr>\n";
+				}	
+				if ($key eq '8' )	{
+					print OUT "<td class=\"helpBod\"><b>Known SNVs<b></td>";
+					for (my $c=0; $c < $num_samples;$c++)	{
+						print OUT "<td class=\"helpHed\"></td>";
+					}		
+					print OUT "</tr>\n";
+				}	
+				if ($key eq '18' )	{
+					print OUT "<td class=\"helpBod\"><b>Novel SNVs<b></td>";
+					for (my $c=0; $c < $num_samples;$c++)	{
+						print OUT "<td class=\"helpHed\"></td>";
+					}		
+					print OUT "</tr>\n";
+				}	
+
+				if ($key eq '28' )	{
+					print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
+					for (my $c=0; $c < $num_samples;$c++)	{
+						print OUT "<td class=\"helpHed\"></td>";
+					}		
+					print OUT "</tr>\n";
+				}
 			}	
-			if ($key eq '7' )	{
+		}
+		elsif ($analysis eq 'annotation') {
+		#	if ($key eq '4' )	{
+		#		print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
+		#		for (my $c=0; $c < $num_samples;$c++)	{
+		#			print OUT "<td class=\"helpHed\"></td>";
+		#		}		
+		#		print OUT "</tr>\n";
+		#	}	
+				if ($key eq '0' )	{
 				print OUT "<td class=\"helpBod\"><b>Known SNVs<b></td>";
 				for (my $c=0; $c < $num_samples;$c++)	{
 					print OUT "<td class=\"helpHed\"></td>";
 				}		
 				print OUT "</tr>\n";
-			}	
-			if ($key eq '17' )	{
+			}
+			if ($key eq '10' )	{
 				print OUT "<td class=\"helpBod\"><b>Novel SNVs<b></td>";
 				for (my $c=0; $c < $num_samples;$c++)	{
 					print OUT "<td class=\"helpHed\"></td>";
 				}		
 				print OUT "</tr>\n";
 			}	
-
-			if ($key eq '27' )	{
+			if ($key eq '20' )	{
 				print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
 				for (my $c=0; $c < $num_samples;$c++)	{
 					print OUT "<td class=\"helpHed\"></td>";
 				}		
 				print OUT "</tr>\n";
 			}
+		}
+		elsif ($analysis eq 'variant') {
+			if ($key eq '2' )	{
+					print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
+					for (my $c=0; $c < $num_samples;$c++)	{
+						print OUT "<td class=\"helpHed\"></td>";
+					}		
+					print OUT "</tr>\n";
+				}	
+				if ($key eq '5' )	{
+					print OUT "<td class=\"helpBod\"><b>Known SNVs<b></td>";
+					for (my $c=0; $c < $num_samples;$c++)	{
+						print OUT "<td class=\"helpHed\"></td>";
+					}		
+					print OUT "</tr>\n";
+				}	
+				if ($key eq '15' )	{
+					print OUT "<td class=\"helpBod\"><b>Novel SNVs<b></td>";
+					for (my $c=0; $c < $num_samples;$c++)	{
+						print OUT "<td class=\"helpHed\"></td>";
+					}		
+					print OUT "</tr>\n";
+				}	
+
+				if ($key eq '25' )	{
+					print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
+					for (my $c=0; $c < $num_samples;$c++)	{
+						print OUT "<td class=\"helpHed\"></td>";
+					}		
+					print OUT "</tr>\n";
+				}
 			if ($tool eq 'whole_genome')	{
-				if ($key eq '36' )	{
-					print OUT "<th class=\"helpBod\">Copy Number Variants (CNVs)</th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '40' )	{
-					print OUT "<th class=\"helpBod\">Structural Variants (SVs)</th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-			}
+					if ($key eq '34' )	{
+						print OUT "<th class=\"helpBod\">Copy Number Variants (CNVs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '38' )	{
+						print OUT "<th class=\"helpBod\">Structural Variants (SVs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+				}	
 		}
 	# print OUT "</tr>";
 	}	
@@ -517,9 +668,8 @@ else    {
 	if ($analysis eq 'alignment' )	{
 		print DESC"
 		<td class=\"helpBod\">Total Reads</td><td class=\"helpBod\">Total number of reads obtained</td></tr>
-		<td class=\"helpBod\">Mapped Reads</td><td class=\"helpBod\">Number and percentage of reads mapped to reference genome(${GenomeBuild})</td></tr>
-		<td class=\"helpBod\">Percent duplication</td><td class=\"helpBod\">Percentage of duplicated reads as identified by(${SNV_caller})</td></tr>
-		<td class=\"helpBod\">Realigned Reads (Q >= 20)</td><td class=\"helpBod\">Number and percenatge of realigned reads with a quality >= 20 mapped to reference genome(${GenomeBuild})</td></tr>
+		<td class=\"helpBod\">Mapped Reads</td><td class=\"helpBod\">Number and percentage of reads mapped to reference genome(${GenomeBuild}) using $Aligner</td></tr>
+		<td class=\"helpBod\">Percent duplication</td><td class=\"helpBod\">Percentage of duplicated reads as identified by(picard)</td></tr>
 		</table></ul>";	
 	}	
 	
@@ -635,9 +785,8 @@ else    {
 	}	
 	print OUT "</ul>";
 	print OUT "<p align='right'><a href=\"#top\">-top-</a></p>";
-	print OUT "<a name=\"Results Delivered\" id=\"Results Delivered\"></a><p align='left'><u><b> VIII. Results Delivered</p></u></b>";
-	if (( $analysis eq "external") || ($analysis eq "variant") || ($analysis eq 'realignment') || ($analysis eq "mayo")  )	{
-		if ($analysis ne 'alignment')	{
+	print OUT "<a name=\"Results Delivered\" id=\"Results Delivered\"></a><p align='left'><u><b> VII. Results Delivered</p></u></b>";
+	if ($analysis ne 'alignment')	{
 		 print OUT "<ul>
                 <li>Merged ${SNV_caller} results along with SIFT and SeattleSeq SNP annotation and Indel Annotation from Seattle Seq for all samples(<u><a href=\"ColumnDescription_Reports.xls\"target=\"_blank\">Column Description for Reports</a></u>)<br>
                 <u> <a href= \"Reports/SNV.cleaned_annot.xls\"target=\"_blank\">SNV Report</a></u> <br>
@@ -653,10 +802,9 @@ else    {
 		<u> <a href= \"Reports_per_Sample\"target=\"_blank\">Per Sample Reports</a></u></ul>";
 		print OUT "<ul>
 		<li>Per sample Gene Summary files are available here<br>
-		<u> <a href= \"Reports_per_Sample\"target=\"_blank\">Per Sample Reports</a></u></ul>";
-		}
+		<u> <a href= \"Reports_per_Sample/ANNOT/\"target=\"_blank\">Per Sample Reports</a></u></ul>";
 	}
-	if ( ($analysis eq 'external') || ($analysis eq 'variant' ) || ($analysis eq 'realignment') || ($analysis eq "mayo")  )	{
+	if ($analysis ne 'alignment') 	{
 		print OUT "<ul>
 			<li>The variant distance for SNPs and INDELs (the distance to closest Exon) are recorded in two files<br>
 			<u> <a href= \"Reports/variantLocation_SNVs\"target=\"_blank\">SNVs</a></u> <br>
@@ -687,7 +835,7 @@ else    {
 		<u> <a href= \"http://${host}:${port}/TREATTableBrowser/\"target=\"_blank\">TableBrowser</a></u></ul>";
 	}
 	print OUT "<p align='right'><a href=\"#top\">-top-</a></p>";
-	print OUT "<a name=\"Useful Links\" id=\"Useful Links\"></a><p align='left'><b><u> VII. Useful Links</p></b></u>
+	print OUT "<a name=\"Useful Links\" id=\"Useful Links\"></a><p align='left'><b><u> VIII. Useful Links</p></b></u>
 	<ul>
 	<li><a href= \"http://sift.jcvi.org/www/SIFT_help.html\"target=\"_blank\">SIFT</a>
 	<li><a href= \"http://gvs.gs.washington.edu/GVS/HelpSNPSummary.jsp\"target=\"_blank\">SeattleSeq </a>

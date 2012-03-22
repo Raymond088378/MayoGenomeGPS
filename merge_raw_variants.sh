@@ -18,7 +18,7 @@ else
 	perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
 	tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2)
 	PERL5LIB=$perllib
-	
+	PATH=$tabix/:$PATH
 	var_dir=$output_dir/variants
 	inputargs=""
 	input_index=""
@@ -28,7 +28,12 @@ else
 		for chr in $chrs
 		do
 			inputfile=$input/$sample.variants.chr$chr.raw.all.vcf.gz
-			input_indexfile=$input/$sample.variants.chr$chr.raw.all.vcf.gz.idx
+			input_indexfile=$input/$sample.variants.chr$chr.raw.all.vcf.gz.tbi
+			
+			if [ ! -s $input_indexfile ]
+			then
+				$tabix/tabix -p vcf $input/$sample.variants.chr$chr.raw.all.vcf.gz
+			fi	
 			if [ -s $inputfile ]
 			then
 				inputargs="$inputfile "$inputargs
@@ -53,9 +58,9 @@ else
 	### raw SNV
 	$tabix/bgzip -c -d $var_dir/raw.vcf.gz | awk '(length($4) == 1 && length($5) == 1 ) || $0 ~ /#/' > $var_dir/raw.SNV.vcf  
 	### raw INDEL
-	cat $var_dir/raw.vcf.gz | awk '(length($4) > 1 || length($5) > 1 ) || $0 ~ /#/' > $var_dir/raw.INDEL.vcf 
+	$tabix/bgzip -c -d $var_dir/raw.vcf.gz | awk '(length($4) > 1 || length($5) > 1 ) || $0 ~ /#/' > $var_dir/raw.INDEL.vcf 
 	
-	if [ -s $var_dir/raw.SNV.vcf && -s $var_dir/raw.INDEL.vcf ]
+	if [[ -s $var_dir/raw.SNV.vcf && -s $var_dir/raw.INDEL.vcf ]]
     then
         rm $var_dir/raw.vcf
         $tabix/bgzip $var_dir/raw.SNV.vcf   
