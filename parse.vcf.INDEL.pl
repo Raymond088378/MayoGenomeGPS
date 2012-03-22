@@ -78,7 +78,8 @@
 					$INDEL = '-';
 					$Bases=length(substr( $call[3],1,$ref_len ));
 					$Start = $call[1];
-					$Stop = $Start + length($Bases);
+					
+					$Stop = $Start + $Bases;
 				}
 				$ReadDepth=$alt_reads[0]+$alt_reads[$#alt_reads];
 				#print OUT "$chr\t$Start\t$Stop\t$INDEL$Bases:$alt_reads[$#alt_reads]/$ReadDepth\n";

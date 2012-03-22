@@ -9,7 +9,7 @@ else
     sample=$2
     run_info=$3
 	
-	bam=$input/$sample-sorted.bam
+	bam=$input/$sample.sorted.bam
 	
 	chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     tool_info=$(cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)

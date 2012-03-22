@@ -18,6 +18,9 @@
 		my @line;
 		@line=split(/=/,`perl -ne "/^ANALYSIS/ && print" $run_info`);
 		my $analysis=$line[$#line];chomp $analysis;
+		@line=split(/=/,`perl -ne "/^TYPE/ && print" $run_info`);
+		my $tool=$line[$#line];chomp $tool;
+		$tool=lc($tool);
 		@line=split(/=/,`perl -ne "/^SAMPLENAMES/ && print" $run_info`);
 		my $sampleNames=$line[$#line];chomp $sampleNames;
 		my @sampleArray = split(/:/,$sampleNames);
@@ -82,7 +85,7 @@
 	}
 
 	if ($analysis eq 'annotation')	{
-		@what=("Total SNVs","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs" ,"In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
+		@To_find=("Total SNVs","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs" ,"In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
 	}
 	
 		my %sample_numbers=();

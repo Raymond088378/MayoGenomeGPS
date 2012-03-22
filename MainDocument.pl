@@ -673,7 +673,7 @@ else    {
 		<u> <a href= \"SampleStatistics.tsv\"target=\"_blank\">SampleStatistics</a></u></ul>";
 	
 	
-	if ($tool eq 'whole_genome')	{
+	if ($tool eq 'whole_genome' && $analysis ne 'alignment' && $analysis ne 'annotation')	{
 		print OUT "<ul> <li>Per sample Circos plots are displayed (and linked) below. Copy Number Variants and Sructural Variants are plotted for each sample. <br>
 	<u> <a href= \"circos\"target=\"_blank\">Per sample CIRCOS plots</a></u></ul></ul>";
 		for(my $k = 0; $k < $num_samples;$k++)	

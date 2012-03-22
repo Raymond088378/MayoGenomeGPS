@@ -18,7 +18,7 @@ else
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 	sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
 	variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2)
-	script_path=$( cat $tool_info | grep -w '^TREAT_PATH' | cut -d '=' -f2 )
+	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
 	dbsnp_rsids_snv=$( cat $tool_info | grep -w '^dbSNP_SNV_rsIDs' | cut -d '=' -f2)
 	SNV_caller=$( cat $run_info | grep -w '^SNV_CALLER' | cut -d '=' -f2)
 	variant_type=`echo "$variant_type" | tr "[a-z]" "[A-Z]"`
@@ -40,7 +40,7 @@ else
 			cat $output/$sample.snvs | grep -w chr${chr} | awk '{print $0"\t1"}' | sort -T $output -n -k 2,12n > $output/$sample.chr${chr}.raw.snvs.bed.i.ToMerge
 			`dos2unix $output/$sample.chr${chr}.raw.snvs`
 			## INDEL
-			cat $output/$sample.indels | grep -w chr${chr} awk '{print $0"\t1"}' | sort -T $output -n -k 2,12n > $output/$sample.chr${chr}.raw.indels.bed.i.ToMerge
+			cat $output/$sample.indels | grep -w chr${chr} | awk '{print $0"\t1"}' | sort -T $output -n -k 2,12n > $output/$sample.chr${chr}.raw.indels.bed.i.ToMerge
 			`dos2unix $output/$sample.chr${chr}.raw.indels`
 			
 			perl $script_path/markSnv_IndelnPos.pl -s $output/$sample.chr${chr}.raw.snvs.bed.i.ToMerge -i $output/$sample.chr${chr}.raw.indels.bed.i.ToMerge -n 10 -p 2 -o $output/$sample.chr${chr}.raw.snvs.bed.i.ToMerge.pos
