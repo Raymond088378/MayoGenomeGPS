@@ -65,7 +65,7 @@ else
 			perl $script_path/parse.vcf.INDEL.pl -i $input/$indel_file -o $output/$sample.indels -s $sample
 			for chr in $chrs		
 			do
-				cat $output/$sample.indels | grep -w chr${chr} awk '{print $0"\t1"}' | sort -T $output -n -k 2,12n > $output/$sample.chr${chr}.raw.indels.bed.i.ToMerge
+				cat $output/$sample.indels | grep -w chr${chr} | awk '{print $0"\t1"}' | sort -T $output -n -k 2,12n > $output/$sample.chr${chr}.raw.indels.bed.i.ToMerge
 				`dos2unix $output/$sample.chr${chr}.raw.indels`
 			done
 			rm $output/$sample.indels

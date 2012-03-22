@@ -91,7 +91,15 @@
 	}
 
 	if ($analysis eq 'annotation')	{
-		@To_find=("Total SNVs","Total SNVs(Known)","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs(Novel)","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs" ,"In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
+		if ($variant_type eq 'BOTH' )	{
+			@To_find=("Total SNVs","Total SNVs(Known)","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs(Novel)","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs" ,"In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
+		}
+		elsif ($variant_type eq 'SNV')	{
+			@To_find=("Total SNVs","Total SNVs(Known)","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs(Novel)","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5");
+		}	
+		elsif ($variant_type eq 'INDEL')	{
+			@To_find=("Total INDELs" ,"In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
+		}	
 	}
 	
 		my %sample_numbers=();
@@ -145,23 +153,43 @@
 					print OUT "\t$print ($per_mapped \%)";
 				}
 			}	
-		if ( $key eq '39')	{
-				for (my $c=0; $c < $num_samples;$c++)	{
-					my $per_deleted = sprintf("%.5f",(${$sample_numbers{$key}}[$c] / 3200000000) * 100);
-					my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
-					#my $print=${$sample_numbers{$key}}[$c];
-					print OUT "\t$print $per_deleted \%)";
-				}
-			}	
-		if ( $key eq '40')	{
-				for (my $c=0; $c < $num_samples;$c++)	{
-					my $per_duplicated = sprintf("%.5f",(${$sample_numbers{$key}}[$c] / 3200000000) * 100);
-					# my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
-					my $print=${$sample_numbers{$key}}[$c];
-					print OUT "\t$print ($per_duplicated \%)";
-				}
-			}	
-		if ( ( $key eq '3' ) )	{
+		if ($analysis eq 'variant' )	{
+			if ( $key eq '37')	{
+					for (my $c=0; $c < $num_samples;$c++)	{
+						my $per_deleted = sprintf("%.5f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{2}}[$c]) * 100);
+						my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+						#my $print=${$sample_numbers{$key}}[$c];
+						print OUT "\t$print $per_deleted \%)";
+					}
+				}	
+			if ( $key eq '38')	{
+					for (my $c=0; $c < $num_samples;$c++)	{
+						my $per_duplicated = sprintf("%.5f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{2}}[$c]) * 100);
+						# my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+						my $print=${$sample_numbers{$key}}[$c];
+						print OUT "\t$print ($per_duplicated \%)";
+					}
+				}	
+		}
+		if ($analysis ne 'variant' )	{
+			if ( $key eq '39')	{
+					for (my $c=0; $c < $num_samples;$c++)	{
+						my $per_deleted = sprintf("%.5f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{4}}[$c]) * 100);
+						my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+						#my $print=${$sample_numbers{$key}}[$c];
+						print OUT "\t$print $per_deleted \%)";
+					}
+				}	
+			if ( $key eq '40')	{
+					for (my $c=0; $c < $num_samples;$c++)	{
+						my $per_duplicated = sprintf("%.5f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{4}}[$c]) * 100);
+						# my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+						my $print=${$sample_numbers{$key}}[$c];
+						print OUT "\t$print ($per_duplicated \%)";
+					}
+				}	
+		}	
+		if ( ( $key eq '3' ) && ($analysis ne 'variant') )	{
 			if ( $analysis ne 'annotation' )	{
 				for (my $c=0; $c < $num_samples;$c++)	{
 					my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c]/${$sample_numbers{0}}[$c])*100);
@@ -171,7 +199,17 @@
 				}
 			}
 		}	
-		if ( ( $key eq '4' ) )	{
+		if ( ( $key eq '3' ) && ($analysis eq 'variant') )	{
+			if ( $analysis ne 'annotation' )	{
+				for (my $c=0; $c < $num_samples;$c++)	{
+					#my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c]/${$sample_numbers{0}}[$c])*100);
+					my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+					#my $print=${$sample_numbers{$key}}[$c];
+					print OUT "\t$print ";
+				}
+			}
+		}	
+		if ( ( $key eq '4' ) && ($analysis ne 'variant') )	{
 			if ( $analysis ne 'annotation' )	{
 				for (my $c=0; $c < $num_samples;$c++)	{
 					my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c]/${$sample_numbers{0}}[$c])*100);
@@ -180,15 +218,30 @@
 					print OUT "\t$print ($per_mapped \%)";
 				}
 			}
-		}		
-		if ($analysis ne 'annotation' )	{
-			for ( my $c=0; $c < $num_samples; $c++ )	{
-				if ( ( $key eq '1') || ( $key eq '3' ) || ( $key eq '4' ) || ( $key eq '39' ) || ( $key eq '40' ) )	{
-				}
-				else	{
+		}	
+		if ( ( $key eq '4' ) && ($analysis eq 'variant') )	{
+			if ( $analysis ne 'annotation' )	{
+				for (my $c=0; $c < $num_samples;$c++)	{
+					#my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c]/${$sample_numbers{0}}[$c])*100);
 					my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 					#my $print=${$sample_numbers{$key}}[$c];
-					print OUT "\t$print";	
+					print OUT "\t$print ";
+				}
+			}
+		}			
+		if ($analysis ne 'annotation' )	{
+			for ( my $c=0; $c < $num_samples; $c++ )	{
+				if ($analysis ne 'variant')	{
+					if ( ( $key ne '1') && ( $key ne '3' ) && ($key ne '2') && ($key ne '4') && ( $key ne '39' ) && ( $key ne '40' ) )	{
+						my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+						print OUT "\t$print";	
+					}
+				}
+				elsif ($analysis eq 'variant')	{
+					if ( ( $key ne '1') && ( $key ne '3' ) && ($key ne '2') && ($key ne '4') && ( $key ne '37' ) && ( $key ne '38' ) )	{
+						my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+						print OUT "\t$print";	
+					}
 				}
 			}
 		}

@@ -22,19 +22,25 @@ else
 	
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)	
 	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+	variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2)
+	if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
+	then
+		cd $sift
+		ls *_chr${which_chr}_*.tsv  | sort > $sift/list.chr${which_chr}
+		perl $script_path/merge.sift.results.pl $sift/list.chr${which_chr} > $sift/sift.out.allsamples.chr${which_chr}.merge
+		rm $sift/list.chr${which_chr}
+		cd $sseq
+		ls *.chr${which_chr}.snv.sseq | sort > $sseq/list.chr${which_chr}.snv.sseq
+		perl $script_path/merge.sseq.results.pl $sseq/list.chr${which_chr}.snv.sseq > $sseq/sseq.snvs.out.allsamples.chr${which_chr}.merge
+		rm $sseq/list.chr${which_chr}.snv.sseq
+	fi
 	
-	cd $sift
-    ls *_chr${which_chr}_*.tsv  | sort > $sift/list.chr${which_chr}
-    perl $script_path/merge.sift.results.pl $sift/list.chr${which_chr} > $sift/sift.out.allsamples.chr${which_chr}.merge
-	rm $sift/list.chr${which_chr}
-    
-	cd $sseq
-	ls *.chr${which_chr}.snv.sseq | sort > $sseq/list.chr${which_chr}.snv.sseq
-	ls *.chr${which_chr}.indels.sseq | sort > $sseq/list.chr${which_chr}.indels.sseq
-	perl $script_path/merge.sseq.results.pl $sseq/list.chr${which_chr}.snv.sseq > $sseq/sseq.snvs.out.allsamples.chr${which_chr}.merge
-	perl $script_path/merge.sseq.results.pl $sseq/list.chr${which_chr}.indels.sseq > $sseq/sseq.indels.out.allsamples.chr${which_chr}.merge
-	rm $sseq/list.chr${which_chr}.snv.sseq
-	rm $sseq/list.chr${which_chr}.indels.sseq
+	if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
+	then
+		ls *.chr${which_chr}.indels.sseq | sort > $sseq/list.chr${which_chr}.indels.sseq
+		perl $script_path/merge.sseq.results.pl $sseq/list.chr${which_chr}.indels.sseq > $sseq/sseq.indels.out.allsamples.chr${which_chr}.merge
+		rm $sseq/list.chr${which_chr}.indels.sseq
+	fi
 	
 	echo `date`
 fi	

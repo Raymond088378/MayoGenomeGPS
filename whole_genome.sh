@@ -237,7 +237,7 @@ else
 					REFORMAT=`qsub $args -N $type.$version.reformat_VARIANTs.$sample.$run_num -l h_vmem=4G $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 2`
 				elif [ $variant_type == "SNV" -o $variant_type == "INDEL" ]
 				then
-					REFORMAT=`qsub $arg -N $type.$version.reformat_VARIANTs.$sample.$run_num -t 1-$numsamples:1 -l h_vmem=4G $script_path/reformat_VARIANTs.sh $output_OnTarget $sample_info $run_info 1`
+					REFORMAT=`qsub $args -N $type.$version.reformat_VARIANTs.$sample.$run_num -l h_vmem=4G $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 1`
 				fi
 				job_ids_format=`echo $REFORMAT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
 				hold_args="-hold_jid $job_ids_format"

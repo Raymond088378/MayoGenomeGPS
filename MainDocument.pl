@@ -62,9 +62,9 @@ else    {
 	$Aligner=$line[$#line];chomp $Aligner;
 	@line=split(/=/,`perl -ne "/^FASTQC/ && print" $run_info`);
 	$fastqc=$line[$#line];chomp $fastqc;
+	@line=split(/=/,`perl -ne "/^VARIANT_TYPE/ && print" $run_info`);
+	$variant_type=$line[$#line];chomp $variant_type;
 	if ( ( $analysis eq 'external' ) || ( $analysis eq 'variant' ) || ($analysis eq 'mayo') || ($analysis eq 'realignment') )	{
-		@line=split(/=/,`perl -ne "/^VARIANT_TYPE/ && print" $run_info`);
-		$variant_type=$line[$#line];chomp $variant_type;
 		@line=split(/=/,`perl -ne "/^SNV_CALLER/ && print" $run_info`);
 		$SNV_caller=$line[$#line];chomp $SNV_caller;
 		if ($tool eq 'exome')	{
@@ -384,11 +384,26 @@ else    {
 	}	
 	
 	if ($analysis eq 'annotation')	{
-		@To_find=("Total SNVs","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs" ,"In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
-		@what=("Total number of SNVs obtained using","Total number of SNVs in dbSNP$dbsnp_v or 1000 Genomes", "Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Number of SeattleSeq annotated Nonsense mutations","Number of SeattleSeq annotated Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total number of  SNVs not in dbSNP$dbsnp_v or 1000 Genomes", "Novel Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Novel number of Nonsense mutations","Novel number of Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total  number of INDELs obtained using" , "Number of SeattleSeq annotated INDELs in coding regions with inserted or deleted bases being multiples of 3","Number of SeattleSeq annotated Frameshifft INDELs with inserted or deleted bases which are not multiples of 3","Number of SeattleSeq annotated Splice-3 INDELs","Number of SeattleSeq annotated Splice-5 INDELs","Number of SeattleSeq annotated UTR-3 INDELs","Number of SeattleSeq annotated UTR-5 INDELs");
+		if ($variant_type eq 'BOTH' )	{
+			@To_find=("Total SNVs","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs" ,"In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
+			@what=("Total number of SNVs obtained using","Total number of SNVs in dbSNP$dbsnp_v or 1000 Genomes", "Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Number of SeattleSeq annotated Nonsense mutations","Number of SeattleSeq annotated Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total number of  SNVs not in dbSNP$dbsnp_v or 1000 Genomes", "Novel Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Novel number of Nonsense mutations","Novel number of Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total  number of INDELs obtained using" , "Number of SeattleSeq annotated INDELs in coding regions with inserted or deleted bases being multiples of 3","Number of SeattleSeq annotated Frameshifft INDELs with inserted or deleted bases which are not multiples of 3","Number of SeattleSeq annotated Splice-3 INDELs","Number of SeattleSeq annotated Splice-5 INDELs","Number of SeattleSeq annotated UTR-3 INDELs","Number of SeattleSeq annotated UTR-5 INDELs");
+		}
+		elsif ($variant_type eq 'SNV')	{
+			@To_find=("Total SNVs","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5");
+			@what=("Total number of SNVs obtained using","Total number of SNVs in dbSNP$dbsnp_v or 1000 Genomes", "Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Number of SeattleSeq annotated Nonsense mutations","Number of SeattleSeq annotated Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total number of  SNVs not in dbSNP$dbsnp_v or 1000 Genomes", "Novel Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Novel number of Nonsense mutations","Novel number of Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations");
+		}
+		elsif ($variant_type eq 'INDEL')	{
+			@To_find=("Total INDELs" ,"In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
+			@what=("Total  number of INDELs obtained using" , "Number of SeattleSeq annotated INDELs in coding regions with inserted or deleted bases being multiples of 3","Number of SeattleSeq annotated Frameshifft INDELs with inserted or deleted bases which are not multiples of 3","Number of SeattleSeq annotated Splice-3 INDELs","Number of SeattleSeq annotated Splice-5 INDELs","Number of SeattleSeq annotated UTR-3 INDELs","Number of SeattleSeq annotated UTR-5 INDELs");
+		}			
 	}	
 	if ($analysis eq 'annotation')	{
-		print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
+		if ($variant_type eq 'BOTH'  || $variant_type eq 'SNV')	{
+			print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
+		}
+		elsif( $variant_type eq 'INDEL')	{
+			print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
+		}
 		for (my $c=0; $c < $num_samples;$c++)	{
 			print OUT "<td class=\"helpHed\"></td>";
 		}		
@@ -409,19 +424,37 @@ else    {
 				print OUT "</tr>\n";
 		}		
 		if ($tool eq 'whole_genome')	{
-			if ( $key eq '39')	{
-				for (my $c=0; $c < $num_samples;$c++)	{
-					my $per_deleted = sprintf("%.5f",(${$sample_numbers{$key}}[$c] / 3200000000) * 100);
-					my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
-					print OUT "<td class=\"helpBod\">$print <br> <b>($per_deleted \%) <b></td>";
-				}
-			}	
-			if ( $key eq '40')	{
-				for (my $c=0; $c < $num_samples;$c++)	{
-					my $per_duplicated = sprintf("%.5f",(${$sample_numbers{$key}}[$c] / 3200000000) * 100);
-					my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
-					print OUT "<td class=\"helpBod\"> $print<br><b>($per_duplicated \%) <b></td>";
-				}
+			if ($analysis eq 'variant' )	{
+				if ( $key eq '37')	{
+					for (my $c=0; $c < $num_samples;$c++)	{
+						my $per_deleted = sprintf("%.5f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{2}}[$c]) * 100);
+						my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+						print OUT "<td class=\"helpBod\">$print <br> <b>($per_deleted \%) <b></td>";
+					}
+				}	
+				if ( $key eq '38')	{
+					for (my $c=0; $c < $num_samples;$c++)	{
+						my $per_duplicated = sprintf("%.5f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{2}}[$c]) * 100);
+						my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+						print OUT "<td class=\"helpBod\"> $print<br><b>($per_duplicated \%) <b></td>";
+					}
+				}	
+			}
+			else	{
+				if ( $key eq '39')	{
+					for (my $c=0; $c < $num_samples;$c++)	{
+						my $per_deleted = sprintf("%.5f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{4}}[$c]) * 100);
+						my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+						print OUT "<td class=\"helpBod\">$print <br> <b>($per_deleted \%) <b></td>";
+					}
+				}	
+				if ( $key eq '40')	{
+					for (my $c=0; $c < $num_samples;$c++)	{
+						my $per_duplicated = sprintf("%.5f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{4}}[$c]) * 100);
+						my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+						print OUT "<td class=\"helpBod\"> $print<br><b>($per_duplicated \%) <b></td>";
+					}
+				}	
 			}	
 		}
 		if ($key eq '2' && $analysis ne 'annotation' && $analysis ne 'variant' )	{
@@ -485,9 +518,17 @@ else    {
 		
 		if ($analysis ne 'annotation' )	{
 			for ( my $c=0; $c < $num_samples; $c++ )	{
-				if ( ( $key ne '1') && ( $key ne '3' ) && ($key ne '2') && ($key ne '4') && ( $key ne '39' ) && ( $key ne '40' ) )	{
-					my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
-					print OUT "<td class=\"helpBod\">$print</td>\n";	
+				if ($analysis ne 'variant')	{
+					if ( ( $key ne '1') && ( $key ne '3' ) && ($key ne '2') && ($key ne '4') && ( $key ne '39' ) && ( $key ne '40' ) )	{
+						my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+						print OUT "<td class=\"helpBod\">$print</td>\n";	
+					}
+				}
+				elsif ($analysis eq 'variant')	{
+					if ( ( $key ne '1') && ( $key ne '3' ) && ($key ne '2') && ($key ne '4') && ( $key ne '37' ) && ( $key ne '38' ) )	{
+						my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+						print OUT "<td class=\"helpBod\">$print</td>\n";	
+					}
 				}
 			}
 		}
@@ -588,27 +629,32 @@ else    {
 		#		}		
 		#		print OUT "</tr>\n";
 		#	}	
+			if ($variant_type eq 'BOTH'  || $variant_type eq 'SNV')	{
 				if ($key eq '0' )	{
-				print OUT "<td class=\"helpBod\"><b>Known SNVs<b></td>";
-				for (my $c=0; $c < $num_samples;$c++)	{
-					print OUT "<td class=\"helpHed\"></td>";
-				}		
-				print OUT "</tr>\n";
+					print OUT "<td class=\"helpBod\"><b>Known SNVs<b></td>";
+					for (my $c=0; $c < $num_samples;$c++)	{
+						print OUT "<td class=\"helpHed\"></td>";
+					}		
+					print OUT "</tr>\n";
+				}
+				if ($key eq '10' )	{
+					print OUT "<td class=\"helpBod\"><b>Novel SNVs<b></td>";
+					for (my $c=0; $c < $num_samples;$c++)	{
+						print OUT "<td class=\"helpHed\"></td>";
+					}		
+					print OUT "</tr>\n";
+				}
 			}
-			if ($key eq '10' )	{
-				print OUT "<td class=\"helpBod\"><b>Novel SNVs<b></td>";
-				for (my $c=0; $c < $num_samples;$c++)	{
-					print OUT "<td class=\"helpHed\"></td>";
-				}		
-				print OUT "</tr>\n";
-			}	
-			if ($key eq '20' )	{
-				print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
-				for (my $c=0; $c < $num_samples;$c++)	{
-					print OUT "<td class=\"helpHed\"></td>";
-				}		
-				print OUT "</tr>\n";
+			elsif ($variant_type eq 'BOTH')	{	
+				if ($key eq '20' )	{
+					print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
+					for (my $c=0; $c < $num_samples;$c++)	{
+						print OUT "<td class=\"helpHed\"></td>";
+					}		
+					print OUT "</tr>\n";
+				}
 			}
+			
 		}
 		elsif ($analysis eq 'variant') {
 			if ($key eq '2' )	{
@@ -787,11 +833,16 @@ else    {
 	print OUT "<p align='right'><a href=\"#top\">-top-</a></p>";
 	print OUT "<a name=\"Results Delivered\" id=\"Results Delivered\"></a><p align='left'><u><b> VII. Results Delivered</p></u></b>";
 	if ($analysis ne 'alignment')	{
-		 print OUT "<ul>
-                <li>Merged ${SNV_caller} results along with SIFT and SeattleSeq SNP annotation and Indel Annotation from Seattle Seq for all samples(<u><a href=\"ColumnDescription_Reports.xls\"target=\"_blank\">Column Description for Reports</a></u>)<br>
-                <u> <a href= \"Reports/SNV.cleaned_annot.xls\"target=\"_blank\">SNV Report</a></u> <br>
-                <u> <a href= \"Reports/INDEL.cleaned_annot.xls\"target=\"_blank\">INDEL Report</a></u> <br><br></ul>";
-
+		print OUT "<ul>
+                <li>Merged ${SNV_caller} results along with SIFT and SeattleSeq SNP annotation and Indel Annotation from Seattle Seq for all samples(<u><a href=\"ColumnDescription_Reports.xls\"target=\"_blank\">Column Description for Reports</a></u>)<br>";
+				if ($variant_type eq 'BOTH' || $variant_type eq 'SNV')	{
+					print OUT "<u> <a href= \"Reports/SNV.cleaned_annot.xls\"target=\"_blank\">SNV Report</a></u> <br>";
+                }
+				if ($variant_type eq 'BOTH' || $variant_type eq 'INDEL')	{
+					print OUT "<u> <a href= \"Reports/INDEL.cleaned_annot.xls\"target=\"_blank\">INDEL Report</a></u> <br><br>";
+				}
+				print OUT "</ul>";
+			
 		print OUT "<ul>
 		<li>Per sample SNV and INDEL files are available here comprising of filtered and unfiltered reports. The filtered reports comprise of a much smaller list of variants for investigation and are based on the following criteria:
 		<ul>
@@ -805,10 +856,22 @@ else    {
 		<u> <a href= \"Reports_per_Sample/ANNOT/\"target=\"_blank\">Per Sample Reports</a></u></ul>";
 	}
 	if ($analysis ne 'alignment') 	{
-		print OUT "<ul>
+		if ($variant_type eq 'BOTH')	{
+			print OUT "<ul>
 			<li>The variant distance for SNPs and INDELs (the distance to closest Exon) are recorded in two files<br>
 			<u> <a href= \"Reports/variantLocation_SNVs\"target=\"_blank\">SNVs</a></u> <br>
-            <u> <a href= \"Reports/variantLocation_INDELs\"target=\"_blank\">INDELs</a></u> <br><br></ul>";
+            <u> <a href= \"Reports/variantLocation_INDELs\"target=\"_blank\">INDELs</a></u> <br></ul>";
+		}
+		elsif ($variant_type eq 'SNV')	{
+			print OUT "<ul>
+			<li>The variant distance for SNPs (the distance to closest Exon) are recorded <br>
+			<u> <a href= \"Reports/variantLocation_SNVs\"target=\"_blank\">SNVs</a></u> <br></ul>";
+		}
+		elsif ($variant_type eq 'INDEL')	{
+			print OUT "<ul>
+			<li>The variant distance for INDELs (the distance to closest Exon) are recorded <br>
+			<u> <a href= \"Reports/variantLocation_INDELs\"target=\"_blank\">INDELs</a></u> <br></ul>";
+		}
 	}
 	print OUT "</ul>";
 	if ($analysis eq 'alignment')	{
