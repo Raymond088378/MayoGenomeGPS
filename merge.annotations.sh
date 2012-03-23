@@ -37,6 +37,7 @@ else
 	
 	if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
 	then
+		cd $sseq
 		ls *.chr${which_chr}.indels.sseq | sort > $sseq/list.chr${which_chr}.indels.sseq
 		perl $script_path/merge.sseq.results.pl $sseq/list.chr${which_chr}.indels.sseq > $sseq/sseq.indels.out.allsamples.chr${which_chr}.merge
 		rm $sseq/list.chr${which_chr}.indels.sseq

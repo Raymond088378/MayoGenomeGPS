@@ -1,0 +1,2 @@
+INDEL:s_normal=s_normal.variants.raw.vcf
+INDEL:s_tumor=s_tumor.variants.raw.vcf

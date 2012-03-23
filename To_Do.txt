@@ -2,3 +2,5 @@
 1.  Annotate and hard filter Somatic SNPS
 2.  Blat and calculate edit distance to next best hit
 3.  Assembly support for fusion events
+4.  Use Best Practice V3 for variant hard filters
+5.  Use snp file during the alignment to get better alignments

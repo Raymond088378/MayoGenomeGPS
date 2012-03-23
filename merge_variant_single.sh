@@ -66,25 +66,25 @@ else
         exit 1
     fi
 
-    if [ $tool == "whole_genome" ]
-    then
+   # if [ $tool == "whole_genome" ]
+   # then
         $script_path/filter_variant_vqsr.sh $out/$sample.variants.raw.vcf $out/$sample.variants.filter.vcf BOTH $run_info
-    elif [ $tool == "exome" ]
-    then
+   # elif [ $tool == "exome" ]
+   # then
         ## appy hard filters to the vcf variant file
-        $java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-        -R $ref \
-        -et NO_ET \
-        -l INFO \
-        -T VariantFiltration \
-        -V $out/$sample.variants.raw.vcf \
-        -o $out/$sample.variants.filter.vcf \
-        --clusterSize 10 \
-        --filterExpression "MQ0 >= 4 && ((MQ0 / (1.0 * DP)) > 0.1)" \
-        --filterName "HARD_TO_VALIDATE" \
-        --filterExpression "QD < 1.5 " \
-        --filterName "LowQD"  
-    fi
+    #    $java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+    #    -R $ref \
+    #    -et NO_ET \
+    #    -l INFO \
+    #    -T VariantFiltration \
+    #    -V $out/$sample.variants.raw.vcf \
+    #    -o $out/$sample.variants.filter.vcf \
+     #   --clusterSize 10 \
+     #   --filterExpression "MQ0 >= 4 && ((MQ0 / (1.0 * DP)) > 0.1)" \
+     #   --filterName "HARD_TO_VALIDATE" \
+     #   --filterExpression "QD < 1.5 " \
+     #   --filterName "LowQD"  
+   # fi
     
     if [ ! -s $out/$sample.variants.filter.vcf ]
     then

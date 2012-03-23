@@ -20,6 +20,11 @@ else    {
 	@line=split(/=/,`perl -ne "/^SAMPLENAMES/ && print" $run_info`);
 	my $sampleNames=$line[$#line];chomp $sampleNames;
 	my @sampleArray = split(/:/,$sampleNames);
+	@line=split(/=/,`perl -ne "/^GROUPNAMES/ && print" $run_info`);
+	my $groupNames=$line[$#line];chomp $groupNames;
+	my @groupArray = split(/:/,$groupNames);
+	@line=split(/=/,`perl -ne "/^MULTISAMPLE/ && print" $run_info`);
+	my $multi=$line[$#line];chomp $multi;
 	@line=split(/=/,`perl -ne "/^LANEINDEX/ && print" $run_info`);
 	my $laneNumbers=$line[$#line];chomp $laneNumbers;
 	my @laneArray = split(/:/,$laneNumbers);
@@ -36,12 +41,18 @@ else    {
 	my $sampleinfo=$line[$#line];chomp $sampleinfo;
 	@line=split(/=/,`perl -ne "/^OUTPUT_FOLDER/ && print" $run_info`);
 	my $run_num=$line[$#line];chomp $run_num;
+	@line=split(/=/,`perl -ne "/^TABLEBROWSER_PORT/ && print" $run_info`);
+	my $port=$line[$#line];chomp $port;
+	@line=split(/=/,`perl -ne "/^TABLEBROWSER_HOST/ && print" $run_info`);
+	my $host=$line[$#line];chomp $host;
 	@line=split(/=/,`perl -ne "/^TOOL_INFO/ && print" $run_info`);
 	my $tool_info=$line[$#line];chomp $tool_info;
+	@line=split(/=/,`perl -ne "/^SAMPLE_INFO/ && print" $run_info`);
+	my $sample_info=$line[$#line];chomp $sample_info;
 	@line=split(/=/,`perl -ne "/^LABINDEXES/ && print" $run_info`);
     my $labindex=$line[$#line];chomp $labindex;
 	my @IndexArray = split(/:/,$labindex);
-	 @line=split(/=/,`perl -ne "/^dbSNP_SNV_rsIDs/ && print" $tool_info`);
+	@line=split(/=/,`perl -ne "/^dbSNP_SNV_rsIDs/ && print" $tool_info`);
 	my $dbsnp_file=$line[$#line];chomp $dbsnp_file;
 	$dbsnp_file =~ m/.+dbSNP(\d+)/;
 	my $dbsnp_v = $1;
@@ -50,10 +61,6 @@ else    {
 	my ($read_length, $variant_type, $target_region, $SNV_caller, $Aligner, $ontarget, $fastqc, $fastqc_path, $server, $upload_tb );
 	@line=split(/=/,`perl -ne "/^UPLOAD_TABLEBROWSER/ && print" $run_info`);
 	my $upload_tb=$line[$#line];chomp $upload_tb;
-	@line=split(/=/,`perl -ne "/^TABLEBROWSER_PORT/ && print" $run_info`);
-	my $port=$line[$#line];chomp $port;
-	@line=split(/=/,`perl -ne "/^TABLEBROWSER_HOST/ && print" $run_info`);
-	my $host=$line[$#line];chomp $host;
 	@line=split(/=/,`perl -ne "/^READLENGTH/ && print" $run_info`);
 	$read_length=$line[$#line];chomp $read_length;
 	@line=split(/=/,`perl -ne "/^MULTISAMPLE/ && print" $run_info`);
@@ -64,7 +71,11 @@ else    {
 	$fastqc=$line[$#line];chomp $fastqc;
 	@line=split(/=/,`perl -ne "/^VARIANT_TYPE/ && print" $run_info`);
 	$variant_type=$line[$#line];chomp $variant_type;
-	if ( ( $analysis eq 'external' ) || ( $analysis eq 'variant' ) || ($analysis eq 'mayo') || ($analysis eq 'realignment') )	{
+	@line=split(/=/,`perl -ne "/^DELIVERY_FOLDER/ && print" $run_info`);
+	my $delivery=$line[$#line];chomp $delivery;
+	@line=split(/=/,`perl -ne "/^TERTIARY_FOLDER/ && print" $run_info`);
+	my $tertiary=$line[$#line];chomp $tertiary;
+	if ( ( $analysis eq 'external' ) || ( $analysis eq 'variant' ) || ($analysis eq 'mayo') || ($analysis eq 'realignment') || ($analysis eq 'realign-mayo') )	{
 		@line=split(/=/,`perl -ne "/^SNV_CALLER/ && print" $run_info`);
 		$SNV_caller=$line[$#line];chomp $SNV_caller;
 		if ($tool eq 'exome')	{
@@ -175,7 +186,7 @@ else    {
 	<ul>
 	<li class=\"toclevel-2\"><a href=\"#Statistics based on per sample analysis\"><span class=\"tocnumber\">5.1</span>
 	<span class=\"toctext\">Statistics based on per sample analysis</span></a></li>";
-	if ( ( $analysis eq 'variant' ) || ( $analysis eq 'external' ) || ( $analysis eq 'mayo' ) || ($analysis eq 'realignment') )
+	if ( ( $analysis eq 'variant' ) || ( $analysis eq 'external' ) || ( $analysis eq 'mayo' ) || ($analysis eq 'realignment') || ($analysis eq 'realign-mayo') )
 	{
 		if ($tool eq 'exome' )	{
 			print OUT "
@@ -202,6 +213,7 @@ else    {
 	print OUT "<ul><table cellspacing=\"0\" class=\"sofT\" > <tr> <td class=\"helpHed\">NGS Bioinformatics for ${tool} sequencing</td> </tr> </table> <br></ul>\n";
 	my $read_call;	if($paired == 1)	{	$read_call = 'PE';	}	else	{	$read_call = 'SR';	}	
 	my $num_samples=scalar(@sampleArray);
+	my $num_groups=scalar(@groupArray);
 	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime;   ## to pull todays date
 	$year += 1900;$mon++;
 	print OUT "<a name=\"Project Description\" id=\"Project Description\"></a><p align='left'><b><u> II. Project Description</p></b></u>";
@@ -222,8 +234,12 @@ else    {
 	print OUT "Note: Further raw NGS data will be used for statistical analysis<br>\n";
 	my $loc=$path;
 	$loc =~ s/\//\\/g;
+	$tertiary=~ s/\//\\/g;
+	$delivery=~ s/\//\\/g;
 	my @WG_ver=split(/\//,$script_path);
-	print OUT "Location:: <b><u>\\\\rcfcluster-cifs$loc</b></u> <br>";
+	print OUT "Tertiary Location:: <b><u>\\\\rcfcluster-cifs$tertiary</b></u> <br>";
+	print OUT "(Data is available for 60 Days from the Delivered Date)<br>";
+	print OUT "Results Location:: <b><u>\\\\rcfcluster-cifs$delivery</b></u> <br>";
 	print OUT "(Data is available for 60 Days from the Delivered Date)<br>";
 	print OUT "<a name=\"Study design\" id=\"Study design\"></a><p align='left'> 2. Study design</p>";
 	print OUT "<ul>
@@ -270,9 +286,33 @@ else    {
                         \n";
                 }
         }
-        print OUT "<td class=\"helpHed\"></td><td class=\"helpHed\"></td><td class=\"helpHed\"></td></tr>";
-        print OUT "</table>";
-        print OUT "<p align='right'><a href=\"#top\">-top-</a></p>";
+	print OUT "<td class=\"helpHed\"></td><td class=\"helpHed\"></td><td class=\"helpHed\"></td></tr>";
+	print OUT "</table>";
+	
+	if ($multi eq 'YES')	{
+		print OUT "<br><br><table cellspacing=\"0\" class=\"sofT\"><tr>
+        <td class=\"helpHed\">GroupName</td>
+        <td class=\"helpHed\">Normal Sample</td>
+        <td class=\"helpHed\">Tumor Samples</td></tr>";	
+		for (my $i = 0; $i < $num_groups; $i++)	{
+			my $sams=`cat $sample_info | grep -w "$groupArray[$i]" | cut -d '=' -f2`;
+			my @sam=split('\s+',$sams);
+			my $normal=$sam[0];
+			my $tumor=$sams;
+			$tumor=~ s/$normal//g;
+			# $tumor=~ s/\s+//g;
+			print OUT "
+			<td class=\"helpBod\">$groupArray[$i]</td>
+                        <td class=\"helpBod\">$normal</td>
+                        <td class=\"helpBod\">$tumor</td></tr>
+                        \n";
+						
+		}
+	}	
+    print OUT "<td class=\"helpHed\"></td><td class=\"helpHed\"></td><td class=\"helpHed\"></td></tr>";
+	print OUT "</table>";
+	
+	print OUT "<p align='right'><a href=\"#top\">-top-</a></p>";
 
 	if ( $analysis eq 'mayo' )	{
 		print OUT "<b><u>NOTE:</u></b>Meta Data Information available for samples in the form of Lab Tracking Report(<u><a href=\"LTR.xls\"target=\"_blank\">LTR</a></u>)<br>";
@@ -306,7 +346,6 @@ else    {
 	<ul><li><a name=\"Statistics based on per sample analysis\" id=\"Statistics based on per sample analysis\"></a>Statistics based on per Sample Analysis(<u><a href=\"StatisticsDescription.html\"target=\"_blank\">ColumnDescription</a></u>)<br>\n";
 	print OUT "<br><table cellspacing=\"0\" class=\"sofT\"><tr><td class=\"helpHed\"><p align='center'></td>";
 	my %sample_numbers=();
-	my $pairs=();
 	my $uniq;
 	# storing all the numbers in a Hash per sample (opne hash)
 	for(my $k = 0; $k < $num_samples;$k++)	
@@ -330,54 +369,59 @@ else    {
 		close SAMPLE;
 	}
 	
-	if ($multi eq 'YES')	{
-		
-	}	
 	
 	print OUT "</tr>";
 	my @To_find;
 	my ( $avg_per, $avg_mapped_reads, $per_mapped, $per_mapped_reads );
 	my @what;
 	# header description
-	if ( ( $analysis ne 'annotation' ) && ( $analysis ne 'alignment' ) ) {		
-		if ($tool eq 'whole_genome')	{
-			if ($analysis eq 'variant')	{
-				@what=("Total number of reads obtained","Number of reads mapped to the reference using ${Aligner}","Number of mapped reads overlapping with coding regions in UCSC RefFlat","Total number of SNVs obtained using ${SNV_caller}","Filtered SNVs obtained using ${SNV_caller} recommendations","Number of SNVs observed in  UCSC RefFlat coding regions","Total number of SNVs in dbSNP$dbsnp_v or 1000 Genomes", "Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Number of SeattleSeq annotated Nonsense mutations","Number of SeattleSeq annotated Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total number of  SNVs not in dbSNP$dbsnp_v or 1000 Genomes", "Novel Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Novel number of Nonsense mutations","Novel number of Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total  number of INDELs obtained using ${SNV_caller}","Filtered INDELs obtained using ${SNV_caller} recommendations","Number of INDELs observed in  UCSC RefFlat coding region", "Number of SeattleSeq annotated INDELs in coding regions with inserted or deleted bases being multiples of 3","Number of SeattleSeq annotated Frameshifft INDELs with inserted or deleted bases which are not multiples of 3","Number of SeattleSeq annotated Splice-3 INDELs","Number of SeattleSeq annotated Splice-5 INDELs","Number of SeattleSeq annotated UTR-3 INDELs","Number of SeattleSeq annotated UTR-5 INDELs","Total number of CNVs","Number of CNVs observed in UCSC RefFlat coding regions","Number of deletions in UCSC RefFlat coding regions","Number of duplications in UCSC RefFlat coding regions","total number of SVs","Number of SVs observed in UCSC RefFlat coding regions","Number of ITX in UCSC RefFlat coding regions","Number of INV in UCSC RefFlat coding regions","Number of DEL in UCSC RefFlat coding regions","Number of INS in UCSC RefFlat coding regions","Number of CTX in UCSC RefFlat coding regions");
+	if ($multi eq 'NO')	{
+		if ( ( $analysis ne 'annotation' ) && ( $analysis ne 'alignment' ) ) {		
+			if ($tool eq 'whole_genome')	{
+				if ($analysis eq 'variant')	{
+					@what=("Total number of reads obtained","Number of reads mapped to the reference using ${Aligner}","Number of mapped reads overlapping with coding regions in UCSC RefFlat","Total number of SNVs obtained using ${SNV_caller}","Filtered SNVs obtained using ${SNV_caller} recommendations","Number of SNVs observed in  UCSC RefFlat coding regions","Total number of SNVs in dbSNP$dbsnp_v or 1000 Genomes", "Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Number of SeattleSeq annotated Nonsense mutations","Number of SeattleSeq annotated Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total number of  SNVs not in dbSNP$dbsnp_v or 1000 Genomes", "Novel Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Novel number of Nonsense mutations","Novel number of Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total  number of INDELs obtained using ${SNV_caller}","Filtered INDELs obtained using ${SNV_caller} recommendations","Number of INDELs observed in  UCSC RefFlat coding region", "Number of SeattleSeq annotated INDELs in coding regions with inserted or deleted bases being multiples of 3","Number of SeattleSeq annotated Frameshifft INDELs with inserted or deleted bases which are not multiples of 3","Number of SeattleSeq annotated Splice-3 INDELs","Number of SeattleSeq annotated Splice-5 INDELs","Number of SeattleSeq annotated UTR-3 INDELs","Number of SeattleSeq annotated UTR-5 INDELs","Total number of CNVs","Number of CNVs observed in UCSC RefFlat coding regions","Number of deletions in UCSC RefFlat coding regions","Number of duplications in UCSC RefFlat coding regions","total number of SVs","Number of SVs observed in UCSC RefFlat coding regions","Number of ITX in UCSC RefFlat coding regions","Number of INV in UCSC RefFlat coding regions","Number of DEL in UCSC RefFlat coding regions","Number of INS in UCSC RefFlat coding regions","Number of CTX in UCSC RefFlat coding regions");
+				}
+				else	{
+					@what=("Total number of reads obtained","Number of reads mapped to the reference using ${Aligner}","Percent of duplicated reads flagged in BAM","Number of reads after recalibration and realignment using GATK ","Number of mapped reads overlapping with coding regions in UCSC RefFlat","Total number of SNVs obtained using ${SNV_caller}","Filtered SNVs obtained using ${SNV_caller} recommendations","Number of SNVs observed in  UCSC RefFlat coding regions","Total number of SNVs in dbSNP$dbsnp_v or 1000 Genomes", "Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Number of SeattleSeq annotated Nonsense mutations","Number of SeattleSeq annotated Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total number of  SNVs not in dbSNP$dbsnp_v or 1000 Genomes", "Novel Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Novel number of Nonsense mutations","Novel number of Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total  number of INDELs obtained using ${SNV_caller}","Filtered INDELs obtained using ${SNV_caller} recommendations","Number of INDELs observed in  UCSC RefFlat coding region", "Number of SeattleSeq annotated INDELs in coding regions with inserted or deleted bases being multiples of 3","Number of SeattleSeq annotated Frameshifft INDELs with inserted or deleted bases which are not multiples of 3","Number of SeattleSeq annotated Splice-3 INDELs","Number of SeattleSeq annotated Splice-5 INDELs","Number of SeattleSeq annotated UTR-3 INDELs","Number of SeattleSeq annotated UTR-5 INDELs","Total number of CNVs","Number of CNVs observed in UCSC RefFlat coding regions","Number of deletions in UCSC RefFlat coding regions","Number of duplications in UCSC RefFlat coding regions","total number of SVs","Number of SVs observed in UCSC RefFlat coding regions","Number of ITX in UCSC RefFlat coding regions","Number of INV in UCSC RefFlat coding regions","Number of DEL in UCSC RefFlat coding regions","Number of INS in UCSC RefFlat coding regions","Number of CTX in UCSC RefFlat coding regions");
+				}
 			}
-			else	{
-				@what=("Total number of reads obtained","Number of reads mapped to the reference using ${Aligner}","Percent of duplicated reads flagged in BAM","Number of reads after recalibration and realignment using GATK ","Number of mapped reads overlapping with coding regions in UCSC RefFlat","Total number of SNVs obtained using ${SNV_caller}","Filtered SNVs obtained using ${SNV_caller} recommendations","Number of SNVs observed in  UCSC RefFlat coding regions","Total number of SNVs in dbSNP$dbsnp_v or 1000 Genomes", "Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Number of SeattleSeq annotated Nonsense mutations","Number of SeattleSeq annotated Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total number of  SNVs not in dbSNP$dbsnp_v or 1000 Genomes", "Novel Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Novel number of Nonsense mutations","Novel number of Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total  number of INDELs obtained using ${SNV_caller}","Filtered INDELs obtained using ${SNV_caller} recommendations","Number of INDELs observed in  UCSC RefFlat coding region", "Number of SeattleSeq annotated INDELs in coding regions with inserted or deleted bases being multiples of 3","Number of SeattleSeq annotated Frameshifft INDELs with inserted or deleted bases which are not multiples of 3","Number of SeattleSeq annotated Splice-3 INDELs","Number of SeattleSeq annotated Splice-5 INDELs","Number of SeattleSeq annotated UTR-3 INDELs","Number of SeattleSeq annotated UTR-5 INDELs","Total number of CNVs","Number of CNVs observed in UCSC RefFlat coding regions","Number of deletions in UCSC RefFlat coding regions","Number of duplications in UCSC RefFlat coding regions","total number of SVs","Number of SVs observed in UCSC RefFlat coding regions","Number of ITX in UCSC RefFlat coding regions","Number of INV in UCSC RefFlat coding regions","Number of DEL in UCSC RefFlat coding regions","Number of INS in UCSC RefFlat coding regions","Number of CTX in UCSC RefFlat coding regions");
-			}
-		}
-		elsif ($tool eq 'exome')	{
-			if ($analysis eq 'variant')	{
-				@what=("Total number of reads obtained","Number of reads mapped to the reference using ${Aligner}","Number of mapped reads overlapping with coding regions in UCSC RefFlat","Total number of SNVs obtained using ${SNV_caller}","Filtered SNVs obtained using ${SNV_caller} recommendations","Number of SNVs observed in  UCSC RefFlat coding regions","Number of SNVs observed in  Capture Region","Total number of SNVs in dbSNP$dbsnp_v or 1000 Genomes", "Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Number of SeattleSeq annotated Nonsense mutations","Number of SeattleSeq annotated Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total number of  SNVs not in dbSNP$dbsnp_v or 1000 Genomes", "Novel Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Novel number of Nonsense mutations","Novel number of Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total  number of INDELs obtained using ${SNV_caller}","Filtered INDELs obtained using ${SNV_caller} recommendations","Number of INDELs observed in  UCSC RefFlat coding region","Number of INDELs observed in  Capture Region", "Number of SeattleSeq annotated INDELs in coding regions with inserted or deleted bases being multiples of 3","Number of SeattleSeq annotated Frameshifft INDELs with inserted or deleted bases which are not multiples of 3","Number of SeattleSeq annotated Splice-3 INDELs","Number of SeattleSeq annotated Splice-5 INDELs","Number of SeattleSeq annotated UTR-3 INDELs","Number of SeattleSeq annotated UTR-5 INDELs","Total number of CNVs","Number of CNVs observed in UCSC RefFlat coding regions","Number of deletions in UCSC RefFlat coding regions","Number of duplications in UCSC RefFlat coding regions","total number of SVs","Number of SVs observed in UCSC RefFlat coding regions","Number of ITX in UCSC RefFlat coding regions","Number of INV in UCSC RefFlat coding regions","Number of DEL in UCSC RefFlat coding regions","Number of INS in UCSC RefFlat coding regions","Number of CTX in UCSC RefFlat coding regions");
-			}
-			else	{
-				@what=("Total number of reads obtained","Number of reads mapped to the reference using ${Aligner}","Percent of duplicated reads flagged in BAM","Number of reads after recalibration and realignment using GATK ","Number of mapped reads overlapping with coding regions in UCSC RefFlat","Total number of SNVs obtained using ${SNV_caller}","Filtered SNVs obtained using ${SNV_caller} recommendations","Number of SNVs observed in  UCSC RefFlat coding regions","Number of SNVs observed in  Capture Region","Total number of SNVs in dbSNP$dbsnp_v or 1000 Genomes", "Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Number of SeattleSeq annotated Nonsense mutations","Number of SeattleSeq annotated Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total number of  SNVs not in dbSNP$dbsnp_v or 1000 Genomes", "Novel Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Novel number of Nonsense mutations","Novel number of Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total  number of INDELs obtained using ${SNV_caller}","Filtered INDELs obtained using ${SNV_caller} recommendations","Number of INDELs observed in  UCSC RefFlat coding region","Number of INDELs observed in  Capture Region", "Number of SeattleSeq annotated INDELs in coding regions with inserted or deleted bases being multiples of 3","Number of SeattleSeq annotated Frameshifft INDELs with inserted or deleted bases which are not multiples of 3","Number of SeattleSeq annotated Splice-3 INDELs","Number of SeattleSeq annotated Splice-5 INDELs","Number of SeattleSeq annotated UTR-3 INDELs","Number of SeattleSeq annotated UTR-5 INDELs","Total number of CNVs","Number of CNVs observed in UCSC RefFlat coding regions","Number of deletions in UCSC RefFlat coding regions","Number of duplications in UCSC RefFlat coding regions","total number of SVs","Number of SVs observed in UCSC RefFlat coding regions","Number of ITX in UCSC RefFlat coding regions","Number of INV in UCSC RefFlat coding regions","Number of DEL in UCSC RefFlat coding regions","Number of INS in UCSC RefFlat coding regions","Number of CTX in UCSC RefFlat coding regions");
+			elsif ($tool eq 'exome')	{
+				if ($analysis eq 'variant')	{
+					@what=("Total number of reads obtained","Number of reads mapped to the reference using ${Aligner}","Number of mapped reads overlapping with coding regions in UCSC RefFlat","Total number of SNVs obtained using ${SNV_caller}","Filtered SNVs obtained using ${SNV_caller} recommendations","Number of SNVs observed in  UCSC RefFlat coding regions","Number of SNVs observed in  Capture Region","Total number of SNVs in dbSNP$dbsnp_v or 1000 Genomes", "Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Number of SeattleSeq annotated Nonsense mutations","Number of SeattleSeq annotated Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total number of  SNVs not in dbSNP$dbsnp_v or 1000 Genomes", "Novel Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Novel number of Nonsense mutations","Novel number of Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total  number of INDELs obtained using ${SNV_caller}","Filtered INDELs obtained using ${SNV_caller} recommendations","Number of INDELs observed in  UCSC RefFlat coding region","Number of INDELs observed in  Capture Region", "Number of SeattleSeq annotated INDELs in coding regions with inserted or deleted bases being multiples of 3","Number of SeattleSeq annotated Frameshifft INDELs with inserted or deleted bases which are not multiples of 3","Number of SeattleSeq annotated Splice-3 INDELs","Number of SeattleSeq annotated Splice-5 INDELs","Number of SeattleSeq annotated UTR-3 INDELs","Number of SeattleSeq annotated UTR-5 INDELs","Total number of CNVs","Number of CNVs observed in UCSC RefFlat coding regions","Number of deletions in UCSC RefFlat coding regions","Number of duplications in UCSC RefFlat coding regions","total number of SVs","Number of SVs observed in UCSC RefFlat coding regions","Number of ITX in UCSC RefFlat coding regions","Number of INV in UCSC RefFlat coding regions","Number of DEL in UCSC RefFlat coding regions","Number of INS in UCSC RefFlat coding regions","Number of CTX in UCSC RefFlat coding regions");
+				}
+				else	{
+					@what=("Total number of reads obtained","Number of reads mapped to the reference using ${Aligner}","Percent of duplicated reads flagged in BAM","Number of reads after recalibration and realignment using GATK ","Number of mapped reads overlapping with coding regions in UCSC RefFlat","Total number of SNVs obtained using ${SNV_caller}","Filtered SNVs obtained using ${SNV_caller} recommendations","Number of SNVs observed in  UCSC RefFlat coding regions","Number of SNVs observed in  Capture Region","Total number of SNVs in dbSNP$dbsnp_v or 1000 Genomes", "Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Number of SeattleSeq annotated Nonsense mutations","Number of SeattleSeq annotated Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total number of  SNVs not in dbSNP$dbsnp_v or 1000 Genomes", "Novel Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Novel number of Nonsense mutations","Novel number of Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total  number of INDELs obtained using ${SNV_caller}","Filtered INDELs obtained using ${SNV_caller} recommendations","Number of INDELs observed in  UCSC RefFlat coding region","Number of INDELs observed in  Capture Region", "Number of SeattleSeq annotated INDELs in coding regions with inserted or deleted bases being multiples of 3","Number of SeattleSeq annotated Frameshifft INDELs with inserted or deleted bases which are not multiples of 3","Number of SeattleSeq annotated Splice-3 INDELs","Number of SeattleSeq annotated Splice-5 INDELs","Number of SeattleSeq annotated UTR-3 INDELs","Number of SeattleSeq annotated UTR-5 INDELs","Total number of CNVs","Number of CNVs observed in UCSC RefFlat coding regions","Number of deletions in UCSC RefFlat coding regions","Number of duplications in UCSC RefFlat coding regions","total number of SVs","Number of SVs observed in UCSC RefFlat coding regions","Number of ITX in UCSC RefFlat coding regions","Number of INV in UCSC RefFlat coding regions","Number of DEL in UCSC RefFlat coding regions","Number of INS in UCSC RefFlat coding regions","Number of CTX in UCSC RefFlat coding regions");
+				}
 			}
 		}
 	}
-	
+	else	{
+		@what=("Total number of reads obtained","Number of reads mapped to the reference using ${Aligner}","Percent of duplicated reads flagged in BAM","Number of mapped reads overlapping with coding regions in UCSC RefFlat","Total number of SNVs obtained using ${SNV_caller}","Filtered SNVs obtained using ${SNV_caller} recommendations","Number of SNVs observed in  UCSC RefFlat coding regions","Number of SNVs observed in  Capture Region","Total number of SNVs in dbSNP$dbsnp_v or 1000 Genomes", "Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Number of SeattleSeq annotated Nonsense mutations","Number of SeattleSeq annotated Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total number of  SNVs not in dbSNP$dbsnp_v or 1000 Genomes", "Novel Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Novel number of Nonsense mutations","Novel number of Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total  number of INDELs obtained using ${SNV_caller}","Filtered INDELs obtained using ${SNV_caller} recommendations","Number of INDELs observed in  UCSC RefFlat coding region","Number of INDELs observed in  Capture Region", "Number of SeattleSeq annotated INDELs in coding regions with inserted or deleted bases being multiples of 3","Number of SeattleSeq annotated Frameshifft INDELs with inserted or deleted bases which are not multiples of 3","Number of SeattleSeq annotated Splice-3 INDELs","Number of SeattleSeq annotated Splice-5 INDELs","Number of SeattleSeq annotated UTR-3 INDELs","Number of SeattleSeq annotated UTR-5 INDELs","Total number of CNVs","Number of CNVs observed in UCSC RefFlat coding regions","Number of deletions in UCSC RefFlat coding regions","Number of duplications in UCSC RefFlat coding regions","total number of SVs","Number of SVs observed in UCSC RefFlat coding regions","Number of ITX in UCSC RefFlat coding regions","Number of INV in UCSC RefFlat coding regions","Number of DEL in UCSC RefFlat coding regions","Number of INS in UCSC RefFlat coding regions","Number of CTX in UCSC RefFlat coding regions");
+	}
 	# header name
-	if ( ( $analysis ne 'alignment' ) && ( $analysis ne 'annotation' ) ) {
-		if ($tool eq 'whole_genome')	{
-			if ($analysis eq 'variant')	{
-				@To_find=("Total Reads","Mapped Reads","Mapped Reads(CodingRegion)","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","INDELs in CodingRegion","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5","Total CNVs","Coding CNVs","Coding Deletions","Coding Duplications","Total SVs","Coding SVs","Intra-chr translocations","Inversions","Deletions","Insertions","Inter-chr translocations");
+	if ($multi eq 'NO')	{
+		if ( ( $analysis ne 'alignment' ) && ( $analysis ne 'annotation' ) ) {
+			if ($tool eq 'whole_genome')	{
+				if ($analysis eq 'variant')	{
+					@To_find=("Total Reads","Mapped Reads","Mapped Reads(CodingRegion)","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","INDELs in CodingRegion","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5","Total CNVs","Coding CNVs","Coding Deletions","Coding Duplications","Total SVs","Coding SVs","Intra-chr translocations","Inversions","Deletions","Insertions","Inter-chr translocations");
+				}
+				else	{
+					@To_find=("Total Reads","Mapped Reads","Percent duplication","Realigned Mapped Reads","Mapped Reads(CodingRegion)","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","INDELs in CodingRegion","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5","Total CNVs","Coding CNVs","Coding Deletions","Coding Duplications","Total SVs","Coding SVs","Intra-chr translocations","Inversions","Deletions","Insertions","Inter-chr translocations");
+				}
 			}
-			else	{
-				@To_find=("Total Reads","Mapped Reads","Percent duplication","Realigned Mapped Reads","Mapped Reads(CodingRegion)","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","INDELs in CodingRegion","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5","Total CNVs","Coding CNVs","Coding Deletions","Coding Duplications","Total SVs","Coding SVs","Intra-chr translocations","Inversions","Deletions","Insertions","Inter-chr translocations");
-			}
+			elsif ($tool eq 'exome')	{
+				if ($analysis eq 'realignment' || $analysis eq 'mayo' || $analysis eq 'external')	{
+					@To_find=("Total Reads","Mapped Reads","Percent duplication","Realigned Mapped Reads","Mapped Reads(in CaptureRegion)","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","SNVs in CaptureRegion","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","INDELs in CodingRegion","INDELs in CaptureRegion","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
+				}
+				else	{
+					@To_find=("Total Reads","Mapped Reads","Mapped Reads(in CaptureRegion)","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","SNVs in CaptureRegion","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","INDELs in CodingRegion","INDELs in CaptureRegion","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
+				}
+			}	
 		}
-		elsif ($tool eq 'exome')	{
-			if ($analysis eq 'realignment' || $analysis eq 'mayo' || $analysis eq 'external')	{
-				@To_find=("Total Reads","Mapped Reads","Percent duplication","Realigned Mapped Reads","Mapped Reads(in CaptureRegion)","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","SNVs in CaptureRegion","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","INDELs in CodingRegion","INDELs in CaptureRegion","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
-			}
-			else	{
-				@To_find=("Total Reads","Mapped Reads","Mapped Reads(in CaptureRegion)","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","SNVs in CaptureRegion","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","INDELs in CodingRegion","INDELs in CaptureRegion","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
-			}
-		}	
 	}
-	
+	else	{
+		@To_find=("Total Reads","Mapped Reads","Percent duplication","Mapped Reads(CodingRegion)","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","INDELs in CodingRegion","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
+	}	
 	if ($analysis eq 'alignment')	{
 		@To_find=("Total Reads","Mapped Reads","Percent duplication");
 		@what=("Total number of reads obtained","Number of reads mapped to the reference using ${Aligner}","Percent of duplicated reads flagged in BAM");
@@ -408,7 +452,9 @@ else    {
 			print OUT "<td class=\"helpHed\"></td>";
 		}		
 		print OUT "</tr>\n";
-	}			
+	}	
+
+		
 	foreach my $key (sort {$a <=> $b} keys %sample_numbers)	{
 		print OUT "<td class=\"helpHed\"><p align='left'><a href=\"#$To_find[$key]\" title=\"$what[$key]\">$To_find[$key]</a></td>";
 		if ( $key eq '1' && $analysis ne 'annotation' )	{
@@ -494,7 +540,7 @@ else    {
 			}
 		}		
 		
-		if ( ( $key eq '4' ) && ($analysis ne 'variant'))	{
+		if ( ( $key eq '4' ) && ($analysis ne 'variant') && ($multi eq 'NO'))	{
 			if ( $analysis ne 'annotation' )	{
 				for (my $c=0; $c < $num_samples;$c++)	{
 					my $per_mapped_t = sprintf("%.1f",(${$sample_numbers{$key}}[$c]/${$sample_numbers{0}}[$c])*100);
@@ -505,6 +551,12 @@ else    {
 			}
 		}	
 		
+		if (( $key eq '4' ) && ($multi eq 'YES'))	{
+			for (my $c=0; $c < $num_samples;$c++)	{
+				my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+				print OUT "<td class=\"helpBod\">$print <b></td>";
+			}			
+		}
 		if ( ( $key eq '4' ) && ($analysis eq 'variant'))	{
 			if ( $analysis ne 'annotation' )	{
 				for (my $c=0; $c < $num_samples;$c++)	{
@@ -541,37 +593,70 @@ else    {
 		print OUT "</tr>";
 		# key 1 is for mapped reads
 		# key 2 is for mapped reads ontarget
-		if ( ( $analysis eq 'external' ) || ($analysis eq 'realignment') || ($analysis eq 'mayo') ) {	
+		if ( ( $analysis eq 'external' ) || ($analysis eq 'realignment') || ($analysis eq 'mayo') || ($analysis eq 'realign-mayo')) {	
 			if ($tool eq 'whole_genome')	{
-				if ($key eq '4' )	{
-					print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}	
-				if ($key eq '7' )	{
-					print OUT "<td class=\"helpBod\"><b>Known SNVs<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}	
-				if ($key eq '17' )	{
-					print OUT "<td class=\"helpBod\"><b>Novel SNVs<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}	
+				if ($multi eq 'NO')	{
+					if ($key eq '4' )	{
+						print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '7' )	{
+						print OUT "<td class=\"helpBod\"><b>Known SNVs<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}	
+					if ($key eq '17' )	{
+						print OUT "<td class=\"helpBod\"><b>Novel SNVs<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}	
 
-				if ($key eq '27' )	{
-					print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
+					if ($key eq '27' )	{
+						print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
 				}
+				else	{
+					if ($key eq '3' )	{
+						print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '6' )	{
+						print OUT "<td class=\"helpBod\"><b>Known SNVs<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}	
+					if ($key eq '16' )	{
+						print OUT "<td class=\"helpBod\"><b>Novel SNVs<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}	
+
+					if ($key eq '26' )	{
+						print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+				}	
 				if ($tool eq 'whole_genome')	{
 					if ($key eq '36' )	{
 						print OUT "<th class=\"helpBod\">Copy Number Variants (CNVs)</th>";
@@ -622,13 +707,6 @@ else    {
 			}	
 		}
 		elsif ($analysis eq 'annotation') {
-		#	if ($key eq '4' )	{
-		#		print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
-		#		for (my $c=0; $c < $num_samples;$c++)	{
-		#			print OUT "<td class=\"helpHed\"></td>";
-		#		}		
-		#		print OUT "</tr>\n";
-		#	}	
 			if ($variant_type eq 'BOTH'  || $variant_type eq 'SNV')	{
 				if ($key eq '0' )	{
 					print OUT "<td class=\"helpBod\"><b>Known SNVs<b></td>";
@@ -645,7 +723,7 @@ else    {
 					print OUT "</tr>\n";
 				}
 			}
-			elsif ($variant_type eq 'BOTH')	{	
+			if ($variant_type eq 'BOTH')	{	
 				if ($key eq '20' )	{
 					print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
 					for (my $c=0; $c < $num_samples;$c++)	{
@@ -706,8 +784,108 @@ else    {
 	# print OUT "</tr>";
 	}	
 	undef %sample_numbers;
-	
 	print OUT "</table>";
+	
+	my %group_numbers=();
+	if ($multi eq 'YES')	{
+		print OUT"
+		<br><a name=\"Statistics based on per Group analysis\" id=\"Statistics based on per Group analysis\"></a>Statistics based on per Group Analysis(<u><a href=\"StatisticsDescription.html\"target=\"_blank\">ColumnDescription</a></u>)<br>\n";
+		print OUT "<br><table cellspacing=\"0\" class=\"sofT\"><tr><td class=\"helpHed\"><p align='center'></td>";
+		my $tot=0;
+		for(my $k = 0; $k < $num_groups;$k++)	
+		{
+			my $sams=`cat $sample_info | grep -w "$groupArray[$k]" | cut -d '=' -f2`;
+			my @sam=split('\s+',$sams);
+			for (my $q=1;$q <=$#sam;$q++)	{
+				print OUT "<td class=\"helpHed\"><p align='center'>$groupArray[$k] - $sam[$q] </td>";
+				my $file="$path/numbers/$groupArray[$k].$sam[$q].out";
+				open SAMPLE, "<$file", or die "could not open $file : $!";
+				print"reading numbers from $groupArray[$k] - $sam[$q]\n";
+				my $id=0;
+				while(my $l = <SAMPLE>)	
+				{			
+					chomp $l;
+					if ( $l !~ /^\d/)	{
+						$uniq = $id;
+						$id++;
+					}	
+					else	{
+						push (@{$group_numbers{$uniq}},$l);
+					}
+				}	
+				close SAMPLE;
+			}
+			$tot=$tot+$#sam-1;
+		}
+		print OUT "</tr>";
+		@To_find=("Combined Total Reads"," Combined Mapped Reads","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","INDELs in CodingRegion","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5","Total CNVs","Coding CNVs","Coding Deletions","Coding Duplications","Total SVs","Coding SVs","Intra-chr translocations","Inversions","Deletions","Insertions","Inter-chr translocations");
+		@what=("Total number of combined reads of the pair after realignment and recalibration","Number of reads mapped of the pair after realignment and recalibration","Total number of SNVs obtained using ${SNV_caller}","Filtered SNVs obtained using ${SNV_caller} recommendations","Number of SNVs observed in  UCSC RefFlat coding regions","Total number of SNVs in dbSNP$dbsnp_v or 1000 Genomes", "Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Number of SeattleSeq annotated Nonsense mutations","Number of SeattleSeq annotated Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total number of  SNVs not in dbSNP$dbsnp_v or 1000 Genomes", "Novel Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Novel number of Nonsense mutations","Novel number of Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total  number of INDELs obtained using ${SNV_caller}","Filtered INDELs obtained using ${SNV_caller} recommendations","Number of INDELs observed in  UCSC RefFlat coding region", "Number of SeattleSeq annotated INDELs in coding regions with inserted or deleted bases being multiples of 3","Number of SeattleSeq annotated Frameshifft INDELs with inserted or deleted bases which are not multiples of 3","Number of SeattleSeq annotated Splice-3 INDELs","Number of SeattleSeq annotated Splice-5 INDELs","Number of SeattleSeq annotated UTR-3 INDELs","Number of SeattleSeq annotated UTR-5 INDELs","Total number of CNVs","Number of CNVs observed in UCSC RefFlat coding regions","Number of deletions in UCSC RefFlat coding regions","Number of duplications in UCSC RefFlat coding regions","total number of SVs","Number of SVs observed in UCSC RefFlat coding regions","Number of ITX in UCSC RefFlat coding regions","Number of INV in UCSC RefFlat coding regions","Number of DEL in UCSC RefFlat coding regions","Number of INS in UCSC RefFlat coding regions","Number of CTX in UCSC RefFlat coding regions");	
+		foreach my $key (sort {$a <=> $b} keys %group_numbers)	{
+			if ($key eq '2' )	{
+				print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
+				for (my $k=0; $k <= $tot;$k++)	{
+					print OUT "<td class=\"helpHed\"></td>";
+				}		
+				print OUT "</tr>\n";
+			}	
+			elsif ($key eq '5')	{
+				print OUT "<td class=\"helpBod\"><b>Known SNVs<b></td>";
+				for (my $k=0; $k <= $tot;$k++)	{
+					print OUT "<td class=\"helpHed\"></td>";
+				}		
+				print OUT "</tr>\n";
+			}
+			elsif ($key eq '15')	{
+				print OUT "<td class=\"helpBod\"><b>Novel SNVs<b></td>";
+				for (my $k=0; $k <= $tot;$k++)	{
+					print OUT "<td class=\"helpHed\"></td>";
+				}		
+				print OUT "</tr>\n";
+			}
+			elsif ($key eq '25')	{
+				print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
+				for (my $k=0; $k <= $tot;$k++)	{
+					print OUT "<td class=\"helpHed\"></td>";
+				}		
+				print OUT "</tr>\n";
+			}
+			elsif ($key eq '34')	{
+				print OUT "<th class=\"helpBod\">Copy Number Variants (CNVs)</th>";
+				for (my $k=0; $k <= $tot;$k++)	{
+					print OUT "<td class=\"helpHed\"></td>";
+				}		
+				print OUT "</tr>\n";	
+			}
+			elsif ($key eq '38')	{
+				print OUT "<th class=\"helpBod\">Structural Variants (SVs)</th>";
+				for (my $k=0; $k <= $tot;$k++)	{
+					print OUT "<td class=\"helpHed\"></td>";
+				}		
+				print OUT "</tr>\n";
+			}
+			else	{
+				print OUT "<td class=\"helpHed\"><p align='left'><a href=\"#$To_find[$key]\" title=\"$what[$key]\">$To_find[$key]</a></td>";
+				for(my $k = 0; $k <= $tot;$k++)	{
+					my $print=CommaFormatted(${$group_numbers{$key}}[$k]);
+					print OUT "<td class=\"helpBod\">$print</td>\n";
+				}
+				print OUT "</tr>\n";
+			}
+			if ( $key eq '2' || $key eq '5'|| $key eq '15'||$key eq '25'||$key eq '38'||$key eq '34')	{
+				print OUT "<td class=\"helpHed\"><p align='left'><a href=\"#$To_find[$key]\" title=\"$what[$key]\">$To_find[$key]</a></td>";
+				for(my $k = 0; $k <= $tot;$k++)	{
+					my $print=CommaFormatted(${$group_numbers{$key}}[$k]);
+					print OUT "<td class=\"helpBod\">$print</td>\n";
+				}
+				print OUT "</tr>\n";
+			}
+			
+		}
+	}
+	undef %group_numbers;
+	print OUT "</table>";
+	
+	
 	print DESC "
 	<p align='left'><b> Row description for Statistics Table:</p></b>
 	<table cellspacing=\"0\" class=\"sofT\"><tr><td class=\"helpHed\">Column</td><td class=\"helpHed\">Description</td></tr>";
@@ -719,7 +897,7 @@ else    {
 		</table></ul>";	
 	}	
 	
-	if ( ($analysis eq "external") || ($analysis eq "variant" ) || ($analysis eq 'realignment') || ($analysis eq "mayo")  )	{
+	if ( ($analysis eq "external") || ($analysis eq "variant" ) || ($analysis eq 'realignment') || ($analysis eq "mayo") || ($analysis eq 'realign-mayo') )	{
 		print DESC"
 		<td class=\"helpBod\">Total Reads</td><td class=\"helpBod\">Total number of reads obtained</td></tr>
 		<td class=\"helpBod\">Mapped Reads</td><td class=\"helpBod\">Number and percentage of reads mapped to reference genome(${GenomeBuild})</td></tr>
@@ -787,7 +965,7 @@ else    {
 	elsif($tool eq 'whole_genome')	{
 		$re="CodingRegion";
 	}	
-	if ( ( $analysis eq "external" ) || ( $analysis eq "variant") || ($analysis eq "realignment") || ($analysis eq "mayo")   )	{
+	if ( ( $analysis eq "external" ) || ( $analysis eq "variant") || ($analysis eq "realignment") || ($analysis eq "mayo") || ($analysis eq 'realign-mayo')  )	{
 		my $target=$target_region/1000000;$target=sprintf("%.2f",$target);
 		print OUT "
 		<ul><li><a name=\"Percent coverage of $re\" id=\"Percent coverage of $re\"></a>Percent coverage of $re
@@ -851,9 +1029,16 @@ else    {
 		- any variant reported within +/-2bp of an exon edge using 'distance' report for variants
 		</ul><br>
 		<u> <a href= \"Reports_per_Sample\"target=\"_blank\">Per Sample Reports</a></u></ul>";
-		print OUT "<ul>
-		<li>Per sample Gene Summary files are available here<br>
-		<u> <a href= \"Reports_per_Sample/ANNOT/\"target=\"_blank\">Per Sample Reports</a></u></ul>";
+		if ($multi eq 'NO')	{
+			print OUT "<ul>
+			<li>Per sample Gene Summary files are available here<br>
+			<u> <a href= \"Reports_per_Sample/ANNOT/\"target=\"_blank\">Per Sample Reports</a></u></ul>";
+		}
+		else	{
+			print OUT "<ul>
+			<li>Per tumor-normal Gene Summary files are available here<br>
+			<u> <a href= \"Reports_per_Sample/ANNOT/\"target=\"_blank\">Per tumor-normal Reports</a></u></ul>";
+		}
 	}
 	if ($analysis ne 'alignment') 	{
 		if ($variant_type eq 'BOTH')	{
@@ -885,11 +1070,24 @@ else    {
 	
 	
 	if ($tool eq 'whole_genome' && $analysis ne 'alignment' && $analysis ne 'annotation')	{
-		print OUT "<ul> <li>Per sample Circos plots are displayed (and linked) below. Copy Number Variants and Sructural Variants are plotted for each sample. <br>
-	<u> <a href= \"circos\"target=\"_blank\">Per sample CIRCOS plots</a></u></ul></ul>";
-		for(my $k = 0; $k < $num_samples;$k++)	
-		{
-			print OUT "<a href= \"circos/${sampleArray[$k]}.sv_cnv.png\"target=\"_blank\"><P ALIGN=\"CENTER\"><img border=\"0\" src=\"circos/${sampleArray[$k]}.sv_cnv.png\" width=\"50\" height=\"50\"><u><caption align=\"bottom\">${sampleArray[$k]}</caption></u></p>";
+		if ($multi eq 'NO')	{
+			print OUT "<ul> <li>Per sample Circos plots are displayed (and linked) below. Copy Number Variants and Sructural Variants are plotted for each sample. <br>
+			<u> <a href= \"circos\"target=\"_blank\">Per sample CIRCOS plots</a></u></ul></ul>";
+			for(my $k = 0; $k < $num_samples;$k++)	
+			{
+				print OUT "<a href= \"circos/${sampleArray[$k]}.sv_cnv.png\"target=\"_blank\"><P ALIGN=\"CENTER\"><img border=\"0\" src=\"circos/${sampleArray[$k]}.sv_cnv.png\" width=\"50\" height=\"50\"><u><caption align=\"bottom\">${sampleArray[$k]}</caption></u></p>";
+			}
+		}
+		else	{
+			print OUT "<ul> <li>Per tumor Circos plots are displayed (and linked) below. Copy Number Variants and Sructural Variants are plotted for each sample. <br>
+			<u> <a href= \"circos\"target=\"_blank\">Per sample CIRCOS plots</a></u></ul></ul>";
+			for(my $k = 0; $k < $num_groups;$k++)	{
+				my $sams=`cat $sample_info | grep -w "$groupArray[$k]" | cut -d '=' -f2`;
+				my @sam=split('\s+',$sams);
+				for (my $q=1;$q <=$#sam;$q++)	{
+					print OUT "<a href= \"circos/$groupArray[$k].${sam[$q]}.sv_cnv.png\"target=\"_blank\"><P ALIGN=\"CENTER\"><img border=\"0\" src=\"circos/$groupArray[$k].${sam[$q]}.sv_cnv.png\" width=\"50\" height=\"50\"><u><caption align=\"bottom\">$groupArray[$k].${sam[$q]}</caption></u></p>";	
+				}
+			}	
 		}
 	}	
 	if ($upload_tb eq 'YES')	{

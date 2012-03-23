@@ -1,0 +1,3 @@
+s_normal=s_normal.igv-sorted.bam
+s_tumor=s_tumor.igv-sorted.bam
+pair1=s_normal s_tumor

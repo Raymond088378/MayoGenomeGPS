@@ -105,7 +105,7 @@ else
         fi
     fi
     
-    if [ $analysis == "realignment" ]
+    if [ $analysis == "realignment" -o $analysis == "realign-mayo" ]
     then
         rm $input/$sample.sorted.bam.bai
         if [ $dup == "YES" ]

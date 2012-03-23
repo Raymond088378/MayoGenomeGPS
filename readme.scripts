@@ -1,0 +1,4 @@
+## Saurabh Baheti
+## Mar 23 2012 
+whole_genome.sh
+master wrapper script to submit all the jobs per sample and merge samples 

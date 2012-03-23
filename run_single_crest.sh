@@ -32,7 +32,6 @@ else
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 	email=$( cat $run_info | grep -w '^EMAIL' | cut -d '=' -f2)
 	queue=$( cat $run_info | grep -w '^QUEUE' | cut -d '=' -f2)
-	lqueue=$( cat $run_info | grep -w '^LQUEUE' | cut -d '=' -f2)
 	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
 	picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 ) 
 	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
@@ -113,7 +112,7 @@ else
 
 	if [ "$status" -eq 0 ]
 	then
-        echo "ERROR : Crest_single: Blat server not available at port: $blat_port. Sample:$sample Chr:$chr "
+        echo "WARNING : Crest_single: Blat server not available at port: $blat_port. Sample:$sample Chr:$chr "
         blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
         range=20000
         let blat_port+=$RANDOM%range

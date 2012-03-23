@@ -124,21 +124,27 @@ else
 		if [ ! -f $output_dir/$group/$sample.chr$chr.cover ]
 		then
 			echo "ERROR : run_crest_multi, file $output_dir/$group/$sample.chr$chr.cover was not created, error in extracSClip.pl"
-			exit 1
 		fi
 
 		if [ ! -f $output_dir/$group/$sample.chr$chr.sclip.txt ]
 		then
 			echo "ERROR: run_crest_multi, file $output_dir/$group/$sample.chr$chr.sclip.txt does not exist, error in extracSClip.pl "
-			exit 1
 		fi
 
 		status=`$blat/gfServer status localhost $blat_port | wc -l`;
 
 		if [ "$status" -eq 0 ]
 		then
-			echo "ERROR: run_crest_multi: Blat server not available at port: $blat_port. Group:$group Chr:$chr "
-			exit 1
+			echo "WARNING : Crest_single: Blat server not available at port: $blat_port. Sample:$sample Chr:$chr "
+			blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
+			range=20000
+			let blat_port+=$RANDOM%range
+			status=`$blat/gfServer status localhost $blat_port | wc -l`;
+			if [ "$status" -le 1 ]
+			then
+				$blat/gfServer start localhost $blat_port -log=$output_dir/$sample/log/blat.$sample.$chr.txt $blat_ref  &
+				sleep 2m
+			fi
 		fi
 
 		$crest/CREST.pl -f $output_dir/$group/$sample.chr$chr.cover \

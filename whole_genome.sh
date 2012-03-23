@@ -125,9 +125,9 @@ else
 	echo -e "Analysis started at:" >> $output_dir/log.txt
 	echo -e "${START}" >>  $output_dir/log.txt
 
-	if [[ $analysis != "mayo" && $analysis != "external"  && $analysis != "realignment"  &&  $analysis != "variant" && $analysis != "alignment" && $analysis != "annotation" ]]
+	if [[ $analysis != "mayo" && $analysis != "external"  && $analysis != "realignment"  &&  $analysis != "variant" && $analysis != "alignment" && $analysis != "annotation" && $analysis != "realign-mayo" ]]
 	then
-		echo -e "\nPlease Specify the correct Analysis type(alignment,realignment,variant,external,mayo,annotation)\n"
+		echo -e "\nPlease Specify the correct Analysis type(alignment,realignment,variant,external,mayo,realign-mayo,annotation)\n"
 		echo `date`
 		exit 1;
 	fi
@@ -179,7 +179,7 @@ else
 				MERGE=`qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=8G -hold_jid $job_id_align $script_path/processBAM.sh $align_dir $sample $run_info`
 				job_id_convert=`echo $MERGE | cut -d ' ' -f3 `
 				echo -e "$MERGE" >> $job_ids_dir/ALIGN	
-			elif [ $analysis == "realignment" ]
+			elif [ $analysis == "realignment" -o $analysis == "realign-mayo" ]
 			then
 				infile=`cat $sample_info | grep -w "^$sample" | cut -d '=' -f2`
 				num_bams=`echo $infile | tr " " "\n" | wc -l`
@@ -192,7 +192,7 @@ else
 				job_id_convert=`echo $CONVERT | cut -d ' ' -f3`
 			fi    
 
-			if [[ $analysis == "mayo" || $analysis == "external" || $analysis == "realignment" || $analysis == "variant" ]]
+			if [[ $analysis == "mayo" || $analysis == "external" || $analysis == "realignment" || $analysis == "variant" || $analysis == "realign-mayo" ]]
 			then
 				realign_dir=$output_dir/realign/$sample
 				variant_dir=$output_dir/variants/$sample
@@ -394,7 +394,7 @@ else
 					MERGE=`qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=8G -hold_jid $job_id_align $script_path/processBAM.sh $align_dir $sample $run_info`
 					job_id_convert=`echo $MERGE | cut -d ' ' -f3 `
 					job_id_convert="$job_id_convert,$job_id_convert"                
-				elif [[ $analysis == "realignment" ]]
+				elif [[ $analysis == "realignment" || $analysis == "realign-mayo" ]]
 				then
 					infile=`cat $sample_info | grep -w "^$sample" | cut -d '=' -f2 `
 					num_bams=`echo $infile | tr " " "\n" | wc -l`
@@ -493,14 +493,14 @@ else
                 job_ids_break="$job_ids_break,$job_id_break"
                 job_ids_break_in="$job_ids_break_in,$job_id_break_in"
             done
-            MERGESTRUCT=`qsub $args -N $type.$version.summaryze_struct_group.$group.$run_num -hold_jid $job_ids_segseq,$job_ids_break_in,$job_ids_break,$job_ids_crest $script_path/summaryze_struct_group.sh $group $output_dir $run_info`
+            MERGESTRUCT=`qsub $args -N $type.$version.summaryze_struct_group.$group.$run_num -l h_vmem=8G -hold_jid $job_ids_segseq,$job_ids_break_in,$job_ids_break,$job_ids_crest $script_path/summaryze_struct_group.sh $group $output_dir $run_info`
 			job_id_mergestruct=`echo $MERGESTRUCT | cut -d ' ' -f3`
 			echo -e $MERGESTRUCT >> $job_ids_dir/SV
 			mkdir -p $output_dir/circos;
             for i in $(seq 2 ${#sampleArray[@]})
 			do  
 				tumor=${sampleArray[$i]}
-				RUNCIRCOS=`qsub $args -N $type.$version.plot_circos_cnv_sv.$group.$run_num -hold_jid $job_id_mergestruct -l h_vmem=8G $script_path/plot_circos_cnv_sv.sh $output_dir/struct/$group.$tumor.somatic.break $output_dir/struct/$group.$tumor.somatic.filter.crest $output_dir/cnv/$group/$tumor.cnv.filter.bed $tumor $output_dir/circos $run_info` 
+				RUNCIRCOS=`qsub $args -N $type.$version.plot_circos_cnv_sv.$group.$run_num -hold_jid $job_id_mergestruct -l h_vmem=8G $script_path/plot_circos_cnv_sv.sh $output_dir/struct/$group.$tumor.somatic.break $output_dir/struct/$group.$tumor.somatic.filter.crest $output_dir/cnv/$group/$tumor.cnv.filter.bed $group.$tumor $output_dir/circos $run_info` 
 			done
 		done
 
@@ -526,10 +526,10 @@ else
 		hold="-hold_jid $job_ids_report,$job_ids_annot_sample,$job_ids_merge_sample"
 		
         NUMBERS=`qsub $args -N $type.$version.sample_numbers.$run_num $hold -t 1-$numgroups:1 $script_path/sample_numbers.sh $output_dir $run_info`
-#			GENE_SUMMARY=`qsub $args -N $type.$version.gene_summary.$run_num $hold -t 1-$numsamples:1 $script_path/gene_summary.sh $output_dir $run_info $output_dir/Reports_per_Sample`
-			job_ids=`echo $NUMBERS | cut -d ' ' -f3 | cut -d '.' -f1 | tr "\n" ","`
-			job_ids_summary=`echo $GENE_SUMMARY | cut -d ' ' -f3 | cut -d '.' -f1 | tr "\n" ","`
-#			qsub $args -N $type.$version.generate_html.$run_num -hold_jid ${job_ids}${job_ids_summary} $script_path/generate_html.sh $output_dir $run_info 	
+		GENE_SUMMARY=`qsub $args -N $type.$version.gene_summary.$run_num $hold -t 1-$numgroups:1 $script_path/gene_summary.sh $output_dir $run_info $output_dir/Reports_per_Sample`
+		job_ids=`echo $NUMBERS | cut -d ' ' -f3 | cut -d '.' -f1 | tr "\n" ","`
+		job_ids_summary=`echo $GENE_SUMMARY | cut -d ' ' -f3 | cut -d '.' -f1 | tr "\n" ","`
+		qsub $args -N $type.$version.generate_html.$run_num -hold_jid ${job_ids}${job_ids_summary} $script_path/generate_html.sh $output_dir $run_info 	
 		#done
 		echo `date`
 	fi

@@ -416,7 +416,17 @@ else
             else
                 echo $percent_dup >> $numbers/$sample.out		
             fi
-            ##### variants
+            ### on target reads
+			on_reads=0
+			for chr in $chrs
+			do
+				on=`cat $input_dir/OnTarget/$sample.chr$chr.bam.i.out | head -1`
+				on_reads=`expr $on_reads "+" $on`
+			done
+			echo -e "OnTarget Reads" >> $numbers/$sample.out
+			echo $on_reads >> $numbers/$sample.out	
+			
+			##### variants
             variants=$input_dir/Reports_per_Sample
             ontarget=$input_dir/OnTarget
 

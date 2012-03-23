@@ -42,7 +42,7 @@ SNP_CS=/data2/bsi/reference/annotation/dbSNP/hg19/scs.bed
 BLACKLIST_SV=/data2/bsi/reference/misc/hg19.STRUCTURAL_BALCKLIST.bed
 
 ## tools
-WHOLEGENOME_PATH=/projects/bsi/bictools/scripts/dnaseq/Genome_GPS/trunk/
+WHOLEGENOME_PATH=/data2/bsi/RandD/trunk/
 NOVOALIGN=/projects/bsi/bictools/apps/alignment/novoalign/2.07.13/novoalign
 BWA=/projects/bsi/bictools/apps/alignment/bwa/0.5.9/
 JAVA=/usr/java/latest/bin
@@ -64,7 +64,7 @@ PERLLIB_BREAKDANCER=/data2/bsi/RandD/s100943.whole_genome/sample_test_asha/Break
 MATLAB=/usr/local/biotools/matlab/r2011a/bin
 SEGSEQ=/data2/bsi/RandD/s100943.whole_genome/SegSeq/bin
 CIRCOS=/projects/bsi/bictools/apps/visualizers/circos/circos-0.54/
-PERLLIB_CIRCOS=/projects/bsi/bictools/lib/perl/5.10.0/
+PERLLIB_CIRCOS=projects/bsi/bictools/lib/perl/5.10.0/
 SIFT=/projects/bsi/bictools/apps/variant_detection/sift/4.0.3/bin/
 VCFTOOLS=/projects/bsi/bictools/apps/variant_detection/vcftools/0.1.8a/
 TABIX=/projects/bsi/bictools/apps/misc/tabix/0.2.5/
