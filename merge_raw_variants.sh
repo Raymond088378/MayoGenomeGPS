@@ -52,25 +52,21 @@ else
 #	$inputargs \
 #	-o $var_dir/raw.vcf
 	
-	$vcftools/bin/vcf-merge $inputargs > $var_dir/raw.vcf.gz 
+	$vcftools/bin/vcf-merge $inputargs > $var_dir/raw.vcf
 	
 
 	### raw SNV
-	$tabix/bgzip -c -d $var_dir/raw.vcf.gz | awk '(length($4) == 1 && length($5) == 1 ) || $0 ~ /#/' > $var_dir/raw.SNV.vcf  
+	cat $var_dir/raw.vcf| awk '(length($4) == 1 && length($5) == 1 ) || $0 ~ /#/' > $var_dir/raw.SNV.vcf  
+	$tabix/bgzip $var_dir/raw.SNV.vcf 
 	### raw INDEL
-	$tabix/bgzip -c -d $var_dir/raw.vcf.gz | awk '(length($4) > 1 || length($5) > 1 ) || $0 ~ /#/' > $var_dir/raw.INDEL.vcf 
+	cat $var_dir/raw.vcf | awk '(length($4) > 1 || length($5) > 1 ) || $0 ~ /#/' > $var_dir/raw.INDEL.vcf 
+	$tabix/bgzip $var_dir/raw.INDEL.vcf
 	
-	if [[ -s $var_dir/raw.SNV.vcf && -s $var_dir/raw.INDEL.vcf ]]
+	if [[ -s $var_dir/raw.SNV.vcf.gz && -s $var_dir/raw.INDEL.vcf.gz ]]
     then
         rm $var_dir/raw.vcf
-        $tabix/bgzip $var_dir/raw.SNV.vcf   
-        $tabix/bgzip $var_dir/raw.INDEL.vcf 
-	fi
-
-	if [ -s $var_dir/raw.SNV.vcf.gz ]
-	then
 		rm $inputargs
 		rm $input_index
-	fi	
+	fi
 	echo `date`
 fi	

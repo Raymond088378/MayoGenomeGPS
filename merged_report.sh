@@ -32,11 +32,14 @@ else
 	$script_path/merge.variants.sh $output_OnTarget $TempReports $which_chr $run_info
 	
 	##add rsids
-	$script_path/add.rsids.sh $TempReports $snv_var $indel_var $which_chr $run_info
+	#snv_var=list.chr${which_chr}.snvs
+	#indel_var=list.chr${which_chr}.indels
+	# $script_path/add.rsids.sh $TempReports $snv_var $indel_var $which_chr $run_info
 	##add frequencies
 	if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
 	then
 		snv_var=list.chr${which_chr}.snvs
+		$script_path/add.rsids_snvs.sh $TempReports $snv_var $which_chr $run_info
 		$script_path/add.frequencies.sh $TempReports $snv_var $which_chr $run_info
 		# merge snv file
 		$script_path/snp.final.sh $TempReports $sift $sseq $which_chr $snv_var $run_info
@@ -45,6 +48,7 @@ else
 	then
 		indel_var=list.chr${which_chr}.indels
 		#merge indel file
+		$script_path/add.rsids_indels.sh $TempReports $indel_var $which_chr $run_info
 		$script_path/indel.final.sh $TempReports $sseq $which_chr $indel_var $run_info
 	fi
 	echo `date`
