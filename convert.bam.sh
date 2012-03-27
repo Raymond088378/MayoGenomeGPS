@@ -171,7 +171,7 @@ else
         echo "ERROR: convert.bam.sh flagstat failed for $input/$sample.flagstat"
     fi
     ## update secondary dahboard
-    if [ $analysis == "mayo" ]
+    if [ $analysis == "mayo" -o $analysis == "realign-mayo"  ]
 	then
 		id=`echo $sample | awk -F'.' '{print $NF}'`
 		sam=`echo $sample | awk -F'.' '{print $1}'`

@@ -125,7 +125,7 @@ else
         then
             if [ ! -d $out ]
             then
-                 mkdir $out
+                mkdir $out
             fi
             if [ $multi == "YES" ]
             then
@@ -139,9 +139,9 @@ else
                 done
             else
                 mv $output/$sample.igv-sorted.bam $out/
-                ln -s $out/$i.igv-sorted.bam $output/$i.igv-sorted.bam
+                ln -s $out/$sample.igv-sorted.bam $output/$sample.igv-sorted.bam
                 mv $output/$sample.igv-sorted.bam.bai $out/
-                ln -s $out/$i.igv-sorted.bam.bai $output/$i.igv-sorted.bam.bai
+                ln -s $out/$sample.igv-sorted.bam.bai $output/$sample.igv-sorted.bam.bai
             fi
         else
             echo "ERROR: $delivery_folder doesn't exist"
