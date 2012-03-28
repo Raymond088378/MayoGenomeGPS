@@ -18,6 +18,8 @@
 		my @line;
 		@line=split(/=/,`perl -ne "/^ANALYSIS/ && print" $run_info`);
 		my $analysis=$line[$#line];chomp $analysis;
+		@line=split(/=/,`perl -ne "/^MULTISAMPLE/ && print" $run_info`);
+		my $multi=$line[$#line];chomp $multi;
 		@line=split(/=/,`perl -ne "/^TYPE/ && print" $run_info`);
 		my $tool=$line[$#line];chomp $tool;
 		$tool=lc($tool);
@@ -68,6 +70,8 @@
 		}
 		# row header
 		# header name
+	$multi =~ s/\s+$//;
+	$analysis =~ s/\s+$//;
 	if ( ( $analysis ne 'alignment' ) && ( $analysis ne 'annotation' ) ) {
 		if ($tool eq 'whole_genome')	{
 			if ($analysis eq 'variant')	{
@@ -171,6 +175,20 @@
 					}
 				}	
 		}
+		if ($key eq '2' && $analysis ne 'annotation' && $analysis ne 'variant' )	{
+			for (my $c=0; $c < $num_samples;$c++)	{
+				my $print=sprintf("%.2f",$sample_numbers{$key}[$c]);
+				print OUT "\t$print\%";
+			}	
+		}
+		if ($key eq '2' && $analysis eq 'variant')	{
+			for (my $c=0; $c < $num_samples;$c++)	{
+				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c]/${$sample_numbers{0}}[$c])*100);
+				my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+				print OUT "\t$print ($per_mapped \%)";
+			}
+		}	
+		
 		if ($analysis ne 'variant' )	{
 			if ( $key eq '39')	{
 					for (my $c=0; $c < $num_samples;$c++)	{

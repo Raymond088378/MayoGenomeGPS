@@ -103,6 +103,8 @@ else    {
 	print "ReadLength: $read_length\n";
 	print "AnalysisType: $analysis\n";
 	
+	sub trim($);
+	
 	sub CommaFormatted
 	{
 		my $delimiter = ','; # replace comma if desired
@@ -237,10 +239,14 @@ else    {
 	$tertiary=~ s/\//\\/g;
 	$delivery=~ s/\//\\/g;
 	my @WG_ver=split(/\//,$script_path);
-	print OUT "Tertiary Location:: <b><u>\\\\rcfcluster-cifs$tertiary</b></u> <br>";
-	print OUT "(Data is available for 60 Days from the Delivered Date)<br>";
-	print OUT "Results Location:: <b><u>\\\\rcfcluster-cifs$delivery</b></u> <br>";
-	print OUT "(Data is available for 60 Days from the Delivered Date)<br>";
+	if ($tertiary ne 'NA')	{
+		print OUT "Tertiary Location:: <b><u>\\\\rcfcluster-cifs$tertiary</b></u> <br>";
+		print OUT "(Data is available for 60 Days from the Delivered Date)<br>";
+	}
+	if ($delivery ne 'NA')	{
+		print OUT "Results Location:: <b><u>\\\\rcfcluster-cifs$delivery</b></u> <br>";
+		print OUT "(Data is available for 60 Days from the Delivered Date)<br>";
+	}
 	print OUT "<a name=\"Study design\" id=\"Study design\"></a><p align='left'> 2. Study design</p>";
 	print OUT "<ul>
 	<li><b> What are the samples? </b><br>
@@ -314,9 +320,9 @@ else    {
 	
 	print OUT "<p align='right'><a href=\"#top\">-top-</a></p>";
 
-	if ( $analysis eq 'mayo' )	{
-		print OUT "<b><u>NOTE:</u></b>Meta Data Information available for samples in the form of Lab Tracking Report(<u><a href=\"LTR.xls\"target=\"_blank\">LTR</a></u>)<br>";
-	}	
+	#if ( $analysis eq 'mayo' )	{
+	#	print OUT "<b><u>NOTE:</u></b>Meta Data Information available for samples in the form of Lab Tracking Report(<u><a href=\"LTR.xls\"target=\"_blank\">LTR</a></u>)<br>";
+	#}	
 	print OUT "<p align='right'><a href=\"#top\">-top-</a></p>";
 	print OUT "</ul>
 	<a name=\"Results Summary\" id=\"Results Summary\"></a><p align='left'><u><b> V.  Results Summary:</p></u></b>\n";
@@ -374,8 +380,10 @@ else    {
 	my @To_find;
 	my ( $avg_per, $avg_mapped_reads, $per_mapped, $per_mapped_reads );
 	my @what;
+	$multi =~ s/\s+$//;
+	$analysis =~ s/\s+$//;
 	# header description
-	if ($multi eq 'NO')	{
+	if ($multi eq "NO")	{
 		if ( ( $analysis ne 'annotation' ) && ( $analysis ne 'alignment' ) ) {		
 			if ($tool eq 'whole_genome')	{
 				if ($analysis eq 'variant')	{
@@ -399,8 +407,12 @@ else    {
 		@what=("Total number of reads obtained","Number of reads mapped to the reference using ${Aligner}","Percent of duplicated reads flagged in BAM","Number of mapped reads overlapping with coding regions in UCSC RefFlat","Total number of SNVs obtained using ${SNV_caller}","Filtered SNVs obtained using ${SNV_caller} recommendations","Number of SNVs observed in  UCSC RefFlat coding regions","Number of SNVs observed in  Capture Region","Total number of SNVs in dbSNP$dbsnp_v or 1000 Genomes", "Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Number of SeattleSeq annotated Nonsense mutations","Number of SeattleSeq annotated Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total number of  SNVs not in dbSNP$dbsnp_v or 1000 Genomes", "Novel Transition to Transversion Ratio. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)","Novel number of Nonsense mutations","Novel number of Missense mutations", "Number of SeattleSeq annotated coding-synonymous mutations","Number of SeattleSeq annotated coding not-Mod3 mutations","Number of SeattleSeq annotated splice-3 mutations","Number of SeattleSeq annotated splice-5 mutations","Number of SeattleSeq annotated utr-3 mutations","Number of SeattleSeq annotated utr-5 mutations","Total  number of INDELs obtained using ${SNV_caller}","Filtered INDELs obtained using ${SNV_caller} recommendations","Number of INDELs observed in  UCSC RefFlat coding region","Number of INDELs observed in  Capture Region", "Number of SeattleSeq annotated INDELs in coding regions with inserted or deleted bases being multiples of 3","Number of SeattleSeq annotated Frameshifft INDELs with inserted or deleted bases which are not multiples of 3","Number of SeattleSeq annotated Splice-3 INDELs","Number of SeattleSeq annotated Splice-5 INDELs","Number of SeattleSeq annotated UTR-3 INDELs","Number of SeattleSeq annotated UTR-5 INDELs","Total number of CNVs","Number of CNVs observed in UCSC RefFlat coding regions","Number of deletions in UCSC RefFlat coding regions","Number of duplications in UCSC RefFlat coding regions","total number of SVs","Number of SVs observed in UCSC RefFlat coding regions","Number of ITX in UCSC RefFlat coding regions","Number of INV in UCSC RefFlat coding regions","Number of DEL in UCSC RefFlat coding regions","Number of INS in UCSC RefFlat coding regions","Number of CTX in UCSC RefFlat coding regions");
 	}
 	# header name
-	if ($multi eq 'NO')	{
+	#print "multi here = $multi,$tool\n";
+	
+	if ( $multi eq "NO" )	{
+		#print "entering\n";
 		if ( ( $analysis ne 'alignment' ) && ( $analysis ne 'annotation' ) ) {
+			#print "HERR: $tool\n";
 			if ($tool eq 'whole_genome')	{
 				if ($analysis eq 'variant')	{
 					@To_find=("Total Reads","Mapped Reads","Mapped Reads(CodingRegion)","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","INDELs in CodingRegion","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5","Total CNVs","Coding CNVs","Coding Deletions","Coding Duplications","Total SVs","Coding SVs","Intra-chr translocations","Inversions","Deletions","Insertions","Inter-chr translocations");
@@ -411,6 +423,7 @@ else    {
 			}
 			elsif ($tool eq 'exome')	{
 				if ($analysis eq 'realignment' || $analysis eq 'mayo' || $analysis eq 'external')	{
+					#print "error\n";
 					@To_find=("Total Reads","Mapped Reads","Percent duplication","Realigned Mapped Reads","Mapped Reads(in CaptureRegion)","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","SNVs in CaptureRegion","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","INDELs in CodingRegion","INDELs in CaptureRegion","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
 				}
 				else	{
@@ -420,6 +433,8 @@ else    {
 		}
 	}
 	else	{
+		print "entering else\n";
+		
 		@To_find=("Total Reads","Mapped Reads","Percent duplication","Mapped Reads(CodingRegion)","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","INDELs in CodingRegion","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
 	}	
 	if ($analysis eq 'alignment')	{
@@ -453,8 +468,11 @@ else    {
 		}		
 		print OUT "</tr>\n";
 	}	
-
-		
+	
+	#print "header = @To_find\n";
+	#print "desc = @what\n";
+	#print "tool : $tool\n";	
+	
 	foreach my $key (sort {$a <=> $b} keys %sample_numbers)	{
 		print OUT "<td class=\"helpHed\"><p align='left'><a href=\"#$To_find[$key]\" title=\"$what[$key]\">$To_find[$key]</a></td>";
 		if ( $key eq '1' && $analysis ne 'annotation' )	{

@@ -29,23 +29,23 @@ else
 	GenomeBuild=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2)
 	dbsnp_rsids_disease=$( cat $tool_info | grep -w '^dbSNP_disease_rsIDs' | cut -d '=' -f2) 
 	#SNV
-		touch $TempReports/$snv.forrsIDs
-		cat $TempReports/$snv > $TempReports/$snv.forrsIDs
-		sed -i '1d' $TempReports/$snv.forrsIDs
-		perl $script_path/add_dbsnp_snv.pl -i $TempReports/$snv.forrsIDs -b 1 -s $dbsnp_rsids_snv -c 1 -p 2 -o $TempReports/$snv.forrsIDs.added -r $chr -h 1 
-		## add column to add flag for disease variant
-		if [ $GenomeBuild == "hg19" ]
-		then
-			perl $script_path/add.dbsnp.disease.snv.pl -i $TempReports/$snv.forrsIDs.added -b 1 -s $dbsnp_rsids_disease -c 1 -p 2 -o $TempReports/$snv.forrsIDs.added.disease -r $chr
-		# perl 
-		elif [ $GenomeBuild == "hg18" ]	
-		then
-			perl $script_path/add.0.pl $TempReports/$snv.forrsIDs.added > $TempReports/$snv.forrsIDs.added.disease
-		fi	
-		perl $script_path/extract.rsids.pl -i $TempReports/$snv -r $TempReports/$snv.forrsIDs.added.disease -o $TempReports/$snv.rsIDs -v SNV
-		rm $TempReports/$snv.forrsIDs.added
-		rm $TempReports/$snv.forrsIDs
-		rm $TempReports/$snv.forrsIDs.added.disease
+	touch $TempReports/$snv.forrsIDs
+	cat $TempReports/$snv > $TempReports/$snv.forrsIDs
+	sed -i '1d' $TempReports/$snv.forrsIDs
+	perl $script_path/add_dbsnp_snv.pl -i $TempReports/$snv.forrsIDs -b 1 -s $dbsnp_rsids_snv -c 1 -p 2 -o $TempReports/$snv.forrsIDs.added -r $chr -h 1 
+	## add column to add flag for disease variant
+	if [ $GenomeBuild == "hg19" ]
+	then
+		perl $script_path/add.dbsnp.disease.snv.pl -i $TempReports/$snv.forrsIDs.added -b 1 -s $dbsnp_rsids_disease -c 1 -p 2 -o $TempReports/$snv.forrsIDs.added.disease -r $chr
+	# perl 
+	elif [ $GenomeBuild == "hg18" ]	
+	then
+		perl $script_path/add.0.pl $TempReports/$snv.forrsIDs.added > $TempReports/$snv.forrsIDs.added.disease
+	fi	
+	perl $script_path/extract.rsids.pl -i $TempReports/$snv -r $TempReports/$snv.forrsIDs.added.disease -o $TempReports/$snv.rsIDs -v SNV
+	rm $TempReports/$snv.forrsIDs.added
+	rm $TempReports/$snv.forrsIDs
+	rm $TempReports/$snv.forrsIDs.added.disease
 	echo `date`
 fi	
 	
