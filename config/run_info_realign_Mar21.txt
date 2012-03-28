@@ -10,7 +10,7 @@ PI=sb
 MULTISAMPLE=NO
 INPUT_DIR=/data2/bsi/RandD/WG_test/random/test_data/
 BASE_OUTPUT_DIR=/data2/bsi/RandD/WG_test/random/
-EMAIL=baheti.saurabh@mayo.edu
+EMAIL=rstngsworkflow@mayo.edu
 SAMPLENAMES=s_normal:s_tumor
 GROUPNAMES=NA
 LABINDEXES=-:-
@@ -19,7 +19,7 @@ CHRINDEX=21:22
 TOOL_INFO= /projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/trunk/config/tool_info.txt
 SAMPLE_INFO= /projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/trunk/config/sample_info.bam.txt
 OUTPUT_FOLDER=realignmentModule
-QUEUE=ngs-ext -l lowp=TRUE
+QUEUE=ngs-sec -l medp=TRUE
 CENTER=MAYO
 PLATFORM=ILLUMINA
 GENOMEBUILD=hg19
