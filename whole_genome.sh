@@ -327,7 +327,7 @@ else
 			### variant distance
 			qsub $args -N $type.$version.variant_distance.$run_num -hold_jid $job_ids_report -l h_vmem=4G $script_path/variant_distance.sh $TempReports $output_dir $run_info
 			NUMBERS=`qsub $args -N $type.$version.sample_numbers.$run_num $hold -t 1-$numsamples:1 $script_path/sample_numbers.sh $output_dir $run_info`
-			GENE_SUMMARY=`qsub $args -N $type.$version.gene_summary.$run_num $hold -t 1-$numsamples:1 $script_path/gene_summary.sh $output_dir $run_info $output_dir/Reports_per_Sample`
+			GENE_SUMMARY=`qsub $args -N $type.$version.gene_summary.$run_num $hold -t 1-$numsamples:1 -l h_vmem=4G $script_path/gene_summary.sh $output_dir $run_info $output_dir/Reports_per_Sample`
 			job_ids=`echo $NUMBERS | cut -d ' ' -f3 | cut -d '.' -f1 | tr "\n" ","`
 			job_ids_summary=`echo $GENE_SUMMARY | cut -d ' ' -f3 | cut -d '.' -f1 | tr "\n" ","`
 			HTML=`qsub $args -N $type.$version.generate_html.$run_num -hold_jid ${job_ids}${job_ids_summary} $script_path/generate_html.sh $output_dir $run_info`

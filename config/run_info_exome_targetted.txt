@@ -16,8 +16,8 @@ GROUPNAMES=NA
 LABINDEXES=-:-
 LANEINDEX=1:2
 CHRINDEX=21:22
-TOOL_INFO=/data2/bsi/RandD/WG_test/random/config/tool_info_all.txt
-SAMPLE_INFO=/data2/bsi/RandD/WG_test/random/config/sample_info.bam.txt
+TOOL_INFO= /projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/trunk/config/tool_info_all.txt
+SAMPLE_INFO= /projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/trunk/config/sample_info.bam.txt
 OUTPUT_FOLDER=OnlyModule
 QUEUE=ngs-sec -l medp=TRUE
 CENTER=MAYO

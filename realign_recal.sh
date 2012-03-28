@@ -36,7 +36,7 @@ else
         
     if [ $SGE_TASK_ID == 1 ]
     then
-        if [ $analysis == "mayo" ]
+        if [ $analysis == "mayo" -o $analysis == "realign-mayo" ]
         then
             s=`echo $samples | tr ":" " "`
             for sam in $s
@@ -94,7 +94,7 @@ else
 	## update the dash board
 	if [ $SGE_TASK_ID == 1 ]
     then
-        if [ $analysis == "mayo" ]
+        if [ $analysis == "mayo" -o $analysis == "realign-mayo" ]
         then
             s=`echo $samples | tr ":" " "`
             for sam in $s

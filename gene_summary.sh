@@ -216,7 +216,7 @@
 			cat $SNV_dir/$sample.SNV.summary | cut -f2,3,4,5,6,7,8,9 > $SNV_dir/$sample.SNV.tmp
 			cat $INDEL_dir/$sample.INDEL.summary | cut -f2,3,4,5,6,7,8,9 > $INDEL_dir/$sample.INDEL.tmp
 			
-			paste $report_dir/$sample.GeneList.forsummary.txt $report_dir/EntrezID.txt $SNV_dir/$sample.SNV.sum $INDEL_dir/$sample.INDEL.sum $SNV_dir/$sample.SNV.tmp $INDEL_dir/$sample.INDEL.tmp >> $report_dir/$sample.Gene.Summary.txt
+			paste $report_dir/$sample.GeneList.forsummary.txt $report_dir/$sample.EntrezID.txt $SNV_dir/$sample.SNV.sum $INDEL_dir/$sample.INDEL.sum $SNV_dir/$sample.SNV.tmp $INDEL_dir/$sample.INDEL.tmp >> $report_dir/$sample.Gene.Summary.txt
 			
 			rm $SNV_dir/$sample.SNV.tmp $INDEL_dir/$sample.INDEL.tmp $report_dir/$sample.GeneList.forsummary.txt $INDEL_dir/$sample.INDEL.summary $INDEL_dir/$sample.INDEL.sum $SNV_dir/$sample.SNV.summary $SNV_dir/$sample.SNV.sum $report_dir/$sample.EntrezID.txt
 			rm $report_dir/$sample.gene.temp

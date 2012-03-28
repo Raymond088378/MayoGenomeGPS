@@ -31,7 +31,7 @@ else
 ##############################################################		
     
     numbers=$input_dir/numbers
-	if [ $analysis == "mayo" ]
+	if [ $analysis == "mayo" -o $analysis == "realign-mayo" ]
 	then
 		pos=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | grep -n $sample | cut -d ":" -f1)
 		lanes=$( cat $run_info | grep -w '^LANEINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tail -n 1 | tr "," " ")
@@ -789,7 +789,7 @@ else
         done
 	fi 
 	### update dash board
-	if [ $analysis == "mayo" ]
+	if [ $analysis == "mayo" -o $analysis == "realign-mayo" ]
 	then
 		pos=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | grep -n $sample | cut -d ":" -f1)
 		lanes=$( cat $run_info | grep -w '^LANEINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tail -n 1 | tr "," " ")

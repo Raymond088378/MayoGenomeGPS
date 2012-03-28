@@ -422,7 +422,7 @@ else    {
 				}
 			}
 			elsif ($tool eq 'exome')	{
-				if ($analysis eq 'realignment' || $analysis eq 'mayo' || $analysis eq 'external')	{
+				if ($analysis eq 'realignment' || $analysis eq 'realign-mayo' || $analysis eq 'mayo' || $analysis eq 'external')	{
 					#print "error\n";
 					@To_find=("Total Reads","Mapped Reads","Percent duplication","Realigned Mapped Reads","Mapped Reads(in CaptureRegion)","Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","SNVs in CaptureRegion","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total SNVs","Transition to Trasnversion Ratio","Nonsense","Missense","Coding-synonymous","Coding-notMod3","Splice-3","Splice-5","UTR-3","UTR-5","Total INDELs (${SNV_caller})","Filtered INDELs (${SNV_caller})","INDELs in CodingRegion","INDELs in CaptureRegion","In Coding","Leading to Frameshift","Splice-3","Splice-5","UTR-3","UTR-5");
 				}

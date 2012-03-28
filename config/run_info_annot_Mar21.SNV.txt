@@ -16,8 +16,8 @@ GROUPNAMES=NA
 LABINDEXES=-:-
 LANEINDEX=1:2
 CHRINDEX=21:22
-TOOL_INFO=/data2/bsi/RandD/WG_test/random/config/tool_info.txt
-SAMPLE_INFO=/data2/bsi/RandD/WG_test/random/config/sample_info.annot.SNV.txt
+TOOL_INFO= /projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/trunk/config/tool_info.txt
+SAMPLE_INFO= /projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/trunk/config/sample_info.annot.SNV.txt
 OUTPUT_FOLDER=annotationModule_SNV
 QUEUE=ngs-ext -l lowp=TRUE
 CENTER=MAYO

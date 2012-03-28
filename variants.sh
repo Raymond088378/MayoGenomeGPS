@@ -50,7 +50,7 @@ else
 	bam=chr${chr}.cleaned.bam
 	if [ $SGE_TASK_ID == 1 ]
     then
-        if [ $analysis == "mayo" ]
+        if [ $analysis == "mayo" -o $analysis == "realign-mayo" ]
         then
             s=`echo $samples | tr ":" " "`
             for sam in $s
@@ -91,7 +91,7 @@ else
 
     if [ ! -s $input/$bam ]
     then
-        echo "ERROR : variant_calls_per_chr File $input/$bam does not exist"
+        echo "ERROR : variants.sh File $input/$bam does not exist"
         exit 1
     fi
     
@@ -245,7 +245,7 @@ else
 					rm $output/$sample.variants.chr${chr}.raw.snv.all.vcf $output/$sample.variants.chr${chr}.raw.indel.all.vcf
                     rm $output/$sample.variants.chr${chr}.raw.snv.all.vcf.idx $output/$sample.variants.chr${chr}.raw.indel.all.vcf.idx    
 				else
-					echo "ERROR: merging indels and snvs failed for $sample (variant_calls_per_chr.sh)"
+					echo "ERROR: merging indels and snvs failed for $sample (variants.sh)"
 					exit 1;
 				fi		
 				cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "N" || $0 ~ /^#/' | grep -v "\./\." > $output/$sample.variants.chr${chr}.raw.vcf
@@ -287,7 +287,7 @@ else
 		fi
 		if [ ! -s $output/$sample.variants.chr${chr}.raw.vcf ]
         then
-            echo "ERROR : variant_calls_per_chr.sh File $output/$sample.variants.chr${chr}.raw.vcf not generated "
+            echo "ERROR : variants.sh File $output/$sample.variants.chr${chr}.raw.vcf not generated "
             exit 1
         fi
 	else
@@ -307,7 +307,7 @@ else
 
             if [ ! -s $output/$snv ]
             then		
-                echo "ERROR :variants_calls_per_chr. SomaticSnipper failed, file $output/$snv not generated "
+                echo "ERROR :variants.sh SomaticSnipper failed, file $output/$snv not generated "
                 exit 1
             fi
             
@@ -339,7 +339,7 @@ else
                 mv $output/$sample.chr$chr.snv.vcf.temp $output/$sample.chr$chr.snv.vcf
                 rm $output/$sample.chr$chr.snv.triallele.out
             else		
-                echo "ERROR : variant_calls_per_chr.sh.SNV VariantAnnotator failed, file:$output/$sample.chr$chr.snv.vcf.temp"
+                echo "ERROR : variants.sh SNV VariantAnnotator failed, file:$output/$sample.chr$chr.snv.vcf.temp"
                 exit 1
             fi
 
@@ -347,7 +347,7 @@ else
             then
                 mv $output/$sample.chr$chr.snv.vcf.temp.idx $output/$sample.chr$chr.snv.vcf.idx
             else	
-                echo "ERROR: variant_calls_per_chr.sh. SNV VariantAnnotator did not generated index, file: $output/$sample.chr$chr.snv.vcf.idx" 
+                echo "ERROR: variants.sh SNV VariantAnnotator did not generated index, file: $output/$sample.chr$chr.snv.vcf.idx" 
                 exit 1
             fi
             
@@ -366,7 +366,7 @@ else
 
             if [ ! -s $output/$indel ]
             then
-                echo "ERROR : variants_calls_per_chr. SomaticIndelDetector failed, file $output/$indel not generated "
+                echo "ERROR : variants.sh SomaticIndelDetector failed, file $output/$indel not generated "
                 exit 1
             else
                 rm $output/$indel_v
@@ -389,7 +389,7 @@ else
             then
                 mv $output/$indel.temp $output/$indel
             else
-                echo "ERROR : variant_calls_per_chr.sh.Indel VariantAnnotator failed, file:$output/$indel.temp"
+                echo "ERROR : variants.sh Indel VariantAnnotator failed, file:$output/$indel.temp"
                 exit 1;
             fi
 
@@ -397,7 +397,7 @@ else
             then
                 mv $output/$indel.temp.idx $output/$indel.idx	
             else	
-                echo "ERROR: variant_calls_per_chr.sh. SNV VariantAnnotator did not generated index, file: $output/$indel.temp.idx"
+                echo "ERROR: variants.sh SNV VariantAnnotator did not generated index, file: $output/$indel.temp.idx"
                 exit 1;
             fi
         done	
@@ -415,7 +415,7 @@ else
     
         if [ ! -s $output/variants.chr${chr}.raw.vcf ]
         then		
-            echo "ERROR : variants_calls_per_chr. Unified Genotyper failed, file $output/variants.chr${chr}.raw.vcf not generated "
+            echo "ERROR : variants.sh Unified Genotyper failed, file $output/variants.chr${chr}.raw.vcf not generated "
         fi
     fi
     ### after this we get multiple indels and snp files which need to be merged for Multi samples but just filter for 	
@@ -442,7 +442,7 @@ else
 
         if [ ! -s $output/MergeAllSamples.chr$chr.Indels.raw.vcf ]
         then		
-            echo "ERROR : variants_calls_per_chr. CombineVariants indels failed, file $output/MergeAllSamples.chr$chr.Indels.raw.vcf not generated "
+            echo "ERROR : variants.sh CombineVariants indels failed, file $output/MergeAllSamples.chr$chr.Indels.raw.vcf not generated "
             exit 1;
         else
             rm $input_files
@@ -470,7 +470,7 @@ else
 
         if [ ! -s $output/MergeAllSamples.chr$chr.snvs.raw.vcf ]
         then	
-            echo "ERROR : variants_calls_per_chr. CombineVariants snv failed, file $output/MergeAllSamples.chr$chr.snvs.raw.vcf not generated "
+            echo "ERROR : variants.sh CombineVariants snv failed, file $output/MergeAllSamples.chr$chr.snvs.raw.vcf not generated "
             exit 1;
         else
             rm $input_files
@@ -486,7 +486,7 @@ else
 
         if [ ! -s $output/MergeAllSamples.chr$chr.raw.vcf ]
         then		
-            echo "ERROR : variants_calls_per_chr. CombineVariants Indel, Snv failed, file $output/MergeAllSamples.chr$chr.raw.vcf not generated "
+            echo "ERROR : variants.sh CombineVariants Indel, Snv failed, file $output/MergeAllSamples.chr$chr.raw.vcf not generated "
             exit 1;
         else
             rm $output/MergeAllSamples.chr$chr.snvs.raw.vcf $output/MergeAllSamples.chr$chr.Indels.raw.vcf
@@ -520,7 +520,7 @@ else
     fi
 	if [ $SGE_TASK_ID == 1 ]
     then
-        if [ $analysis == "mayo" ]
+        if [ $analysis == "mayo" -o $analysis == "realign-mayo" ]
         then
             s=`echo $samples | tr ":" " "`
             for sam in $s

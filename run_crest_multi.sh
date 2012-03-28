@@ -142,6 +142,7 @@ else
 			status=`$blat/gfServer status localhost $blat_port | wc -l`;
 			if [ "$status" -le 1 ]
 			then
+				rm $output_dir/$sample/log/blat.$sample.$chr.txt
 				$blat/gfServer start localhost $blat_port -log=$output_dir/$sample/log/blat.$sample.$chr.txt $blat_ref  &
 				sleep 2m
 			fi

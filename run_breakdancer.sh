@@ -65,7 +65,7 @@ else
 ########################################################	
 ######		
 
-    PERL5LIB=$perllib;
+    PERL5LIB=$perllib:$breakdancer;
     PATH=$samtools:$PATH;
 
     if [ $multi != "YES" ]
@@ -77,11 +77,11 @@ else
 	    out=$output_dir/$samples/
 	    ## extarcting bam for $sample
 	    $samtools/samtools view -h $input_bam  | cut -f 1-11 | $samtools/samtools view -bS - > $out/$samples.$chr.bam
-	    $perl $breakdancer/perl/bam2cfg.pl $out/$samples.$chr.bam > $out/$samples.$chr.cfg
+	    $perl $breakdancer/bam2cfg.pl $out/$samples.$chr.bam > $out/$samples.$chr.cfg
 			
 	    if [ -s $out/$samples.$chr.cfg ]
 	    then
-			$breakdancer/cpp/breakdancer_max -c 5 -r 10 $out/$samples.$chr.cfg > $out/$samples.$chr.break
+			$breakdancer/breakdancer_max -c 5 -r 10 $out/$samples.$chr.cfg > $out/$samples.$chr.break
 			cat $out/$samples.$chr.break |  sort -n -k 2,12n > $out/$samples.$chr.break.sorted
 			#mv $out/$sample.$chr.break.sorted $out/$sample.$chr.break
 			if [ -s $out/$samples.$chr.break.sorted ]
@@ -114,12 +114,12 @@ else
 		$samtools/samtools view -h $input_bam | head -n 10000 | cut -f 1-11 | $samtools/samtools view -bS - > $out/$samples.tmp.bam
 		if [ -s $out/$samples.tmp.bam ]
 		then
-			$perl $breakdancer/perl/bam2cfg.pl $out/$samples.tmp.bam > $out/$samples.inter.cfg
+			$perl $breakdancer/bam2cfg.pl $out/$samples.tmp.bam > $out/$samples.inter.cfg
 			if [ -s $out/$samples.inter.cfg ]
 			then
 				rm $out/$samples.tmp.bam
 				ln -s $input_bam $out/$samples.tmp.bam
-				$breakdancer/cpp/breakdancer_max -t $out/$samples.inter.cfg > $out/$samples.inter.break
+				$breakdancer/breakdancer_max -t $out/$samples.inter.cfg > $out/$samples.inter.break
 				cat $out/$samples.inter.break |  sort -n -k 2,12n > $out/$samples.inter.break.sorted
 				# mv $out/$sample.inter.break.sorted $out/$sample.inter.break
 				if [ -s $out/$samples.inter.break.sorted  ]
@@ -161,11 +161,11 @@ else
 	    then	
             out=$output_dir/$sample/
             $samtools/samtools view -h $input_bam  | cut -f 1-11 | $samtools/samtools view -bS - >  $out/$sample.${chr}.bam
-            $perl $breakdancer/perl/bam2cfg.pl $out/$sample.$chr.bam > $out/$sample.$chr.cfg
+            $perl $breakdancer/bam2cfg.pl $out/$sample.$chr.bam > $out/$sample.$chr.cfg
 		
             if [ -s $out/$sample.$chr.cfg ]
             then
-                $breakdancer/cpp/breakdancer_max -c 5 -r 10 $out/$sample.$chr.cfg > $out/$sample.$chr.break
+                $breakdancer/breakdancer_max -c 5 -r 10 $out/$sample.$chr.cfg > $out/$sample.$chr.break
                 cat $out/$sample.$chr.break |  sort -n -k 2,12n > $out/$sample.$chr.break.sorted
                 #mv $out/$sample.$chr.break.sorted $out/$sample.$chr.break
                 # filter_sv_break $out/$sample.$chr.break.sorted $out/$sample.$chr.break
@@ -199,12 +199,12 @@ else
 
             if [ -s $out/$sample.tmp.bam ]
             then
-                $perl $breakdancer/perl/bam2cfg.pl $out/$sample.tmp.bam > $out/$sample.inter.cfg
+                $perl $breakdancer/bam2cfg.pl $out/$sample.tmp.bam > $out/$sample.inter.cfg
                 if [ -s $output_dir/$sample/$sample.inter.cfg ]
                 then
                     rm $out/$sample.tmp.bam
                     ln -s $input_bam $out/$sample.tmp.bam   
-                    $breakdancer/cpp/breakdancer_max -r 10 -t $out/$sample.inter.cfg > $out/$sample.inter.break
+                    $breakdancer/breakdancer_max -r 10 -t $out/$sample.inter.cfg > $out/$sample.inter.break
                     cat $out/$sample.inter.break |  sort -n -k 2,12n > $out/$sample.inter.break.sorted
                     # mv $out/$sample.inter.break.sorted $out/$sample.inter.break
                     #filter_sv_break $out/$sample.inter.break.sorted $out/$sample.inter.break
