@@ -157,6 +157,7 @@
 					print OUT "\t$print ($per_mapped \%)";
 				}
 			}	
+		### saurabh
 		if ($analysis eq 'variant' )	{
 			if ( $key eq '37')	{
 					for (my $c=0; $c < $num_samples;$c++)	{
