@@ -122,6 +122,7 @@ else
             rm $output_dir/$sample/log/blat.$sample.$chr.txt
 			$blat/gfServer start localhost $blat_port -log=$output_dir/$sample/log/blat.$sample.$chr.txt $blat_ref  &
             sleep 2m
+			echo "WARNING : Crest_single: Blat server available at port: $blat_port. Sample:$sample Chr:$chr "
         fi
     fi
 	
