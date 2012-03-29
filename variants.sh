@@ -226,8 +226,14 @@ else
 				if [ $only_ontarget == "YES" ]
                 then
                     perl $script_path/snvmix_to_vcf.pl -i $output/$sample.variants.chr${chr}.raw.snv.all -o $output/$sample.variants.chr${chr}.raw.snv.all.vcf -s $sample -p $prob_filter -d $depth_filter
-                    $bedtools/intersectBed -a $output/$sample.variants.chr${chr}.raw.snv.all.vcf -b $output/$sample.$chr.target.bed -wa -header > $output/$sample.variants.chr${chr}.raw.snv.all.vcf.i
-                    mv $output/$sample.variants.chr${chr}.raw.snv.all.vcf.i $output/$sample.variants.chr${chr}.raw.snv.all.vcf
+                    len=`cat $output/$sample.$chr.target.bed |wc -l`
+					if [ $len -gt 0 ]
+					then
+						$bedtools/intersectBed -a $output/$sample.variants.chr${chr}.raw.snv.all.vcf -b $output/$sample.$chr.target.bed -wa -header > $output/$sample.variants.chr${chr}.raw.snv.all.vcf.i
+                    else
+						cp $output/$sample.variants.chr${chr}.raw.snv.all.vcf $output/$sample.variants.chr${chr}.raw.snv.all.vcf.i	
+					fi	
+					mv $output/$sample.variants.chr${chr}.raw.snv.all.vcf.i $output/$sample.variants.chr${chr}.raw.snv.all.vcf
                     rm $output/$sample.$chr.target.bed
                 else
                     perl $script_path/snvmix_to_vcf.pl -i $output/$sample.variants.chr${chr}.raw.snv.all -o $output/$sample.variants.chr${chr}.raw.snv.all.vcf -s $sample
