@@ -198,11 +198,13 @@ else
         elif [ $SNV_caller == "SNVMIX" ]
 		then
 			### call indels using GATK
-			if [ $all_sites == "YES" ]
+			if [[ $all_sites == "YES"  && $tool == "exome" ]]
 			then
-                if [ $only_ontarget == "YES" ]
+                cat $TargetKit | grep -w chr$chr > $output/$sample.$chr.target.bed
+                len=`cat $output/$sample.$chr.target.bed |wc -l`
+                if [[ $only_ontarget == "YES" && $len -gt 0 ]]
                 then
-                    parm="-L $output/$sample.$chr.target.bed" 
+                    param="-L $output/$sample.$chr.target.bed" 
                 else
                     param="-L chr${chr}"
                 fi
@@ -214,7 +216,7 @@ else
                 --output_mode EMIT_ALL_SITES \
                 -glm INDEL \
                 -nt $threads \
-                $parm \
+                $param \
                 -I $output/$sample.chr${chr}-sorted.bam \
                 --dbsnp $dbSNP \
                 --out $output/$sample.variants.chr${chr}.raw.indel.all.vcf 
