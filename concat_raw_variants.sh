@@ -47,7 +47,7 @@ else
 	do
 		inputfile=$var_dir/raw.chr$chr.INDEL.vcf.gz 
 		inputfile_i=$var_dir/raw.chr$chr.INDEL.vcf.gz.tbi 
-		inputargs="$inputfile "$inputargs
+		indexes="$inputfile_i " $indexes
 		inputargs="$inputfile "$inputargs
 	done
 	
