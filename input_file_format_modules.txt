@@ -1,0 +1,47 @@
+### Saurabh Baheti
+### Mar 28 2012
+#### INPUT file format
+
+1. alignment/mayo/external module
+
+FASTQ files (if zipped file name should end with .gz)
+
+2. realignment/realign-mayo module
+
+aligned BAM files 
+
+3. variant module
+
+realigd BAM files
+
+4. annotation module  (positions should be 0 based)
+
+VCF format file (SNV or INDEL or BOTH)
+
+TXT format file
+
+SNV (four columns chromosome, position, Ref Allel, Alt Allele )
+*** no header
+*** chr should be chr1 etc.
+
+example
+
+chr1	100	A	T
+chr1	200	C	T
+.....
+
+INDEL (five columns : chromsome, start, stop, RefAllele, Alt Allele)
+*** no header
+*** chr should be chr1 etc.
+*** INSERTION : start=stop
+*** DELETION : stop=start + #of bases deleted
+
+example
+
+chr1	100	100	A	AT
+chr1	200	202	ATC	A
+......
+
+
+
+	
