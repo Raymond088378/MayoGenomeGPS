@@ -77,7 +77,7 @@ VARIANT_TYPE=BOTH/SNV/INDEL
 SNV_CALLER=GATK/SNVMIX
 SAMPLEINFORMATION=test run (free text )
 DELIVERY_FOLDER=NA or /path/to/delivery folder to transfer realigned bams 
-
+TERTIARY_FOLDER=NA or /path/to/tertiary folder for Biostats
 
 ### TOOL info file
 ### paramters with you can play with (user must provide these default values if there is no change)

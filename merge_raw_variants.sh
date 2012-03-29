@@ -52,7 +52,7 @@ else
 #	$inputargs \
 #	-o $var_dir/raw.vcf
 	
-	$vcftools/bin/vcf-merge $inputargs > $var_dir/raw.vcf
+	$vcftools/bin/vcf-merge -s $inputargs > $var_dir/raw.vcf
 	
 
 	### raw SNV

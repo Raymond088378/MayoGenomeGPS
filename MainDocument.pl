@@ -266,7 +266,7 @@ else    {
 	print OUT "</ul></ul>\n";
 	print OUT "<p align='right'><a href=\"#top\">-top-</a></p>";
 	print OUT "<a name=\"Analysis Plan\" id=\"Analysis Plan\"></a><p align='left'><b><u> III. Analysis Plan</p></b></u><br>\n";
-	print OUT "<b><P ALIGN=\"CENTER\">What's new: New features and updates </b> <a href= \"http://bioinformatics.mayo.edu/BMI/bin/view/Main/BioinformaticsCore/Analytics/TREAT\"target=\"_blank\">Genome_GPS</a></P>";
+	print OUT "<b><P ALIGN=\"CENTER\">What's new: New features and updates </b> <a href= \"http://bioinformatics.mayo.edu/BMI/bin/view/Main/BioinformaticsCore/Analytics/GENOME_GPS\"target=\"_blank\">Genome_GPS</a></P>";
 	print OUT "<a href= \"${tool}_workflow.png\"target=\"_blank\"><P ALIGN=\"CENTER\"><img border=\"0\" src=\"${tool}_workflow.png\" width=\"700\" height=\"478\"><b><u><caption align=\"bottom\">Genome_GPS_0.1</caption></b></u></p>";
 	print OUT "<p align='right'><a href=\"#top\">-top-</a></p>";
 	print OUT "<a name=\"Received Data\" id=\"Received Data\"></a><p align='left'><b><u> IV. Received Data</p></b></u> 

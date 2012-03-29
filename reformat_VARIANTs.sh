@@ -31,9 +31,27 @@ else
 		snv_file=$( cat $sample_info | grep -w SNV:${sample} | cut -d '=' -f2)
 		indel_file=$( cat $sample_info | grep -w INDEL:${sample} | cut -d '=' -f2)
 		## format the vcf file to text delimited file
-		perl $script_path/parse.vcf.INDEL.pl -i $input/$indel_file -o $output/$sample.indels -s $sample
-		perl $script_path/parse.vcf.SNV.pl -i $input/$snv_file -o $output/$sample.snvs -s $sample
-		for chr in $chrs
+        ## determine if the file is vcf or text input
+        
+        type=`cat $input/$snv_file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'` 
+        if [ $type == "vcf" ]
+        then
+            perl $script_path/parse.vcf.SNV.pl -i $input/$snv_file -o $output/$sample.snvs -s $sample
+		elif [ $type == "txt" ]
+        then
+            cat $input/$snv_file | awk '{print $0"\t-\t-\t-\t-\t-"}' > $output/$sample.snvs
+        fi
+        
+        type=`cat $input/$indel_file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'`
+        if [ $type == "vcf" ]
+        then
+            perl $script_path/parse.vcf.INDEL.pl -i $input/$indel_file -o $output/$sample.indels -s $sample
+		elif [ $type == "txt" ]
+        then
+            cat $input/$indel_file | awk '{print $0"\t-\t-\t-"}' > $output/$sample.indels
+        fi
+
+        for chr in $chrs
 		do
 			## extract the file for the chromosome
 			##SNV
@@ -52,7 +70,15 @@ else
 		if [ $variant_type == "SNV" ]
 		then
 			snv_file=$( cat $sample_info | grep -w SNV:${sample} | cut -d '=' -f2)
-			perl $script_path/parse.vcf.SNV.pl -i $input/$snv_file -o $output/$sample.snvs -s $sample
+            type=`cat $input/$snv_file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'` 
+            if [ $type == "vcf" ]
+            then
+                perl $script_path/parse.vcf.SNV.pl -i $input/$snv_file -o $output/$sample.snvs -s $sample
+            elif [ $type == "txt" ]
+            then
+                cat $input/$snv_file | awk '{print $0"\t-\t-\t-\t-\t-"}' > $output/$sample.snvs
+            fi
+
 			for chr in $chrs	
 			do
 				cat $output/$sample.snvs | grep -w chr${chr} | awk '{print $0"\t1\t0"}' | sort -T $output -n -k 2,12n > $output/$sample.chr${chr}.raw.snvs.bed.i.ToMerge
@@ -62,8 +88,15 @@ else
 		elif [ $variant_type == "INDEL" ]
 		then
 			indel_file=$( cat $sample_info | grep -w INDEL:${sample} | cut -d '=' -f2)
-			perl $script_path/parse.vcf.INDEL.pl -i $input/$indel_file -o $output/$sample.indels -s $sample
-			for chr in $chrs		
+            type=`cat $input/$indel_file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'`
+            if [ $type == "vcf" ]
+            then
+                perl $script_path/parse.vcf.INDEL.pl -i $input/$indel_file -o $output/$sample.indels -s $sample
+            elif [ $type == "txt" ]
+            then
+                cat $input/$indel_file | awk '{print $0"\t-\t-\t-"}' > $output/$sample.indels
+            fi			
+            for chr in $chrs		
 			do
 				cat $output/$sample.indels | grep -w chr${chr} | awk '{print $0"\t1"}' | sort -T $output -n -k 2,12n > $output/$sample.chr${chr}.raw.indels.bed.i.ToMerge
 				`dos2unix $output/$sample.chr${chr}.raw.indels`

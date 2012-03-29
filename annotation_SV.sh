@@ -49,60 +49,67 @@ else
         if [ ! -s $break/$sample.break.vcf ]
         then
             echo "ERROR :anotation.SV.sh $break/$sample.break.vcf is empty"
-            exit 1
+            exit 1;
         fi
         
         cat $crest/$sample.filter.crest.vcf | awk '$0 !~ /#/' | tr ";" "\t" | tr "=" "\t" | awk '{ print $1"\t"$2"\t"$1"\t"$12"\t"$10"\t"$16}' > $crest/$sample.crest.tmp
         cat $crest/$sample.crest.tmp | awk 'gsub($5, "crest_"$5,$5)1' | tr " " "\t" > $crest/$sample.crest.txt
         cat $break/$sample.break.vcf | awk '$0 !~ /#/' | tr ";" "\t" | tr "=" "\t" | awk '{ print $1"\t"$2"\t"$1"\t"$12"\t"$10"\t"$16}' > $break/$sample.break.tmp
         cat $break/$sample.break.tmp | awk 'gsub($5, "breakdancer_"$5,$5)1' | tr " " "\t" > $break/$sample.breakdancer.txt
-                        
-        ### concatenating & formatting crest and breakdancer files
-        touch $SV_dir/$sample.SV.tmp
-        # cat $break/$sample.breakdancer.txt $crest/$sample.crest.bed > $SV_dir/$sample.tmp
-        cat $break/$sample.breakdancer.txt $crest/$sample.crest.txt > $SV_dir/$sample.tmp
-
-        cat -n $SV_dir/$sample.tmp > $SV_dir/$sample.tmp1
-        cat $SV_dir/$sample.tmp1 | awk '{print $1"\t"$2"\t"$3"\t"$1"\t"$4"\t"$5"\t"$6"\t"$7}' >> $SV_dir/$sample.SV.tmp
-        cat $SV_dir/$sample.SV.tmp |  awk '{if ($3>10000) print $0}' > $SV_dir/$sample.SV.tmp1
-        cat $SV_dir/$sample.SV.tmp1 | awk '{print $2"\t"$3"\t"($3+10000)"\t"$1}' > $SV_dir/$sample.SV.leftend.bed
-        cat $SV_dir/$sample.SV.tmp1 | awk '{print $5"\t"($6-10000)"\t"$6"\t"$4}' > $SV_dir/$sample.SV.rightend.bed
-                                        
-        $bedtools/intersectBed -b $SV_dir/$sample.SV.leftend.bed -a $master_gene_file -wb > $SV_dir/$sample.SV.leftend.intersect.bed
-        $bedtools/intersectBed -b $SV_dir/$sample.SV.rightend.bed -a $master_gene_file -wb > $SV_dir/$sample.SV.rightend.intersect.bed
-        perl $script_path/GeneAnnotation.SV.pl $SV_dir/$sample.SV.tmp $SV_dir/$sample.SV.leftend.intersect.bed $SV_dir/$sample.SV.rightend.intersect.bed $SV_dir/$sample.SV.leftend.annotation.tmp $SV_dir/$sample.SV.rightend.annotation.tmp
-        cat $SV_dir/$sample.SV.leftend.annotation.tmp | tr "^" "\t" | sort -n > $SV_dir/$sample.SV.leftend.annotation.txt
-        cat $SV_dir/$sample.SV.rightend.annotation.tmp | tr "^" "\t" | sort -n > $SV_dir/$sample.SV.rightend.annotation.txt
-        cat $SV_dir/$sample.SV.rightend.annotation.txt | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$6"\t"$5}' > $SV_dir/$sample.SV.rightend.annotation.final.txt
-        paste $SV_dir/$sample.SV.leftend.annotation.txt $SV_dir/$sample.SV.rightend.annotation.final.txt > $SV_dir/$sample.SV.annotated.tmp
-        Rscript $script_path/format_SV_annotation.r $SV_dir/$sample.SV.annotated.tmp $SV_dir/$sample.SV.annot.txt
-        cat $SV_dir/$sample.SV.annot.txt | sed '/NOGENE/s//NA/g' > $SV_dir/$sample.SV.annot.tmp1
-        cat $SV_dir/$sample.SV.annot.tmp1 | cut -f2,3,4,6,7,8,9,10 > $SV_dir/$sample.SV.txt
-        cat $SV_dir/$sample.SV.txt | awk '{print $1"\t"$2"\t"$4"\t"$5"\t"$6"\t"$8"\t"$3"_"$7}' > $SV_dir/$sample.SV.temp
-        cat $SV_dir/$sample.SV.temp | awk '$0 !~ "NA_NA"' > $SV_dir/$sample.SV.temp1
-        #  generating per sample SV annotation files
-        touch $report_dir/$sample.SV.annotated.txt
-        if [ ! -s $SV_dir/$sample.SV.temp1 ]
-        then
-            echo "ERROR : annotation.SV.sh file failed for $sample"
-            exit 1
-        fi    
-        echo -e "ChrA\tPosA\tChrB\tPosB\tSV_Type\tSpanning_Reads\tGeneA_GeneB" >> $report_dir/$sample.SV.annotated.txt
-        cat $SV_dir/$sample.SV.temp1 >> $report_dir/$sample.SV.annotated.txt
         
-        if [ -s $report_dir/$sample.SV.annotated.txt ]
+        if [ ! -s $break/$sample.breakdancer.txt ]
         then
-            # removing intermediate files
-            rm $SV_dir/$sample.tmp $SV_dir/$sample.tmp1
-            rm $break/$sample.breakdancer.txt $crest/$sample.crest.txt $break/$sample.break.tmp $break/$sample.crest.tmp
-		rm $SV_dir/$sample.SV.leftend.bed $SV_dir/$sample.SV.rightend.bed $SV_dir/$sample.SV.tmp $SV_dir/$sample.SV.temp $SV_dir/$sample.SV.tmp1 $SV_dir/$sample.SV.temp1
-            rm $SV_dir/$sample.SV.leftend.intersect.bed $SV_dir/$sample.SV.rightend.intersect.bed
-            rm $SV_dir/$sample.SV.leftend.annotation.tmp $SV_dir/$sample.SV.rightend.annotation.tmp
-            rm $SV_dir/$sample.SV.leftend.annotation.txt $SV_dir/$sample.SV.rightend.annotation.txt $SV_dir/$sample.SV.rightend.annotation.final.txt
-            rm $SV_dir/$sample.SV.annotated.tmp $SV_dir/$sample.SV.annot.txt $SV_dir/$sample.SV.annot.tmp1 $SV_dir/$sample.SV.txt
+            echo "WARNING : no Structual variants for $sample "
+            touch $report_dir/$sample.SV.annotated.txt
         else
-            echo "ERROR : annotation.SV.sh file $report_dir/$sample.SV.annotated.txt is empty"
-        fi    
+
+            ### concatenating & formatting crest and breakdancer files
+            touch $SV_dir/$sample.SV.tmp
+            # cat $break/$sample.breakdancer.txt $crest/$sample.crest.bed > $SV_dir/$sample.tmp
+            cat $break/$sample.breakdancer.txt $crest/$sample.crest.txt > $SV_dir/$sample.tmp
+
+            cat -n $SV_dir/$sample.tmp > $SV_dir/$sample.tmp1
+            cat $SV_dir/$sample.tmp1 | awk '{print $1"\t"$2"\t"$3"\t"$1"\t"$4"\t"$5"\t"$6"\t"$7}' >> $SV_dir/$sample.SV.tmp
+            cat $SV_dir/$sample.SV.tmp |  awk '{if ($3>10000) print $0}' > $SV_dir/$sample.SV.tmp1
+            cat $SV_dir/$sample.SV.tmp1 | awk '{print $2"\t"$3"\t"($3+10000)"\t"$1}' > $SV_dir/$sample.SV.leftend.bed
+            cat $SV_dir/$sample.SV.tmp1 | awk '{print $5"\t"($6-10000)"\t"$6"\t"$4}' > $SV_dir/$sample.SV.rightend.bed
+                                            
+            $bedtools/intersectBed -b $SV_dir/$sample.SV.leftend.bed -a $master_gene_file -wb > $SV_dir/$sample.SV.leftend.intersect.bed
+            $bedtools/intersectBed -b $SV_dir/$sample.SV.rightend.bed -a $master_gene_file -wb > $SV_dir/$sample.SV.rightend.intersect.bed
+            perl $script_path/GeneAnnotation.SV.pl $SV_dir/$sample.SV.tmp $SV_dir/$sample.SV.leftend.intersect.bed $SV_dir/$sample.SV.rightend.intersect.bed $SV_dir/$sample.SV.leftend.annotation.tmp $SV_dir/$sample.SV.rightend.annotation.tmp
+            cat $SV_dir/$sample.SV.leftend.annotation.tmp | tr "^" "\t" | sort -n > $SV_dir/$sample.SV.leftend.annotation.txt
+            cat $SV_dir/$sample.SV.rightend.annotation.tmp | tr "^" "\t" | sort -n > $SV_dir/$sample.SV.rightend.annotation.txt
+            cat $SV_dir/$sample.SV.rightend.annotation.txt | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$6"\t"$5}' > $SV_dir/$sample.SV.rightend.annotation.final.txt
+            paste $SV_dir/$sample.SV.leftend.annotation.txt $SV_dir/$sample.SV.rightend.annotation.final.txt > $SV_dir/$sample.SV.annotated.tmp
+            Rscript $script_path/format_SV_annotation.r $SV_dir/$sample.SV.annotated.tmp $SV_dir/$sample.SV.annot.txt
+            cat $SV_dir/$sample.SV.annot.txt | sed '/NOGENE/s//NA/g' > $SV_dir/$sample.SV.annot.tmp1
+            cat $SV_dir/$sample.SV.annot.tmp1 | cut -f2,3,4,6,7,8,9,10 > $SV_dir/$sample.SV.txt
+            cat $SV_dir/$sample.SV.txt | awk '{print $1"\t"$2"\t"$4"\t"$5"\t"$6"\t"$8"\t"$3"_"$7}' > $SV_dir/$sample.SV.temp
+            cat $SV_dir/$sample.SV.temp | awk '$0 !~ "NA_NA"' > $SV_dir/$sample.SV.temp1
+            #  generating per sample SV annotation files
+            touch $report_dir/$sample.SV.annotated.txt
+            if [ ! -s $SV_dir/$sample.SV.temp1 ]
+            then
+                echo "ERROR : annotation.SV.sh file failed for $sample"
+                exit 1
+            fi    
+            echo -e "ChrA\tPosA\tChrB\tPosB\tSV_Type\tSpanning_Reads\tGeneA_GeneB" >> $report_dir/$sample.SV.annotated.txt
+            cat $SV_dir/$sample.SV.temp1 >> $report_dir/$sample.SV.annotated.txt
+            
+            if [ -s $report_dir/$sample.SV.annotated.txt ]
+            then
+                # removing intermediate files
+                rm $SV_dir/$sample.tmp $SV_dir/$sample.tmp1
+                rm $break/$sample.breakdancer.txt $crest/$sample.crest.txt $break/$sample.break.tmp $break/$sample.crest.tmp
+            rm $SV_dir/$sample.SV.leftend.bed $SV_dir/$sample.SV.rightend.bed $SV_dir/$sample.SV.tmp $SV_dir/$sample.SV.temp $SV_dir/$sample.SV.tmp1 $SV_dir/$sample.SV.temp1
+                rm $SV_dir/$sample.SV.leftend.intersect.bed $SV_dir/$sample.SV.rightend.intersect.bed
+                rm $SV_dir/$sample.SV.leftend.annotation.tmp $SV_dir/$sample.SV.rightend.annotation.tmp
+                rm $SV_dir/$sample.SV.leftend.annotation.txt $SV_dir/$sample.SV.rightend.annotation.txt $SV_dir/$sample.SV.rightend.annotation.final.txt
+                rm $SV_dir/$sample.SV.annotated.tmp $SV_dir/$sample.SV.annot.txt $SV_dir/$sample.SV.annot.tmp1 $SV_dir/$sample.SV.txt
+            else
+                echo "ERROR : annotation.SV.sh file $report_dir/$sample.SV.annotated.txt is empty"
+            fi    
+        fi
     else
         echo "Multi sample"
 		samples=$( cat $sample_info | grep -w "^$group" | cut -d '=' -f2)
@@ -124,51 +131,58 @@ else
 			cat $break/$group.$tumor.somatic.break.vcf | awk '$0 !~ /#/' | tr ";" "\t" | tr "=" "\t" | awk '{ print $1"\t"$2"\t"$1"\t"$12"\t"$10"\t"$16}' > $break/$group.$tumor.break.tmp
 			cat $break/$group.$tumor.break.tmp | awk 'gsub($5, "breakdancer_"$5,$5)1' | tr " " "\t" > $break/$group.$tumor.breakdancer.txt
 							
-			### concatenating & formatting crest and breakdancer files
-			touch $SV_dir/$group.$tumor.SV.tmp
-			cat $break/$group.$tumor.breakdancer.txt $crest/$group.$tumor.crest.txt > $SV_dir/$group.$tumor.tmp
+			if [ ! -s $break/$group.$tumor.breakdancer.txt ]
+            then
+                echo " No Strutural variant for $group.$tumor"
+                touch $report_dir/$group.$tumor.SV.annotated.txt
+                exit 1;
+            else
+                    ### concatenating & formatting crest and breakdancer files
+                touch $SV_dir/$group.$tumor.SV.tmp
+                cat $break/$group.$tumor.breakdancer.txt $crest/$group.$tumor.crest.txt > $SV_dir/$group.$tumor.tmp
 
-			cat -n $SV_dir/$group.$tumor.tmp > $SV_dir/$group.$tumor.tmp1
-			cat $SV_dir/$group.$tumor.tmp1 | awk '{print $1"\t"$2"\t"$3"\t"$1"\t"$4"\t"$5"\t"$6"\t"$7}' >> $SV_dir/$group.$tumor.SV.tmp
-			cat $SV_dir/$group.$tumor.SV.tmp |  awk '{if ($3>10000) print $0}' > $SV_dir/$group.$tumor.SV.tmp1
-			cat $SV_dir/$group.$tumor.SV.tmp1 | awk '{print $2"\t"$3"\t"($3+10000)"\t"$1}' > $SV_dir/$group.$tumor.SV.leftend.bed
-			cat $SV_dir/$group.$tumor.SV.tmp1 | awk '{print $5"\t"($6-10000)"\t"$6"\t"$4}' > $SV_dir/$group.$tumor.SV.rightend.bed
-											
-			$bedtools/intersectBed -b $SV_dir/$group.$tumor.SV.leftend.bed -a $master_gene_file -wb > $SV_dir/$group.$tumor.SV.leftend.intersect.bed
-			$bedtools/intersectBed -b $SV_dir/$group.$tumor.SV.rightend.bed -a $master_gene_file -wb > $SV_dir/$group.$tumor.SV.rightend.intersect.bed
-			perl $script_path/GeneAnnotation.SV.pl $SV_dir/$group.$tumor.SV.tmp $SV_dir/$group.$tumor.SV.leftend.intersect.bed $SV_dir/$group.$tumor.SV.rightend.intersect.bed $SV_dir/$group.$tumor.SV.leftend.annotation.tmp $SV_dir/$group.$tumor.SV.rightend.annotation.tmp
-			cat $SV_dir/$group.$tumor.SV.leftend.annotation.tmp | tr "^" "\t" | sort -n > $SV_dir/$group.$tumor.SV.leftend.annotation.txt
-			cat $SV_dir/$group.$tumor.SV.rightend.annotation.tmp | tr "^" "\t" | sort -n > $SV_dir/$group.$tumor.SV.rightend.annotation.txt
-			cat $SV_dir/$group.$tumor.SV.rightend.annotation.txt | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$6"\t"$5}' > $SV_dir/$group.$tumor.SV.rightend.annotation.final.txt
-			paste $SV_dir/$group.$tumor.SV.leftend.annotation.txt $SV_dir/$group.$tumor.SV.rightend.annotation.final.txt > $SV_dir/$group.$tumor.SV.annotated.tmp
-			Rscript $script_path/format_SV_annotation.r $SV_dir/$group.$tumor.SV.annotated.tmp $SV_dir/$group.$tumor.SV.annot.txt
-			cat $SV_dir/$group.$tumor.SV.annot.txt | sed '/NOGENE/s//NA/g' > $SV_dir/$group.$tumor.SV.annot.tmp1
-			cat $SV_dir/$group.$tumor.SV.annot.tmp1 | cut -f2,3,4,6,7,8,9,10 > $SV_dir/$group.$tumor.SV.txt
-			cat $SV_dir/$group.$tumor.SV.txt | awk '{print $1"\t"$2"\t"$4"\t"$5"\t"$6"\t"$8"\t"$3"_"$7}' > $SV_dir/$group.$tumor.SV.temp
-			cat $SV_dir/$group.$tumor.SV.temp | awk '$0 !~ "NA_NA"' > $SV_dir/$group.$tumor.SV.temp1
-			#  generating per sample SV annotation files
-			touch $report_dir/$group.$tumor.SV.annotated.txt
-			if [ ! -s $SV_dir/$group.$tumor.SV.temp1 ]
-			then
-				echo "ERROR : annotation.SV.sh file failed for $tumor"
-				exit 1
-			fi    
-			echo -e "ChrA\tPosA\tChrB\tPosB\tSV_Type\tSpanning_Reads\tGeneA_GeneB" >> $report_dir/$group.$tumor.SV.annotated.txt
-			cat $SV_dir/$group.$tumor.SV.temp1 >> $report_dir/$group.$tumor.SV.annotated.txt
-        
-			if [ -s $report_dir/$group.$tumor.SV.annotated.txt ]
-			then
-				# removing intermediate files
-				rm $SV_dir/$group.$tumor.tmp $SV_dir/$group.$tumor.tmp1
-				rm $break/$group.$tumor.breakdancer.txt $crest/$group.$tumor.crest.txt $break/$group.$tumor.break.tmp $break/$group.$tumor.crest.tmp
-				rm $SV_dir/$group.$tumor.SV.leftend.bed $SV_dir/$group.$tumor.SV.rightend.bed $SV_dir/$group.$tumor.SV.tmp $SV_dir/$group.$tumor.SV.temp $SV_dir/$group.$tumor.SV.tmp1 $SV_dir/$group.$tumor.SV.temp1
-				rm $SV_dir/$group.$tumor.SV.leftend.intersect.bed $SV_dir/$group.$tumor.SV.rightend.intersect.bed
-				rm $SV_dir/$group.$tumor.SV.leftend.annotation.tmp $SV_dir/$group.$tumor.SV.rightend.annotation.tmp
-				rm $SV_dir/$group.$tumor.SV.leftend.annotation.txt $SV_dir/$group.$tumor.SV.rightend.annotation.txt $SV_dir/$group.$tumor.SV.rightend.annotation.final.txt
-				rm $SV_dir/$group.$tumor.SV.annotated.tmp $SV_dir/$group.$tumor.SV.annot.txt $SV_dir/$group.$tumor.SV.annot.tmp1 $SV_dir/$group.$tumor.SV.txt
-			else
-				echo "ERROR : annotation.SV.sh file $report_dir/$group.$tumor.SV.annotated.txt is empty"
-			fi  
+                cat -n $SV_dir/$group.$tumor.tmp > $SV_dir/$group.$tumor.tmp1
+                cat $SV_dir/$group.$tumor.tmp1 | awk '{print $1"\t"$2"\t"$3"\t"$1"\t"$4"\t"$5"\t"$6"\t"$7}' >> $SV_dir/$group.$tumor.SV.tmp
+                cat $SV_dir/$group.$tumor.SV.tmp |  awk '{if ($3>10000) print $0}' > $SV_dir/$group.$tumor.SV.tmp1
+                cat $SV_dir/$group.$tumor.SV.tmp1 | awk '{print $2"\t"$3"\t"($3+10000)"\t"$1}' > $SV_dir/$group.$tumor.SV.leftend.bed
+                cat $SV_dir/$group.$tumor.SV.tmp1 | awk '{print $5"\t"($6-10000)"\t"$6"\t"$4}' > $SV_dir/$group.$tumor.SV.rightend.bed
+                                                
+                $bedtools/intersectBed -b $SV_dir/$group.$tumor.SV.leftend.bed -a $master_gene_file -wb > $SV_dir/$group.$tumor.SV.leftend.intersect.bed
+                $bedtools/intersectBed -b $SV_dir/$group.$tumor.SV.rightend.bed -a $master_gene_file -wb > $SV_dir/$group.$tumor.SV.rightend.intersect.bed
+                perl $script_path/GeneAnnotation.SV.pl $SV_dir/$group.$tumor.SV.tmp $SV_dir/$group.$tumor.SV.leftend.intersect.bed $SV_dir/$group.$tumor.SV.rightend.intersect.bed $SV_dir/$group.$tumor.SV.leftend.annotation.tmp $SV_dir/$group.$tumor.SV.rightend.annotation.tmp
+                cat $SV_dir/$group.$tumor.SV.leftend.annotation.tmp | tr "^" "\t" | sort -n > $SV_dir/$group.$tumor.SV.leftend.annotation.txt
+                cat $SV_dir/$group.$tumor.SV.rightend.annotation.tmp | tr "^" "\t" | sort -n > $SV_dir/$group.$tumor.SV.rightend.annotation.txt
+                cat $SV_dir/$group.$tumor.SV.rightend.annotation.txt | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$6"\t"$5}' > $SV_dir/$group.$tumor.SV.rightend.annotation.final.txt
+                paste $SV_dir/$group.$tumor.SV.leftend.annotation.txt $SV_dir/$group.$tumor.SV.rightend.annotation.final.txt > $SV_dir/$group.$tumor.SV.annotated.tmp
+                Rscript $script_path/format_SV_annotation.r $SV_dir/$group.$tumor.SV.annotated.tmp $SV_dir/$group.$tumor.SV.annot.txt
+                cat $SV_dir/$group.$tumor.SV.annot.txt | sed '/NOGENE/s//NA/g' > $SV_dir/$group.$tumor.SV.annot.tmp1
+                cat $SV_dir/$group.$tumor.SV.annot.tmp1 | cut -f2,3,4,6,7,8,9,10 > $SV_dir/$group.$tumor.SV.txt
+                cat $SV_dir/$group.$tumor.SV.txt | awk '{print $1"\t"$2"\t"$4"\t"$5"\t"$6"\t"$8"\t"$3"_"$7}' > $SV_dir/$group.$tumor.SV.temp
+                cat $SV_dir/$group.$tumor.SV.temp | awk '$0 !~ "NA_NA"' > $SV_dir/$group.$tumor.SV.temp1
+                #  generating per sample SV annotation files
+                touch $report_dir/$group.$tumor.SV.annotated.txt
+                if [ ! -s $SV_dir/$group.$tumor.SV.temp1 ]
+                then
+                    echo "ERROR : annotation.SV.sh file failed for $tumor"
+                    exit 1
+                fi    
+                echo -e "ChrA\tPosA\tChrB\tPosB\tSV_Type\tSpanning_Reads\tGeneA_GeneB" >> $report_dir/$group.$tumor.SV.annotated.txt
+                cat $SV_dir/$group.$tumor.SV.temp1 >> $report_dir/$group.$tumor.SV.annotated.txt
+            
+                if [ -s $report_dir/$group.$tumor.SV.annotated.txt ]
+                then
+                    # removing intermediate files
+                    rm $SV_dir/$group.$tumor.tmp $SV_dir/$group.$tumor.tmp1
+                    rm $break/$group.$tumor.breakdancer.txt $crest/$group.$tumor.crest.txt $break/$group.$tumor.break.tmp $break/$group.$tumor.crest.tmp
+                    rm $SV_dir/$group.$tumor.SV.leftend.bed $SV_dir/$group.$tumor.SV.rightend.bed $SV_dir/$group.$tumor.SV.tmp $SV_dir/$group.$tumor.SV.temp $SV_dir/$group.$tumor.SV.tmp1 $SV_dir/$group.$tumor.SV.temp1
+                    rm $SV_dir/$group.$tumor.SV.leftend.intersect.bed $SV_dir/$group.$tumor.SV.rightend.intersect.bed
+                    rm $SV_dir/$group.$tumor.SV.leftend.annotation.tmp $SV_dir/$group.$tumor.SV.rightend.annotation.tmp
+                    rm $SV_dir/$group.$tumor.SV.leftend.annotation.txt $SV_dir/$group.$tumor.SV.rightend.annotation.txt $SV_dir/$group.$tumor.SV.rightend.annotation.final.txt
+                    rm $SV_dir/$group.$tumor.SV.annotated.tmp $SV_dir/$group.$tumor.SV.annot.txt $SV_dir/$group.$tumor.SV.annot.tmp1 $SV_dir/$group.$tumor.SV.txt
+                else
+                    echo "ERROR : annotation.SV.sh file $report_dir/$group.$tumor.SV.annotated.txt is empty"
+                fi  
+            fi
         done
 	fi
 	echo `date`

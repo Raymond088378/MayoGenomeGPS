@@ -333,14 +333,21 @@ else
 			HTML=`qsub $args -N $type.$version.generate_html.$run_num -hold_jid ${job_ids}${job_ids_summary} $script_path/generate_html.sh $output_dir $run_info`
 			if [[  $tool == "exome"  && $all_sites == "YES" ]]
 			then
-				qsub $args -N $type.$version.merge_raw_variants.$run_num -hold_jid ${job_ids}${job_ids_summary} $script_path/merge_raw_variants.sh $output_dir $run_info
+				RAW=`qsub $args -N $type.$version.merge_raw_variants.$run_num -hold_jid ${job_ids}${job_ids_summary} $script_path/merge_raw_variants.sh $output_dir $run_info`
+                job_id_raw=`echo $RAW | cut -d ' ' -f3 | tr "\n" ","`
 			fi	
 			
 		else
 			job_ids=$( cat $job_ids_dir/ALIGN |  cut -d ' ' -f3 | tr "\n" ",")
 			NUMBERS=`qsub $args -N $type.$version.sample_numbers.$run_num -hold_jid $job_ids -t 1-$numsamples:1 $script_path/sample_numbers.sh $output_dir $run_info`
             job_ids=`echo $NUMBERS | cut -d ' ' -f3 | cut -d '.' -f1 | tr "\n" ","`
-            HTML=`qsub $args -N $type.$version.generate_html.$run_num -hold_jid ${job_ids} $script_path/generate_html.sh $output_dir $run_info`
+            if [[  $tool == "exome"  && $all_sites == "YES" ]]
+            then
+                hold="-hold_jid ${job_ids}${job_id_raw}"
+            else
+                hold="-hold_jid ${job_ids}"
+            fi
+            HTML=`qsub $args -N $type.$version.generate_html.$run_num $hold $script_path/generate_html.sh $output_dir $run_info`
 		fi	
 		echo `date`        
 	else
