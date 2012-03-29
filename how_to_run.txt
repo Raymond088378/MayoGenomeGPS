@@ -1,0 +1,40 @@
+##Mar 28 2012
+## Saurabh Baheti
+
+================
+CONFIG FILES
+================
+
+To run the workflow user needs to make three configuration file
+1. Run info file
+2. Sample Info file
+3. Tool Info file
+
+***  Specs about the configuration file is mentioned in a readme file in the same folder.
+*** example of each type of config file is provided in the config folder. Each field in the run info and tool info is mandatory.
+
+##possible error while creating the config files
+
+1. trailing spaces, user can just use this sed command to get rid of trailing
+space.
+
+cat <file> | sed -e "s/ *$//" > <file1>
+
+2. leading spaces, user can just use this sed command to get rid of leading
+spaces.
+
+cat <file> | sed -e "s/^ *//" > <file1>
+
+
+=============
+HOW TO RUN
+=============
+
+
+$ <path/to/workflow scripts/>/whole_genome.sh
+
+example :
+
+/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/trunk/whole_genome.sh 
+Usage: <Please specify path to run_info.txt file> 
+
