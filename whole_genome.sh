@@ -333,8 +333,10 @@ else
 			HTML=`qsub $args -N $type.$version.generate_html.$run_num -hold_jid ${job_ids}${job_ids_summary} $script_path/generate_html.sh $output_dir $run_info`
 			if [[  $tool == "exome"  && $all_sites == "YES" ]]
 			then
-				RAW=`qsub $args -N $type.$version.merge_raw_variants.$run_num -hold_jid ${job_ids}${job_ids_summary} $script_path/merge_raw_variants.sh $output_dir $run_info`
-                job_id_raw=`echo $RAW | cut -d ' ' -f3 | tr "\n" ","`
+				RAW=`qsub $args -N $type.$version.merge_raw_variants.$run_num -t 1-$numchrs:1 -hold_jid ${job_ids}${job_ids_summary} -l h_vmem=8G $script_path/merge_raw_variants.sh $output_dir $run_info`
+                job_id_raw_chr=`echo $RAW | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
+				CONCAT=`qsub $args -N $type.$version.concat_raw_variants.$run_num -hold_jid $job_id_raw_chr -l h_vmem=8G $script_path/concat_raw_variants.sh $output_dir $run_info`
+				job_id_raw=`echo $CONCAT | cut -d ' ' -f3 | tr "\n" ","` 
 			fi	
 			
 		else

@@ -17,6 +17,7 @@ else
 	vcftools=$( cat $tool_info | grep -w '^VCFTOOLS' | cut -d '=' -f2)
 	perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
 	tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2)
+	chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
 	PERL5LIB=$perllib
 	PATH=$tabix/:$PATH
 	var_dir=$output_dir/variants
@@ -25,46 +26,35 @@ else
 	for sample in $samples
 	do
 		input=$var_dir/$sample
-		for chr in $chrs
-		do
-			inputfile=$input/$sample.variants.chr$chr.raw.all.vcf.gz
-			input_indexfile=$input/$sample.variants.chr$chr.raw.all.vcf.gz.tbi
+		inputfile=$input/$sample.variants.chr$chr.raw.all.vcf.gz
+		input_indexfile=$input/$sample.variants.chr$chr.raw.all.vcf.gz.tbi
 			
-			if [ ! -s $input_indexfile ]
-			then
-				$tabix/tabix -p vcf $input/$sample.variants.chr$chr.raw.all.vcf.gz
-			fi	
-			if [ -s $inputfile ]
-			then
-				inputargs="$inputfile "$inputargs
-				input_index=" $input_indexfile"$input_index 
-			else
-				echo "WARNING : $inputfile not there"
-			fi			
-		done
+		if [ ! -s $input_indexfile ]
+		then
+			$tabix/tabix -p vcf $input/$sample.variants.chr$chr.raw.all.vcf.gz
+		fi	
+		if [ -s $inputfile ]
+		then
+			inputargs="$inputfile "$inputargs
+			input_index=" $input_indexfile"$input_index 
+		else
+			echo "WARNING : $inputfile not there"
+		fi			
 	done
-
-	### merge all the variants using GATK
-#	$java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-#	-R $ref \
-#	-et NO_ET \
-#	-T CombineVariants \
-#	$inputargs \
-#	-o $var_dir/raw.vcf
 	
-	$vcftools/bin/vcf-merge -s $inputargs > $var_dir/raw.vcf
+	$vcftools/bin/vcf-merge -s $inputargs > $var_dir/raw.chr$chr.vcf
 	
-
 	### raw SNV
-	cat $var_dir/raw.vcf| awk '(length($4) == 1 && length($5) == 1 ) || $0 ~ /#/' > $var_dir/raw.SNV.vcf  
-	$tabix/bgzip $var_dir/raw.SNV.vcf 
+	cat $var_dir/raw.chr$chr.vcf| awk '(length($4) == 1 && length($5) == 1 ) || $0 ~ /#/' > $var_dir/raw.chr$chr.SNV.vcf  
+	$tabix/bgzip $var_dir/raw.chr$chr.SNV.vcf  
+	$tabix/tabix -p vcf $var_dir/raw.chr$chr.SNV.vcf.gz	
 	### raw INDEL
-	cat $var_dir/raw.vcf | awk '(length($4) > 1 || length($5) > 1 ) || $0 ~ /#/' > $var_dir/raw.INDEL.vcf 
-	$tabix/bgzip $var_dir/raw.INDEL.vcf
-	
-	if [[ -s $var_dir/raw.SNV.vcf.gz && -s $var_dir/raw.INDEL.vcf.gz ]]
+	cat $var_dir/raw.chr$chr.vcf | awk '(length($4) > 1 || length($5) > 1 ) || $0 ~ /#/' > $var_dir/raw.chr$chr.INDEL.vcf 
+	$tabix/bgzip $var_dir/raw.chr$chr.INDEL.vcf
+	$tabix/tabix -p vcf $var_dir/raw.chr$chr.INDEL.vcf.gz  
+	if [[ -s $var_dir/raw.chr$chr.INDEL.vcf.gz && -s $var_dir/raw.chr$chr.SNV.vcf.gz ]]
     then
-        rm $var_dir/raw.vcf
+        rm $var_dir/raw.chr$chr.vcf 
 		rm $inputargs
 		rm $input_index
 	fi
