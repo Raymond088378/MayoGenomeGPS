@@ -23,6 +23,7 @@ my %runinfofmt = (
    ANALYSIS => 'string',
    SAMPLENAMES => 'csep',
    CHRINDEX => 'csep',
+   LANEINDEX => 'csep',
    LABINDEXES => 'csep',
    TOOL_INFO => 'file',
    SAMPLE_INFO => 'file',
@@ -48,22 +49,35 @@ if ($runinfomsg ne "") {
     print $runinfomsg."\n";
     exit 1;
 }
-my $analysis=$runinfovars->{TYPE};
+my $analysis=$runinfovars->{ANALYSIS};
 
-if ( ($analysis ne 'whole_genome') && ($analysis ne 'external') && ($analysis ne 'variant') && ($analysis ne 'alignment') && ($analysis ne 'exome') ) {
-    print "$runinfo: TYPE=$analysis should be whole_genome, exome, external, variant or alignment\n";
+if ( ($analysis ne 'mayo') && ($analysis ne 'external') && ($analysis ne 'variant') && ($analysis ne 'alignment') && ($analysis ne 'realignment') && ($analysis ne 'realign-mayo') ) {
+    print "$runinfo: TYPE=$analysis should be mayo, external, variant , realignment , realign-mayo or alignment\n";
     exit 1;
 }
 
+my $tool=$runinfovars->{TYPE};
+
+if ( ($tool ne 'whole_genome') && ($tool ne 'exome'))	{
+	print "$runinfo : TOOL= $tool should be whole_genome or exome\n";
+}		
+
+my $input=$runinfovars->{INPUT_DIR};
 my @samples = split(/:/,$runinfovars->{SAMPLENAMES});
 
 if ( ($runinfovars->{MULTISAMPLE}) && (@samples < 2)) {
     print "$runinfo: MULTISAMPLE=YES and SAMPLENAMES has only one element\n";
     exit 1;
 }
-
 my $toolinfo=$runinfovars->{TOOL_INFO};
+my $sampleinfo=$runinfovars->{SAMPLE_INFO};
 my ($toolinfovars, $toolinfomsg) = read_file_var($toolinfo);
+my ($sampleinfovars, $sampleinfomsg) = read_file_var($sampleinfo);
+
+if ($sampleinfomsg ne "") {
+    print $sampleinfomsg."\n";
+    exit 1;
+}
 
 
 if ($toolinfomsg ne "") {
@@ -124,6 +138,8 @@ my %toolinfofmt = (
 	BREAKDANCER=>"dir",
 	PERL_BREAKDANCER=>"dir",
 	PERLLIB_BREAKDANCER=>"dir",
+	EMIT_ALL_SITES=> 'boolean',
+	TARGETTED=> 'boolean',
 	MATLAB=>"dir",
 	SEGSEQ=>"dir",
 	SCRIPT_PATH=>"dir",
@@ -135,16 +151,40 @@ my %toolinfofmt = (
 	BLAT_PORT=>"int",
 	BLAT_SERVER=>"string",
 	HTTP_SERVER=>"string",
-	PERLLIB=>"csep" 
+	PERLLIB=>"csep",
+	PERLLIB_VCF=>"csep",
+	PERL_CIRCOS=>"csep"
 );
 
 $toolinfomsg = check_variables ($toolinfovars, \%toolinfofmt, $toolinfo);
+
+$sampleinfomsg = check_files ($sampleinfovars, $sampleinfo, $input );
 
 if ($toolinfomsg ne "") {
     print $toolinfomsg."\n";
     exit 1;
 }
 
+if ($sampleinfomsg ne "") {
+    print $sampleinfomsg."\n";
+    exit 1;
+}
+
+
+sub check_files	{
+	my ($rvars,$fname,$input) = @_;
+	my $errmsg="";
+	foreach my $key (keys %{$rvars})	{
+		my @files=split(/\t/,$rvars->{$key});
+		foreach (@files)	{
+			my $name="$input/$_";
+			if (! -e $name)	{
+				$errmsg .= "$name: does not exist\n";
+			}		
+		}	
+	}
+	return $errmsg;		
+}		
 
 
 sub check_variables {
@@ -187,7 +227,7 @@ sub check_variables {
 
 sub read_file_var {
     my ($filename) = @_;
-    open INFILE, "<$filename" or die $!;
+    open INFILE, "<$filename" or die "$filename $!\n";
     my %variables;
     my $errmsg="";
  
@@ -196,7 +236,6 @@ sub read_file_var {
 	chomp;
 
 	my ($var, $value) = split (/=/,$_);
-
 	if (exists $variables{$var}) {
 	    $errmsg.="$var in $filename defined twice\n";
 	}
