@@ -37,6 +37,7 @@ else
 	master_gene_file=$( cat $tool_info | grep -w '^MASTER_GENE_FILE' | cut -d '=' -f2 )
 	samples=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" " " )
 	bed=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
+
 	if [ $tool == "whole_genome" ]
 	then
 		kit=$output_dir/bed_file.bed
@@ -78,12 +79,11 @@ else
 	END=`date`
 	echo -e "Analysis Ends at :" >> $output_dir/log.txt
 	echo -e "${END}" >>  $output_dir/log.txt
-	cd $output_dir
-    logs=`find -name 'logs' | sed -e '/\.\//s///g'`
-    for i in $logs
-    do
-        cat $i/$type* >> $output_dir/LOG
-    done
+	cd $output_dir/logs
+	
+	files=`ls -lhrt | awk 'NR>1' |awk -F' ' '{print $NF}' | tr "\n" " "`
+	cat $files > $output_dir/LOG
+	
     cat $output_dir/LOG | grep -w '^ERROR' > $output_dir/errorlog
 	cat $output_dir/LOG | grep -w '^WARNING' > $output_dir/warninglog	
     rm $output_dir/LOG

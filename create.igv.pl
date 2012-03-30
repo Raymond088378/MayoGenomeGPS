@@ -47,10 +47,10 @@ else {
 	}
 	for (my $i = 0 ; $i <= $#trackNames ; $i++ )	{
 		$tracks =~ s/\/data2\/bsi/http:\/\/$server/g;
-		print FH "\n<Resource path=\"$tracks\" />
-			</Resources> 
+		print FH "\n<Resource path=\"$tracks\" />";
+    }    
+	print FH "		</Resources> 
 			</Global>";
-	}
-	
+		
 }
 close FH;
