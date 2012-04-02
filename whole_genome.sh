@@ -182,7 +182,7 @@ else
 			elif [ $analysis == "realignment" -o $analysis == "realign-mayo" ]
 			then
 				infile=`cat $sample_info | grep -w "^$sample" | cut -d '=' -f2`
-				num_bams=`echo $infile | tr "\t" "\n" | wc -l`
+				num_bams=`echo $infile | tr " " "\n" | wc -l`
 				for ((i=1; i <=$num_bams; i++));
 				do
 					bam=`echo $infile | awk -v num=$i '{print $num}'`
@@ -201,7 +201,7 @@ else
 				if [ $analysis == "variant" ]
 				then
 					infile=`cat $sample_info | grep -w "^$sample" | cut -d '=' -f2`
-					num_bams=`echo $infile | tr "\t" "\n" | wc -l`
+					num_bams=`echo $infile | tr " " "\n" | wc -l`
 					for ((i=1; i <=$num_bams; i++));
 					do
 						bam=`echo $infile | awk -v num=$i '{print $num}'`
@@ -406,7 +406,7 @@ else
 				elif [[ $analysis == "realignment" || $analysis == "realign-mayo" ]]
 				then
 					infile=`cat $sample_info | grep -w "^$sample" | cut -d '=' -f2 `
-					num_bams=`echo $infile | tr "\t" "\n" | wc -l`
+					num_bams=`echo $infile | tr " " "\n" | wc -l`
 					for ((i=1; i <=$num_bams; i++));
 					do
 						bam=`echo $infile | awk -v num=$i '{print $num}'`
