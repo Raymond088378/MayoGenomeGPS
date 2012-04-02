@@ -27,7 +27,7 @@ else
 	if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
 	then
 		ls $output_dir/*.chr${which_chr}.raw.snvs.bed.i.ToMerge | sort > $TempReports/chr${which_chr}.snvs
-		if [ $SNV_caller == "SNVmix" ]
+		if [ $SNV_caller == "SNVMIX" ]
 		then	
 			perl $script_path/snv.merger.pl -i $TempReports/chr${which_chr}.snvs -c probability -o $TempReports/list.chr${which_chr}.snvs
 		elif [ $SNV_caller == "GATK" ]
