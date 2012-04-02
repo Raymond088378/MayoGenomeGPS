@@ -42,7 +42,7 @@ SNP_CS=/data2/bsi/reference/annotation/dbSNP/hg19/scs.bed
 BLACKLIST_SV=/data2/bsi/reference/misc/hg19.STRUCTURAL_BALCKLIST.bed
 
 ## tools
-WHOLEGENOME_PATH=/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/trunk/
+WHOLEGENOME_PATH=/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/tags/1.0/
 NOVOALIGN=/projects/bsi/bictools/apps/alignment/novoalign/2.07.13/novoalign
 BWA=/projects/bsi/bictools/apps/alignment/bwa/0.5.9/
 JAVA=/usr/java/latest/bin
