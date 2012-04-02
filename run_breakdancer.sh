@@ -65,7 +65,7 @@ else
 ########################################################	
 ######		
 
-    PERL5LIB=$perllib:$breakdancer;
+    export PERL5LIB=$perllib:$breakdancer;
     PATH=$samtools:$PATH;
     
     cd $breakdancer

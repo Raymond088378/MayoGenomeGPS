@@ -17,7 +17,7 @@ else
 	tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2)
 	chrs=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" " ")
 	
-	PERL5LIB=$perllib
+	export PERL5LIB=$perllib
 	PATH=$tabix/:$PATH
 	var_dir=$output_dir/variants
 	

@@ -15,6 +15,7 @@ else
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
 	tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2)
+	perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)	
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
@@ -46,7 +47,8 @@ else
 	SNV_caller=$( cat $run_info | grep -w '^SNV_CALLER' | cut -d '=' -f2)
     bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
     PATH=$bedtools/:$PATH
-
+	export PERL5LIB=$perllib
+	PATH=$tabix/:$PATH
 	bam=chr${chr}.cleaned.bam
 	if [ $SGE_TASK_ID == 1 ]
     then

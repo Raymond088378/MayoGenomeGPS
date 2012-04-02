@@ -73,8 +73,8 @@ else
 ######		
 	input_bam=$input/chr${chr}.cleaned.bam
 	
-	PERL5LIB=$perllib
-	PATH=$PATH:$blat:$crest
+	export PERL5LIB=$perllib:$crest
+	PATH=$PATH:$blat:$crest:$perllib
 	mkdir -p $output_dir/$sample
 
 	SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input_bam -s $samtools`

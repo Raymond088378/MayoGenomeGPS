@@ -74,8 +74,8 @@ else
 	######		
 
 	echo `date`
-	PERL5LIB=$perllib
-	PATH=$PATH:$blat:$crest
+	export PERL5LIB=$perllib
+	PATH=$PATH:$blat:$crest:$perllib
 	mkdir -p $output_dir/$group
 
 	mkdir -p $output_dir/$group/log
