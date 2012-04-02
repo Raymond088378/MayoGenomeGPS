@@ -67,6 +67,8 @@ else
 
     PERL5LIB=$perllib:$breakdancer;
     PATH=$samtools:$PATH;
+    
+    cd $breakdancer
 
     if [ $multi != "YES" ]
     then
