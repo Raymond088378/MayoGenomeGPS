@@ -32,7 +32,7 @@ else
 		inputargs="$inputfile "$inputargs
 	done
 	
-	# $vcftools/bin/vcf-concat $inputargs | $tabix/bgzip > $var_dir/raw.SNV.vcf.gz
+	$vcftools/bin/vcf-concat $inputargs | $tabix/bgzip > $var_dir/raw.SNV.vcf.gz
 	
 	if [ -s $var_dir/raw.SNV.vcf.gz ]
 	then
@@ -51,7 +51,7 @@ else
 		inputargs="$inputfile "$inputargs
 	done
 	
-	# $vcftools/bin/vcf-concat $inputargs | $tabix/bgzip > $var_dir/raw.INDEL.vcf.gz
+	$vcftools/bin/vcf-concat $inputargs | $tabix/bgzip > $var_dir/raw.INDEL.vcf.gz
 	
 	if [ -s $var_dir/raw.INDEL.vcf.gz ]
 	then
