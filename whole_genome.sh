@@ -402,7 +402,7 @@ else
 					job_id_align=`echo $ALIGNMENT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
 					MERGE=`qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=8G -hold_jid $job_id_align $script_path/processBAM.sh $align_dir $sample $run_info`
 					job_id_convert=`echo $MERGE | cut -d ' ' -f3 `
-					job_id_convert="$job_id_convert,$job_id_convert"                
+					job_ids_convert="$job_id_convert,$job_ids_convert"                
 				elif [[ $analysis == "realignment" || $analysis == "realign-mayo" ]]
 				then
 					infile=`cat $sample_info | grep -w "^$sample" | cut -d '=' -f2 `
