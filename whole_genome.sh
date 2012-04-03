@@ -380,21 +380,21 @@ else
 					if [ $aligner == "novoalign" ]
 					then
 						echo "novoalign is used as aligner"
-						ALIGNMENT=`qsub $args -N $type.$version.align_novo.$sample.$run_num -l h_vmem=8G -pe threaded 4 -t 1-$numfiles:1 $script_path/align_novo.sh $sample $output_dir $run_info`
+						ALIGNMENT=`qsub $args -N $type.$version.align_novo.$sample.$run_num -l h_vmem=8G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_novo.sh $sample $output_dir $run_info`
 					elif [ $aligner == "bwa" ]
 					then
 						echo "bwa is used as aligner"
-						READ1=`qsub $args -N $type.$version.align_read_bwa.R1.$sample.$run_num -l h_vmem=8G -pe threaded 4 -t 1-$numfiles:1 $script_path/align_read_bwa.sh $sample $output_dir 1 $run_info`
+						READ1=`qsub $args -N $type.$version.align_read_bwa.R1.$sample.$run_num -l h_vmem=8G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_read_bwa.sh $sample $output_dir 1 $run_info`
 						r1_job=$(echo $READ1 | cut -d ' ' -f3 |tr "\n" "," | sed -e "s/\..*,//g")
 						if [ $paired == 1 ]
 						then
-							READ2=`qsub $args -N $type.$version.align_read_bwa.R2.$sample.$run_num -l h_vmem=8G -pe threaded 4 -t 1-$numfiles:1 $script_path/align_read_bwa.sh $sample $output_dir 2 $run_info`
+							READ2=`qsub $args -N $type.$version.align_read_bwa.R2.$sample.$run_num -l h_vmem=8G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_read_bwa.sh $sample $output_dir 2 $run_info`
 							r2_job=$(echo $READ2 | cut -d ' ' -f3 |tr "\n" "," | sed -e "s/\..*,//g")	
 							hold="-hold_jid $r1_job,$r2_job"
 						else
 							hold="-hold_jid $r1_job"
 						fi	
-						ALIGNMENT=`qsub $args -N $type.$version.align_bwa.$sample.$run_num -l h_vmem=8G -pe threaded 4 $hold -t 1-$numfiles:1 $script_path/align_bwa.sh $sample $output_dir $run_info`
+						ALIGNMENT=`qsub $args -N $type.$version.align_bwa.$sample.$run_num -l h_vmem=8G -pe threaded $threads $hold -t 1-$numfiles:1 $script_path/align_bwa.sh $sample $output_dir $run_info`
 					else
 						echo "ERROR : Doesn't support the aligner"
 						exit 1
