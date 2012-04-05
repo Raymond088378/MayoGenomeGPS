@@ -15,6 +15,7 @@ else
     analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
     reorder=$( cat $run_info | grep -w '^REORDERSAM' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
+    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
     ref_path=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
@@ -37,7 +38,27 @@ else
 	if [ $num_times == 1 ]
 	then
 		bam=`echo $INPUTARGS | cut -d '=' -f2`
-		mv $bam $input/$sample.sorted.bam
+		mv $bam $input/$sample.bam
+        SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input/$sample.bam -s $samtools`
+        if [ $SORT_FLAG == 1 ]
+        then
+            mv $input/$sample.bam $input/$sample.sorted.bam
+        else
+            $java/java -Xmx6g -Xms512m \
+            -jar $picard/SortSam.jar \
+            INPUT=$input/$sample.bam \
+            OUTPUT=$input/$sample.sorted.bam \
+            MAX_RECORDS_IN_RAM=2000000 \
+            SO=coordinate \
+            TMP_DIR=$input/ \
+            VALIDATION_STRINGENCY=SILENT
+            if [ -s $input/$sample.sorted.bam ]
+            then
+                rm $input/$sample.bam
+            else
+                echo "sorting failed for $sample"
+            fi
+        fi
 		$samtools/samtools index $input/$sample.sorted.bam
 	else	
 		$java/java -Xmx6g -Xms512m \

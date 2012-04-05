@@ -62,7 +62,7 @@ else
     then
         ln -s $input/$input_bam $input/$sample.sorted.bam
     else
-        $java/java -Xmx7g -Xms512m \
+        $java/java -Xmx6g -Xms512m \
         -jar $picard/SortSam.jar \
         INPUT=$input/$input_bam \
         OUTPUT=$input/$sample.sorted.bam \
