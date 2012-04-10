@@ -63,7 +63,7 @@ else
 	rm $secondary/Reports/*.report
 	mkdir $delivery/Reports/
 	mv $secondary/Reports/* $delivery/Reports/
-
+	rm -R $secondary/Reports/
 	mv $secondary/Coverage.JPG $delivery/	
 	if [ $type == "exome" ]
 	then
@@ -74,13 +74,14 @@ else
 	mv $secondary/igv_session.xml $delivery/
 	mv $secondary/IGV_Setup.doc $delivery/
 	mv $secondary/SampleStatistics.tsv $delivery/
-	mv $secondary/StatisticsDescription.html $delivery/
 	
 	### make tar balls
 	cd $secondary
 	tar -cvzf logs.tar.gz logs
+	rm -R $secondary/logs
 	tar -cvzf numbers.tar.gz numbers
-
+	rm -R $secondary/numbers
+	
 	##### transfer files to tertiary folder
 	cp -R $secondary/variants $tertiary/
 	if [ -d $tertiary/variants ]

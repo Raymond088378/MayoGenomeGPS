@@ -132,10 +132,10 @@ else
 				fi	
 				#filter_sv_break $out/$samples.inter.break.sorted $out/$samples.inter.break
 		
-				perl $script_path/Breakdancer2VCF.pl -i $out/$samples.inter.break -f $ref_genome -o $out/$samples.inter.break.vcf -s $samples -t $samtool
+				perl $script_path/Breakdancer2VCF.pl -i $out/$samples.inter.break -f $ref_genome -o $out/$samples.inter.break.vcf -s $samples -t $samtools
 
-				perl $script_path/vcfsort.pl ${ref_genome}.fai $out/$samples.$chr.break.vcf > $out/$samples.$chr.break.vcf.sort
-				mv $out/$samples.$chr.break.vcf.sort $out/$samples.$chr.break.vcf
+				perl $script_path/vcfsort.pl ${ref_genome}.fai $out/$samples.inter.break.vcf > $out/$samples.inter.break.vcf.sort
+				mv $out/$samples.inter.break.vcf.sort $out/$samples.inter.break.vcf
 				if [ ! -s $out/$samples.inter.break.vcf.fail ]
 				then
 					rm $out/$samples.inter.break.vcf.fail
@@ -145,10 +145,10 @@ else
 				echo "ERROR Breakdancer: File $output_dir/$samples/$samples.inter.cfg not created"
 				touch $out/$samples.inter.break
 				touch $out/$samples.inter.break.sorted
-				perl $script_path/Breakdancer2VCF.pl -i $out/$samples.inter.break -f $ref_genome -o $out/$samples.inter.break.vcf -s $samples -t $samtool
+				perl $script_path/Breakdancer2VCF.pl -i $out/$samples.inter.break -f $ref_genome -o $out/$samples.inter.break.vcf -s $samples -t $samtools
 				rm $out/$samples.inter.break.vcf.fail
-				perl $script_path/vcfsort.pl ${ref_genome}.fai $out/$samples.$chr.break.vcf > $out/$samples.$chr.break.vcf.sort
-				mv $out/$samples.$chr.break.vcf.sort $out/$samples.$chr.break.vcf
+				perl $script_path/vcfsort.pl ${ref_genome}.fai $out/$samples.inter.break.vcf > $out/$samples.inter.break.vcf.sort
+				mv $out/$samples.inter.break.vcf.sort $out/$samples.inter.break.vcf
 			fi
 		else
 			echo "ERROR Breakdancer: File $output_dir/$samples/$samples.tmp.bam not created" 
@@ -217,8 +217,8 @@ else
 						touch $out/$sample.inter.break
 					fi
 					perl $script_path/Breakdancer2VCF.pl -i $out/$sample.inter.break -f $ref_genome -o $out/$sample.inter.break.vcf -s $sample -t $samtools
-                    perl $script_path/vcfsort.pl ${ref_genome}.fai $out/$sample.$chr.break.vcf > $out/$sample.$chr.break.vcf.sort
-                    mv $out/$sample.$chr.break.vcf.sort $out/$sample.$chr.break.vcf
+                    perl $script_path/vcfsort.pl ${ref_genome}.fai $out/$sample.inter.break.vcf > $out/$sample.inter.break.vcf.sort
+                    mv $out/$sample.inter.break.vcf.sort $out/$sample.inter.break.vcf
                     if [ ! -s $out/$sample.inter.break.vcf.fail ]
                     then
                         rm $out/$sample.inter.break.vcf.fail
@@ -230,8 +230,8 @@ else
 					touch $out/$sample.inter.break.sorted
 					perl $script_path/Breakdancer2VCF.pl -i $out/$sample.inter.break -f $ref_genome -o $out/$sample.inter.break.vcf -s $sample -t $samtools
 					rm  $out/$sample.inter.break.vcf.fail
-                    perl $script_path/vcfsort.pl ${ref_genome}.fai $out/$sample.$chr.break.vcf > $out/$sample.$chr.break.vcf.sort
-                    mv $out/$sample.$chr.break.vcf.sort $out/$sample.$chr.break.vcf
+                    perl $script_path/vcfsort.pl ${ref_genome}.fai $out/$sample.inter.break.vcf > $out/$sample.inter.break.vcf.sort
+                    mv $out/$sample.inter.break.vcf.sort $out/$sample.inter.break.vcf
                 fi
             else
                 echo "ERROR Breakdancer: File $output_dir/$sample/$sample.tmp.bam not created" 
