@@ -69,8 +69,11 @@ else
         MAX_RECORDS_IN_RAM=2000000 \
         SO=coordinate \
         TMP_DIR=$input/ \
-        VALIDATION_STRINGENCY=SILENT
+		VALIDATION_STRINGENCY=SILENT
         
+		# $samtools/samtools sort -m 800000000 $input/$input_bam $input/$sample.sorted 
+		# $samtools/samtools view -H $input/$sample.sorted.bam | sed -e '/SO:[a-z]*/s//SO:coordinate/g' | $samtools/samtools reheader - $input/$sample.sorted.bam > $input/$sample.sorted.re.bam
+		# mv $input/$sample.sorted.re.bam $input/$sample.sorted.bam	
         if [ -s $input/$sample.sorted.bam ]
         then
             rm $input/$sample.bam
@@ -113,8 +116,10 @@ else
         -jar $picard/MarkDuplicates.jar \
         INPUT=$input/$sample.sorted.bam \
         OUTPUT=$input/$sample.sorted.rmdup.bam \
-        METRICS_FILE=$input/$sample.dup.metrics \
-        REMOVE_DUPLICATES=false \
+        ASSUME_SORTED=true \
+		METRICS_FILE=$input/$sample.dup.metrics \
+        MAX_FILE_HANDLES=1000 \
+		REMOVE_DUPLICATES=false \
         VALIDATION_STRINGENCY=SILENT \
         TMP_DIR=$input/
 

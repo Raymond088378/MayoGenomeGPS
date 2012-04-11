@@ -39,8 +39,8 @@ while (my $line2 = <IN>){
 #	my $db = '';
 #	$db = ';DB' if ($id ne '.');
 	
-	my ($n_alt,$n_gt,$n_pass) = split(/:/,&IUB2base($col[3],$col[2]));
-	my ($t_alt,$t_gt,$t_pass) = split(/:/,&IUB2base($col[4],$col[2]));
+	my ($n_alt,$n_gt,$n_pass) = split(/:/,&IUB2base($col[4],$col[2]));
+	my ($t_alt,$t_gt,$t_pass) = split(/:/,&IUB2base($col[3],$col[2]));
 	
 	if ($n_pass eq 'TRI' || $t_pass eq 'TRI'){
 		print TRI "$line2\n";

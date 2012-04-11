@@ -69,14 +69,17 @@ else
             SO=coordinate \
             TMP_DIR=$input/ \
             VALIDATION_STRINGENCY=SILENT
-            if [ -s $input/$sample.sorted.bam ]
+		### using samtools sort 
+		#	$samtools/samtools sort -m 800000000 $input/$sample.bam $input/$sample.sorted 
+		#	$samtools/samtools view -H $input/$sample.sorted.bam | sed -e '/SO:[a-z]*/s//SO:coordinate/g' | $samtools/samtools reheader - $input/$sample.sorted.bam > $input/$sample.sorted.re.bam
+		#	mv $input/$sample.sorted.re.bam $input/$sample.sorted.bam	
+		   if [ -s $input/$sample.sorted.bam ]
             then
                 rm $input/$sample.bam
             else
                 echo "sorting failed for $sample"
             fi
         fi
-
 		$samtools/samtools index $input/$sample.sorted.bam
 	else	
 		$java/java -Xmx6g -Xms512m \
@@ -137,8 +140,10 @@ else
             INPUT=$input/$sample.sorted.bam \
             OUTPUT=$input/$sample.sorted.rmdup.bam \
             METRICS_FILE=$input/$sample.dup.metrics \
-            REMOVE_DUPLICATES=false \
-            VALIDATION_STRINGENCY=SILENT \
+            ASSUME_SORTED=true \
+			REMOVE_DUPLICATES=false \
+            MAX_FILE_HANDLES=1000 \
+			VALIDATION_STRINGENCY=SILENT \
             TMP_DIR=$input/
 
             if [ -s $input/$sample.sorted.rmdup.bam ]

@@ -132,7 +132,7 @@ else
 		exit 1;
 	fi
 
-	args="-V -wd $output_dir/logs -q $queue -m ae -M $email -l h_stack=10M"
+	args="-V -wd $output_dir/logs -q $queue -m a -M $email -l h_stack=10M"
 	if [ $multi_sample != "YES" ]
 	then
 		echo "Single sample"
@@ -188,7 +188,7 @@ else
 					bam=`echo $infile | awk -v num=$i '{print $num}'`
 					ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
 				done  
-				CONVERT=`qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=8G $script_path/processBAM.sh $align_dir $sample $run_info`
+				CONVERT=`qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=8G $script_path/processBAM.sh $align_dir $sample $run_info`
 				job_id_convert=`echo $CONVERT | cut -d ' ' -f3`
 			fi    
 
@@ -400,7 +400,7 @@ else
 						exit 1
 					fi	    
 					job_id_align=`echo $ALIGNMENT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
-					MERGE=`qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=8G -hold_jid $job_id_align $script_path/processBAM.sh $align_dir $sample $run_info`
+					MERGE=`qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=8G -hold_jid $job_id_align $script_path/processBAM.sh $align_dir $sample $run_info`
 					job_id_convert=`echo $MERGE | cut -d ' ' -f3 `
 					job_ids_convert="$job_id_convert,$job_ids_convert"                
 				elif [[ $analysis == "realignment" || $analysis == "realign-mayo" ]]
@@ -412,7 +412,7 @@ else
 						bam=`echo $infile | awk -v num=$i '{print $num}'`
 						ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
 					done
-					CONVERT=`qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=8G $script_path/processBAM.sh $align_dir $sample $run_info`
+					CONVERT=`qsub $args -pe threaded $threads -N $type.$version.processBAM.$sample.$run_num -l h_vmem=8G $script_path/processBAM.sh $align_dir $sample $run_info`
 					job_id_convert=`echo $CONVERT | cut -d ' ' -f3`
 					job_ids_convert="$job_ids_convert,$job_id_convert"
 				fi
