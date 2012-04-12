@@ -313,53 +313,10 @@ else
             inputfiles=$inputfiles" -I $output/$tumor"
 
             ##run somatic sniper 
-            $somatic_sniper/bam-somaticsniper -q 20 -Q 30 -f $ref $output/$tumor $output/$normal $output/$snv     
-
-            if [ ! -s $output/$snv ]
-            then		
-                echo "ERROR :variants.sh SomaticSnipper failed, file $output/$snv not generated "
-                exit 1
-            fi
+            $script_path/somaticsnipper.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.vcf $run_info
             
-            ## convert sniper output to VCF
-            perl $script_path/ss2vcf.pl $output/$snv $output/$sample.chr$chr.snv.vcf $dbSNP_rsIDs ${sampleArray[1]} $sample $output/$sample.chr$chr.snv.triallele.out
-            
-            if [ -s $output/$sample.chr$chr.snv.vcf ]
-            then
-                rm $output/$snv
-            else
-                echo "ERROR: $output/$sample.chr$chr.snv.vcf not found"
-            fi
-            
-            # ## annotate SNVs
-            $java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-            -R $ref \
-            -et NO_ET \
-            -T VariantAnnotator \
-            -I $output/$tumor \
-            -I $output/$normal \
-            -V $output/$sample.chr$chr.snv.vcf \
-            --dbsnp $dbSNP \
-            -L chr$chr \
-            -A QualByDepth -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A RMSMappingQuality -A FisherStrand \
-            --out $output/$sample.chr$chr.snv.vcf.temp	
-
-            if [ -s $output/$sample.chr$chr.snv.vcf.temp ]
-            then
-                mv $output/$sample.chr$chr.snv.vcf.temp $output/$sample.chr$chr.snv.vcf
-                rm $output/$sample.chr$chr.snv.triallele.out
-            else		
-                echo "ERROR : variants.sh SNV VariantAnnotator failed, file:$output/$sample.chr$chr.snv.vcf.temp"
-                exit 1
-            fi
-
-            if [ -s $output/$sample.chr$chr.snv.vcf.temp.idx ]
-            then
-                mv $output/$sample.chr$chr.snv.vcf.temp.idx $output/$sample.chr$chr.snv.vcf.idx
-            else	
-                echo "ERROR: variants.sh SNV VariantAnnotator did not generated index, file: $output/$sample.chr$chr.snv.vcf.idx" 
-                exit 1
-            fi
+            $script_path/annotate_vcf.sh $output/$tumor $output/$normal $output/$sample.chr$chr.snv.vcf $chr $run_info
+			
             
             ## Somatic Indel detector
             indel=$sample.chr$chr.indel.vcf
