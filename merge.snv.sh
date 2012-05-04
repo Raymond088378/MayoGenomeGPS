@@ -36,8 +36,8 @@ else
 	mapability=$( cat $tool_info | grep -w '^MAPABILITY' | cut -d '=' -f2 )
 	repeat=$( cat $tool_info | grep -w '^REPEATREGIONS' | cut -d '=' -f2 )
 	miRbase=$( cat $tool_info | grep -w '^miRbase' | cut -d '=' -f2 )
-    ssr=$( cat $tool_info | grep -w '^SNP_SR' | cut -d '=' -f2 )
-    scs=$( cat $tool_info | grep -w '^SNP_CS' | cut -d '=' -f2 )
+        ssr=$( cat $tool_info | grep -w '^SNP_SR' | cut -d '=' -f2 )
+        scs=$( cat $tool_info | grep -w '^SNP_CS' | cut -d '=' -f2 )
 	typeset -i codon
 	typeset -i SNP_Type
 	

@@ -1,4 +1,13 @@
 
+4/19/2012
+
+*** hard filters changed to V3 best practice
+*** addded Joint snvmix to the workflow
+*** SOMATIC CALLER=JOINTSNVMIX/SOMATICSNIPER
+
+
+
+
 ######################################################################
 02/24/2012
 #Purpose: add quality filters to breakdancer

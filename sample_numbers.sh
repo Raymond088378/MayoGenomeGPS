@@ -12,42 +12,25 @@ else
 #SGE_TASK_ID=1
 ##############################################################		
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-	sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
+    sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     sample=$(cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     group=$(cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     aligner=$( cat $run_info | grep -w '^ALIGNER' | cut -d '=' -f2)
-	variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2)
+    variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2)
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
     flowcell=`echo $run_num | awk -F'_' '{print $NF}' | sed 's/.\(.*\)/\1/'`
-	markdup=$( cat $run_info | grep -w '^MARKDUP' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
+    markdup=$( cat $run_info | grep -w '^MARKDUP' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
     chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" " ")
     caller=$( cat $run_info | grep -w '^SNV_CALLER' | cut -d '=' -f2)
     multi_sample=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2)  
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
-	tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
-	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
-	version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
+    tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
+    analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
 ##############################################################		
 ##############################################################		
     
     numbers=$input_dir/numbers
-	if [ $analysis == "mayo" -o $analysis == "realign-mayo" ]
-	then
-		pos=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | grep -n $sample | cut -d ":" -f1)
-		lanes=$( cat $run_info | grep -w '^LANEINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tail -n 1 | tr "," " ")
-		i=1
-		for lane in $lanes
-		do
-			index=$( cat $run_info | grep -w '^LABINDEXES' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tail -n 1 | tr "," "\n" | head -n $i | tail -n 1)
-			if [ $index == "-" ]
-			then
-				$java/java -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -r $run_num -s Statistics -a WholeGenome -v $version
-			else
-				$java/java -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -i $index -r $run_num -s Statistics -a WholeGenome -v $version
-			fi
-			let i=i+1
-		done		
-	fi
+    $script_path/dashboard.sh $sample $run_info Statistics started
 	
 	
     if [ $multi_sample != "YES" ]
@@ -97,10 +80,10 @@ else
         if [[ $analysis != "alignment" && $analysis != "annotation" ]]
 		then
 			realign=$input_dir/realign/$sample
-			for chr in $chrs
-			do
-				rm $realign/chr$chr.cleaned.bam $realign/chr$chr.pileup $realign/chr$chr.cleaned.bam.bai
-            done
+			#for chr in $chrs
+			#do
+			#	rm $realign/chr$chr.cleaned.bam $realign/chr$chr.pileup $realign/chr$chr.cleaned.bam.bai
+            #done
 			cd $realign
             if [ $analysis == "variant" ]
 			then
@@ -307,13 +290,12 @@ else
 				genomic_deletions=0
 				genomic_duplications=0
 				cnv=$input_dir/Reports_per_Sample/SV
-				raw_del=`cat $cnv/$sample.cnv.raw.del.vcf | awk '$0 !~ /#/' | wc -l`
-				raw_dup=`cat $cnv/$sample.cnv.raw.dup.vcf | awk '$0 !~ /#/' | wc -l`
+				raw_del=`cat $cnv/$sample.cnv.raw.vcf | awk '$0 !~ /#/' | grep -c DEL`
+				raw_dup=`cat $cnv/$sample.cnv.raw.vcf | awk '$0 !~ /#/' | grep -c DUP`
 				raw_cnvs=`expr $raw_del "+" $raw_dup`
-				genomic_deletions=`cat $cnv/$sample.cnv.filter.del.vcf | awk '$0 !~ /#/' | wc -l`
-				genomic_duplications=`cat $cnv/$sample.cnv.filter.dup.vcf | awk '$0 !~ /#/' | wc -l`
+				genomic_deletions=`cat $cnv/$sample.cnv.filter.vcf | awk '$0 !~ /#/' | grep -c DEL`
+				genomic_duplications=`cat $cnv/$sample.cnv.filter.vcf | awk '$0 !~ /#/' | grep -c DUP`
 				genomic_cnvs=`expr $genomic_deletions "+" $genomic_duplications`
-                rm $cnv/$sample.cnv.raw.del.vcf $cnv/$sample.cnv.raw.dup.vcf $cnv/$sample.cnv.filter.del.vcf $cnv/$sample.cnv.filter.dup.vcf  
 				echo "RAW cnvs" >> $numbers/$sample.out
 				echo $raw_cnvs >> $numbers/$sample.out
 				echo "CODING cnvs" >> $numbers/$sample.out
@@ -417,16 +399,16 @@ else
                 echo $percent_dup >> $numbers/$sample.out		
             fi
             ### on target reads
-			on_reads=0
-			for chr in $chrs
-			do
-				on=`cat $input_dir/OnTarget/$sample.chr$chr.bam.i.out | head -1`
-				on_reads=`expr $on_reads "+" $on`
-			done
-			echo -e "OnTarget Reads" >> $numbers/$sample.out
-			echo $on_reads >> $numbers/$sample.out	
+            on_reads=0
+            for chr in $chrs
+            do
+                    on=`cat $input_dir/OnTarget/$sample.chr$chr.bam.i.out | head -1`
+                    on_reads=`expr $on_reads "+" $on`
+            done
+            echo -e "OnTarget Reads" >> $numbers/$sample.out
+            echo $on_reads >> $numbers/$sample.out	
 			
-			##### variants
+	    ##### variants
             variants=$input_dir/Reports_per_Sample
             ontarget=$input_dir/OnTarget
 
@@ -732,13 +714,12 @@ else
             genomic_deletions=0
             genomic_duplications=0
             cnv=$input_dir/Reports_per_Sample/SV
-            raw_del=`cat $cnv/$group.$tumor.cnv.raw.del.vcf | awk '$0 !~ /#/' | wc -l`
-            raw_dup=`cat $cnv/$group.$tumor.cnv.raw.dup.vcf | awk '$0 !~ /#/' | wc -l`
+            raw_del=`cat $cnv/$group.$tumor.cnv.raw.vcf | awk '$0 !~ /#/' | grep -c DEL`
+            raw_dup=`cat $cnv/$group.$tumor.cnv.raw.vcf | awk '$0 !~ /#/' | grep -c DUP`
             raw_cnvs=`expr $raw_del "+" $raw_dup`
-            genomic_deletions=`cat $cnv/$group.$tumor.cnv.filter.del.vcf | awk '$0 !~ /#/' | wc -l`
-            genomic_duplications=`cat $cnv/$group.$tumor.cnv.filter.dup.vcf | awk '$0 !~ /#/' | wc -l`
+            genomic_deletions=`cat $cnv/$group.$tumor.cnv.filter.vcf | awk '$0 !~ /#/' | grep -c DEL`
+            genomic_duplications=`cat $cnv/$group.$tumor.cnv.filter.vcf | awk '$0 !~ /#/' | grep -c DUP`
             genomic_cnvs=`expr $genomic_deletions "+" $genomic_duplications`
-            rm $cnv/$group.$tumor.cnv.raw.del.vcf $cnv/$group.$tumor.cnv.raw.dup.vcf $cnv/$group.$tumor.cnv.filter.del.vcf $cnv/$group.$tumor.cnv.filter.dup.vcf
             echo "RAW cnvs" >> $numbers/$group.$tumor.out
             echo $raw_cnvs >> $numbers/$group.$tumor.out
             echo "CODING cnvs" >> $numbers/$group.$tumor.out
@@ -748,63 +729,47 @@ else
             echo "CODING duplications" >> $numbers/$group.$tumor.out
             echo $genomic_duplications >> $numbers/$group.$tumor.out
             #### SV by crest and break dancer
-			struct=$input_dir/Reports_per_Sample/ANNOT
-			break=$input_dir/Reports_per_Sample/ANNOT
-				
-			num_break=0;
-			num_crest=0;
-			num_sv=0;
-			genomic_sv=0;
-			ITX=0;
-			INV=0;
-			DEL=0;
-			INS=0;
-			CTX=0;
+            struct=$input_dir/Reports_per_Sample/ANNOT
+            break=$input_dir/Reports_per_Sample/ANNOT
+                    
+            num_break=0;
+            num_crest=0;
+            num_sv=0;
+            genomic_sv=0;
+            ITX=0;
+            INV=0;
+            DEL=0;
+            INS=0;
+            CTX=0;
             num_break=`cat $input_dir/Reports_per_Sample/SV/$group.$tumor.somatic.break.vcf | awk '$0 !~ /#/' | wc -l`
-			num_crest=`cat $input_dir/Reports_per_Sample/SV/$group.$tumor.somatic.filter.crest.vcf | awk '$0 !~ /#/'|wc -l`
-			num_sv=`expr $num_break "+" $num_crest`
-			genomic_sv=`cat $struct/$group.$tumor.SV.annotated.txt | wc -l`
-			genomic_sv=`expr $genomic_sv "-" 1`
-		
-			ITX=`cat $struct/$group.$tumor.SV.annotated.txt | grep ITX | wc -l`
-			INV=`cat $struct/$group.$tumor.SV.annotated.txt | grep INV | wc -l`
-			DEL=`cat $struct/$group.$tumor.SV.annotated.txt | grep DEL | wc -l`
-			INS=`cat $struct/$group.$tumor.SV.annotated.txt | grep INS | wc -l`
-			CTX=`cat $struct/$group.$tumor.SV.annotated.txt | grep CTX | wc -l`
-			
-			echo "TOTAL SVs" >> $numbers/$group.$tumor.out
-			echo $num_sv >> $numbers/$group.$tumor.out
-			echo "GENOMIC SVs" >> $numbers/$group.$tumor.out
-			echo $genomic_sv >> $numbers/$group.$tumor.out
-			echo "ITX" >>$numbers/$group.$tumor.out
-			echo $ITX >> $numbers/$group.$tumor.out
-			echo "INV" >> $numbers/$group.$tumor.out
-			echo $INV >> $numbers/$group.$tumor.out
-			echo "DEL" >> $numbers/$group.$tumor.out
-			echo $DEL >> $numbers/$group.$tumor.out
-			echo "INS" >> $numbers/$group.$tumor.out
-			echo $INS >> $numbers/$group.$tumor.out
-			echo "CTX" >> $numbers/$group.$tumor.out
-			echo $CTX >> $numbers/$group.$tumor.out
+            num_crest=`cat $input_dir/Reports_per_Sample/SV/$group.$tumor.somatic.filter.crest.vcf | awk '$0 !~ /#/'|wc -l`
+            num_sv=`expr $num_break "+" $num_crest`
+            genomic_sv=`cat $struct/$group.$tumor.SV.annotated.txt | wc -l`
+            genomic_sv=`expr $genomic_sv "-" 1`
+    
+            ITX=`cat $struct/$group.$tumor.SV.annotated.txt | grep ITX | wc -l`
+            INV=`cat $struct/$group.$tumor.SV.annotated.txt | grep INV | wc -l`
+            DEL=`cat $struct/$group.$tumor.SV.annotated.txt | grep DEL | wc -l`
+            INS=`cat $struct/$group.$tumor.SV.annotated.txt | grep INS | wc -l`
+            CTX=`cat $struct/$group.$tumor.SV.annotated.txt | grep CTX | wc -l`
+            
+            echo "TOTAL SVs" >> $numbers/$group.$tumor.out
+            echo $num_sv >> $numbers/$group.$tumor.out
+            echo "GENOMIC SVs" >> $numbers/$group.$tumor.out
+            echo $genomic_sv >> $numbers/$group.$tumor.out
+            echo "ITX" >>$numbers/$group.$tumor.out
+            echo $ITX >> $numbers/$group.$tumor.out
+            echo "INV" >> $numbers/$group.$tumor.out
+            echo $INV >> $numbers/$group.$tumor.out
+            echo "DEL" >> $numbers/$group.$tumor.out
+            echo $DEL >> $numbers/$group.$tumor.out
+            echo "INS" >> $numbers/$group.$tumor.out
+            echo $INS >> $numbers/$group.$tumor.out
+            echo "CTX" >> $numbers/$group.$tumor.out
+            echo $CTX >> $numbers/$group.$tumor.out
         done
-	fi 
-	### update dash board
-	if [ $analysis == "mayo" -o $analysis == "realign-mayo" ]
-	then
-		pos=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | grep -n $sample | cut -d ":" -f1)
-		lanes=$( cat $run_info | grep -w '^LANEINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tail -n 1 | tr "," " ")
-		i=1
-		for lane in $lanes
-		do
-			index=$( cat $run_info | grep -w '^LABINDEXES' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tail -n 1 | tr "," "\n" | head -n $i | tail -n 1)
-			if [ $index == "-" ]
-			then
-				$java/java -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -c -f $flowcell -r $run_num -s Statistics -a WholeGenome -v $version
-			else
-				$java/java -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -c -f $flowcell -i $index -r $run_num -s Statistics -a WholeGenome -v $version
-			fi
-			let i=i+1
-		done		
-	fi
-	echo `date`
+    fi 
+    ### update dash board
+    $script_path/dashboard.sh $sample $run_info Statistics complete
+    echo `date`
 fi   

@@ -63,26 +63,15 @@ else
     fastq=$output_dir/fastq
     fastqc=$output_dir/fastqc
     
-    pos=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | grep -n $sample | cut -d ":" -f1)
-    lane=$( cat $run_info | grep -w '^LANEINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tr "," "\n" | head -n $SGE_TASK_ID | tail -n 1)
-    index=$( cat $run_info | grep -w '^LABINDEXES' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tr "," "\n" | head -n $SGE_TASK_ID | tail -n 1)
-    if [ $analysis == "mayo" -o $analysis == "realign-mayo" ]
-    then
-        if [ $index == "-" ]
-        then
-            $java/java -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -r $run_num -s Alignment -a WholeGenome -v $version
-        else
-            $java/java -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -i $index -r $run_num -s Alignment -a WholeGenome -v $version
-        fi    
-    fi
-    
+	$script_path/dashboard.sh $sample $run_info Alignment started $SGE_TASK_ID
+   
     if [ $paired == 1 ]
     then
         let fidx=($SGE_TASK_ID*2)-1 
         let sidx=$SGE_TASK_ID*2
         R1=`cat $sample_info | grep -w "$sample" | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
         R2=`cat $sample_info | grep -w "$sample" | cut -d '=' -f2| tr "\t" "\n" | head -n $sidx | tail -n 1`
-       ## run fastqc depending on flag and convert the zip to unzip fastq
+		## run fastqc depending on flag and convert the zip to unzip fastq
         j=1
         for i in $R1 $R2
         do
@@ -118,7 +107,7 @@ else
     
     if [ ! -s $fastq/$filename1 ]
     then
-        echo "ERROR: align_split_thread.sh File $fastq/$filename1 does not exist" 
+        echo "ERROR: align_novo.sh File $fastq/$filename1 does not exist" 
         exit 1
     fi
 
@@ -126,7 +115,7 @@ else
     then
         if [ ! -s $fastq/$filename2 ]
         then
-            echo "ERROR: align_split_thread.sh File $fastq/$filename2 does not exist"
+            echo "ERROR: align_novo.sh File $fastq/$filename2 does not exist"
             exit 1
         fi
     fi    
@@ -163,7 +152,7 @@ else
     
     if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.sam ]
     then
-        echo "ERROR: $0 File $output_dir_sample/$sample.$SGE_TASK_ID.sam not generated"
+        echo "ERROR: align_novo.sh File $output_dir_sample/$sample.$SGE_TASK_ID.sam not generated"
         exit 1
     else
         if [ $paired == 0 ]
@@ -177,7 +166,7 @@ else
     $samtools/samtools view -bS $output_dir_sample/$sample.$SGE_TASK_ID.sam > $output_dir_sample/$sample.$SGE_TASK_ID.bam  
     if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.bam ]
     then
-        echo "Error: $0 File $output_dir_sample/$sample.$SGE_TASK_ID.bam not generated"
+        echo "Error: align_novo.sh File $output_dir_sample/$sample.$SGE_TASK_ID.bam not generated"
         exit 1
     else
         rm $output_dir_sample/$sample.$SGE_TASK_ID.sam  
@@ -187,5 +176,5 @@ else
 ########################################################	
 ######		Sort BAM, adds RG & remove duplicates
 
-    $script_path/convert.bam.sh $output_dir_sample $sample.$SGE_TASK_ID.bam $sample.$SGE_TASK_ID $run_info
+    $script_path/convert.bam.sh $output_dir_sample $sample.$SGE_TASK_ID.bam $sample.$SGE_TASK_ID $SGE_TASK_ID $run_info
 fi

@@ -14,16 +14,17 @@
 ######		TWIKI:				http://bioinformatics.mayo.edu/BMI/bin/view/Main/BioinformaticsCore/Analytics/WholeGenomeWo
 ########################################################
 
-if [ $# != 4 ];
+if [ $# != 5 ];
 then
-    echo -e "Usage: wrapper to add read group and sort the bam </path/to/input directory> <name of BAM to sort> <sample name> </path/to/run_info.txt>";
+    echo -e "Usage: wrapper to add read group and sort the bam </path/to/input directory> <name of BAM to sort> <sample name> <sge task id> </path/to/run_info.txt>";
 else
     set -x
     echo `date`
     input=$1
     input_bam=$2
     sample=$3
-    run_info=$4
+	id=$4
+    run_info=$5
 	
 ########################################################	
 ######		Reading run_info.txt and assigning to variables
@@ -46,13 +47,15 @@ else
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
     flowcell=`echo $run_num | awk -F'_' '{print $NF}' | sed 's/.\(.*\)/\1/'`
+    max_files=$( cat $tool_info | grep -w '^MAX_FILE_HANDLES' | cut -d '=' -f2 )
+    max_reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
     
 ########################################################	
 ######		PICARD to sort raw BAM file
 
     if [ ! -s $input/$input_bam ]
     then
-        echo "ERROR: $0 File $input/$input_bam does not exist"
+        echo "ERROR: [`date`] convert.bam.sh File $input/$input_bam does not exist"
         exit 1
     fi
 
@@ -62,25 +65,7 @@ else
     then
         ln -s $input/$input_bam $input/$sample.sorted.bam
     else
-        $java/java -Xmx6g -Xms512m \
-        -jar $picard/SortSam.jar \
-        INPUT=$input/$input_bam \
-        OUTPUT=$input/$sample.sorted.bam \
-        MAX_RECORDS_IN_RAM=2000000 \
-        SO=coordinate \
-        TMP_DIR=$input/ \
-		VALIDATION_STRINGENCY=SILENT
-        
-		# $samtools/samtools sort -m 800000000 $input/$input_bam $input/$sample.sorted 
-		# $samtools/samtools view -H $input/$sample.sorted.bam | sed -e '/SO:[a-z]*/s//SO:coordinate/g' | $samtools/samtools reheader - $input/$sample.sorted.bam > $input/$sample.sorted.re.bam
-		# mv $input/$sample.sorted.re.bam $input/$sample.sorted.bam	
-        if [ -s $input/$sample.sorted.bam ]
-        then
-            rm $input/$sample.bam
-        else
-            echo "ERROR: convert.bam.sh File $input/$sample.sorted.bam not generated"
-            exit 1
-        fi
+        $script_path/sortbam.sh $input/$input_bam $input/$sample.sorted.bam $input coordinate $max_reads true $run_info
     fi
 
 #############################################################	
@@ -91,104 +76,16 @@ else
     sam=`echo $sample | awk -F'.' '{print $1}'`
     if [ "$RG_ID" != "$sam" ]
     then
-        $java/java -Xmx6g -Xms512m \
-        -jar $picard/AddOrReplaceReadGroups.jar \
-        INPUT=$input/$sample.sorted.bam OUTPUT=$input/$sample.sorted.rg.bam \
-        PL=$platform SM=$sample CN=$center ID=$sample PU=$sample LB=$GenomeBuild \
-        TMP_DIR=$input \
-        VALIDATION_STRINGENCY=SILENT
-
-        if [ -s $input/$sample.sorted.rg.bam ]
-        then
-            mv $input/$sample.sorted.rg.bam $input/$sample.sorted.bam
-        else
-            echo "ERROR: convert.bam.sh File $input/$sample.sorted.rg.bam not generated"
-            exit 1
-        fi
-    fi
-
-
-########################################################	
-######		PICARD to mark duplicates
-    if [ $dup == "YES" ]
-    then
-        $java/java -Xmx6g -Xms512m \
-        -jar $picard/MarkDuplicates.jar \
-        INPUT=$input/$sample.sorted.bam \
-        OUTPUT=$input/$sample.sorted.rmdup.bam \
-        ASSUME_SORTED=true \
-		METRICS_FILE=$input/$sample.dup.metrics \
-        MAX_FILE_HANDLES=1000 \
-		REMOVE_DUPLICATES=false \
-        VALIDATION_STRINGENCY=SILENT \
-        TMP_DIR=$input/
-
-        if [ -s $input/$sample.sorted.rmdup.bam ]
-        then
-            mv $input/$sample.sorted.rmdup.bam $input/$sample.sorted.bam
-        else
-            echo "ERROR: convert.bam.sh $input/$sample.sorted.rmdup.bam not generated"
-            exit 1
-        fi
-    fi	
-
-    $samtools/samtools index $input/$sample.sorted.bam $input/$sample.sorted.bam.bai
-
-    if [ ! -s $input/$sample.sorted.bam.bai ]
-    then
-        echo "ERROR: convert.bam.sh File $input/$sample.sorted.bam.bai not generated"
-        exit 1
-    fi
-
-########################################################	
-######		PICARD to reorder BAM/SAM
-    if [ $reorder == "YES" ]
-    then
-        $java/java -Xmx6g -Xms512m \
-        -jar $picard/ReorderSam.jar \
-        I=$input/$sample.sorted.bam \
-        O=$input/$sample.sorted.tmp.bam \
-        R=$ref_path \
-        VALIDATION_STRINGENCY=SILENT \
-        CREATE_INDEX=true
-
-        if [ -s $input/$sample.sorted.tmp.bam ]
-        then
-            echo "ERROR: convert.bam.sh File $input/$sample.sorted.tmp.bam not generated"
-            exit 1
-        else
-            mv $input/$sample.sorted.tmp.bam $input/$sample.sorted.bam
-        fi
-
-        if [ -s $input/$sample.sorted.tmp.bam.bai ]
-        then
-            echo "ERROR: convert.bam.sh File $input/$sample.sorted.tmp.bam.bai not generated"
-            exit 1
-        else
-            mv $input/$sample.sorted.tmp.bai $input/$sample.sorted.bam.bai
-        fi
+        $script_path/addReadGroup.sh $input/$sample.sorted.bam $input/$sample.sorted.rg.bam $input $run_info $sample
     fi
     
     ### flagstat on each bam file
     $samtools/samtools flagstat $input/$sample.sorted.bam > $input/$sample.flagstat
     if [ ! -s $input/$sample.flagstat ]
     then
-        echo "ERROR: convert.bam.sh flagstat failed for $input/$sample.flagstat"
+        echo "ERROR: [`date`] convert.bam.sh flagstat failed for $input/$sample.flagstat"
     fi
     ## update secondary dahboard
-    if [ $analysis == "mayo" -o $analysis == "realign-mayo"  ]
-	then
-		id=`echo $sample | awk -F'.' '{print $NF}'`
-		sam=`echo $sample | awk -F'.' '{print $1}'`
-		pos=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | grep -n $sam | cut -d ":" -f1)
-		lane=$( cat $run_info | grep -w '^LANEINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tr "," "\n" | head -n $SGE_TASK_ID | tail -n 1)
-		index=$( cat $run_info | grep -w '^LABINDEXES' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tr "," "\n" | head -n $SGE_TASK_ID | tail -n 1)
-        if [ $index == "-" ]
-        then
-            $java/java -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -c -f $flowcell -r $run_num -s Alignment -a WholeGenome -v $version
-        else
-            $java/java -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -c -f $flowcell -i $index -r $run_num -s Alignment -a WholeGenome -v $version
-        fi    
-    fi
+    $script_path/dashboard.sh $sample $run_info Alignment complete $id
     echo `date`
 fi

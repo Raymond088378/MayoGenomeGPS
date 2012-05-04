@@ -6,7 +6,7 @@ else
     set -x
     echo `date`
     input=$1
-    sample=$2
+    group=$2
     run_info=$3
 	
 ########################################################	
@@ -24,7 +24,8 @@ else
     GenomeBuild=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2 )
     max_files=$( cat $tool_info | grep -w '^MAX_FILE_HANDLES' | cut -d '=' -f2 )
     max_reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
-	
+    sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
+    samples=$(cat $sample_info | grep -w "^$group" | cut -d '=' -f2 | tr "\t" " ")	
 	########################################################	
 ######		PICARD to merge BAM file
     INPUTARGS="";
@@ -55,13 +56,20 @@ else
 
     ### add read grouup information
     RG_ID=`$samtools/samtools view -H $input/$sample.sorted.bam | grep "^@RG" | tr '\t' '\n' | grep "^ID"| cut -f 2 -d ":"`
-
-    if [ "$RG_ID" == "$sample" ]
+    
+    check=0
+    for sample in $samples
+    do
+        value=`echo $RG_ID | grep -w "$sample" | wc -l`;
+        check=`if [ $value -ge 1 ]; then echo "1"; else echo "0"; fi`
+    done 
+    
+    if [ $check == 0 ]
     then
-	echo "no need to convert same read group"
-    else	
-        $script_path/addReadGroup.sh $input/$sample.sorted.bam $input/$sample.sorted.rg.bam $input $run_info $sample
-    fi
+        echo "ERROR : input bam file for $group doesn't have read group infroamtion for all the samples in the group"
+        exit 1;
+    fi        
+	
 	
     if [ $reorder == "YES" ]
     then

@@ -1,0 +1,36 @@
+#!/bin/sh
+if [ $# != 8 ]
+then
+    echo "Usage: <normal bam> <tumor bam > <output dir> <chromosome> <tumor sample name> <normal sample name> <output vcf file name> <run info>"
+else
+    set -x
+    echo `date`
+    normal_bam=$1
+    tumor_bam=$2
+    output=$3
+    chr=$4
+    tumor_sample=$5
+    normal_sample=$6
+    output_file=$7
+    run_info=$8
+    
+    tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
+    mutect==$( cat $tool_info | grep -w '^MUTECT' | cut -d '=' -f2)
+    java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
+    ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
+    dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
+    threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2)
+    
+    $java/java -Xmx3g -Xms512m -jar $mutect/muTect-1.0.27783.jar \
+    -T MuTect \
+    --reference_sequence $ref \
+    --intervals chr$chr \
+    --input_file:tumor $tumor_bam \
+    --input_file:normal $normal_bam \
+    -B:dbsnp,VCF $dbSNP \
+    -et NO_ET \
+    -nt $threads \
+    --out $output/$output_file \
+    --coverage_file coverage.wig.txt
+    echo `date`
+fi    

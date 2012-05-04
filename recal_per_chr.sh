@@ -90,6 +90,7 @@ else
     $java/java -Xmx6g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
     -R $ref \
     -et NO_ET \
+    -K $gatk/Hossain.Asif_mayo.edu.key \
     --knownSites $dbSNP \
     --knownSites $Kgenome \
     $input_bam \
@@ -105,44 +106,38 @@ else
     then
         echo "WARNING : recal_per_chr. File $output/chr${chr}.recal_data.csv not created"
         bams=`echo $input_bam | sed -e '/-I/s///g'`
-		num_bams=`echo $bams | tr " " "\n" | wc -l`
-		if [ $num_bams -eq 1 ]
-		then
-			cp $bams $output/chr${chr}.recalibrated.bam
-			cp $bams.bai $output/chr${chr}.recalibrated.bam.bai
-		else
-			INPUTARGS=`echo $bams | tr " " "\n" | awk '{print "I="$1}'` 
-			$java/java -Xmx6g -Xms512m \
-			-jar $picard/MergeSamFiles.jar \
-			$INPUTARGS\
-			OUTPUT=$output/chr${chr}.recalibrated.bam \
-			TMP_DIR=$output \
-			CREATE_INDEX=true \
-			VALIDATION_STRINGENCY="SILENT"
-			mv $output/chr${chr}.recalibrated.bai $output/chr${chr}.recalibrated.bam.bai
-		fi
-	else	
-		## recailbartion
-		$java/java -Xmx6g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-		-R $ref \
-		-et NO_ET \
-		-L chr${chr} \
-		$input_bam \
-		-T TableRecalibration \
-		--out $output/chr${chr}.recalibrated.bam \
-		-recalFile $output/chr${chr}.recal_data.csv 
-	
-		mv $output/chr${chr}.recalibrated.bai $output/chr${chr}.recalibrated.bam.bai
-	fi	
+        num_bams=`echo $bams | tr " " "\n" | wc -l`
+        if [ $num_bams -eq 1 ]
+        then
+            cp $bams $output/chr${chr}.recalibrated.bam
+            cp $bams.bai $output/chr${chr}.recalibrated.bam.bai
+        else
+            INPUTARGS=`echo $bams | tr " " "\n" | awk '{print "I="$1}'` 
+            $script_path/MergeBam.sh $INPUTARGS $output/chr${chr}.recalibrated.bam $output true $run_info 
+        fi
+    else	
+        ## recailbartion
+        $java/java -Xmx6g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+        -R $ref \
+        -et NO_ET \
+        -K $gatk/Hossain.Asif_mayo.edu.key \
+        -L chr${chr} \
+        $input_bam \
+        -T TableRecalibration \
+        --out $output/chr${chr}.recalibrated.bam \
+        -recalFile $output/chr${chr}.recal_data.csv 
+        mv $output/chr${chr}.recalibrated.bai $output/chr${chr}.recalibrated.bam.bai
+    fi
+    
     if [ -s $output/chr${chr}.recalibrated.bam ]
     then
         rm $input/$bam $input/$bam.bai
-		if [ $recal == 0 ]
-		then
-			mv $output/chr${chr}.recalibrated.bam $output/chr${chr}.cleaned.bam
-			mv $output/chr${chr}.recalibrated.bam.bai $output/chr${chr}.cleaned.bam.bai
-			$samtools/samtools flagstat $output/chr${chr}.cleaned.bam > $output/chr$chr.flagstat
-		fi		
+        if [ $recal == 0 ]
+        then
+            mv $output/chr${chr}.recalibrated.bam $output/chr${chr}.cleaned.bam
+            mv $output/chr${chr}.recalibrated.bam.bai $output/chr${chr}.cleaned.bam.bai
+            $samtools/samtools flagstat $output/chr${chr}.cleaned.bam > $output/chr$chr.flagstat
+        fi		
     else
         echo "ERROR : recal_per_chr. File $output/chr${chr}.recalibrated.bam not created" 
         exit 1

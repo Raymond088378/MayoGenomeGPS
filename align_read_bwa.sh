@@ -63,25 +63,18 @@ else
     fastq=$output_dir/fastq
     fastqc=$output_dir/fastqc
     
-    pos=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | grep -n $sample | cut -d ":" -f1)
-    lane=$( cat $run_info | grep -w '^LANEINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tr "," "\n" | head -n $SGE_TASK_ID | tail -n 1)
-    index=$( cat $run_info | grep -w '^LABINDEXES' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tr "," "\n" | head -n $SGE_TASK_ID | tail -n 1)
-    if [ $analysis == "mayo" ]
+    if [ $read -eq 1 ]
     then
-        if [ $index == "-" ]
-        then
-            $java/java -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -r $run_num -s Alignment -a WholeGenome -v $version
-        else
-            $java/java -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -i $index -r $run_num -s Alignment -a WholeGenome -v $version
-        fi    
+        $script_path/dashboard.sh $sample $run_info Alignment started $SGE_TASK_ID
     fi
     
     if [ $read -eq 1 ]
     then
-	let fidx=($SGE_TASK_ID*2)-1 
+		let fidx=($SGE_TASK_ID*2)-1 
     else
-	let fidx=($SGE_TASK_ID*2)
+		let fidx=($SGE_TASK_ID*2)
     fi	
+	
     R1=`cat $sample_info | grep -w "$sample" | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
     extension=$(echo $R1 | sed 's/.*\.//')
     filename1=$(echo $R1 | sed 's/\.[^\.]*$//')
@@ -96,7 +89,7 @@ else
     
     if [ ! -s $fastq/$filename1 ]
     then
-        echo "ERROR: $0 File $fastq/$filename1 does not exist" 
+        echo "ERROR: align_read_bwa.sh File $fastq/$filename1 does not exist" 
         exit 1
     fi
     ILL2SANGER1=`perl $script_path/checkFastqQualityScores.pl $fastq/$filename1 1000`
@@ -104,7 +97,6 @@ else
 
 ########################################################	
 ######		Run bwa alignemnt module
-    echo `date`
     if [ $ILL2SANGER1 -gt 65 ]
     then
         $bwa/bwa aln -l 32 -t 4 -I $genome_bwa $fastq/$filename1 > $output_dir_sample/$sample.$SGE_TASK_ID.R$read.sai
@@ -112,12 +104,12 @@ else
         $bwa/bwa aln -l 32 -t 4 $genome_bwa $fastq/$filename1 > $output_dir_sample/$sample.$SGE_TASK_ID.R$read.sai
     fi        
   
-    
     if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.R$read.sai ]
     then
-        echo "ERROR: $0 File $output_dir_sample/$sample.$SGE_TASK_ID.sam not generated"
+        echo "ERROR: align_read_bwa.sh File $output_dir_sample/$sample.$SGE_TASK_ID.sam not generated"
         exit 1 
     fi  
+	echo `date`
 fi
 	
    

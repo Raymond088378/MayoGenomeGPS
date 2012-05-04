@@ -28,14 +28,13 @@ else
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
     master_gene_file=$( cat $tool_info | grep -w '^MASTER_GENE_FILE' | cut -d '=' -f2 )
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
-    tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2)
-    tool=`echo "$tool" | tr "[A-Z]" "[a-z]"`
+    tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
     out=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
     PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
     out_dir=$out/$PI/$tool/$run_num
-    multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2)
-    multi=`echo $multi | tr "[a-z]" "[A-Z]"`
+    multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
+    
 	PATH=$bed/:$PATH	
     if [ $tool == "whole_genome" ]
     then
@@ -43,7 +42,6 @@ else
     else
         kit=$CaptureKit
     fi    
-    
     
     if [ ! -s $bam ]
     then

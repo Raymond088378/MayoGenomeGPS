@@ -43,104 +43,68 @@ else
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
     CaptureKit=$( cat $tool_info | grep -w '^CAPTUREKIT' | cut -d '=' -f2 )
-    script_path=$script_path
     tool=`echo "$tool" | tr "[A-Z]" "[a-z]"`
-	PATH=$bedtools/:$PATH
+    export PATH=$bedtools/:$PATH
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
+    distance=$( cat $tool_info | grep -w '^SNP_DISTANCE_INDEL' | cut -d '=' -f2 )
 ##############################################################		
     
-    
+    intersect_file=$TargetKit
     if [ $multi_sample != "YES" ]
     then
         echo "Single sample"
         input=$variants/$sample
-        ### parse the file to generate seperate SNV and INDEL vcf
         if [ ! -s $input/$sample.variants.chr$chr.filter.vcf ]
         then
             echo "ERROR: $input/$sample.variants.chr$chr.filter.vcf file is empty "
             exit 1
         fi    
-        cat $input/$sample.variants.chr$chr.filter.vcf | awk '(length($4) == 1 && length($5) == 1 && $7 ~ /PASS/) || $0 ~ /#/' > $input/$sample.variants.chr$chr.SNV.filter.vcf
-        cat $input/$sample.variants.chr$chr.filter.vcf | awk '(length($4) > 1 || length($5) > 1 && $7 ~ /PASS/) || $0 ~ /#/' > $input/$sample.variants.chr$chr.INDEL.filter.vcf
-        
-        intersect_file=$TargetKit
-        $bedtools/intersectBed -header -a $input/$sample.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/$sample.chr$chr.SNV.bed.i.vcf 
-        $bedtools/intersectBed -header -a $input/$sample.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/$sample.chr$chr.INDEL.bed.i.vcf 
-        
-
-        # convert to bed format and getting the coding variants or variants in target region
-# cat $input/$sample.variants.chr$chr.SNV.filter.vcf | sed -e "/^#/d" | awk '{print $1"\t"($2-1)"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10}' > $OnTarget/$sample.chr$chr.SNV.bed
-#       cat $input/$sample.variants.chr$chr.INDEL.filter.vcf | sed -e "/^#/d" | awk '{print $1"\t"($2-1)"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10}' > $OnTarget/$sample.chr$chr.INDEL.bed
-        
-        
-		#if [ $tool == "exome" ]
-        #then
-         #   intersect_file=$TargetKit
-        #elif [ $tool == "whole_genome" ]
-        #then
-        #    intersect_file=$master_gene_file
-        #fi    
-        
-        ##intersecting the variant file using the interesect file
-# $bedtools/intersectBed -a $OnTarget/$sample.chr$chr.SNV.bed -b $intersect_file |sort |uniq | cut -f 1,3,4,5,6,7,8,9,10,11 > $OnTarget/$sample.chr$chr.SNV.bed.i
-#       $bedtools/intersectBed -a $OnTarget/$sample.chr$chr.INDEL.bed -b $intersect_file | sort | uniq | cut -f 1,3,4,5,6,7,8,9,10,11 > $OnTarget/$sample.chr$chr.INDEL.bed.i
-#       rm $OnTarget/$sample.chr$chr.SNV.bed $OnTarget/$sample.chr$chr.INDEL.bed
-        
-         ## make bed files as VCF format
-#       echo -e "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t${sample}" > $OnTarget/$sample.chr$chr.header
-#       cat $OnTarget/$sample.chr$chr.header $OnTarget/$sample.chr$chr.SNV.bed.i > $OnTarget/$sample.chr$chr.SNV.bed.i.vcf
-#       cat $OnTarget/$sample.chr$chr.header $OnTarget/$sample.chr$chr.INDEL.bed.i > $OnTarget/$sample.chr$chr.INDEL.bed.i.vcf
-#       rm $OnTarget/$sample.chr$chr.SNV.bed.i $OnTarget/$sample.chr$chr.INDEL.bed.i
- 
-        perl $script_path/parse.vcf.INDEL.pl -i $OnTarget/$sample.chr$chr.INDEL.bed.i.vcf -o $OnTarget/$sample.chr$chr.indels -s $sample
-        perl $script_path/parse.vcf.SNV.pl -i $OnTarget/$sample.chr$chr.SNV.bed.i.vcf -o $OnTarget/$sample.chr$chr.snvs -s $sample
-        #rm $OnTarget/$sample.chr$chr.header
-        rm $OnTarget/$sample.chr$chr.INDEL.bed.i.vcf
-        rm $OnTarget/$sample.chr$chr.SNV.bed.i.vcf
-        rm $input/$sample.variants.chr$chr.SNV.filter.vcf
+        cat $input/$sample.variants.chr$chr.filter.vcf | awk '(length($4) == 1 && length($5) == 1 && $7 ~ /PASS/) || $0 ~ /#/' \
+            > $input/$sample.variants.chr$chr.SNV.filter.vcf
+        cat $input/$sample.variants.chr$chr.filter.vcf | awk '(length($4) > 1 || length($5) > 1 && $7 ~ /PASS/) || $0 ~ /#/' \
+            > $input/$sample.variants.chr$chr.INDEL.filter.vcf
+        $bedtools/intersectBed -header -a $input/$sample.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf
+        rm $input/$sample.variants.chr$chr.SNV.filter.vcf 
+        $bedtools/intersectBed -header -a $input/$sample.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf
         rm $input/$sample.variants.chr$chr.INDEL.filter.vcf
+        
         ### interesect with capture kit to see if the vaariant is found in capture kit and annotate teh variant with 1 or 0 and for whole genome just 1
         if [ $tool == "exome" ]
         then
-            ### SNVs
-            awk '{print $1"\t"$2-1"\t"$2"\t"$1"_"$2"_"$3"_"$4"_"$5"_"$6"_"$7"_"$8"_"$9}' $OnTarget/$sample.chr$chr.snvs > $OnTarget/$sample.chr$chr.snvs.bed
-            rm $OnTarget/$sample.chr$chr.snvs
-            $bedtools/intersectBed -a $OnTarget/$sample.chr$chr.snvs.bed -b $CaptureKit -c > $OnTarget/$sample.chr$chr.snvs.bed.i
-            rm $OnTarget/$sample.chr$chr.snvs.bed
-            perl -an -e '@a=split(/_/,$F[-2]); print join("\t",@a); print "\t$F[$#F]\n";' $OnTarget/$sample.chr$chr.snvs.bed.i > $OnTarget/$sample.chr$chr.raw.snvs.bed.i.ToMerge
-            rm $OnTarget/$sample.chr$chr.snvs.bed.i 
-            
-            ### INDELs
-            #perl -an -e 'if($F[3] =~ /^\+/){$F[2]=$F[2]+1;print join ("\t",@F),"\n"}else { print join ("\t",@F),"\n";}' $OnTarget/$sample.chr$chr.indels > $OnTarget/$sample.chr$chr.indels.bed
-            #rm $OnTarget/$sample.chr$chr.indels 
-            awk '{print $1"\t"$2"\t"$3"\t"$1"_"$2"_"$3"_"$4"_"$5"_"$6"_"$7"_"$8}' $OnTarget/$sample.chr$chr.indels > $OnTarget/$sample.chr$chr.indels.bed
-            rm $OnTarget/$sample.chr$chr.indels 
-            $bedtools/intersectBed -a $OnTarget/$sample.chr$chr.indels.bed -b $CaptureKit -c > $OnTarget/$sample.chr$chr.indels.bed.i
-            rm $OnTarget/$sample.chr$chr.indels.bed
-            #perl -an -e 'if($F[-2] =~ /^\+/){$F[-3]=$F[-4];print "$F[-5]\t$F[-4]\t$F[-3]\t$F[-2]\t$F[$#F]\n";}else { print "$F[-5]\t$F[-4]\t$F[-3]\t$F[-2]\t$F[$#F]\n";}' $OnTarget/$sample.chr$chr.indels.bed.i > $OnTarget/$sample.chr$chr.raw.indels.bed.i.ToMerge 
-            perl -an -e '@a=split(/_/,$F[-2]); print join("\t",@a); print "\t$F[$#F]\n";' $OnTarget/$sample.chr$chr.indels.bed.i > $OnTarget/$sample.chr$chr.raw.indels.bed.i.ToMerge  
-            rm $OnTarget/$sample.chr$chr.indels.bed.i
+            bedtools/intersectBed -header -a $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf -b $CaptureKit -c > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
+            rm $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf
+            cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf |  awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE="$NF,$9,$10;}' \
+                > $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf.temp
+            mv $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf.temp $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf
+            $bedtools/intersectBed -header -a $OnTarget/$sample.chr$chr.INDEL.filter.i.vcf -b $CaptureKit -c > $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf
+            rm $OnTarget/$sample.chr$chr.INDEL.filter.i.vcf
+            cat $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE="$NF,$9,$10;}' \
+                > $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf.temp
+            mv $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf.temp  $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf
         elif [ $tool == "whole_genome" ]
         then
-            cat $OnTarget/$sample.chr$chr.snvs | awk '{print $0"\t1"}' > $OnTarget/$sample.chr$chr.raw.snvs.bed.i.ToMerge
-            rm $OnTarget/$sample.chr$chr.snvs
-            cat $OnTarget/$sample.chr$chr.indels | awk '{print $0"\t1"}' > $OnTarget/$sample.chr$chr.raw.indels.bed.i.ToMerge
-            rm $OnTarget/$sample.chr$chr.indels
+            cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' \
+                > $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf
+            rm $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf
+            cat $OnTarget/$sample.chr$chr.INDEL.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE="$NF,$9,$10;}' \
+                > $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf
+            rm $OnTarget/$sample.chr$chr.INDEL.filter.i.vcf
         fi
         
-        if [ ! -s $OnTarget/$sample.chr${chr}.raw.indels.bed.i.ToMerge ]
+        if [ `cat $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
         then
-            #touch $OnTarget/$sample.chr${chr}.raw.indels.bed.i.ToMerge
-            echo "WARNING: $OnTarget/$sample.chr${chr}.raw.indels.bed.i.ToMerge is empty "
+            echo "WARNING: No Ontarget calls for $sample, chr$chr, INDELs"
         fi    
-        ### intersect with indel call to flag the snv calls 0/1
-        perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/$sample.chr${chr}.raw.snvs.bed.i.ToMerge -i $OnTarget/$sample.chr${chr}.raw.indels.bed.i.ToMerge -n 10 -p 2 -o $OnTarget/$sample.chr${chr}.raw.snvs.bed.i.ToMerge.pos
-        mv $OnTarget/$sample.chr${chr}.raw.snvs.bed.i.ToMerge.pos $OnTarget/$sample.chr${chr}.raw.snvs.bed.i.ToMerge
         
-        if [ ! -s $OnTarget/$sample.chr${chr}.raw.snvs.bed.i.ToMerge ]
+        perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf \
+            -n $distance -o $OnTarget/$sample.chr$chr.SNV.filter.i.c.pos.vcf
+        cat $OnTarget/$sample.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL="$NF,$9,$10;}' \
+            > $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf
+        rm $OnTarget/$sample.chr$chr.SNV.filter.i.c.pos.vcf
+        if [ `cat $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
         then
-            echo "WARNING: $OnTarget/$sample.chr${chr}.raw.snvs.bed.i.ToMerge is empty"
-        fi    
+            echo "WARNING: No Ontarget calls for $sample, chr$chr, SNVs"
+        fi      
         
         
 ############# files are in the correct format required for TREAT annotation module to work
@@ -149,53 +113,43 @@ else
         #### we need to generate three files for a group for SNVs and INDELs
         ### somatic tumor normal
         group=$sample
-        samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2)
-        ##  variants.chr.filter.vcf    
+        samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2)    
         input=$variants/$group
-        #intersect_file=$master_gene_file
         intersect_file=$TargetKit
-		for sample in $samples
+	for sample in $samples
         do  
             col=`cat $input/$group.variants.chr$chr.filter.vcf | awk '$0 ~ /#CHROM/' | awk -v num=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == num) {print i} } }'`
+            cat $input/$group.variants.chr$chr.filter.vcf | awk -v num=$col 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8,$9,$num; } ' \
+                | awk '(length($4) == 1 && length($5) == 1 && $7 ~ /PASS/) || $0 ~ /#/' | grep -v -w "\./\." > $input/$sample.variants.chr$chr.SNV.filter.vcf
+            cat $input/$group.variants.chr$chr.filter.vcf | awk -v num=$col 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8,$9,$num; } ' \
+                | awk '((length($4) > 1 || length($5) > 1 ) && $7 ~ /PASS/) || $0 ~ /#/' | grep -v -w "\./\."  > $input/$sample.variants.chr$chr.INDEL.filter.vcf
             
-            cat $input/$group.variants.chr$chr.filter.vcf | awk '$0 !~ /##/' | awk -v num=$col 'BEGIN {OFS="\t"} { print $1,$2,$3,$4,$5,$6,$7,$8,$9,$num } ' | awk '(length($4) == 1 && length($5) == 1 && $7 ~ /PASS/) || $0 ~ /#/' | grep -v -w "\./\." > $input/$sample.variants.chr$chr.SNV.filter.vcf
-            cat $input/$group.variants.chr$chr.filter.vcf | awk '$0 !~ /##/' | awk -v num=$col 'BEGIN {OFS="\t"} { print $1,$2,$3,$4,$5,$6,$7,$8,$9,$num } ' | awk '((length($4) > 1 || length($5) > 1 ) && $7 ~ /PASS/) || $0 ~ /#/' | grep -v -w "\./\."  > $input/$sample.variants.chr$chr.INDEL.filter.vcf
+            $bedtools/intersectBed -header -a $input/$sample.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf
+            rm $input/$sample.variants.chr$chr.SNV.filter.vcf 
+            $bedtools/intersectBed -header -a $input/$sample.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf
+            rm $input/$sample.variants.chr$chr.INDEL.filter.vcf
             
-            # convert to bed format and getting the coding variants or variants in target region
-            cat $input/$sample.variants.chr$chr.SNV.filter.vcf | sed -e "/^#/d" | awk 'BEGIN {OFS="\t"} { print $1,$2-1,$2,$3,$4,$5,$6,$7,$8,$9,$10}' > $OnTarget/$sample.chr$chr.SNV.bed
-            cat $input/$sample.variants.chr$chr.INDEL.filter.vcf | sed -e "/^#/d" | awk 'BEGIN {OFS="\t"} { print $1,$2-1,$2,$3,$4,$5,$6,$7,$8,$9,$10}' > $OnTarget/$sample.chr$chr.INDEL.bed
-            $bedtools/intersectBed -a $OnTarget/$sample.chr$chr.SNV.bed -b $intersect_file |sort |uniq | awk 'BEGIN {OFS="\t"} { print $1,$3,$4,$5,$6,$7,$8,$9,$10,$11}' > $OnTarget/$sample.chr$chr.SNV.bed.i
-            $bedtools/intersectBed -a $OnTarget/$sample.chr$chr.INDEL.bed -b $intersect_file | sort | uniq | awk 'BEGIN {OFS="\t"} { print $1,$3,$4,$5,$6,$7,$8,$9,$10,$11}' > $OnTarget/$sample.chr$chr.INDEL.bed.i
-            rm $OnTarget/$sample.chr$chr.SNV.bed $OnTarget/$sample.chr$chr.INDEL.bed
+            cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' \
+                > $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf
+            rm $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf
+            cat $OnTarget/$sample.chr$chr.INDEL.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE="$NF,$9,$10;}' \
+                > $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf
+            rm $OnTarget/$sample.chr$chr.INDEL.filter.i.vcf
             
-            ## make bed files as VCF format
-            echo -e "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t${sample}" > $OnTarget/$sample.chr$chr.header
-            cat $OnTarget/$sample.chr$chr.header $OnTarget/$sample.chr$chr.SNV.bed.i > $OnTarget/$sample.chr$chr.SNV.bed.i.vcf
-            cat $OnTarget/$sample.chr$chr.header $OnTarget/$sample.chr$chr.INDEL.bed.i > $OnTarget/$sample.chr$chr.INDEL.bed.i.vcf
-            rm $OnTarget/$sample.chr$chr.SNV.bed.i $OnTarget/$sample.chr$chr.INDEL.bed.i
-            perl $script_path/parse.vcf.INDEL.pl -i $OnTarget/$sample.chr$chr.INDEL.bed.i.vcf -o $OnTarget/$sample.chr$chr.indels -s $sample
-            perl $script_path/parse.vcf.SNV.pl -i $OnTarget/$sample.chr$chr.SNV.bed.i.vcf -o $OnTarget/$sample.chr$chr.snvs -s $sample
-            rm $OnTarget/$sample.chr$chr.header
-            rm $OnTarget/$sample.chr$chr.INDEL.bed.i.vcf
-            rm $OnTarget/$sample.chr$chr.SNV.bed.i.vcf
-            
-            cat $OnTarget/$sample.chr$chr.snvs | awk '{print $0"\t1"}' > $OnTarget/$sample.chr$chr.raw.snvs.bed.i.ToMerge
-            rm $OnTarget/$sample.chr$chr.snvs
-            cat $OnTarget/$sample.chr$chr.indels | awk '{print $0"\t1"}' > $OnTarget/$sample.chr$chr.raw.indels.bed.i.ToMerge
-            rm $OnTarget/$sample.chr$chr.indels
-            
-            if [ ! -s $OnTarget/$sample.chr${chr}.raw.indels.bed.i.ToMerge ]
+            if [ `cat $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
             then
-                echo "WARNING: $OnTarget/$sample.chr${chr}.raw.indels.bed.i.ToMerge is empty "
+                echo "WARNING: No Ontarget calls for $sample, chr$chr, INDELs"
             fi    
-            ### intersect with indel call to flag the snv calls 0/1
-            perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/$sample.chr${chr}.raw.snvs.bed.i.ToMerge -i $OnTarget/$sample.chr${chr}.raw.indels.bed.i.ToMerge -n 10 -p 2 -o $OnTarget/$sample.chr${chr}.raw.snvs.bed.i.ToMerge.pos
-            mv $OnTarget/$sample.chr${chr}.raw.snvs.bed.i.ToMerge.pos $OnTarget/$sample.chr${chr}.raw.snvs.bed.i.ToMerge
 
-            if [ ! -s $OnTarget/$sample.chr${chr}.raw.snvs.bed.i.ToMerge ]
+            perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf \
+                -n $distance -o $OnTarget/$sample.chr$chr.SNV.filter.i.c.pos.vcf
+            cat $OnTarget/$sample.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL="$NF,$9,$10;}' \
+                > $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf
+            rm $OnTarget/$sample.chr$chr.SNV.filter.i.c.pos.vcf
+            if [ `cat $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
             then
-                echo "WARNING: $OnTarget/$sample.chr${chr}.raw.snvs.bed.i.ToMerge is empty"
-            fi 
+                echo "WARNING: No Ontarget calls for $sample, chr$chr, SNVs"
+            fi  
         done
         ### for somatic calls
         samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 )
@@ -209,44 +163,36 @@ else
         do  
             tumor=${sampleArray[$i]}
             col=`cat $input/$group.somatic.variants.chr$chr.filter.vcf | awk '$0 ~ /#CHROM/' | awk -v num=$tumor -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == num) {print i} } }'`
-            #cat $input/$group.somatic.variants.chr$chr.filter.vcf | awk '$0 !~ /##/' | awk -v num=$col 'BEGIN {OFS="\t"} { print $1,$2,$3,$4,$5,$6,$7,$8,$9,$num } ' | awk '(length($4) == 1 && length($5) == 1 && $7 ~ /PASS/) || $0 ~ /#/' | grep -v -w "0/0" > $input/$group.$tumor.somatic.variants.chr$chr.SNV.filter.vcf
-            cat $input/$group.somatic.variants.chr$chr.filter.vcf | awk '$0 !~ /##/' | awk -v num=$col 'BEGIN {OFS="\t"} { print $1,$2,$3,$4,$5,$6,$7,$8,$9,$num } ' | awk '(length($4) == 1 && length($5)) || $0 ~ /#/' | grep -v -w "0/0" > $input/$group.$tumor.somatic.variants.chr$chr.SNV.filter.vcf
-            #cat $input/$group.somatic.variants.chr$chr.filter.vcf | awk '$0 !~ /##/' | awk -v num=$col 'BEGIN {OFS="\t"} { print $1,$2,$3,$4,$5,$6,$7,$8,$9,$num } ' | awk '((length($4) > 1 || length($5) > 1) && $7 ~ /PASS/) || $0 ~ /#/' | grep -v -w "0/0"  > $input/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.vcf
-            cat $input/$group.somatic.variants.chr$chr.filter.vcf | awk '$0 !~ /##/' | awk -v num=$col 'BEGIN {OFS="\t"} { print $1,$2,$3,$4,$5,$6,$7,$8,$9,$num } ' | awk '((length($4) > 1 || length($5) > 1)) || $0 ~ /#/' | grep -v -w "0/0"  > $input/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.vcf
-            # convert to bed format and getting the coding variants or variants in target region
-            cat $input/$group.$tumor.somatic.variants.chr$chr.SNV.filter.vcf | sed -e "/^#/d" | awk 'BEGIN {OFS="\t"} { print $1,$2-1,$2,$3,$4,$5,$6,$7,$8,$9,$10}' > $OnTarget/$group.$tumor.chr$chr.SNV.bed
-            cat $input/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.vcf| sed -e "/^#/d" | awk 'BEGIN {OFS="\t"} { print $1,$2-1,$2,$3,$4,$5,$6,$7,$8,$9,$10}' > $OnTarget/$group.$tumor.chr$chr.INDEL.bed
-            $bedtools/intersectBed -a $OnTarget/$group.$tumor.chr$chr.SNV.bed -b $intersect_file |sort |uniq | awk 'BEGIN {OFS="\t"} { print $1,$3,$4,$5,$6,$7,$8,$9,$10,$11}' > $OnTarget/$group.$tumor.chr$chr.SNV.bed.i
-            $bedtools/intersectBed -a $OnTarget/$group.$tumor.chr$chr.INDEL.bed -b $intersect_file | sort | uniq | awk 'BEGIN {OFS="\t"} { print $1,$3,$4,$5,$6,$7,$8,$9,$10,$11}' > $OnTarget/$group.$tumor.chr$chr.INDEL.bed.i
-            rm $OnTarget/$group.$tumor.chr$chr.SNV.bed $OnTarget/$group.$tumor.chr$chr.INDEL.bed
+            cat $input/$group.somatic.variants.chr$chr.filter.vcf | awk -v num=$col 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8,$9,$num } ' \
+                | awk '(length($4) == 1 && length($5) == 1 && $7 ~ /PASS/) || $0 ~ /#/' | grep -v -w "0/0" > $input/$group.$tumor.somatic.variants.chr$chr.SNV.filter.vcf
+            cat $input/$group.somatic.variants.chr$chr.filter.vcf | awk -v num=$col 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8,$9,$num } ' \
+                | awk '((length($4) > 1 || length($5) > 1) && $7 ~ /PASS/) || $0 ~ /#/' | grep -v -w "0/0"  > $input/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.vcf
             
-            ## make bed files as VCF format
-            echo -e "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t${tumor}" > $OnTarget/$group.$tumor.chr$chr.header
-            cat $OnTarget/$group.$tumor.chr$chr.header $OnTarget/$group.$tumor.chr$chr.SNV.bed.i > $OnTarget/$group.$tumor.chr$chr.SNV.bed.i.vcf
-            cat $OnTarget/$group.$tumor.chr$chr.header $OnTarget/$group.$tumor.chr$chr.INDEL.bed.i > $OnTarget/$group.$tumor.chr$chr.INDEL.bed.i.vcf
-            rm $OnTarget/$group.$tumor.chr$chr.SNV.bed.i $OnTarget/$group.$tumor.chr$chr.INDEL.bed.i
-            perl $script_path/parse.vcf.INDEL.pl -i $OnTarget/$group.$tumor.chr$chr.INDEL.bed.i.vcf -o $OnTarget/$group.$tumor.chr$chr.indels -s $sample
-            perl $script_path/parse.vcf.SNV.pl -i $OnTarget/$group.$tumor.chr$chr.SNV.bed.i.vcf -o $OnTarget/$group.$tumor.chr$chr.snvs -s $sample
-            rm $OnTarget/$group.$tumor.chr$chr.header
-            rm $OnTarget/$group.$tumor.chr$chr.INDEL.bed.i.vcf
-            rm $OnTarget/$group.$tumor.chr$chr.SNV.bed.i.vcf
-
-            cat $OnTarget/$group.$tumor.chr$chr.snvs | awk '{print $0"\t1"}' > $OnTarget/$group.$tumor.chr$chr.raw.snvs.bed.i.ToMerge
-            rm $OnTarget/$group.$tumor.chr$chr.snvs
-            cat $OnTarget/$group.$tumor.chr$chr.indels | awk '{print $0"\t1"}' > $OnTarget/$group.$tumor.chr$chr.raw.indels.bed.i.ToMerge
-            rm $OnTarget/$group.$tumor.chr$chr.indels
-            if [ ! -s $OnTarget/$group.$tumor.chr${chr}.raw.indels.bed.i.ToMerge ]
+            $bedtools/intersectBed -header -a $input/$group.$tumor.somatic.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.vcf
+            rm $input/$group.$tumor.somatic.variants.chr$chr.SNV.filter.vcf
+            $bedtools/intersectBed -header -a $input/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.vcf
+            rm $input/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.vcf
+            cat $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' \
+                > $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.vcf
+            rm $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.vcf
+            cat $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.vcf| awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE="$NF,$9,$10;}' \
+                > $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.c.vcf
+            rm $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.vcf
+            
+            if [ `cat $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
             then
-                echo "WARNING: $OnTarget/$group.$tumor.chr${chr}.raw.indels.bed.i.ToMerge is empty "
+                echo "WARNING: No Ontarget calls for $group, $sample, chr$chr, INDELs"
             fi    
-            ### intersect with indel call to flag the snv calls 0/1
-            perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/$group.$tumor.chr${chr}.raw.snvs.bed.i.ToMerge -i $OnTarget/$group.$tumor.chr${chr}.raw.indels.bed.i.ToMerge -n 10 -p 2 -o $OnTarget/$group.$tumor.chr${chr}.raw.snvs.bed.i.ToMerge.pos
-            mv $OnTarget/$group.$tumor.chr${chr}.raw.snvs.bed.i.ToMerge.pos $OnTarget/$group.$tumor.chr${chr}.raw.snvs.bed.i.ToMerge
 
-            if [ ! -s $OnTarget/$group.$tumor.chr${chr}.raw.snvs.bed.i.ToMerge ]
+            perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.vcf \
+                -n $distance -o $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.pos.vcf
+            cat $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL="$NF,$9,$10;}' \
+                > $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.vcf
+            rm $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.pos.vcf
+            if [ `cat OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
             then
-                echo "WARNING: $OnTarget/$group.$tumor.chr${chr}.raw.snvs.bed.i.ToMerge is empty"
-            fi 
+                echo "WARNING: No Ontarget calls for $group, $sample, chr$chr, SNVs"
+            fi   
         done
         echo `date`
     fi

@@ -10,20 +10,24 @@
 	use warnings;
 	use Getopt::Std;
 
-	our($opt_i, $opt_o, $opt_s);
+	our($opt_i, $opt_o, $opt_s, $opt_h);
 	print "INFO: script to parse the VCF indel to output old GATK format\n";
 	print "RAW paramters: @ARGV\n";
-	getopt('ios');
-	if ( (!defined $opt_i) && (!defined $opt_o) && (!defined $opt_s) )	{
-		die ("Usage: $0 \n\t-i [nput vcf file] \n\t-o [utput gatk format] \n\t-s[ample name] \n");
+	getopt('iosh');
+	if ( (!defined $opt_i) && (!defined $opt_o) && (!defined $opt_s) && (!defined $opt_h) )	{
+		die ("Usage: $0 \n\t-i [nput vcf file] \n\t-o [utput gatk format] \n\t-s[ample name] \n\t -h [ header flag]\n");
 	}		
 	else	{
 		my $source=$opt_i;
 		my $output=$opt_o;
 		my $sample=$opt_s;chomp $sample;
 		open FH, "<$source" or die "can not open $source :$! \n";
-		open OUT, ">$output" or die "can not open $output : $! \n";		
-	#	print "Chr\tStart\tStop\tInformation\n";
+		open OUT, ">$output" or die "can not open $output : $! \n";
+		my $flag=$opt_h;
+		if ($flag ==1)	{
+			print OUT "\t" x 6 . "$sample" . "\t" x 2 ."\n";
+			print OUT "Chr\tStart\tStop\tInCaptureKit\tRef\tAlt\tBase-Length\tIndel-supportedRead\tReadDepth\n";
+		}
 		my ($header_len,$sample_col,$format_col,$chr,$ReadDepth,$GenoType,$AllelicDepth,$format_len);
 		my (@alt_reads,@format_data,@sample_data);
 		while( my $l = <FH>)	{
@@ -35,18 +39,16 @@
 				for( my $i = 0; $i < $header_len ; $i++ )	{	## to get the position of sample specific data	
 					if($call[$i] eq 'FORMAT')	{
 						$format_col=$i;
-					#	print"FORMAT:$format_col\n";
 					}	
 					if($call[$i] eq $sample)	{
 						$sample_col=$i;
-					#	print "SAMPLE:$sample_col\n";
 					}	
 				}		
 				next;	
 			}	
 			next if ((length($call[3]) == 1) && (length($call[4]) == 1) );
             
-            $chr=$call[0];
+			$chr=$call[0];
 			@format_data = split(/:/,$call[$format_col]);
 			@sample_data = split(/:/,$call[$sample_col]);
 			$format_len=scalar(@format_data);
@@ -82,8 +84,11 @@
 					$Stop = $Start + $Bases;
 				}
 				$ReadDepth=$alt_reads[0]+$alt_reads[$#alt_reads];
-				#print OUT "$chr\t$Start\t$Stop\t$INDEL$Bases:$alt_reads[$#alt_reads]/$ReadDepth\n";
-				print OUT "$chr\t$Start\t$Stop\t$call[3]\t$call[4]\t$Bases\t$alt_reads[$#alt_reads]\t$ReadDepth\n";
+				my $capture_flag=1;
+				if (grep /CAPTURE=0/,@call)	{
+					$capture_flag=0;
+				}
+				print OUT "$chr\t$Start\t$Stop\t$capture_flag\t$call[3]\t$call[4]\t$Bases\t$alt_reads[$#alt_reads]\t$ReadDepth\n";
 			}
 			
 		}

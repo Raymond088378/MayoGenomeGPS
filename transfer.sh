@@ -1,18 +1,15 @@
 #!/bin/sh
 
-if [ $# != 2 ]
+if [ $# != 4 ]
 then
-	echo -e "Usage: wrapper to clean intermediate files and tansfer the data to tertiary, delivery folder \n <secondary folder> <run info file>"
+	echo -e "Usage: wrapper to clean intermediate files and tansfer the data to tertiary, delivery folder \n <secondary folder> <delivery folder><tertiary folder> <whole_genome/exome>"
 else
-	#set -x
+	set -x
 	echo `date`
-	echo -e "Started with the transfer of data"
-	
 	secondary=$1
-	run_info=$2
-	delivery=$( cat $run_info | grep -w '^DELIVERY_FOLDER' | cut -d '=' -f2)
-	tertiary=$( cat $run_info | grep -w '^TERTIARY_FOLDER' | cut -d '=' -f2)
-	type=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2)
+	delivery=$2
+	tertiary=$3
+	type=$4
 	type=`echo $type | tr "[A-Z]" "[a-z]"`
 	
 	if [ ! -d $secondary ]
@@ -67,8 +64,7 @@ else
 	mkdir $delivery/Reports/
 	mv $secondary/Reports/* $delivery/Reports/
 	rm -R $secondary/Reports/
-	mv $secondary/Coverage.JPG $delivery/
-	mv $secondary/ColumnDescription_Reports.xls $delivery/	
+	mv $secondary/Coverage.JPG $delivery/	
 	if [ $type == "exome" ]
 	then
 		mv $secondary/exome_workflow.png $delivery/

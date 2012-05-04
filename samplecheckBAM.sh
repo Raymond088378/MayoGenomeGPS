@@ -25,7 +25,7 @@ else
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 ) 
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
-
+    max_reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
     
     check=`[ -f $input/$bam.bai ] && echo "1" || echo "0"`
     if [ $check -eq 0 ]
@@ -53,43 +53,18 @@ else
     then
         ln -s $output/$sample.chr${chr}.bam $output/$sample.chr${chr}-sorted.bam
     else
-        $java/java -Xmx6g -Xms512m \
-        -jar $picard/SortSam.jar \
-        INPUT=$output/$sample.chr${chr}.bam \
-        OUTPUT=$output/$sample.chr${chr}-sorted.bam \
-        SO=coordinate \
-        MAX_RECORDS_IN_RAM=5000000 \
-        TMP_DIR=$output/temp \
-        VALIDATION_STRINGENCY=SILENT
+        $script_path/sortbam.sh $output/$sample.chr${chr}.bam $output/$sample.chr${chr}-sorted.bam $output/temp/ coordinate $max_reads true $run_info
     fi
     
     ## check if read group and platform is availbale in BAM
     RG_FLAG=`perl $script_path/checkBAMreadGroup.pl -i $output/$sample.chr${chr}-sorted.bam -s $samtools`
     if [ $RG_FLAG == 0 ]
     then
-        center=$( cat $run_info | grep -w '^CENTER' | cut -d '=' -f2 )
-        platform=$( cat $run_info | grep -w '^PLATFORM' | cut -d '=' -f2 )
-        GenomeBuild=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2 )
-        Aligner=$( cat $run_info | grep -w '^ALIGNER' | cut -d '=' -f2 )
-        Aligner=`echo "$Aligner" | tr "[a-z]" "[A-Z]"`
-        $java/java -Xmx6g -Xms512m \
-        -jar $picard/AddOrReplaceReadGroups.jar \
-        INPUT=$output/$sample.chr${chr}-sorted.bam \
-        OUTPUT=$output/$sample.chr${chr}-sorted.bam.rg.bam \
-        PL=$platform SM=$sample PU=$sample CN=$center ID=$sample LB=$GenomeBuild \
-        TMP_DIR=$output/temp \
-        VALIDATION_STRINGENCY=SILENT
-        if [ -s $output/$sample.chr${chr}-sorted.bam.rg.bam ]
-        then
-            mv $output/$sample.chr${chr}-sorted.bam.rg.bam $output/$sample.chr${chr}-sorted.bam
-        else
-            echo "ERROR: $output/$sample.chr${chr}-sorted.bam.rg.bam failed to generate"
-            exit 1 
-        fi    
-    fi	
-    
-    ### after this point BAM is good to go with the GATk tool (any module)
-    $samtools/samtools index $output/$sample.chr${chr}-sorted.bam
+        $script_path/addReadGroup.sh $output/$sample.chr${chr}-sorted.bam $output/$sample.chr${chr}-sorted.bam.rg.bam $output/temp/ $run_info $sample   
+    else
+        ### after this point BAM is good to go with the GATk tool (any module)
+        $samtools/samtools index $output/$sample.chr${chr}-sorted.bam
+    fi
     echo `date`
 fi	
 	

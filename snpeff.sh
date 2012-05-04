@@ -1,87 +1,70 @@
 #!/bin/sh
 
 ##	INFO
-##	script used to annotate both SNVs and INDELs by submitting Auto Web submission using a JAVA script
-## chekc for the file and submit the script again 08/29/2011
+##	script used to annotate both SNVs and INDELs using snpeff jar script
 ###############################
-#	$1		=		sseq output directory	
-#	$2		=		sample name
-#	$5		=		directory for input file
-#	$6		=		Email
-#	$7		=		run_innfo
+#	$1		=		snpeff output directory	
+#	$3		=		sample name
+#	$2		=		directory for input fie
+#	$4		=		run_innfo
 ################################# 
 
-if [ $# != 5 ];
+if [ $# != 4 ];
 then
-    echo "Usage:<snpeff dir> <input dir><email><run_info> ";
+    echo "Usage:<snpeff dir> <input dir><sample><run_info> ";
 else
     set -x
     echo `date`
     snpeff=$1
     input=$2
-    email=$3
-	sample=$4
-    run_info=$5
+    sample=$3
+    run_info=$4
     #SGE_TASK_ID=1
-	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
+    tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
-    snpeff=$( cat $tool_info | grep -w '^SNPEFF' | cut -d '=' -f2)
+    snpeff_path=$( cat $tool_info | grep -w '^SNPEFF' | cut -d '=' -f2)
     genome_version=$(cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2)
     analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
     variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
-	chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
+    chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
 	
-	if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
-	then
-		snv_file=$sample.chr${chr}.raw.snvs.bed.i.ToMerge
-		cat $input/$snv_file | cut -f 1,2,3,4 > $sseq/$snv_file.sseq
-        
-		num_snvs=`cat $sseq/$snv_file.sseq | wc -l`
-        if [ $num_snvs -le 1 ]
+    if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
+    then
+        snv_file=$sample.chr$chr.SNV.filter.i.c.vcf
+        num_snvs=`cat $input/$snv_file | awk '$0 !~ /^#/' | wc -l`
+        if [ $num_snvs -gt 1 ]
         then
-            touch $sseq/$sample.chr${chr}.snv.sseq
-            echo -e "# inDBSNPOrNot\tchromosome\tposition\treferenceBase\tsampleGenotype\taccession\tfunctionGVS\tfunctionDBSNP\trsID\taminoAcids\tproteinPosition\tpolyPhen\tnickLab\tgeneList\tdbSNPValidation\tclinicalAssociation" > $sseq/$sample.chr${chr}.snv.sseq
-        else	
-            sleep $wait
-            check=`[ -f $sseq/$sample.chr${chr}.snv.sseq ] && echo "1" || echo "0"`
-            while [ $check -eq 0 ]
-            do
-                $java/java -Xmx2g -Xms512m -jar $script_path/sseq_submit.jar $sseq/$snv_file.sseq $sseq/$sample.chr${chr}.snv.sseq snp $genome_version $email
-                sleep $wait
-                check=`[ -f $sseq/$sample.chr${chr}.snv.sseq ] && echo "1" || echo "0"`
-            done
-        fi
-        rm $sseq/$snv_file.sseq
-	fi
+            $java/java -Xmx2g -Xms512m -jar $snpeff_path/snpEff.jar eff -onlyCoding true -chr chr -noStats -noLog \
+                -c $snpeff_path/snpEff.config $genome_version $input/$snv_file > $snpeff/$sample.chr${chr}.snv.eff
+            $java/java -Xmx2g -Xms512m -jar $snpeff_path/snpEff.jar eff -onlyCoding true -o vcf -chr chr -noStats -noLog \
+                -c $snpeff_path/snpEff.config $genome_version $input/$snv_file > $snpeff/$sample.chr${chr}.snv.eff.vcf
+            $script_path/snpeff.pl $snpeff/$sample.chr${chr}.snv.eff > $snpeff/$sample.chr${chr}.snv.eff.fill
+            mv $snpeff/$sample.chr${chr}.snv.eff.fill $snpeff/$sample.chr${chr}.snv.eff
+        else
+            echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tfunctionGVS\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList" > $snpeff/$sample.chr${chr}.snv.eff
+            cp $input/$snv_file $snpeff/$sample.chr${chr}.snv.eff.vcf
+        fi    
+    fi
 
-	if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]	
-	then
-		indel_file=$sample.chr${chr}.raw.indels.bed.i.ToMerge
-		perl $script_path/convert.indel.pl $input/$indel_file > $sseq/$sample.chr${chr}.indels.temp
-        echo "#autoFile $indel_file" > $sseq/$sample.chr${chr}.indels.temp_file
-        cat $sseq/$sample.chr${chr}.indels.temp >> $sseq/$sample.chr${chr}.indels.temp_file
-        mv $sseq/$sample.chr${chr}.indels.temp_file $sseq/$indel_file
-        rm $sseq/$sample.chr${chr}.indels.temp
-		num_indels=`cat $sseq/$indel_file | wc -l`
-        
-        if [ $num_indels -le 1 ]
+    if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]	
+    then
+	inde_file=$sample.chr$chr.INDEL.filter.i.c.vcf
+        num_indels=`cat $input/$indel_file | awk '$0 !~ /^#/' | wc -l`
+        if [ $num_indels -gt 1 ]
         then
-            touch $sseq/$sample.chr${chr}.indels.sseq
-            echo -e "# inDBSNPOrNot\tchromosome\tposition\treferenceBase\tsampleGenotype\taccession\tfunctionGVS\tfunctionDBSNP\trsID\taminoAcids\tproteinPosition\tpolyPhen\tnickLab\tgeneList\tdbSNPValidation\tclinicalAssociation" > $sseq/$sample.chr${chr}.indels.sseq
-        else	
-            sleep $wait
-            check=`[ -f $sseq/$sample.chr${chr}.indels.sseq ] && echo "1" || echo "0"`
-            while [ $check -eq 0 ]
-            do
-                $java/java -Xmx2g -Xms512m -jar $script_path/sseq_submit.jar $sseq/$indel_file $sseq/$sample.chr${chr}.indels.sseq indel $genome_version $email
-                sleep $wait
-                check=`[ -f $sseq/$sample.chr${chr}.indels.sseq ] && echo "1" || echo "0"`
-            done 
+            $java/java -Xmx2g -Xms512m -jar $snpeff_path/snpEff.jar eff -onlyCoding true -chr chr -noStats -noLog \
+                -c $snpeff_path/snpEff.config $genome_version $input/$indel_file > $snpeff/$sample.chr${chr}.indel.eff
+            $java/java -Xmx2g -Xms512m -jar $snpeff_path/snpEff.jar eff -onlyCoding true -o vcf -chr chr -noStats -noLog \
+                -c $snpeff_path/snpEff.config $genome_version $input/$indel_file > $snpeff/$sample.chr${chr}.indel.eff.vcf
+            $script_path/snpeff.pl $snpeff/$sample.chr${chr}.indel.eff > $snpeff/$sample.chr${chr}.indel.eff.fill
+            mv $snpeff/$sample.chr${chr}.indel.eff.fill $snpeff/$sample.chr${chr}.indel.eff
+        else
+            echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tfunctionGVS\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList" > $snpeff/$sample.chr${chr}.indel.eff
+            cp $input/$indel_file $snpeff/$sample.chr${chr}.indel.eff.vcf
         fi
-        rm $sseq/$indel_file
-	fi
-	echo `date`
+    fi    
+    echo `date`
 fi	
 		
     

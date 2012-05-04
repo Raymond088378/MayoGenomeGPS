@@ -57,7 +57,7 @@ else
 	
 	if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.sam ]
     then
-        echo "ERROR: $0 File $output_dir_sample/$sample.$SGE_TASK_ID.sam not generated"
+        echo "ERROR: align_bwa.sh File $output_dir_sample/$sample.$SGE_TASK_ID.sam not generated"
         exit 1
     else
         if [ $paired == 0 ]
@@ -68,17 +68,19 @@ else
         fi    
     fi  
 
-    $samtools/samtools view -bt $ref.fai $output_dir_sample/$sample.$SGE_TASK_ID.sam > $output_dir_sample/$sample.$SGE_TASK_ID.bam  
+    $samtools/samtools view -bt $ref.fai $output_dir_sample/$sample.$SGE_TASK_ID.sam > $output_dir_sample/$sample.$SGE_TASK_ID.bam 
+	$samtools/samtools view -b -q 1 $output_dir_sample/$sample.$SGE_TASK_ID.bam > $output_dir_sample/$sample.$SGE_TASK_ID.q1.bam
+	mv $output_dir_sample/$sample.$SGE_TASK_ID.q1.bam $output_dir_sample/$sample.$SGE_TASK_ID.bam  
     if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.bam ]
     then
-        echo "Error: $0 File $output_dir_sample/$sample.$SGE_TASK_ID.bam not generated"
+        echo "Error:  align_bwa.sh File $output_dir_sample/$sample.$SGE_TASK_ID.bam not generated"
         exit 1
     else
         rm $output_dir_sample/$sample.$SGE_TASK_ID.sam  
     fi
 	
 	########################################################	
-######		Sort BAM, adds RG & remove duplicates
+######		Sort BAM, adds RG 
 
     $script_path/convert.bam.sh $output_dir_sample $sample.$SGE_TASK_ID.bam $sample.$SGE_TASK_ID $run_info
 

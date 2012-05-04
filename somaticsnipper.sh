@@ -1,3 +1,5 @@
+#!/bin/sh
+
 if [ $# != 8 ]
 then
     echo "Usage: <normal bam> <tumor bam > <output dir> <chromosome> <tumor sample name> <normal sample name> <output vcf file name> <run info>"
@@ -9,32 +11,26 @@ else
     output=$3
     chr=$4
     tumor_sample=$5
-	normal_sample=$6
+    normal_sample=$6
     output_file=$7
-	run_info=$8
+    run_info=$8
 	
-	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-	somatic_sniper=$( cat $tool_info | grep -w '^SOMATIC_SNIPER' | cut -d '=' -f2 )
-	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
-	ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
-	dbSNP_rsIDs=$( cat $tool_info | grep -w '^dbSNP_SNV_rsIDs' | cut -d '=' -f2 )
-	snv=$tumor_sample.chr$chr.snv.output
-	$somatic_sniper/bam-somaticsniper -q 20 -Q 30 -f $ref $tumor_bam $normal_bam $output/$snv   
+    tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
+    somatic_sniper=$( cat $tool_info | grep -w '^SOMATIC_SNIPER' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
+    squal=$( cat $tool_info | grep -w 'SOMATIC_QUALITY' | cut -d '=' -f2)
+    mqual=$( cat $tool_info | grep -w 'MAPPING_QUALITY' | cut -d '=' -f2)
+    snv=$tumor_sample.chr$chr.snv.output
 	
-	if [ ! -s $output/$snv ]
-	then		
-		echo "ERROR :variants.sh SomaticSnipper failed, file $output/$snv not generated "
-		exit 1
-	fi
+    $somatic_sniper/bam-somaticsniper -q $mqual -Q $squal -F vcf -f $ref $tumor_bam $normal_bam $output/$output_file
+    cat $output/$output_file | sed -e "/NORMAL/s//$normal_sample/g" | sed -e "/TUMOR/s//$tumor_sample/g" > $output/$output_file.temp
+    mv $output/$output_file.temp $output/$output_file	
 	
-	## convert sniper output to VCF
-	perl $script_path/ss2vcf.pl $output/$snv $output/$output_file $dbSNP_rsIDs $normal_sample $tumor_sample $output/$output_file.triallele.out
-	if [ -s $output/$output_file ]
+    if [ ! -s $output/$output_file ]
 	then
-		rm $output/$snv
-	else
-		echo "ERROR: $output/$output_file not found"
-		exit 1;
-	fi
+        echo "ERROR: $output/$output_file not found"
+	exit 1;
+    fi
     echo `date`
 fi	

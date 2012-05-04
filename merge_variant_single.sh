@@ -46,50 +46,22 @@ else
       inputfile=$input/$sample/$sample.variants.chr$i.raw.vcf 
       if [ ! -s $inputfile ]
       then	
-          echo "ERROR :merge_variant_single_chr. Variant file for sample $sample, chromosome $i: $inputfile does not exist "
-          exit 1
+          echo "ERROR :merge_variant_single.sh Variant file for sample $sample, chromosome $i: $inputfile does not exist "
+          exit 1;
       else
           inputargs="-V $inputfile "$inputargs
       fi
     done
 
-    $java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-    -R $ref \
-    -et NO_ET \
-    -T CombineVariants \
-    $inputargs \
-    -o $out/$sample.variants.raw.vcf
+    $script_path/combinevcf.sh $inputargs $out/$sample.variants.raw.vcf $run_info
 
-    if [ ! -s $out/$sample.variants.raw.vcf ]
-    then		
-        echo "ERROR :merge_variant_single_chr, CombineVariants File: $input/$sample.variants.raw.vcf was not created "
-        exit 1
-    fi
+    ### filter the variant calls
+	$script_path/filter_variant_vqsr.sh $out/$sample.variants.raw.vcf $out/$sample.variants.filter.vcf BOTH $run_info
 
-   # if [ $tool == "whole_genome" ]
-   # then
-        $script_path/filter_variant_vqsr.sh $out/$sample.variants.raw.vcf $out/$sample.variants.filter.vcf BOTH $run_info
-   # elif [ $tool == "exome" ]
-   # then
-        ## appy hard filters to the vcf variant file
-    #    $java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-    #    -R $ref \
-    #    -et NO_ET \
-    #    -l INFO \
-    #    -T VariantFiltration \
-    #    -V $out/$sample.variants.raw.vcf \
-    #    -o $out/$sample.variants.filter.vcf \
-     #   --clusterSize 10 \
-     #   --filterExpression "MQ0 >= 4 && ((MQ0 / (1.0 * DP)) > 0.1)" \
-     #   --filterName "HARD_TO_VALIDATE" \
-     #   --filterExpression "QD < 1.5 " \
-     #   --filterName "LowQD"  
-   # fi
-    
     if [ ! -s $out/$sample.variants.filter.vcf ]
     then
-        echo "ERROR: hard filters failed to generate the filterd vcf for $sample"
-        exit 1
+        echo "ERROR: failed to generate the filterd vcf for $sample"
+        exit 1;
     else
         for i in $chrs
         do

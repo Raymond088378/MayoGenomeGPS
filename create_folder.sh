@@ -1,17 +1,46 @@
 #!/bin/sh
 
-if [ $# != 2 ]
+if [ $# != 1 ]
 then
-	echo "Usage: wrapper to create folder structure\n </path/to/output folder> <run info file>"
+	echo "Usage: wrapper to create folder structure\n <run info file>"
 else
-	set -x
+	#set -x
 	echo `date`
-	output_dir=$1
-	run_info=$2
+	run_info=$1
 	
 	tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
 	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )	
+	output=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
+	PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
+	tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
+        run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
+	
+	if [ -d $output/$PI ]
+	then
+		echo "WARNING: $PI folder exists"
+	else
+		mkdir $output/$PI
+	fi
+
+	if [ -d $output/$PI/$tool ]
+	then 	
+		echo "WARNING: $tool analysis folder exists"
+	else
+		mkdir $output/$PI/$tool
+	fi
+
+	if [ -d $output/$PI/$tool/$run_num ]
+	then
+		echo "ERROR : $run_num folder exists"
+		touch $output/$PI/$tool/$run_num/folder_exist.log
+		exit 1;
+	else 
+		mkdir $output/$PI/$tool/$run_num
+		output_dir=$output/$PI/$tool/$run_num
+	fi
+	
 	mkdir $output_dir/job_ids
+	mkdir $output_dir/logs
 
 	if [ $analysis != "annotation" ]
 	then
@@ -42,6 +71,9 @@ else
         output_annot=$output_dir/annotation
         mkdir $output_annot/SIFT
         mkdir $output_annot/SSEQ
+        mkdir $output_annot/SNPEFF
+        mkdir $output_annot/POLYPHEN
+        mkdir $output_annot/MISC
         mkdir $output_dir/TempReports
         mkdir $output_dir/Reports_per_Sample
         mkdir $output_dir/Reports
