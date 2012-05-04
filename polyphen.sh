@@ -10,17 +10,17 @@ else
     input=$2
     sample=$3
     run_info=$4
-    
+    SGE_TASK_ID=1
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     tool_info=$(cat $run_info | grep -w '^TOOL_INFO' |  cut -d '=' -f2)
     pph=$(cat $tool_info | grep -w '^POLYPHEN' |  cut -d '=' -f2)
     perl_lib=$(cat $tool_info | grep -w '^PERL_POLYPHEN_LIB' |  cut -d '=' -f2)
-    genome_build=$(cat $run_info | grep -w '^GENOME_BUILD' |  cut -d '=' -f2)
+    genome_build=$(cat $run_info | grep -w '^GENOMEBUILD' |  cut -d '=' -f2)
     perl=$(cat $tool_info | grep -w '^PERL_CIRCOS' |  cut -d '=' -f2)
     
     export PERL5LIB=${PERL5LIB}:$perl_lib
     
-    snv_file=$sample.chr$chr.SNV.filter.i.c.vcf
+    snv_file=$sample.variants.chr$chr.SNV.filter.i.c.vcf
     
     cat $input/$snv_file | awk '$0 !~ /^#/' | awk '{print $1":"$2"\t"$4"/"$5}' > $polyphen/$snv_file.poly
     

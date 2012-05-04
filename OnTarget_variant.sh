@@ -22,7 +22,7 @@ else
     sample=$3
     run_info=$4
     
-#SGE_TASK_ID=1
+	#SGE_TASK_ID=1
 ########################################################	
 ######		Reading run_info.txt and assigning to variables
 
@@ -44,7 +44,6 @@ else
     TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
     CaptureKit=$( cat $tool_info | grep -w '^CAPTUREKIT' | cut -d '=' -f2 )
     tool=`echo "$tool" | tr "[A-Z]" "[a-z]"`
-    export PATH=$bedtools/:$PATH
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     distance=$( cat $tool_info | grep -w '^SNP_DISTANCE_INDEL' | cut -d '=' -f2 )
 ##############################################################		
@@ -74,34 +73,36 @@ else
             bedtools/intersectBed -header -a $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf -b $CaptureKit -c > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
             rm $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf
             cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf |  awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE="$NF,$9,$10;}' \
-                > $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf.temp
-            mv $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf.temp $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf
-            $bedtools/intersectBed -header -a $OnTarget/$sample.chr$chr.INDEL.filter.i.vcf -b $CaptureKit -c > $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf
-            rm $OnTarget/$sample.chr$chr.INDEL.filter.i.vcf
-            cat $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE="$NF,$9,$10;}' \
-                > $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf.temp
-            mv $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf.temp  $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf
+                > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf.temp
+            mv $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf.temp $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
+            
+			$bedtools/intersectBed -header -a $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf -b $CaptureKit -c > $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
+            rm $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf
+            cat $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE="$NF,$9,$10;}' \
+                > $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.temp
+            mv $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.temp  $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
         elif [ $tool == "whole_genome" ]
         then
             cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' \
-                > $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf
+                > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
             rm $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf
-            cat $OnTarget/$sample.chr$chr.INDEL.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE="$NF,$9,$10;}' \
-                > $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf
-            rm $OnTarget/$sample.chr$chr.INDEL.filter.i.vcf
+            
+			cat $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' \
+                > $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
+            rm $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf
         fi
         
-        if [ `cat $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
+        if [ `cat $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
         then
             echo "WARNING: No Ontarget calls for $sample, chr$chr, INDELs"
         fi    
         
-        perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf \
-            -n $distance -o $OnTarget/$sample.chr$chr.SNV.filter.i.c.pos.vcf
-        cat $OnTarget/$sample.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL="$NF,$9,$10;}' \
-            > $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf
-        rm $OnTarget/$sample.chr$chr.SNV.filter.i.c.pos.vcf
-        if [ `cat $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
+        perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf \
+            -n $distance -o $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
+        cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL="$NF,$9,$10;}' \
+            > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
+        rm $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
+        if [ `cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
         then
             echo "WARNING: No Ontarget calls for $sample, chr$chr, SNVs"
         fi      
@@ -130,23 +131,23 @@ else
             rm $input/$sample.variants.chr$chr.INDEL.filter.vcf
             
             cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' \
-                > $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf
+                > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
             rm $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf
-            cat $OnTarget/$sample.chr$chr.INDEL.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE="$NF,$9,$10;}' \
+            cat $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' \
                 > $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf
-            rm $OnTarget/$sample.chr$chr.INDEL.filter.i.vcf
+            rm $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf
             
-            if [ `cat $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
+            if [ `cat $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
             then
                 echo "WARNING: No Ontarget calls for $sample, chr$chr, INDELs"
             fi    
 
-            perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/$sample.chr$chr.INDEL.filter.i.c.vcf \
-                -n $distance -o $OnTarget/$sample.chr$chr.SNV.filter.i.c.pos.vcf
-            cat $OnTarget/$sample.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL="$NF,$9,$10;}' \
-                > $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf
-            rm $OnTarget/$sample.chr$chr.SNV.filter.i.c.pos.vcf
-            if [ `cat $OnTarget/$sample.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
+            perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf \
+                -n $distance -o $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
+            cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL="$NF,$9,$10;}' \
+                > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
+            rm $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
+            if [ `cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
             then
                 echo "WARNING: No Ontarget calls for $sample, chr$chr, SNVs"
             fi  
@@ -175,7 +176,7 @@ else
             cat $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' \
                 > $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.vcf
             rm $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.vcf
-            cat $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.vcf| awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE="$NF,$9,$10;}' \
+            cat $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.vcf| awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' \
                 > $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.c.vcf
             rm $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.vcf
             

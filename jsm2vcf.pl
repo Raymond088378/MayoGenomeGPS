@@ -7,7 +7,7 @@ GetOptions("in|i=s"	=> \$input,
 	"out|o:s"	=> \$output,
 	"gzipped|z"	=> \$gzipped,
 	"normalsample|ns:s"	=> \$nsample,
-        "tumorsample|ts:s"	=> \$tsample,
+    "tumorsample|ts:s"	=> \$tsample,
 	"depth|d:i"	=> \$filter_depth,
 	"prob|p:f"	=> \$filter_prob,
 	"help|h|?|"	=> \&help);
@@ -25,40 +25,53 @@ if($gzipped){
 open OUT, ">$output" or die "opening $output\n" if defined $output;
 
 # print VCF header
-print OUT header($nsample,$tsample);
+header($nsample,$tsample);
 ##chrom   position        ref_base        var_base        normal_counts_a normal_counts_b tumour_counts_a tumour_counts_b p_AA_AA p_AA_AB p_AA_BB p_AB_AA p_AB_AB p_AB_BB p_BB_AA p_BB_AB p_BB_BB post_processed_p_somatic	
 while(my $row = <IN>){
-        next if ($. == 1);
+    next if ($. == 1);
 	chomp $row;
-        my @line = split(/\t/,$row);
-        my $chr = $line[0];
-        my $pos = $line[1];
-        my $ref = $line[2];
-        my $alt = $line[3];
-        my $normal_depth_ref = $line[4];
-        my $normal_depth_alt = $line[5];
-        my $normal_depth = $normal_depth_ref + $normal_depth_alt;
-        my $tumor_depth_ref = $line[6];
-        my $tumor_depth_alt = $line[7];
-        my $tumor_depth = $tumor_depth_ref + $tumor_depth_alt;
-        my $PGERM = $line[8] + $line[12] + $line[16];
-        my $PLOH = $line[11] + $line[13];   
-        my $PHETMUT = $line[9] + $line[16];
-        my $PHOMMUT = $line[10] + $line[14];
-        my $PSOM = $line[9] + $line[15] + $line[10] + $line[14];
-        
-        
+	my @line = split(/\t/,$row);
+	my $chr = $line[0];
+	my $pos = $line[1];
+	my $ref = $line[2];
+	my $alt = $line[3];
+	my $normal_depth_ref = $line[4];
+	my $normal_depth_alt = $line[5];
+	my $normal_depth = $normal_depth_ref + $normal_depth_alt;
+	my $tumor_depth_ref = $line[6];
+	my $tumor_depth_alt = $line[7];
+	my $tumor_depth = $tumor_depth_ref + $tumor_depth_alt;
+	my $total_dp=$normal_depth + $tumor_depth;
+	my $PGERM = $line[8] + $line[12] + $line[16];
+	my $PLOH = $line[11] + $line[13];   
+	my $PHETMUT = $line[9] + $line[16];
+	my $PHOMMUT = $line[10] + $line[14];
+	my $PSOM = $line[9] + $line[15] + $line[10] + $line[14];
+	my $prob=0;
+	my $id;
+	my @ngeno=(0/0,0/0,0/0,0/1,0/1,0/1,1/1,1/1,1/1);
+	my @tgeno=(0/0,0/1,1/1,0/0,0/1,1/1,0/0,0/1,1/1);
+	my $c=0;
+	for(my $i =8 ; $i <=14; $i++)	{
+		if ($prob < $line[$i])	{
+			$id=$c;
+			$prob=$line[$i];
+		}
+		$c++;
+	}
+	print OUT "$chr\t$pos\t.\t$ref\t$alt\t.\tPASS\t" . "NS=2:DP=$total_dp:PGERM=$PGERM:PLOH=$PLOH:PHETMUT=$PHETMUT:PHOMMUT=$PHOMMUT:PSOM=$PSOM" . "GT:AD:DP\t" . "$ngeno[$c]:$normal_depth_ref,$normal_depth_alt:$normal_depth\t" . "$tgeno[$c]:$tumor_depth_ref,$tumor_depth_alt:$tumor_depth\n";	    
 }
 close IN;
 
 sub header{
 	my $nsm = $_[0];
-        my $tsm = $_[1];
+    my $tsm = $_[1];
 	my $date=&spGetCurDateTime();
-        my $header = qq{##fileformat=VCFv4.1
+    my $header = qq{##fileformat=VCFv4.1
 ##fileDate=$date
 ##source=jsm2vcf.pl
 ##INFO=<ID=AN,Number=1,Type=Integer,Description="Total number of alleles in called genotypes">
+##INFO=<ID=NS,Number=1,Type=Integer,Description="Number of Samples With Data">
 ##INFO=<ID=NS,Number=1,Type=Integer,Description="Number of Samples With Data">
 ##INFO=<ID=DP,Number=1,Type=Integer,Description="Total Depth">
 ##FORMAT=<ID=AD,Number=.,Type=Integer,Description="Allelic depths for the ref and alt alleles in the order listed">
@@ -87,15 +100,7 @@ OPTIONS:
 
 	--normalsample,-ns 	normal sample name is defined.
         
-        --tumorsample,-ts     tumor sample name is defined.           
-
-	--depth,-d	Optional parameter to filter variants by tumor read depth. A variant will be
-			skipped if the total tumor read depth at the position of the variant is less 
-			than this value.
-
-	--prob,-p	Optional parameter to filter variants by snvmix probability. A variant will
-			be skipped if the snvmix probability is less than this value. Acceptable
-			range: 0-1.0
+    --tumorsample,-ts     tumor sample name is defined.           
 
 	--help,-h,-?	Display this documentation.
 

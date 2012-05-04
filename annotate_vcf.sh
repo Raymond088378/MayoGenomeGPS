@@ -29,9 +29,9 @@ else
     -V $vcf \
     --dbsnp $dbSNP \
     -L $vcf \
-    -A MappingQualityRankSumTest -A ReadPosRankSumTest -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A RMSMappingQuality -A FisherStrand \
+    -A QualByDepth -A MappingQualityRankSumTest -A ReadPosRankSumTest -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A RMSMappingQuality -A FisherStrand \
     --out $vcf.temp	
-    # -A QualByDepth -A MappingQualityRankSumTest -A ReadPosRankSumTest -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A RMSMappingQuality -A FisherStrand 
+    
     if [ -s $vcf.temp ]
     then
         mv $vcf.temp $vcf

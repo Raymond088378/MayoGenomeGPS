@@ -53,7 +53,7 @@ else
       fi
     done
 
-    $script_path/combinevcf.sh $inputargs $out/$sample.variants.raw.vcf $run_info
+    $script_path/combinevcf.sh "$inputargs" $out/$sample.variants.raw.vcf $run_info no
 
     ### filter the variant calls
 	$script_path/filter_variant_vqsr.sh $out/$sample.variants.raw.vcf $out/$sample.variants.filter.vcf BOTH $run_info

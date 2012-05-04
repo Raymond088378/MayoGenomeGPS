@@ -35,5 +35,10 @@ else
 			mv $i.sort $i
 		done
     fi
+	### merge per sample files to make merged report to be uploaded to TBB
+	##Merge the unfiltered file
+		
+	
+	
 	echo `date`
 fi	

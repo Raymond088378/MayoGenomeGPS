@@ -31,7 +31,7 @@ else
 	
     if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
     then
-        snv_file=$sample.chr$chr.SNV.filter.i.c.vcf
+        snv_file=$sample.variants.chr$chr.SNV.filter.i.c.vcf
         num_snvs=`cat $input/$snv_file | awk '$0 !~ /^#/' | wc -l`
         if [ $num_snvs -gt 1 ]
         then
@@ -39,7 +39,7 @@ else
                 -c $snpeff_path/snpEff.config $genome_version $input/$snv_file > $snpeff/$sample.chr${chr}.snv.eff
             $java/java -Xmx2g -Xms512m -jar $snpeff_path/snpEff.jar eff -onlyCoding true -o vcf -chr chr -noStats -noLog \
                 -c $snpeff_path/snpEff.config $genome_version $input/$snv_file > $snpeff/$sample.chr${chr}.snv.eff.vcf
-            $script_path/snpeff.pl $snpeff/$sample.chr${chr}.snv.eff > $snpeff/$sample.chr${chr}.snv.eff.fill
+            perl $script_path/snpeff.pl $snpeff/$sample.chr${chr}.snv.eff > $snpeff/$sample.chr${chr}.snv.eff.fill
             mv $snpeff/$sample.chr${chr}.snv.eff.fill $snpeff/$sample.chr${chr}.snv.eff
         else
             echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tfunctionGVS\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList" > $snpeff/$sample.chr${chr}.snv.eff
@@ -49,7 +49,7 @@ else
 
     if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]	
     then
-	inde_file=$sample.chr$chr.INDEL.filter.i.c.vcf
+	indel_file=$sample.variants.chr$chr.INDEL.filter.i.c.vcf
         num_indels=`cat $input/$indel_file | awk '$0 !~ /^#/' | wc -l`
         if [ $num_indels -gt 1 ]
         then
@@ -57,7 +57,7 @@ else
                 -c $snpeff_path/snpEff.config $genome_version $input/$indel_file > $snpeff/$sample.chr${chr}.indel.eff
             $java/java -Xmx2g -Xms512m -jar $snpeff_path/snpEff.jar eff -onlyCoding true -o vcf -chr chr -noStats -noLog \
                 -c $snpeff_path/snpEff.config $genome_version $input/$indel_file > $snpeff/$sample.chr${chr}.indel.eff.vcf
-            $script_path/snpeff.pl $snpeff/$sample.chr${chr}.indel.eff > $snpeff/$sample.chr${chr}.indel.eff.fill
+            perl $script_path/snpeff.pl $snpeff/$sample.chr${chr}.indel.eff > $snpeff/$sample.chr${chr}.indel.eff.fill
             mv $snpeff/$sample.chr${chr}.indel.eff.fill $snpeff/$sample.chr${chr}.indel.eff
         else
             echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tfunctionGVS\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList" > $snpeff/$sample.chr${chr}.indel.eff

@@ -86,13 +86,13 @@ else
         -resource:hapmap,known=false,training=true,truth=true,prior=15.0 $hapmap \
         -resource:omni,known=false,training=true,truth=false,prior=12.0 $omni \
         -resource:dbsnp,known=true,training=false,truth=false,prior=8.0 $dbSNP \
-        -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ \
+        -an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP \
         -recalFile $output/temp/$input_name.recal \
         -tranchesFile $output/temp/$input_name.tranches \
         --maxGaussians 4 \
         --percentBadVariants 0.05 \
         -rscriptFile $output/plot/$input_name.plots.R
-     #   -an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ 
+
     fi
 	
     if [ ! -s $output/temp/$input_name.recal ]

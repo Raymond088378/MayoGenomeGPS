@@ -38,7 +38,7 @@ else
     $script_path/dashboard.sh $sample $run_info Annotation started
     
     ### hard coded
-    snv_file=$sample.chr$chr.SNV.filter.i.c.vcf
+    snv_file=$sample.variants.chr$chr.SNV.filter.i.c.vcf
 	
     num_snvs=`cat $input/$snv_file | awk '$0 !~ /^#/' | wc -l`
     #sift acceptable format 
@@ -57,8 +57,11 @@ else
         rm $sift/$sample.chr${chr}.sift.run
         # sift inconsistent results flips alt base by itself getting rid of wrong calls from sift output
         mv $sift/$id/${id}_predictions.tsv $sift/${sample}_chr${chr}_predictions.tsv
-        rm -R $sift/$id
-        perl $script_path/sift.inconsistent.pl $sift/${sample}_chr${chr}_predictions.tsv $sift/$snv_file.sift
+        if [ ${#id} -gt 1 ]
+		then
+			rm -R $sift/$id
+        fi
+		perl $script_path/sift.inconsistent.pl $sift/${sample}_chr${chr}_predictions.tsv $sift/$snv_file.sift
         mv $sift/${sample}_chr${chr}_predictions.tsv_mod $sift/${sample}_chr${chr}_predictions.tsv
         rm $sift/$snv_file.sift
         cd $a

@@ -46,10 +46,8 @@ else
         exit 1;
     fi
     
-    ### run joint snvmix to train using both the bams
+    ### make sure both the bams are sorted
 	
-	
-    
    # $python $jointsnvmix/build/scripts-2.7/jsm.py train --model snvmix2  --skip_size $X --min_base_qual 20 --min_map_qual 20 --chromosome chr$chr \
 		$ref $normal_bam $tumor_bam $output/$tumor_sample.$normal_sample.chr$chr.train.txt
 		

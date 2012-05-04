@@ -69,11 +69,11 @@ else
     output_dir=$output/$PI/$tool/$run_num
     if [ -f $output_dir/folder_exist.log ]
     then
-        exit 1;
+        echo "ERROR: folder already exist"
+		exit 1;
     fi	
     ## copy cofig files
     $script_path/copy_config.sh $output_dir $run_info
-    ### get dummy names
     job_ids_dir=$output_dir/job_ids
     output_align=$output_dir/alignment
     if [ $analysis != "alignment" ]
@@ -158,18 +158,18 @@ else
                 MERGE=`qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=8G -hold_jid $job_id_align $script_path/processBAM.sh $align_dir $sample $run_info`
                 job_id_convert=`echo $MERGE | cut -d ' ' -f3 `
                 echo -e "$MERGE" >> $job_ids_dir/ALIGN	
-	    elif [ $analysis == "realignment" -o $analysis == "realign-mayo" ]
-	    then
-                infile=`cat $sample_info | grep -w "^$sample" | cut -d '=' -f2`
-                num_bams=`echo $infile | tr " " "\n" | wc -l`
-                for ((i=1; i <=$num_bams; i++));
-                do
-                    bam=`echo $infile | awk -v num=$i '{print $num}'`
-                    ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
-                done  
-                CONVERT=`qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=8G $script_path/processBAM.sh $align_dir $sample $run_info`
-                job_id_convert=`echo $CONVERT | cut -d ' ' -f3`
-            fi    
+			elif [ $analysis == "realignment" -o $analysis == "realign-mayo" ]
+			then
+				infile=`cat $sample_info | grep -w "^$sample" | cut -d '=' -f2`
+				num_bams=`echo $infile | tr " " "\n" | wc -l`
+				for ((i=1; i <=$num_bams; i++));
+				do
+					bam=`echo $infile | awk -v num=$i '{print $num}'`
+					ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
+				done  
+				CONVERT=`qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=8G $script_path/processBAM.sh $align_dir $sample $run_info`
+				job_id_convert=`echo $CONVERT | cut -d ' ' -f3`
+			fi    
 
             if [[ $analysis == "mayo" || $analysis == "external" || $analysis == "realignment" || $analysis == "variant" || $analysis == "realign-mayo" ]]
             then
@@ -195,19 +195,16 @@ else
                 IGV=`qsub $args -N $type.$version.igv_bam.$sample.$run_num -l h_vmem=8G -hold_jid $variant_id $script_path/igv_bam.sh $output_dir/realign $output_dir/IGV_BAM $sample $output_dir/alignment $run_info`
                 igv_id=`echo $IGV | cut -d ' ' -f3 ` 
                 echo -e $IGV >> $job_ids_dir/IGV	
-                if [$annotation == "YES" ]
-                then
-                    CALLS=`qsub $args -N $type.$version.variants.$sample.$run_num -hold_jid $variant_id -pe threaded $threads -l h_vmem=8G -t 1-$numchrs:1 $script_path/variants.sh $realign_dir $sample $variant_dir 1 $run_info`
-                    calls_id=`echo $CALLS | cut -d ' ' -f3  | tr "\n" "," | sed -e "s/\..*,//g"`
-                    MERGEVARIANT=`qsub $args -N $type.$version.merge_variant_single.$sample.$run_num -l h_vmem=8G -hold_jid $calls_id $script_path/merge_variant_single.sh $output_dir/variants $sample $output_dir/Reports_per_Sample/ $run_info`
-                    job_id_mergevariant=`echo $MERGEVARIANT | cut -d ' ' -f3`
-                    ONTARGET_B=`qsub $args -N $type.$version.OnTarget_BAM.$sample.$run_num -hold_jid $variant_id -l h_vmem=8G -t 1-$numchrs:1 $script_path/OnTarget_BAM.sh $realign_dir $output_dir/OnTarget $sample $run_info`
-                    ONTARGET_P=`qsub $args -N $type.$version.OnTarget_PILEUP.$sample.$run_num -hold_jid $variant_id -l h_vmem=8G -t 1-$numchrs:1 $script_path/OnTarget_PILEUP.sh $realign_dir $output_dir/OnTarget $sample $run_info`
-                    job_ids_target_p=`echo $ONTARGET_P | cut -d ' ' -f3 |  tr "\n" "," | sed -e "s/\..*,//g"` 
-                    job_ids_target_b=`echo $ONTARGET_B | cut -d ' ' -f3 |  tr "\n" "," | sed -e "s/\..*,//g"` 
-                    COVERAGE=`qsub $args -N $type.$version.getCoverage.$sample.$run_num -hold_jid ${job_ids_target_p},${job_ids_target_b} $script_path/getCoverage.sh $output_dir/OnTarget $output_dir/numbers $sample $run_info`
-                    job_ids_coverage=`echo $COVERAGE | cut -d ' ' -f3| tr "\n" ","`
-                fi
+				CALLS=`qsub $args -N $type.$version.variants.$sample.$run_num -hold_jid $variant_id -pe threaded $threads -l h_vmem=8G -t 1-$numchrs:1 $script_path/variants.sh $realign_dir $sample $variant_dir 1 $run_info`
+				calls_id=`echo $CALLS | cut -d ' ' -f3  | tr "\n" "," | sed -e "s/\..*,//g"`
+				MERGEVARIANT=`qsub $args -N $type.$version.merge_variant_single.$sample.$run_num -l h_vmem=8G -hold_jid $calls_id $script_path/merge_variant_single.sh $output_dir/variants $sample $output_dir/Reports_per_Sample/ $run_info`
+				job_id_mergevariant=`echo $MERGEVARIANT | cut -d ' ' -f3`
+				ONTARGET_B=`qsub $args -N $type.$version.OnTarget_BAM.$sample.$run_num -hold_jid $variant_id -l h_vmem=8G -t 1-$numchrs:1 $script_path/OnTarget_BAM.sh $realign_dir $output_dir/OnTarget $sample $run_info`
+				ONTARGET_P=`qsub $args -N $type.$version.OnTarget_PILEUP.$sample.$run_num -hold_jid $variant_id -l h_vmem=8G -t 1-$numchrs:1 $script_path/OnTarget_PILEUP.sh $realign_dir $output_dir/OnTarget $sample $run_info`
+				job_ids_target_p=`echo $ONTARGET_P | cut -d ' ' -f3 |  tr "\n" "," | sed -e "s/\..*,//g"` 
+				job_ids_target_b=`echo $ONTARGET_B | cut -d ' ' -f3 |  tr "\n" "," | sed -e "s/\..*,//g"` 
+				COVERAGE=`qsub $args -N $type.$version.getCoverage.$sample.$run_num -hold_jid ${job_ids_target_p},${job_ids_target_b} $script_path/getCoverage.sh $output_dir/OnTarget $output_dir/numbers $sample $run_info`
+				job_ids_coverage=`echo $COVERAGE | cut -d ' ' -f3| tr "\n" ","`
             fi
             if [ $analysis == "ontarget" ]
             then
@@ -222,131 +219,124 @@ else
                 fi
                 job_id_mergevariant=`echo $REFORMAT | cut -d ' ' -f3` 
             fi
-	    if [ $annotation == "YES" ]
-            then
-                ANNOTATE_SNV=`qsub $args -N $type.$version.OnTarget_variant.$sample.$run_num -l h_vmem=4G -hold_jid $job_id_mergevariant -t 1-$numchrs:1 $script_path/OnTarget_variant.sh $output_dir/variants $output_dir/OnTarget $sample $run_info`
-                job_id_annotate_snv=`echo $ANNOTATE_SNV | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
-		if [ $analysis == "annotation" ]
-		then
-		    if [ $variant_type == "BOTH" ]
-		    then
-			REFORMAT=`qsub $args -N $type.$version.reformat_VARIANTs.$sample.$run_num -l h_vmem=4G $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 2`
-		    elif [ $variant_type == "SNV" -o $variant_type == "INDEL" ]
-		    then
-			REFORMAT=`qsub $args -N $type.$version.reformat_VARIANTs.$sample.$run_num -l h_vmem=4G $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 1`
-		    fi
-		    job_ids_format=`echo $REFORMAT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
-		    hold_args="-hold_jid $job_ids_format"
-                elif [ $analysis != "alignment" ]
-                then
-                        hold_args="-hold_jid $job_id_annotate_snv"
-                fi
+			ANNOTATE_SNV=`qsub $args -N $type.$version.OnTarget_variant.$sample.$run_num -l h_vmem=4G -hold_jid $job_id_mergevariant -t 1-$numchrs:1 $script_path/OnTarget_variant.sh $output_dir/variants $output_dir/OnTarget $sample $run_info`
+			job_id_annotate_snv=`echo $ANNOTATE_SNV | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
+			if [ $analysis == "annotation" ]
+			then
+				if [ $variant_type == "BOTH" ]
+				then
+					REFORMAT=`qsub $args -N $type.$version.reformat_VARIANTs.$sample.$run_num -l h_vmem=4G $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 2`
+				elif [ $variant_type == "SNV" -o $variant_type == "INDEL" ]
+				then
+					REFORMAT=`qsub $args -N $type.$version.reformat_VARIANTs.$sample.$run_num -l h_vmem=4G $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 1`
+				fi
+					job_ids_format=`echo $REFORMAT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
+					hold_args="-hold_jid $job_ids_format"
+			elif [ $analysis != "alignment" ]
+			then
+				hold_args="-hold_jid $job_id_annotate_snv"
+			fi
+			if [ $analysis != "alignment" ]
+			then
+				if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
+				then
+					SIFT=`qsub $args -N $type.$version.sift.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $sample $run_info` 
+				fi
+				SNPEFF=`qsub $args -N $type.$version.snpeff.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info`
+				echo -e $SNPEFF >> $job_ids_dir/ANNOT	
+				POLY=`qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info`
+				echo -e $POLY >> $job_ids_dir/ANNOT            
+				job_ids_sift=`echo $SIFT | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`
+				job_ids_snpeff=`echo $SNPEFF | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`
+				job_ids_poly=`echo $POLY | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`
+				ADD_ANOT=`qsub $args -N $type.$version.sample_reports.$sample.$run_num -hold_jid $job_ids_snpeff,$job_ids_sift,$job_ids_poly -t 1-$numchrs:1 -l h_vmem=8G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $sseq $output_dir`
+				job_ids_anot=`echo $ADD_ANOT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
+				MERGE=`qsub $args -N $type.$version.sample_report.$sample.$run_num -hold_jid $job_ids_anot $script_path/sample_report.sh $output_dir $TempReports $sample $run_info`
+				echo -e $MERGE >> $job_ids_dir/PER_SAMPLE
+				if [[ $tool == "whole_genome"  && $analysis != "annotation" && $analysis != "alignment" ]]
+				then
+					crest=$output_dir/struct/crest
+					break=$output_dir/struct/break
+					cnv=$output_dir/cnv/$sample
+					mkdir -p $break
+					mkdir -p $crest
+					mkdir -p $cnv
+					### not smooth for all the samples so commenting out for time being
+					SVCALL=`qsub $args -N $type.$version.run_single_crest.sh.$sample.$run_num -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=8G $script_path/run_single_crest.sh $sample $realign_dir $crest $run_info`
+					job_id_sv=`echo $SVCALL | cut -d ' ' -f3 |  tr "\n" "," | sed -e "s/\..*,//g"`
+					CNVCALL=`qsub $args -N $type.$version.run_cnvnator.$sample.$run_num -hold_jid $variant_id -l h_vmem=8G -t 1-$numchrs:1 $script_path/run_cnvnator.sh $sample $realign_dir $cnv $run_info`
+					job_id_cnv=`echo $CNVCALL | cut -d ' ' -f3 |  tr "\n" "," | sed -e "s/\..*,//g"`
+					let nump=$numchrs+1;
+					BREAKDANCER=`qsub $args -N $type.$version.run_breakdancer.$sample.$run_num -hold_jid $variant_id -l h_vmem=8G -t 1-$numchrs:1 $script_path/run_breakdancer.sh $sample $output_dir/realign $break $run_info`
+					job_id_break=`echo $BREAKDANCER | cut -d ' ' -f3 |  tr "\n" "," | sed -e "s/\..*,//g"`
+					BREAKDANCER_IN=`qsub $args -N $type.$version.run_breakdancer.$sample.$run_num -hold_jid $igv_id -l h_vmem=8G -t $nump-$nump:$nump $script_path/run_breakdancer.sh $sample $output_dir/IGV_BAM $break $run_info`
+					job_id_break_in=`echo $BREAKDANCER_IN | cut -d ' ' -f3 |  tr "\n" "," | sed -e "s/\..*,//g"`
+					### merge the structural variants
+					MERGESTRUCT=`qsub $args -N $type.$version.summaryze_struct_single.$sample.$run_num -l h_vmem=8G -hold_jid $job_id_break_in,$job_ids_coverage,$job_id_sv,$job_id_cnv,$job_id_break $script_path/summaryze_struct_single.sh $sample $output_dir $run_info`
+					echo -e $MERGESTRUCT >> $job_ids_dir/SV
+					job_id_mergestruct=`echo $MERGESTRUCT | cut -d ' ' -f3`
+					RUNCIRCOS=`qsub $args -N $type.$version.plot_circos_cnv_sv.$sample.$run_num -hold_jid $job_id_mergestruct -l h_vmem=8G $script_path/plot_circos_cnv_sv.sh $break/$sample/$sample.break $crest/$sample/$sample.filter.crest $cnv/$sample.cnv.filter.bed $sample $output_dir/circos $run_info` 
+				fi
+			fi
+        done
+        
 		if [ $analysis != "alignment" ]
 		then
-                    if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
-		    then
-			SIFT=`qsub $args -N $type.$version.sift.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $sample $run_info` 
-		    fi
-		    SNPEFF=`qsub $args -N $type.$version.snpeff.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sseq.sh $snpeff $output_OnTarget $sample $run_info`
-                    echo -e $SNPEFF >> $job_ids_dir/ANNOT	
-                    POLY=`qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info`
-                    echo -e $POLY >> $job_ids_dir/ANNOT            
-                    job_ids_sift=`echo $SIFT | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`
-                    job_ids_snpeff=`echo $SNPEFF | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`
-                    job_ids_poly=`echo $POLY | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`
-		    ADD_ANOT=`qsub $args -N $type.$version.sample_reports.$sample.$run_num -hold_jid $job_ids_snpeff,$job_ids_sift,$job_ids_poly -t 1-$numchrs:1 -l h_vmem=8G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $sseq $output_dir`
-		    job_ids_anot=`echo $ADD_ANOT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
-		    MERGE=`qsub $args -N $type.$version.sample_report.$sample.$run_num -hold_jid $job_ids_anot $script_path/sample_report.sh $output_dir $TempReports $sample $run_info`
-		    echo -e $MERGE >> $job_ids_dir/PER_SAMPLE
-                    if [[ $tool == "whole_genome"  && $analysis != "annotation" && $analysis != "alignment" ]]
-                    then
-                        crest=$output_dir/struct/crest
-                        break=$output_dir/struct/break
-                        cnv=$output_dir/cnv/$sample
-                        mkdir -p $break
-                        mkdir -p $crest
-                        mkdir -p $cnv
-                        ### not smooth for all the samples so commenting out for time being
-                        SVCALL=`qsub $args -N $type.$version.run_single_crest.sh.$sample.$run_num -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=8G $script_path/run_single_crest.sh $sample $realign_dir $crest $run_info`
-                        job_id_sv=`echo $SVCALL | cut -d ' ' -f3 |  tr "\n" "," | sed -e "s/\..*,//g"`
-                        CNVCALL=`qsub $args -N $type.$version.run_cnvnator.$sample.$run_num -hold_jid $variant_id -l h_vmem=8G -t 1-$numchrs:1 $script_path/run_cnvnator.sh $sample $realign_dir $cnv $run_info`
-                        job_id_cnv=`echo $CNVCALL | cut -d ' ' -f3 |  tr "\n" "," | sed -e "s/\..*,//g"`
-                        let nump=$numchrs+1;
-                        BREAKDANCER=`qsub $args -N $type.$version.run_breakdancer.$sample.$run_num -hold_jid $variant_id -l h_vmem=8G -t 1-$numchrs:1 $script_path/run_breakdancer.sh $sample $output_dir/realign $break $run_info`
-                        job_id_break=`echo $BREAKDANCER | cut -d ' ' -f3 |  tr "\n" "," | sed -e "s/\..*,//g"`
-                        BREAKDANCER_IN=`qsub $args -N $type.$version.run_breakdancer.$sample.$run_num -hold_jid $igv_id -l h_vmem=8G -t $nump-$nump:$nump $script_path/run_breakdancer.sh $sample $output_dir/IGV_BAM $break $run_info`
-                        job_id_break_in=`echo $BREAKDANCER_IN | cut -d ' ' -f3 |  tr "\n" "," | sed -e "s/\..*,//g"`
-                        ### merge the structural variants
-                        MERGESTRUCT=`qsub $args -N $type.$version.summaryze_struct_single.$sample.$run_num -l h_vmem=8G -hold_jid $job_id_break_in,$job_ids_coverage,$job_id_sv,$job_id_cnv,$job_id_break $script_path/summaryze_struct_single.sh $sample $output_dir $run_info`
-                        echo -e $MERGESTRUCT >> $job_ids_dir/SV
-                        job_id_mergestruct=`echo $MERGESTRUCT | cut -d ' ' -f3`
-                        RUNCIRCOS=`qsub $args -N $type.$version.plot_circos_cnv_sv.$sample.$run_num -hold_jid $job_id_mergestruct -l h_vmem=8G $script_path/plot_circos_cnv_sv.sh $break/$sample/$sample.break $crest/$sample/$sample.filter.crest $cnv/$sample.cnv.filter.bed $sample $output_dir/circos $run_info` 
-                    fi
-		fi	
-	    fi
-        done
-        if [ $annotation == "YES" ]
-        then
-            if [ $analysis != "alignment" ]
-            then
-                job_ids_annn=$( cat $job_ids_dir/ANNOT |  cut -d ' ' -f3 | tr "\n" ",")
-            fi
-	    if [[ $analysis != "annotation" && $analysis != "alignment" ]]
-	    then
-                if [ $tool == "whole_genome" ]
-                then
-                    job_ids=$( cat $job_ids_dir/SV | cut -d ' ' -f3  | tr "\n" "," )
-                    mkdir -p $output_dir/Reports_per_Sample/ANNOT
-                    ANNOTATE_CNV=`qsub $args -N $type.$version.annotation.CNV.sh.$run_num -l h_vmem=4G -hold_jid $job_ids -t 1-$numsamples:1 $script_path/annotation_CNV.sh $output_dir/Reports_per_Sample/SV/ $run_info $output_dir/Reports_per_Sample/ANNOT`
-                    ANNOTATE_SV=`qsub $args -N $type.$version.annotation.SV.sh.$run_num -l h_vmem=4G -hold_jid $job_ids -t 1-$numsamples:1 $script_path/annotation_SV.sh $output_dir $run_info $output_dir/Reports_per_Sample/ANNOT`
-                    job_id_annotate_sv=`echo $ANNOTATE_SV | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
-                    job_id_annotate_cnv=`echo $ANNOTATE_CNV | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
-                    hold_arg="-hold_jid $job_id_annotate_snv,$job_id_annotate_cnv,$job_id_annotate_sv,$job_ids_annn"    
-                else
-                    hold_arg="-hold_jid $job_ids_annn"	
-                fi	
-	    else
-		hold_arg="-hold_jid $job_ids_annn"
-	    fi
-            if [ $analysis != "alignment" ]
-	    then
-                job_ids_sample=$( cat $job_ids_dir/PER_SAMPLE | cut -d ' ' -f3  | tr "\n" ",")
-                ANNOT_SAMPLE=`qsub $args -N $type.$version.annotate_sample.$run_num -hold_jid $job_ids_sample -l h_vmem=8G $script_path/annotate_sample.sh $output_dir $run_info`   
-                job_ids_annot_sample=`echo $ANNOT_SAMPLE | cut -d ' ' -f3 | tr "\n" ","`
-                if [ $analysis != "annotation" ]
-                then
-                    job_ids_igv=$( cat $job_ids_dir/IGV | cut -d ' ' -f3  | tr "\n" ",")
-                    hold="-hold_jid $job_ids_annot_sample,$job_ids_merge_sample,$job_ids_sample,$job_ids_annn,$job_ids_igv"
-                else
-                    hold="-hold_jid $job_ids_report,$job_ids_annot_sample,$job_ids_merge_sample,$job_ids_sample,$job_ids_annn"
-                fi	
-                ### variant distance
-                qsub $args -N $type.$version.variant_distance.$run_num -hold_jid $job_ids_report -l h_vmem=4G $script_path/variant_distance.sh $TempReports $output_dir $run_info
-                NUMBERS=`qsub $args -N $type.$version.sample_numbers.$run_num $hold -t 1-$numsamples:1 $script_path/sample_numbers.sh $output_dir $run_info`
-                GENE_SUMMARY=`qsub $args -N $type.$version.gene_summary.$run_num $hold -t 1-$numsamples:1 -l h_vmem=4G $script_path/gene_summary.sh $output_dir $run_info $output_dir/Reports_per_Sample`
-                job_ids=`echo $NUMBERS | cut -d ' ' -f3 | cut -d '.' -f1 | tr "\n" ","`
-                job_ids_summary=`echo $GENE_SUMMARY | cut -d ' ' -f3 | cut -d '.' -f1 | tr "\n" ","`
-                if [[  $tool == "exome"  && $all_sites == "YES" ]]
-                then
-                    RAW=`qsub $args -N $type.$version.merge_raw_variants.$run_num -t 1-$numchrs:1 -hold_jid ${job_ids}${job_ids_summary} -l h_vmem=8G $script_path/merge_raw_variants.sh $output_dir $run_info`
-                    job_id_raw_chr=`echo $RAW | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
-                    CONCAT=`qsub $args -N $type.$version.concat_raw_variants.$run_num -hold_jid $job_id_raw_chr -l h_vmem=8G $script_path/concat_raw_variants.sh $output_dir $run_info`
-                    job_id_raw=`echo $CONCAT | cut -d ' ' -f3 | tr "\n" ","` 
-                fi			
-	    else
-		job_ids=$( cat $job_ids_dir/ALIGN |  cut -d ' ' -f3 | tr "\n" ",")
-		NUMBERS=`qsub $args -N $type.$version.sample_numbers.$run_num -hold_jid $job_ids -t 1-$numsamples:1 $script_path/sample_numbers.sh $output_dir $run_info`
-                job_ids=`echo $NUMBERS | cut -d ' ' -f3 | cut -d '.' -f1 | tr "\n" ","`
-            fi
-            if [[  $tool == "exome"  && $all_sites == "YES" ]]
-            then
-                hold="-hold_jid ${job_ids}${job_id_raw}"
-            else
-                hold="-hold_jid ${job_ids}"
-            fi
-            HTML=`qsub $args -l h_vmem=8G -N $type.$version.generate_html.$run_num $hold $script_path/generate_html.sh $output_dir $run_info`	
-	    echo `date`
-        fi        
+			job_ids_annn=$( cat $job_ids_dir/ANNOT |  cut -d ' ' -f3 | tr "\n" ",")
+		fi
+		if [[ $analysis != "annotation" && $analysis != "alignment" ]]
+		then
+			if [ $tool == "whole_genome" ]
+			then
+				job_ids=$( cat $job_ids_dir/SV | cut -d ' ' -f3  | tr "\n" "," )
+				mkdir -p $output_dir/Reports_per_Sample/ANNOT
+				ANNOTATE_CNV=`qsub $args -N $type.$version.annotation.CNV.sh.$run_num -l h_vmem=4G -hold_jid $job_ids -t 1-$numsamples:1 $script_path/annotation_CNV.sh $output_dir/Reports_per_Sample/SV/ $run_info $output_dir/Reports_per_Sample/ANNOT`
+				ANNOTATE_SV=`qsub $args -N $type.$version.annotation.SV.sh.$run_num -l h_vmem=4G -hold_jid $job_ids -t 1-$numsamples:1 $script_path/annotation_SV.sh $output_dir $run_info $output_dir/Reports_per_Sample/ANNOT`
+				job_id_annotate_sv=`echo $ANNOTATE_SV | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
+				job_id_annotate_cnv=`echo $ANNOTATE_CNV | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
+				hold_arg="-hold_jid $job_id_annotate_snv,$job_id_annotate_cnv,$job_id_annotate_sv,$job_ids_annn"    
+			else
+				hold_arg="-hold_jid $job_ids_annn"	
+			fi	
+		else
+			hold_arg="-hold_jid $job_ids_annn"
+		fi
+		if [ $analysis != "alignment" ]
+		then
+			job_ids_sample=$( cat $job_ids_dir/PER_SAMPLE | cut -d ' ' -f3  | tr "\n" ",")
+			ANNOT_SAMPLE=`qsub $args -N $type.$version.annotate_sample.$run_num -hold_jid $job_ids_sample -l h_vmem=8G $script_path/annotate_sample.sh $output_dir $run_info`   
+			job_ids_annot_sample=`echo $ANNOT_SAMPLE | cut -d ' ' -f3 | tr "\n" ","`
+			if [ $analysis != "annotation" ]
+			then
+				job_ids_igv=$( cat $job_ids_dir/IGV | cut -d ' ' -f3  | tr "\n" ",")
+				hold="-hold_jid $job_ids_annot_sample,$job_ids_merge_sample,$job_ids_sample,$job_ids_annn,$job_ids_igv"
+			else
+				hold="-hold_jid $job_ids_report,$job_ids_annot_sample,$job_ids_merge_sample,$job_ids_sample,$job_ids_annn"
+			fi	
+			NUMBERS=`qsub $args -N $type.$version.sample_numbers.$run_num $hold -t 1-$numsamples:1 $script_path/sample_numbers.sh $output_dir $run_info`
+			GENE_SUMMARY=`qsub $args -N $type.$version.gene_summary.$run_num $hold -t 1-$numsamples:1 -l h_vmem=4G $script_path/gene_summary.sh $output_dir $run_info $output_dir/Reports_per_Sample`
+			job_ids=`echo $NUMBERS | cut -d ' ' -f3 | cut -d '.' -f1 | tr "\n" ","`
+			job_ids_summary=`echo $GENE_SUMMARY | cut -d ' ' -f3 | cut -d '.' -f1 | tr "\n" ","`
+			if [[  $tool == "exome"  && $all_sites == "YES" ]]
+			then
+				RAW=`qsub $args -N $type.$version.merge_raw_variants.$run_num -t 1-$numchrs:1 -hold_jid ${job_ids}${job_ids_summary} -l h_vmem=8G $script_path/merge_raw_variants.sh $output_dir $run_info`
+				job_id_raw_chr=`echo $RAW | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
+				CONCAT=`qsub $args -N $type.$version.concat_raw_variants.$run_num -hold_jid $job_id_raw_chr -l h_vmem=8G $script_path/concat_raw_variants.sh $output_dir $run_info`
+				job_id_raw=`echo $CONCAT | cut -d ' ' -f3 | tr "\n" ","` 
+			fi			
+		else
+			job_ids=$( cat $job_ids_dir/ALIGN |  cut -d ' ' -f3 | tr "\n" ",")
+			NUMBERS=`qsub $args -N $type.$version.sample_numbers.$run_num -hold_jid $job_ids -t 1-$numsamples:1 $script_path/sample_numbers.sh $output_dir $run_info`
+			job_ids=`echo $NUMBERS | cut -d ' ' -f3 | cut -d '.' -f1 | tr "\n" ","`
+		fi
+		if [[  $tool == "exome"  && $all_sites == "YES" ]]
+		then
+			hold="-hold_jid ${job_ids}${job_id_raw}"
+		else
+			hold="-hold_jid ${job_ids}"
+		fi
+		HTML=`qsub $args -l h_vmem=8G -N $type.$version.generate_html.$run_num $hold $script_path/generate_html.sh $output_dir $run_info`	
+		echo `date`      
     else
 	echo "Multi-sample"
 	numgroups=$(cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2 | tr ":" "\n" | wc -l)
@@ -431,7 +421,7 @@ else
             else        
                 VARIANT=`qsub $args -N $type.$version.realign_recal.$group.$run_num -hold_jid $job_ids_convert -l h_vmem=8G -t 1-$numchrs:1 $script_path/realign_recal.sh $input_dirs $bam_samples $names_samples $realign_dir $run_info 1`
             fi    
-	    variant_id=`echo $VARIANT | cut -d ' ' -f3  | tr "\n" "," | sed -e "s/\..*,//g"`
+			variant_id=`echo $VARIANT | cut -d ' ' -f3  | tr "\n" "," | sed -e "s/\..*,//g"`
             SPLIT_IGV=`qsub $args -N $type.$version.split_sample_pair.$group.$run_num -hold_jid $variant_id -t 1-$numchrs:1 $script_path/split_sample_pair.sh $output_dir/realign $output_dir/IGV_BAM $group $output_dir/alignment $run_info` 
             split_igv_id=`echo $SPLIT_IGV | cut -d ' ' -f3  | tr "\n" "," | sed -e "s/\..*,//g"`
             IGV=`qsub $args -N $type.$version.igv_bam.$group.$run_num -hold_jid $split_igv_id $script_path/igv_bam.sh $output_dir/realign $output_dir/IGV_BAM $group $output_dir/alignment $run_info`  
