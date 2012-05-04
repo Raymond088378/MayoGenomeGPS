@@ -39,10 +39,10 @@ else {
 	my @trackNames=split(/:/,$tracks);
 	for(my $i = 0 ; $i <= $#sampleNames; $i++)	{
 			if ($analysis eq "mayo"){
-				print FH "\n<Resource name=\"$sampleNames[$i].igv-sorted.bam\" path=\"ftp://rcfisinl1-212/delivery/$PI/$folder/IGV_BAM/$sampleNames[$i].igv-sorted.bam\" />";
+				print FH "\n<Resource name=\"$sampleNames[$i].igv-sorted.bam\" path=\"ftp://rcfisinl1-212/delivery/$PI/$folder/secondary/IGV_BAM/$sampleNames[$i].igv-sorted.bam\" />";
 			}
 			else	{
-				print FH "\n<Resource name=\"$sampleNames[$i].igv-sorted.bam\" path=\"http://$server/secondary/$PI/$folder/IGV_BAM/$sampleNames[$i].igv-sorted.bam\" />";
+				print FH "\n<Resource name=\"$sampleNames[$i].igv-sorted.bam\" path=\"http://$server/secondary/$PI/$folder/secondary/IGV_BAM/$sampleNames[$i].igv-sorted.bam\" />";
 			}	
 	}
 	for (my $i = 0 ; $i <= $#trackNames ; $i++ )	{

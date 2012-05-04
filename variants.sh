@@ -113,7 +113,7 @@ else
             done
             gr=`echo $gr |  sed "s/|$//"`
             $samtools/samtools view -b -r $sample $input/$bam > $output/$sample.chr$chr.rg.bam
-            $samtools/samtools view -H $output/$sample.chr$chr.rg.bam | grep -E -v $gr | $samtools/samtools reheader - $output/$sample.chr$chr.rg.bam > $output/$sample.chr$chr.rg.re.bam
+            $samtools/samtools view -H $output/$sample.chr$chr.rg.bam | grep -E -v '$gr' | $samtools/samtools reheader - $output/$sample.chr$chr.rg.bam > $output/$sample.chr$chr.rg.re.bam
             mv $output/$sample.chr$chr.rg.re.bam $output/$sample.chr$chr.rg.bam
 
             if [ ! -s $output/$sample.chr$chr.rg.bam ]
@@ -241,6 +241,20 @@ else
                     perl $script_path/snvmix_to_vcf.pl -i $output/$sample.variants.chr${chr}.raw.snv.all -o $output/$sample.variants.chr${chr}.raw.snv.all.vcf -s $sample
                     rm $output/$sample.$chr.target.bed
                 fi
+				### annotate vcf from snvmix
+				$java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+				-R $ref \
+				-et NO_ET \
+				-T VariantAnnotator \
+				-I $output/$sample.chr${chr}-sorted.bam \
+				-V $output/$sample.variants.chr${chr}.raw.snv.all.vcf \
+				--dbsnp $dbSNP \
+				-L chr$chr \
+				-A QualByDepth -A MappingQualityRankSumTest -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A RMSMappingQuality -A FisherStrand \
+				--out $output/$sample.variants.chr${chr}.raw.snv.all.vcf.temp
+				mv $output/$sample.variants.chr${chr}.raw.snv.all.vcf.temp $output/$sample.variants.chr${chr}.raw.snv.all.vcf
+				mv $output/$sample.variants.chr${chr}.raw.snv.all.vcf.temp.idx $output/$sample.variants.chr${chr}.raw.snv.all.vcf.idx
+				
 				rm $output/$sample.variants.chr${chr}.raw.snv.all
 				### merge snvs and indels to give on vcf
 				$java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
@@ -277,6 +291,20 @@ else
 				### call snvs using snvmix
 				$snvmix/SNVMix2 -i $input/chr${chr}.pileup -m $snvmix/Mu_pi.txt -o $output/$sample.variants.chr${chr}.raw.snv
 				perl $script_path/snvmix_to_vcf.pl -i $output/$sample.variants.chr${chr}.raw.snv -o $output/$sample.variants.chr${chr}.raw.snv.vcf -s $sample
+				### annotate vcf from snvmix
+				$java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+				-R $ref \
+				-et NO_ET \
+				-T VariantAnnotator \
+				-I $output/$sample.chr${chr}-sorted.bam \
+				-V $output/$sample.variants.chr${chr}.raw.snv.vcf \
+				--dbsnp $dbSNP \
+				-L chr$chr \
+				-A QualByDepth -A MappingQualityRankSumTest -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A RMSMappingQuality -A FisherStrand \
+				--out $output/$sample.variants.chr${chr}.raw.snv.vcf.temp
+				mv $output/$sample.variants.chr${chr}.raw.snv.vcf.temp $output/$sample.variants.chr${chr}.raw.snv.vcf
+				mv $output/$sample.variants.chr${chr}.raw.snv.vcf.temp.idx $output/$sample.variants.chr${chr}.raw.snv.vcf.idx	
+				
 				rm $output/$sample.variants.chr${chr}.raw.snv
 				### merge snvs and indels to give on vcf
 				$java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
@@ -313,10 +341,53 @@ else
             inputfiles=$inputfiles" -I $output/$tumor"
 
             ##run somatic sniper 
-            $script_path/somaticsnipper.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.vcf $run_info
+            $somatic_sniper/bam-somaticsniper -q 20 -Q 30 -f $ref $output/$tumor $output/$normal $output/$snv     
+
+            if [ ! -s $output/$snv ]
+            then		
+                echo "ERROR :variants.sh SomaticSnipper failed, file $output/$snv not generated "
+                exit 1
+            fi
             
-            $script_path/annotate_vcf.sh $output/$tumor $output/$normal $output/$sample.chr$chr.snv.vcf $chr $run_info
-			
+            ## convert sniper output to VCF
+            perl $script_path/ss2vcf.pl $output/$snv $output/$sample.chr$chr.snv.vcf $dbSNP_rsIDs ${sampleArray[1]} $sample $output/$sample.chr$chr.snv.triallele.out
+            
+            if [ -s $output/$sample.chr$chr.snv.vcf ]
+            then
+                rm $output/$snv
+            else
+                echo "ERROR: $output/$sample.chr$chr.snv.vcf not found"
+            fi
+            
+            # ## annotate SNVs
+            $java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+            -R $ref \
+            -et NO_ET \
+            -T VariantAnnotator \
+            -I $output/$tumor \
+            -I $output/$normal \
+            -V $output/$sample.chr$chr.snv.vcf \
+            --dbsnp $dbSNP \
+            -L chr$chr \
+            -A QualByDepth -A MappingQualityRankSumTest -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A RMSMappingQuality -A FisherStrand \
+            --out $output/$sample.chr$chr.snv.vcf.temp	
+
+            if [ -s $output/$sample.chr$chr.snv.vcf.temp ]
+            then
+                mv $output/$sample.chr$chr.snv.vcf.temp $output/$sample.chr$chr.snv.vcf
+                rm $output/$sample.chr$chr.snv.triallele.out
+            else		
+                echo "ERROR : variants.sh SNV VariantAnnotator failed, file:$output/$sample.chr$chr.snv.vcf.temp"
+                exit 1
+            fi
+
+            if [ -s $output/$sample.chr$chr.snv.vcf.temp.idx ]
+            then
+                mv $output/$sample.chr$chr.snv.vcf.temp.idx $output/$sample.chr$chr.snv.vcf.idx
+            else	
+                echo "ERROR: variants.sh SNV VariantAnnotator did not generated index, file: $output/$sample.chr$chr.snv.vcf.idx" 
+                exit 1
+            fi
             
             ## Somatic Indel detector
             indel=$sample.chr$chr.indel.vcf
@@ -349,7 +420,7 @@ else
             -V $output/$indel \
             --dbsnp $dbSNP \
             -L chr$chr \
-            -A QualByDepth -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A RMSMappingQuality -A FisherStrand \
+            -A QualByDepth -A MappingQualityRankSumTest -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A RMSMappingQuality -A FisherStrand \
             --out $output/$indel.temp
 
             if [ -s $output/$indel.temp ]

@@ -112,7 +112,7 @@ else
     -o $outfile
 	
 	filter_calls=`cat $outfile | awk '$0 !~ /#/' | wc -l`
-    if [[ ! -s $outfile || ! -s ${outfile}.idx || $raw_calls != $filter_Calls ]]
+    if [[ ! -s $outfile || ! -s ${outfile}.idx || $raw_calls != $filter_calls ]]
     then
         echo "WARNING: filter_variant_vqsr, ApplyRecalibration File $outfile not generated"
         $java/java -Xmx1g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
