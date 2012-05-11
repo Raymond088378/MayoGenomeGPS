@@ -48,21 +48,20 @@ while(my $row = <IN>){
 	my $PHOMMUT = $line[10] + $line[14];
 	my $PSOM = $line[9] + $line[15] + $line[10] + $line[14];
 	my $prob=0;
-	my $id;
-	my @ngeno=(0/0,0/0,0/0,0/1,0/1,0/1,1/1,1/1,1/1);
-	my @tgeno=(0/0,0/1,1/1,0/0,0/1,1/1,0/0,0/1,1/1);
+	my $id=0;
+	my @ngeno=('0/0','0/0','0/0','0/1','0/1','0/1','1/1','1/1','1/1');
+	my @tgeno=('0/0','0/1','1/1','0/0','0/1','1/1','0/0','0/1','1/1');
 	my $c=0;
-	for(my $i =8 ; $i <=14; $i++)	{
+	for(my $i =8 ; $i <=14; $i++,$c++)	{
 		if ($prob < $line[$i])	{
 			$id=$c;
 			$prob=$line[$i];
 		}
-		$c++;
 	}
-	print OUT "$chr\t$pos\t.\t$ref\t$alt\t.\tPASS\t" . "NS=2:DP=$total_dp:PGERM=$PGERM:PLOH=$PLOH:PHETMUT=$PHETMUT:PHOMMUT=$PHOMMUT:PSOM=$PSOM" . "GT:AD:DP\t" . "$ngeno[$c]:$normal_depth_ref,$normal_depth_alt:$normal_depth\t" . "$tgeno[$c]:$tumor_depth_ref,$tumor_depth_alt:$tumor_depth\n";	    
+	print OUT "$chr\t$pos\t.\t$ref\t$alt\t.\tPASS\t" . "NS=2:DP=$total_dp:PGERM=$PGERM:PLOH=$PLOH:PHETMUT=$PHETMUT:PHOMMUT=$PHOMMUT:PSOM=$PSOM:PPS=$line[$#line]" . "\tGT:AD:DP\t" . "$ngeno[$id]:$normal_depth_ref,$normal_depth_alt:$normal_depth\t" . "$tgeno[$id]:$tumor_depth_ref,$tumor_depth_alt:$tumor_depth\n";	    
 }
 close IN;
-
+close OUT;
 sub header{
 	my $nsm = $_[0];
     my $tsm = $_[1];
@@ -78,8 +77,21 @@ sub header{
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 ##FORMAT=<ID=GQ,Number=1,Type=Float,Description="Genotype Quality">
 ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth for This Sample">
-#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t${nsm}\t${tsm}"\n"};
+##FORMAT=<ID=PGERM,Number=1,Type=Integer,Description="probability of germ line call">
+##FORMAT=<ID=PLOH,Number=1,Type=Integer,Description="probability of Loss of heterozygosity">
+##FORMAT=<ID=PHETMUT,Number=1,Type=Integer,Description="probability of Hetero zygous mutation">
+##FORMAT=<ID=PHOMMUT,Number=1,Type=Integer,Description="probability of Homo zygous mutation">
+##FORMAT=<ID=PSOM,Number=1,Type=Integer,Description="probability of somatic mutation">
+##FORMAT=<ID=PPS,Number=1,Type=Integer,Description="post processed probability of somatic call ">
+#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t${nsm}\t${tsm}\n};
 print OUT $header;
+}
+
+sub spGetCurDateTime {
+    my ($sec, $min, $hour, $mday, $mon, $year) = localtime();
+    my $curDateTime = sprintf "%4d-%02d-%02d %02d:%02d:%02d",
+    $year+1900, $mon+1, $mday, $hour, $min, $sec;
+    return ($curDateTime);
 }
 
 sub help{
@@ -100,7 +112,7 @@ OPTIONS:
 
 	--normalsample,-ns 	normal sample name is defined.
         
-    --tumorsample,-ts     tumor sample name is defined.           
+	--tumorsample,-ts     tumor sample name is defined.           
 
 	--help,-h,-?	Display this documentation.
 

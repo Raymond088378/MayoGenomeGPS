@@ -32,22 +32,17 @@ else
         -T VariantFiltration \
         -V $inputvcf.SNV.vcf \
         -o $inputvcf.SNV.vcf.filter.vcf \
-        --filterExpression "QD < 2.0" \
-        --filterName QDFilter \
-        --filterExpression "MQ < 40.0" \
-        --filterExpression "FS > 60.0" \
-        --filterName FSFilter \
-        --filterExpression "HaplotypeScore > 13.0" \
-        --filterName Haplotypefilter \
-        --filterExpression "MQRankSum < -12.5" \
-        --filterName MappingQaulityFilter \
-        --filterExpression "ReadPosRankSum < -8.0" \
-        --filterName ReadPosFilter 
+        --filterExpression "MQ < 40.0" --filterName MQFilter \
+		--filterExpression "FS > 60.0" --filterName FSFilter \
+        --filterExpression "HaplotypeScore > 13.0" --filterName Haplotypefilter \
+        --filterExpression "MQRankSum < -12.5" --filterName MappingQaulityFilter \
+        --filterExpression "QD < 2.0" --filterName QDFilter \
+		--filterExpression "ReadPosRankSum < -8.0" --filterName ReadPosFilter
             
         filter_snvs=`cat $inputvcf.SNV.vcf.filter.vcf | awk '$0 !~ /^#/' | wc -l`
         if [[ -s $inputvcf.SNV.vcf.filter.vcf && $num_snvs == $filter_snvs ]]
         then
-            rm $inputvcf.SNV.vcf
+            rm $inputvcf.SNV.vcf $inputvcf.SNV.vcf.idx
         else
             echo "ERROR: failed to appply hard filters $inputvcf (SNV)"
             exit 1;
@@ -55,6 +50,8 @@ else
     fi	
 	
     num_indels=`cat $inputvcf.INDEL.vcf | awk '$0 !~ /^#/' | wc -l`
+    
+	
     if [ $num_indels -ge 1 ]
     then
         #### apply filters for INDEL
@@ -63,20 +60,16 @@ else
         -et NO_ET \
         -K $gatk/Hossain.Asif_mayo.edu.key \
         -l INFO \
-        -T VariantFiltration \
-        -V $inputvcf.INDEL.vcf \	
-        -o $inputvcf.INDEL.vcf.filter.vcf \
-        --filterExpression "QD < 2.0" \
-        --filterName QDFilter \
-        --filterExpression "ReadPosRankSum < -20.0" \
-        --filterName ReadPosFilter \
-        --filterExpression "FS > 200.0" \
-        --filterName FSFilter 
+        -T VariantFiltration -V $inputvcf.INDEL.vcf -o $inputvcf.INDEL.vcf.filter.vcf \
+        --filterExpression "ReadPosRankSum < -20.0" --filterName ReadPosFilter \
+        --filterExpression "QD < 2.0" --filterName QDFilter \
+		--filterExpression "FS > 200.0" --filterName FSFilter
+        
 		
         filter_indels=`cat $inputvcf.INDEL.vcf.filter.vcf | awk '$0 !~ /^#/' | wc -l`
         if [[ -s $inputvcf.INDEL.vcf.filter.vcf && $num_indels == $filter_indels ]]
         then
-            rm $inputvcf.INDEL.vcf
+            rm $inputvcf.INDEL.vcf $inputvcf.INDEL.vcf.idx 
         else
             echo "ERROR: failed to appply hard filters $inputvcf (INDEL)"
             exit 1;
@@ -86,7 +79,7 @@ else
     if [[ $num_snvs -gt 1 && $num_indels -gt 1 ]]	
     then
         input="-V $inputvcf.SNV.vcf.filter.vcf -V $inputvcf.INDEL.vcf.filter.vcf"
-        $script_path/combinevcf.sh $input $outputvcf $run_info
+        $script_path/combinevcf.sh "$input" $outputvcf $run_info yes
     elif [ $num_snvs -gt 1 ]
     then
         mv $inputvcf.SNV.vcf.filter.vcf $outputvcf

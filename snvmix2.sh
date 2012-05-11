@@ -35,17 +35,18 @@ else
     if [[ $only_ontarget == "YES" && $tool == "exome" ]]
     then
         perl $script_path/snvmix_to_vcf.pl -i $temp -o $output -s $sample -p $prob_filter
-        len=`cat $temp_kit |wc -l`
-        if [ $len -gt 0 ]
-        then
+        if [ -s $temp_kit ]
+		then
             $bedtools/intersectBed -a $output -b $temp_kit -wa -header > $output.i
+			rm $temp_kit
         else
             cp $output $output.i	
         fi	
         mv $output.i $output
-        rm $temp_kit
     else
         perl $script_path/snvmix_to_vcf.pl -i $temp -o $output -s $sample
+		cat $output | awk '$0 ~ /^#/ || $NF !~ /^0\/0/' > $output.tmp
+		mv $output.tmp $output
     fi
     
     if [ -s $output ]

@@ -15,8 +15,8 @@ else
     snpeff=$6
     poly=$7
     output_dir=$8
-    
-    tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
+    SGE_TASK_ID=1
+	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2)
     analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
@@ -37,15 +37,15 @@ else
         ## add allele frequency
         $script_path/add.frequencies.sh $TempReports $snv_var $which_chr $run_info
         ## merge sift sseq codon UCSC tracks
-        $script_path/merge.snv.sh $TempReports $sample $which_chr $sift $sseq $snv_var $run_info
+        $script_path/merge.snv.sh $TempReports $sample $which_chr $sift $snpeff $poly $snv_var $run_info
     fi
 	
     if [ $variant_type == "BOTH" -o $variant_type = "INDEL" ]
     then	
-        indel_var=${sample}.chr${which_chr}.indel
+		indel_var=${sample}.chr${which_chr}.indel
         ## merge sseq to indel report
-         $script_path/add.rsids_indels.sh $TempReports $indel_var $which_chr $run_info
-        $script_path/merge.indel.sh $TempReports $sample $which_chr $sseq $indel_var $output_OnTarget $run_info	
+		$script_path/add.rsids_indels.sh $TempReports $indel_var $which_chr $run_info
+		$script_path/merge.indel.sh $TempReports $sample $which_chr $sseq $indel_var $output_OnTarget $run_info	
     fi
     echo `date`
 fi	

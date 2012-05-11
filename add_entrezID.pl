@@ -46,8 +46,10 @@ while ( $line1 = <MAP> ) {
 
 	my @syn = split (/\|/,$gene_synonym);
 	for my $gene_syn (@syn){
-		$alt_name_hash{$gene_syn}{'gene_id'} = $gene_id;
-		$alt_name_hash{$gene_name}{'gene_desc'} = $gene_desc;
+		if ($gene_syn ne '-')	{
+			$alt_name_hash{$gene_syn}{'gene_id'} = $gene_id;
+			$alt_name_hash{$gene_name}{'gene_desc'} = $gene_desc;
+		}
 	}	
 }
 close MAP;

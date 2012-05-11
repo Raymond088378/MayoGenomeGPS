@@ -49,17 +49,16 @@ else
     ### make sure both the bams are sorted
 	
    # $python $jointsnvmix/build/scripts-2.7/jsm.py train --model snvmix2  --skip_size $X --min_base_qual 20 --min_map_qual 20 --chromosome chr$chr \
-		$ref $normal_bam $tumor_bam $output/$tumor_sample.$normal_sample.chr$chr.train.txt
+	#	$ref $normal_bam $tumor_bam $output/$tumor_sample.$normal_sample.chr$chr.train.txt
 		
 		
     ### run joint snvmix classify to call teh somatic mutation
     
-	$python $jointsnvmix/build/scripts-2.7/jsm.py classify --model snvmix2 --post_process --min_base_qual $bqual --min_map_qual $mqual --chromosome chr$chr --out_file $output/$output_file.txt \
-		--parameters_file $jointsnvmix/config/params.cfg $ref $normal_bam $tumor_bam
+	$python $jointsnvmix/build/scripts-2.7/jsm.py classify --model snvmix2 --post_process --min_base_qual $bqual --min_map_qual $mqual --chromosome chr$chr --out_file $output/$output_file.txt --parameters_file $jointsnvmix/config/params.cfg $ref $normal_bam $tumor_bam
 	
 		
 	### script to convert text output to vcf output
-	$script_path/jsm2vcf.pl $output/$output_file.txt $output/$output_file
+	perl $script_path/jsm2vcf.pl -i $output/$output_file.txt -o $output/$output_file -ns $normal_sample -ts $tumor_sample
 	rm $output/$output_file.txt
     echo `date`
 fi

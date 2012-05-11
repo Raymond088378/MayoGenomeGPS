@@ -31,16 +31,27 @@ else    {
 	while ($l = <FH>) {
 		chomp $l;
 		my @a = split('\t', $l);
+		for(my $i =0; $i <= $#a; $i++){
+			if (length($a[$i]) == 0)	{
+				$a[$i]='-';
+			}
+		}
+		if ($#a < $len_sift_header)	{
+			for(my $j=$#a+1; $j <=$len_sift_header;$j++)	{
+				$a[$j]='-';
+			}	
+		}
 		my @c = split('\,', $a[0]);
 		my @d = split('\/', $c[3]);
 		$c[0] ="chr".$c[0];
-		$sift{$c[0]}{$c[1]}{$d[0]}{$d[1]} = $l;
+		$sift{$c[0]}{$c[1]}{$d[0]}{$d[1]} = join("\t",@a);
 	}
 	close FH;
 	open SOURCE, "<$source" or die "can not open the $source : $! \n"; ## Variant file
 	my $d = <SOURCE>;
 	chomp $d; my $hdr1 = "$d";
-	print OUT "$hdr1\t\t\t\t\tSIFT Annotation\n";
+	my $num_tabs=$len_sift_header-1;
+	print OUT "$hdr1\t\tSIFT Annotation" . "\t" x $num_tabs . "\n";
 	while ($l = <SOURCE>) {
 		chomp $l;
 		if($.== 2)	{

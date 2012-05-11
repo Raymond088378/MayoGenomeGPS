@@ -47,6 +47,7 @@ else
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
 
+	
 
     if [ ! -s $hapmap ]
     then
@@ -72,30 +73,34 @@ else
         exit 1
     fi
     
-    if [ $tool == "whole_genome" ]
-    then
-        ## Variant Recalibrator SNP
-        $java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-        -R $ref \
-        -et NO_ET \
-        -K $gatk/Hossain.Asif_mayo.edu.key \
-        -T VariantRecalibrator \
-        -mode $variant \
-        -nt $threads \
-        -input $inputvcf \
-        -resource:hapmap,known=false,training=true,truth=true,prior=15.0 $hapmap \
-        -resource:omni,known=false,training=true,truth=false,prior=12.0 $omni \
-        -resource:dbsnp,known=true,training=false,truth=false,prior=8.0 $dbSNP \
-        -an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP \
-        -recalFile $output/temp/$input_name.recal \
-        -tranchesFile $output/temp/$input_name.tranches \
-        --maxGaussians 4 \
-        --percentBadVariants 0.05 \
-        -rscriptFile $output/plot/$input_name.plots.R
-
-    fi
+	a=`echo $inputvcf | awk -F '/' '$NF ~/somatic/'`
+	b=${#a}
+	if [ $b -gt 0 ]
+	then
+		train="-an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP"
+	else
+		tain="-an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP"
+	fi	
+    ## Variant Recalibrator SNP
+	$java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+	-R $ref \
+	-et NO_ET \
+	-K $gatk/Hossain.Asif_mayo.edu.key \
+	-T VariantRecalibrator \
+	-mode $variant \
+	-nt $threads \
+	-input $inputvcf \
+	-resource:hapmap,known=false,training=true,truth=true,prior=15.0 $hapmap \
+	-resource:omni,known=false,training=true,truth=false,prior=12.0 $omni \
+	-resource:dbsnp,known=true,training=false,truth=false,prior=8.0 $dbSNP \
+	$train \
+	-recalFile $output/temp/$input_name.recal \
+	-tranchesFile $output/temp/$input_name.tranches \
+	--maxGaussians 4 \
+	--percentBadVariants 0.05 \
+	-rscriptFile $output/plot/$input_name.plots.R
 	
-    if [ ! -s $output/temp/$input_name.recal ]
+    if [ `cat $output/temp/$input_name.recal | wc -l` -le 2 ]
     then
         echo "ERROR: filter_variant_per_chr, VariantRecalibrator File $output/temp/$input_name.recal not generated"
     fi
@@ -106,36 +111,41 @@ else
     fi
 
     ## Apply Recalibrator
-    $java/java -Xmx6g -XX:-UseGCOverheadLimit -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-    -R $ref \
-    -et NO_ET \
-    -K $gatk/Hossain.Asif_mayo.edu.key \
-    -mode $variant \
-    -T ApplyRecalibration \
-    -nt $threads \
-    -input $inputvcf \
-    -recalFile $output/temp/$input_name.recal \
-    -tranchesFile $output/temp/$input_name.tranches \
-    -o $outfile
+	if [[ `cat $output/temp/$input_name.recal | wc -l` -gt 2  && -s $output/temp/$input_name.tranches ]]
+    then
+		$java/java -Xmx6g -XX:-UseGCOverheadLimit -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+		-R $ref \
+		-et NO_ET \
+		-K $gatk/Hossain.Asif_mayo.edu.key \
+		-mode $variant \
+		-T ApplyRecalibration \
+		-nt $threads \
+		-input $inputvcf \
+		-recalFile $output/temp/$input_name.recal \
+		-tranchesFile $output/temp/$input_name.tranches \
+		-o $outfile
+	else
+		 echo "ERROR: filter_variant_vqsr failed for $inputvcf"
+	fi
 	
-    filter_calls=`cat $outfile | awk '$0 !~ /#/' | wc -l`
+	filter_calls=`cat $outfile | awk '$0 !~ /#/' | wc -l`
 	
     if [[ ! -s $outfile || ! -s ${outfile}.idx || $raw_calls != $filter_calls ]]
     then
-	echo "WARNING: filter_variant_vqsr, ApplyRecalibration File $outfile not generated"
+		echo "WARNING: filter_variant_vqsr, ApplyRecalibration File $outfile not generated"
         ### V3 best practice from GATK
-	$script_path/hardfilters_variants.sh $inputvcf $outfile $run_info
+		$script_path/hardfilters_variants.sh $inputvcf $outfile $run_info
     fi
             
     ## remove the file
     if [ -s $output/temp/$input_name.recal ]
     then
-	rm $output/temp/$input_name.recal
+		rm $output/temp/$input_name.recal
     fi
 	
     if [ -s $output/temp/$input_name.tranches ]
     then
-	rm $output/temp/$input_name.tranches	
+		rm $output/temp/$input_name.tranches	
     fi
     echo `date`
 fi	

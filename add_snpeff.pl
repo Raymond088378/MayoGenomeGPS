@@ -1,11 +1,10 @@
-## Perl script to append SeattleSeq results to the List.report results from MAQ
-## 10/03/2010 : replace blank columns by underscore
+
 
 use strict;
 use Getopt::Std;
 
 our ($opt_i, $opt_s, $opt_o);
-print "INFO: script to add sseq results to the variant report\n";
+print "INFO: script to add snpeff results to the variant report\n";
 print "RAW paramters: @ARGV\n";
 getopt('iso');
 if ( (!defined $opt_i) && (!defined $opt_s) && (!defined $opt_o) ) {
@@ -22,8 +21,9 @@ else    {
 	open OUT, ">$dest" or die "can not open $dest :$! \n";
 	open SNPEFF, "<$eff" or die " can not open $eff :$! \n";
 	my $len_header=0;
-	my $eff_head=<SNPEFF>;
+	my $eff_head=<SNPEFF>;chomp $eff_head;
 	my @eff_head_array=split(/\t/,$eff_head);
+	my $len_eff=$#eff_head_array;
 	my $num_tabs=$#eff_head_array-4;
 	while(my $line = <REPORT>)	{
 		chomp $line;
@@ -32,13 +32,12 @@ else    {
 		}	
 		elsif($. == 2)	{
 			chomp $line;
-			print OUT "$line\t$eff_head\n";
+            print OUT "$line\t$eff_head\n";
 		}	
 		else	{
 			chomp $line;
 			my @array = split(/\t/,$line);
-			my $uniq = $array[0]."_".$array[1]."_".$array[2]."_".$array[3];
-			push( @{$hashreport{$uniq}},join("\t",@array) );
+			${$hashreport{$array[1]}{$array[17]}{$array[18]}}=join("\t",@array);
 		}
 	}	
 	close REPORT;
@@ -47,30 +46,27 @@ else    {
 	while(my $line = <SNPEFF>)	{
 		chomp $line;
 		my @array = split(/\t/,$line);
-		# make a unique id using chr and position as a set
-		my $uniq = $array[0]."_".$array[1]."_".$array[2]."_".$array[3];
-		push( @{$hasheff{$uniq}},join("\t",@array));
+		push( @{$hasheff{$array[1]}{$array[2]}{$array[3]}},join("\t",@array));
 	}
 	close SNPEFF;
 
 	#Loop over unique key from %hashreport and compare with %hashsseq;
 	
-	foreach my $find (sort keys %hashreport)	{
-		if(defined $hasheff{$find} )	{
-			my $count = scalar(@{$hasheff{$find}});
-			my $count_report= scalar(@{$hashreport{$find}});
-				for(my $j = 0; $j <= $count_report-1; $j++)	{
-					print OUT "${$hashreport{$find}}[$j]";
-					print OUT "\t${$hasheff{$find}}[0]\n";
-					if($count > 1)	{
-						for(my $i = 1; $i <= $count-1; $i++)	{
-							print OUT "\t"x$#eff_head_array;
-							print OUT "${$hasheff{$find}}[$i]\n";
-						}	
-					}
-				}							
-		}
-	}
+	foreach my $pos (sort { $a <=> $b } keys %hashreport)	{
+            foreach my $ref (sort keys %{$hashreport{$pos}})    {
+                foreach my $alt (sort keys %{$hashreport{$pos}{$ref}})  {
+                    if(defined $hasheff{$pos}{$ref}{$alt} )	{
+                        for (my $i=0; $i <= $#{$hasheff{$pos}{$ref}{$alt}}; $i++)   {
+                            print OUT "${$hashreport{$pos}{$ref}{$alt}}" . "\t";
+                            print OUT "${$hasheff{$pos}{$ref}{$alt}}[$i]" . "\n";
+                        }
+                    }
+                    else    {
+                        print OUT "${$hashreport{$pos}{$ref}{$alt}}" . "\t-" x $len_eff . "\n"; 
+                    }
+                }
+            }
+		}    
 	undef %hashreport;
 	undef %hasheff;
 }

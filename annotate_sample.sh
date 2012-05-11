@@ -16,7 +16,6 @@ else
     ## jar script to add IGV, pathway, TIssue specificity and Gene Card link
     $java/java -Xmx2g -Xms512m -jar $script_path/exome_annot.jar annotate $tool_info $output_dir/Reports_per_Sample/ $genome_version
 	
-    cd $output_dir/Reports_per_Sample/
     if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
 	then
 		## sort the INDEL file
@@ -37,8 +36,29 @@ else
     fi
 	### merge per sample files to make merged report to be uploaded to TBB
 	##Merge the unfiltered file
-		
+	cd $output_dir/Reports_per_Sample/
+	## SNV
+	ls *.SNV.cleaned_annot.xls | sort > list
+	perl $script_path/union.snv.pl list $output_dir/Reports/SNV.cleaned_annot.xls
+	perl $script_path/sort.variantReport.pl -i $output_dir/Reports/SNV.cleaned_annot.xls -o $output_dir/Reports/SNV.cleaned_annot.xls.sort -f Position
+	mv $output_dir/Reports/SNV.cleaned_annot.xls.sort $output_dir/Reports/SNV.cleaned_annot.xls
+	
+	ls *.SNV.cleaned_annot_filtered.xls | sort > list
+	perl $script_path/union.snv.pl list $output_dir/Reports/SNV.cleaned_annot_filtered.xls
+	perl $script_path/sort.variantReport.pl -i $output_dir/Reports/SNV.cleaned_annot_filtered.xls -o $output_dir/Reports/SNV.cleaned_annot_filtered.xls.sort -f Position
+	mv $output_dir/Reports/SNV.cleaned_annot_filtered.xls.sort $output_dir/Reports/SNV.cleaned_annot_filtered.xls	
 	
 	
+	## INDEL
+	ls *.INDEL.cleaned_annot.xls | sort > list
+	perl $script_path/union.indel.pl list $output_dir/Reports/INDEL.cleaned_annot.xls
+	perl $script_path/sort.variantReport.pl -i $output_dir/Reports/INDEL.cleaned_annot.xls -o $output_dir/Reports/INDEL.cleaned_annot.xls.sort -f Start
+	mv $output_dir/Reports/INDEL.cleaned_annot.xls.sort $output_dir/Reports/INDEL.cleaned_annot.xls
+	
+	ls *.INDEL.cleaned_annot_filtered.xls | sort > list
+	perl $script_path/union.indel.pl list $output_dir/Reports/INDEL.cleaned_annot_filtered.xls
+	perl $script_path/sort.variantReport.pl -i $output_dir/Reports/INDEL.cleaned_annot_filtered.xls -o $output_dir/Reports/INDEL.cleaned_annot_filtered.xls.sort -f Start
+	mv $output_dir/Reports/INDEL.cleaned_annot_filtered.xls.sort $output_dir/Reports/INDEL.cleaned_annot_filtered.xls	
+	rm list
 	echo `date`
 fi	

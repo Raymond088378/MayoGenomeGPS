@@ -12,7 +12,7 @@ else
     chopped=$4
     run_info=$5
     
-    #SGE_TASK_ID=1
+    #SGE_TASK_ID=6
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
     tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2)
@@ -34,8 +34,15 @@ else
     TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
     SNV_caller=$( cat $run_info | grep -w '^SNV_CALLER' | cut -d '=' -f2)
     somatic_caller=$( cat $run_info | grep -w '^SOMATIC_CALLER' | cut -d '=' -f2)
+	blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
+	blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
+	blat_ref=$( cat $tool_info | grep -w '^BLAT_REF' | cut -d '=' -f2 )
+	blat_server=$( cat $tool_info | grep -w '^BLAT_SERVER' | cut -d '=' -f2 )
+	window_blat=$( cat $tool_info | grep -w '^WINDOW_BLAT' | cut -d '=' -f2 )
     
-    export PERL5LIB=$PERL5LIB:$perllib
+    range=20000
+	let blat_port+=$RANDOM%range
+	export PERL5LIB=$PERL5LIB:$perllib
     export PATH=$tabix/:$PATH
 	
     bam=chr${chr}.cleaned.bam
@@ -76,7 +83,7 @@ else
             done
             gr=`echo $gr |  sed "s/|$//"`
             $samtools/samtools view -b -r $sample $input/$bam > $output/$sample.chr$chr.rg.bam
-            $samtools/samtools view -H $output/$sample.chr$chr.rg.bam | grep -E -v '$gr' | $samtools/samtools reheader - $output/$sample.chr$chr.rg.bam > $output/$sample.chr$chr.rg.re.bam
+            $samtools/samtools view -H $output/$sample.chr$chr.rg.bam | grep -E -v "$gr" | $samtools/samtools reheader - $output/$sample.chr$chr.rg.bam > $output/$sample.chr$chr.rg.re.bam
             mv $output/$sample.chr$chr.rg.re.bam $output/$sample.chr$chr.rg.bam
 
             if [ ! -s $output/$sample.chr$chr.rg.bam ]
@@ -136,7 +143,7 @@ else
                 rm $output/$sample.variants.chr${chr}.raw.vcf.idx 
             fi	
         elif [ $SNV_caller == "SNVMIX" ]
-	then
+		then
             ### call indels using GATK
             if [[ $all_sites == "YES"  && $tool == "exome" ]]
             then
@@ -161,7 +168,7 @@ else
                 cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "N" || $0 ~ /^#/' | grep -v "\./\." > $output/$sample.variants.chr${chr}.raw.vcf
                 rm $output/$sample.variants.chr${chr}.raw.all.vcf.idx
                 $tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf	
-	    else
+			else
                 ## call indeles using GATK
                 param="-L chr${chr}"
                 bam="-I $output/$sample.chr${chr}-sorted.bam"
@@ -173,14 +180,11 @@ else
                 ### merge snvs and indels to give on vcf
                 in="-V $output/$sample.variants.chr${chr}.raw.snv.vcf -V $output/$sample.variants.chr${chr}.raw.indel.vcf"
                 $script_path/combinevcf.sh "$in" $output/$sample.variants.chr${chr}.raw.vcf $run_info yes
-	    fi		
-	fi
-	if [ ! -s $output/$sample.variants.chr${chr}.raw.vcf ]
-        then
-            echo "ERROR : variants.sh File $output/$sample.variants.chr${chr}.raw.vcf not generated "
-            exit 1
-        fi
-    else
+			fi		
+		fi
+		perl $script_path/vcf_blat_verify.pl -i $output/$sample.variants.chr${chr}.raw.vcf -o $output/$sample.variants.chr${chr}.raw.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
+		mv $output/$sample.variants.chr${chr}.raw.vcf.tmp $output/$sample.variants.chr${chr}.raw.vcf
+	else
         ## assuming that normal is the first column/sample 
         normal=${sampleArray[1]}.chr$chr-sorted.bam
         inputfiles="-I $output/$normal ";
@@ -195,11 +199,11 @@ else
             ##run somatic caller 
             if [ $somatic_caller == "JOINTSNVMIX" ]
             then
-                $script_path/jointsnvmix.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.vcf $run_info
+                $script_path/Jointsnvmix.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.vcf $run_info
             elif [ $somatic_caller == "SOMATICSNIPER" ]
             then
                 $script_path/somaticsnipper.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.vcf $run_info
-            elif [ $somtic_caller == "MUTECT" ]
+            elif [ $somatic_caller == "MUTECT" ]
             then
                 $script_path/mutect.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.vcf $run_info    
             else
@@ -214,7 +218,9 @@ else
             $script_path/annotate_vcf.sh $output/$sample.chr$chr.indel.vcf $chr $run_info "$in"
         done
         param="-L chr${chr}"
-	$script_path/unifiedgenotyper.sh "$inputfiles" $output/variants.chr${chr}.raw.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info
+		$script_path/unifiedgenotyper.sh "$inputfiles" $output/variants.chr${chr}.raw.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info
+		perl $script_path/vcf_blat_verify.pl -i $output/variants.chr${chr}.raw.vcf -o $output/variants.chr${chr}.raw.vcf.tmp -w $window_blat -r $ref -b $blat -br $blat_ref -bs $blat_server -bp $blat_port
+		mv $output/variants.chr${chr}.raw.vcf.tmp $output/variants.chr${chr}.raw.vcf
     fi
     ### after this we get multiple indels and snp files which need to be merged for Multi samples but just filter for 	
     if [ ${#sampleArray[@]} -gt 1 ]
@@ -248,6 +254,8 @@ else
         ## combine both snv and indel
         in="-V $output/MergeAllSamples.chr$chr.snvs.raw.vcf -V $output/MergeAllSamples.chr$chr.Indels.raw.vcf"
         $script_path/combinevcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.vcf $run_info yes   
+		perl $script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.vcf -o $output/MergeAllSamples.chr$chr.raw.vcf.tmp -r $ref -w $window_blat -b $blat -br $blat_ref -bs $blat_server -bp $blat_port
+		mv $output/MergeAllSamples.chr$chr.raw.vcf.tmp $output/MergeAllSamples.chr$chr.raw.vcf
     fi
             
     ## remove files

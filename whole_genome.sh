@@ -338,10 +338,10 @@ else
 		HTML=`qsub $args -l h_vmem=8G -N $type.$version.generate_html.$run_num $hold $script_path/generate_html.sh $output_dir $run_info`	
 		echo `date`      
     else
-	echo "Multi-sample"
-	numgroups=$(cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2 | tr ":" "\n" | wc -l)
-	for group in `echo $groups | tr ":" "\n"`
-	do
+		echo "Multi-sample"
+		numgroups=$(cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2 | tr ":" "\n" | wc -l)
+		for group in `echo $groups | tr ":" "\n"`
+		do
             samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" "\n")
             job_ids_merge=""
             bam_samples=""
@@ -352,13 +352,13 @@ else
                 align_dir=$output_dir/alignment/$sample;
                 mkdir -p $align_dir
                 if [[ $analysis == "mayo" || $analysis == "external" || $analysis == "alignment" ]]
-		then
-		    if [ $paired == 1 ]
-		    then
-			let numfiles=(`cat $sample_info | grep -w "$sample" | cut -d '=' -f2| tr "\t" "\n" |wc -l`)/2
-		    else
-			let numfiles=`cat $sample_info | grep -w "$sample" | cut -d '=' -f2| tr "\t" "\n" |wc -l`
-		    fi
+				then
+					if [ $paired == 1 ]
+					then
+						let numfiles=(`cat $sample_info | grep -w "$sample" | cut -d '=' -f2| tr "\t" "\n" |wc -l`)/2
+					else
+						let numfiles=`cat $sample_info | grep -w "$sample" | cut -d '=' -f2| tr "\t" "\n" |wc -l`
+					fi
                     if [ $aligner == "novoalign" ]
                     then
                         echo "novoalign is used as aligner"
@@ -402,10 +402,10 @@ else
                 names_samples=$names_samples"$sample:"
                 bam_samples=$bam_samples"$sample.sorted.bam:"
                 input_dirs=$input_dirs"$output_dir/alignment/$sample:"
-	    done
-	    realign_dir=$output_dir/realign/$group
-	    variant_dir=$output_dir/variants/$group
-	    mkdir -p $realign_dir $variant_dir
+			done
+			realign_dir=$output_dir/realign/$group
+			variant_dir=$output_dir/variants/$group
+			mkdir -p $realign_dir $variant_dir
             if [ $analysis == "variant" ]
             then
                 infile=`cat $sample_info | grep -w "^$group" | cut -d '=' -f2`
@@ -441,11 +441,14 @@ else
 			for sample in $samples
 			do      
 				SIFT=`qsub $args -N $type.$version.sift.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $sample $run_info` 
-				SSEQ=`qsub $args -N $type.$version.sseq.$sample.$run_num $hold_args -l h_vmem=4G $script_path/sseq.sh $sseq $output_OnTarget $email $sample $run_info`
-				echo -e $SSEQ >> $job_ids_dir/ANNOT 
-				job_ids_sift=`echo $SIFT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
-				job_ids_sseq=`echo $SSEQ | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
-				ADD_ANOT=`qsub $args -N $type.$version.sample_reports.$sample.$run_num -hold_jid $job_ids_sseq,$job_ids_sift -t 1-$numchrs:1 -l h_vmem=8G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $sseq $output_dir`
+				SNPEFF=`qsub $args -N $type.$version.snpeff.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info`
+				POLY=`qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info`  
+				MISC=`qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/beautyAnnotation.sh $misc $output_OnTarget $sample $run_info`	
+				job_ids_sift=`echo $SIFT | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`
+				job_ids_snpeff=`echo $SNPEFF | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`
+				job_ids_poly=`echo $POLY | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`
+				job
+				ADD_ANOT=`qsub $args -N $type.$version.sample_reports.$sample.$run_num -hold_jid $job_ids_sift,$job_ids_snpeff,$job_ids_poly -t 1-$numchrs:1 -l h_vmem=8G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $sseq $output_dir`
 				job_ids_anot=`echo $ADD_ANOT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
 				MERGE=`qsub $args -N $type.$version.sample_report.$sample.$run_num -hold_jid $job_ids_anot $script_path/sample_report.sh $output_dir $TempReports $sample $run_info`    
 				echo -e $MERGE >> $job_ids_dir/PER_SAMPLE	
@@ -460,12 +463,13 @@ else
 			for i in $(seq 2 ${#sampleArray[@]})
 			do  
 				tumor=${sampleArray[$i]}
-				SIFT=`qsub $args -N $type.$version.sift.$tumor.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $group.$tumor $run_info` 
-				SSEQ=`qsub $args -N $type.$version.sseq.$tumor.$run_num $hold_args -l h_vmem=4G $script_path/sseq.sh $sseq $output_OnTarget $email $group.$tumor $run_info`
-				echo -e $SSEQ >> $job_ids_dir/ANNOT 
-				job_ids_sift=`echo $SIFT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
-				job_ids_sseq=`echo $SSEQ | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
-				ADD_ANOT=`qsub $args -N $type.$version.sample_reports.$tumor.$run_num  -hold_jid $job_ids_sseq,$job_ids_sift -t 1-$numchrs:1 -l h_vmem=8G $script_path/sample_reports.sh $run_info $group.$tumor $TempReports $output_OnTarget $sift $sseq $output_dir `
+				SIFT=`qsub $args -N $type.$version.sift.$tumor.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $group.$tumor $run_info`
+				SNPEFF=`qsub $args -N $type.$version.snpeff.$tumor.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $group.$tumor $run_info`
+				POLY=`qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $group.$tumor $run_info`
+				job_ids_sift=`echo $SIFT | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`
+				job_ids_snpeff=`echo $SNPEFF | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`
+				job_ids_poly=`echo $POLY | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`
+				ADD_ANOT=`qsub $args -N $type.$version.sample_reports.$tumor.$run_num  -hold_jid $job_ids_sift,$job_ids_snpeff,$job_ids_poly -t 1-$numchrs:1 -l h_vmem=8G $script_path/sample_reports.sh $run_info $group.$tumor $TempReports $output_OnTarget $sift $sseq $output_dir `
 				job_ids_anot=`echo $ADD_ANOT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
 				MERGE=`qsub $args -N $type.$version.sample_report.$tumor.$run_num -hold_jid $job_ids_anot $script_path/sample_report.sh $output_dir $TempReports $group.$tumor $run_info` 
 				echo -e $MERGE >> $job_ids_dir/PER_SAMPLE
@@ -510,7 +514,6 @@ else
 			fi
 		done
 
-		job_ids_annn=$( cat $job_ids_dir/ANNOT |  cut -d ' ' -f3 | cut -d '.' -f1 | tr "\n" ",")
 		job_ids=$( cat $job_ids_dir/SV | cut -d ' ' -f3  | tr "\n" "," )
 		mkdir -p $output_dir/Reports_per_Sample/ANNOT
 		if [ $tool == "whole_genome" ]
@@ -524,16 +527,9 @@ else
 			hold_arg="-hold_jid $job_ids_annn"
 		fi
 		### generate reports for all the samples
-        REPORT=`qsub $args -N $type.$version.merged_report.$run_num $hold_arg -t 1-$numchrs:1 -l h_vmem=8G $script_path/merged_report.sh $sift $sseq $TempReports $run_info $output_dir/OnTarget` 
-		job_ids_report=`echo $REPORT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
 		job_ids_sample=$( cat $job_ids_dir/PER_SAMPLE | cut -d ' ' -f3  | tr "\n" ",")
 		ANNOT_SAMPLE=`qsub $args -N $type.$version.annotate_sample.$run_num -hold_jid $job_ids_sample -l h_vmem=8G $script_path/annotate_sample.sh $output_dir $run_info`   
 		job_ids_annot_sample=`echo $ANNOT_SAMPLE | cut -d ' ' -f3 | tr "\n" ","`
-		## annotate merged report
-		MERGE_SAMPLE=`qsub $args -N $type.$version.annotate_merged_report.$run_num -hold_jid $job_ids_report -l h_vmem=8G $script_path/annotate_merged_report.sh $output_dir $TempReports $run_info`
-		job_ids_merge_sample=`echo $MERGE_SAMPLE | cut -d ' ' -f3 | tr "\n" ","`
-		### variant distance
-		qsub $args -N $type.$version.variant_distance.$run_num -hold_jid $job_ids_report -l h_vmem=4G $script_path/variant_distance.sh $TempReports $output_dir $run_info
 		hold="-hold_jid $job_ids_report,$job_ids_annot_sample,$job_ids_merge_sample"
 		
         NUMBERS=`qsub $args -N $type.$version.sample_numbers.$run_num $hold -t 1-$numgroups:1 $script_path/sample_numbers.sh $output_dir $run_info`

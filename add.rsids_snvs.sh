@@ -28,10 +28,10 @@ else
     dbsnp_rsids_indel=$( cat $tool_info | grep -w '^dbSNP_INDEL_rsIDs' | cut -d '=' -f2)
     GenomeBuild=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2)
     dbsnp_rsids_disease=$( cat $tool_info | grep -w '^dbSNP_disease_rsIDs' | cut -d '=' -f2) 
+    
     #SNV
-    touch $TempReports/$snv.forrsIDs
-    cat $TempReports/$snv > $TempReports/$snv.forrsIDs
-    sed -i '1d' $TempReports/$snv.forrsIDs
+    num=`cat $TempReports/$snv | wc -l` 
+    cat $TempReports/$snv | awk 'NR>1' > $TempReports/$snv.forrsIDs
     perl $script_path/add_dbsnp_snv.pl -i $TempReports/$snv.forrsIDs -b 1 -s $dbsnp_rsids_snv -c 1 -p 2 -o $TempReports/$snv.forrsIDs.added -r $chr -h 1 
     ## add column to add flag for disease variant
     if [ $GenomeBuild == "hg19" ]
@@ -39,12 +39,18 @@ else
         perl $script_path/add.dbsnp.disease.snv.pl -i $TempReports/$snv.forrsIDs.added -b 1 -s $dbsnp_rsids_disease -c 1 -p 2 -o $TempReports/$snv.forrsIDs.added.disease -r $chr
     elif [ $GenomeBuild == "hg18" ]	
     then
-        perl $script_path/add.0.pl $TempReports/$snv.forrsIDs.added > $TempReports/$snv.forrsIDs.added.disease
+        cat $TempReports/$snv.forrsIDs.added | awk '{if(NR != 1) print $0"\t0"; else print $0"\tDiseaseVariant"}' > $TempReports/$snv.forrsIDs.added.disease
     fi	
-    perl $script_path/extract.rsids.pl -i $TempReports/$snv -r $TempReports/$snv.forrsIDs.added.disease -o $TempReports/$snv.rsIDs -v SNV
-    rm $TempReports/$snv.forrsIDs.added
-    rm $TempReports/$snv.forrsIDs
-    rm $TempReports/$snv.forrsIDs.added.disease
+    
+	perl $script_path/extract.rsids.pl -i $TempReports/$snv -r $TempReports/$snv.forrsIDs.added.disease -o $TempReports/$snv.rsIDs -v SNV
+    num_a=`cat $TempReports/$snv.rsIDs |wc -l `
+    if [ $num == $num_a ]
+    then
+        rm $TempReports/$snv
+        rm $TempReports/$snv.forrsIDs.added
+        rm $TempReports/$snv.forrsIDs
+        rm $TempReports/$snv.forrsIDs.added.disease
+    fi
     echo `date`
 fi	
 	

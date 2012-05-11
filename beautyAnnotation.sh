@@ -12,12 +12,12 @@ else
     input=$2
     sample=$3
     run_info=$4
-	
+	#SGE_TASK_ID=1
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
-	REF=$( cat $tool_info | grep -w '^UCSC_REF_FLAT' | cut -d '=' -f2)
+	REF=$( cat $tool_info | grep -w '^UCSC_REF_FLAT_BED' | cut -d '=' -f2)
 	chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
-	
+	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
 	### SNVs
 	
 	INPUT=$input/$sample.variants.chr$chr.SNV.filter.i.c.vcf
@@ -27,14 +27,8 @@ else
 	NEWIN=${INPUT%.*}
 	NEWIN=$NEWIN"_gene.annot";
 	## additional parameters to prevent header (--header 0)
-	if [ ! -f $NEWIN ]
-	then
-		echo ""
-		echo "ERROR: Unable to map to genes, please contact Raymond Moore <moore.raymond@mayo.edu>"
-		echo ""
-		exit 1;
-	fi
-	$java/java -Xmx2g -Xms512m -jar $script_path/DrugTragetability.jar -u $USR -p $WRDPS -i $NEWIN -o $OUTPUT;
+	$java/java -Xmx2g -Xms512m -jar $script_path/DrugTragetability.jar -u $USR -p $WRDPS -i $NEWIN -o $OUTPUT --header 0;
+    rm $NEWIN
 	## rm $NEWIN
 	### INDELS
 	INPUT=$input/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
@@ -43,14 +37,7 @@ else
 	
 	NEWIN=${INPUT%.*}
 	NEWIN=$NEWIN"_gene.annot";
-	## additional parameters to prevent header (--header 0)
-	if [ ! -f $NEWIN ]
-	then
-		echo ""
-		echo "ERROR: Unable to map to genes, please contact Raymond Moore <moore.raymond@mayo.edu>"
-		echo ""
-		exit 1;
-	fi
-	$java/java -Xmx2g -Xms512m -jar $script_path/DrugTragetability.jar -u $USR -p $WRDPS -i $NEWIN -o $OUTPUT;
+	$java/java -Xmx2g -Xms512m -jar $script_path/DrugTragetability.jar -u $USR -p $WRDPS -i $NEWIN -o $OUTPUT --header 0;
+    rm $NEWIN
 	echo `date`
 fi

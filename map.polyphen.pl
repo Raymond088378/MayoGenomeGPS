@@ -1,5 +1,5 @@
 use strict;
-#use warnings;
+use warnings;
 
 my $uniprot=shift @ARGV;
 my $prediction=shift @ARGV;
@@ -52,6 +52,8 @@ while(my $l = <PRED>)   {
     $a[$aa2] =~ m/(\S+)/;
     my $amino2=$1;
     my $id=$accession."_".$position."_".$amino1."_".$amino2;
+    #print "$id\n";
+    #<STDIN>;
     $a[$pre] =~ m/(\D+)/; 
     my $prediction=$1;
     $hash_p{$id}=$prediction;
@@ -102,6 +104,8 @@ while (my $l = <UNI>)   {
     $a[$aa2] =~ m/(\S+)/;
     my $amino2=$1;
     my $id=$accession."_".$position."_".$amino1."_".$amino2;
+    #print "$id\n";
+    #<STDIN>;
     $a[$chrpos] =~ m/(\S+)/;
     print "$1\t$a[$acc]\t$hash_p{$id}\n" if exists $hash_p{$id};
 }

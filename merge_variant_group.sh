@@ -52,18 +52,7 @@ else
         fi
     done
 
-    $java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-    -R $ref \
-    -et NO_ET \
-    -T CombineVariants \
-    $inputargs \
-    -o $out/$group.somatic.variants.raw.vcf
-
-    if [ ! -s $out/$group.somatic.variants.raw.vcf ]
-    then		
-        echo "ERROR :merge_variant_group_chr, CombineVariants File: $out/$group.somatic.variants.raw.vcf was not created "
-        exit 1
-    fi
+    $script_path/combinevcf.sh "$inputargs" $out/$group.somatic.variants.raw.vcf $run_info no
 
     $script_path/filter_variant_vqsr.sh $out/$group.somatic.variants.raw.vcf $out/$group.somatic.variants.filter.vcf BOTH $run_info
 
@@ -90,19 +79,8 @@ else
         fi
     done
 
-    $java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-    -R $ref \
-    -et NO_ET \
-    -T CombineVariants \
-    $inputargs \
-    -o $out/$group.variants.raw.vcf
-
-    if [ ! -s $out/$group.variants.raw.vcf ]
-    then	
-        echo "ERROR :merge_variant_group_chr, CombineVariants File: $out/$group.variants.raw.vcf was not created "
-        exit 1
-    fi
-
+	$script_path/combinevcf.sh "$inputargs" $out/$group.variants.raw.vcf $run_info no
+	
     $script_path/filter_variant_vqsr.sh $out/$group.variants.raw.vcf $out/$group.variants.filter.vcf BOTH $run_info
 	if [ ! -s $out/$group.variants.filter.vcf ]
     then

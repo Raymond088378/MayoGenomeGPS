@@ -55,7 +55,7 @@ else
                 gr="$gr $a"
             done
             gr=`echo $gr |  sed "s/|$//"`
-            cat $output/$sample.header.sam |grep -E -v '$gr' > $output/$sample.$i.header.sam
+            cat $output/$sample.header.sam |grep -E -v "$gr" > $output/$sample.$i.header.sam
             
             if [ ${#chrArray[@]} -gt 1 ]
             then

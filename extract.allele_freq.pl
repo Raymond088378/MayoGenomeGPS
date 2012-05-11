@@ -27,7 +27,7 @@ else    {
 	}
 	my $size=0;
 	if($variant eq 'SNV')	{
-		print OUT "\t\t\t\t\tAllele Frequency\t\t\t";
+		print OUT "\t\t\t\t\tAllele Frequency\t\t\t\t\t";
 	}
 	elsif ($variant eq 'INDEL')	{
 	#	print OUT "\t\t\t\tAllele Frequency";

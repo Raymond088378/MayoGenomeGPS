@@ -27,7 +27,7 @@ close FIRST;
 #Reading column from SIFT "Codons" and outputting respective codon usage and difference
 open (SECOND,"$ARGV[1]");
 open (OUT, ">$ARGV[2]");
-print OUT "\n";
+print OUT "\t\n";
 print OUT "SynonymousCodonUsage\tDifference\n";
 while(my $line = <SECOND>)	
 {

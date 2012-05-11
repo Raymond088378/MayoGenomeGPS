@@ -7,7 +7,7 @@
 	#chr1    12811188        .       G       GC      252.31  .       AC=2;AF=1.00;AN=2;Dels=0.00;HRun=3;HaplotypeScore=0.0000;MQ=43.31;MQ0=0;QD=31.54;SB=-83.88
 	#     GT:AD:DP:GQ:PL  1/1:1,7:8:21.07:294,21,0
 	use strict;
-	use warnings;
+	#use warnings;
 	use Getopt::Std;
 
 	our($opt_i, $opt_o, $opt_s, $opt_h);
@@ -25,10 +25,10 @@
 		open OUT, ">$output" or die "can not open $output : $! \n";
 		my $flag=$opt_h;
 		if ($flag ==1)	{
-			print OUT "\t" x 6 . "$sample" . "\t" x 2 ."\n";
-			print OUT "Chr\tStart\tStop\tInCaptureKit\tRef\tAlt\tBase-Length\tIndel-supportedRead\tReadDepth\n";
+			print OUT "\t" x 8 . "$sample" . "\t" . "\n";
+			print OUT "Chr\tStart\tStop\tInCaptureKit\t#AlternateHits\tRef\tAlt\tBase-Length\tIndel-supportedRead\tReadDepth\n";
 		}
-		my ($header_len,$sample_col,$format_col,$chr,$ReadDepth,$GenoType,$AllelicDepth,$format_len);
+		my ($header_len,$sample_col,$info_col,$format_col,$chr,$ReadDepth,$GenoType,$AllelicDepth,$format_len);
 		my (@alt_reads,@format_data,@sample_data);
 		while( my $l = <FH>)	{
 			chomp $l;
@@ -37,6 +37,9 @@
 			if( $l =~ /^#/)	{		## reading the header to get header information
 				$header_len=scalar(@call);
 				for( my $i = 0; $i < $header_len ; $i++ )	{	## to get the position of sample specific data	
+					if ($call[$i] eq 'INFO')	{
+						$info_col=$i;
+					}
 					if($call[$i] eq 'FORMAT')	{
 						$format_col=$i;
 					}	
@@ -85,10 +88,16 @@
 				}
 				$ReadDepth=$alt_reads[0]+$alt_reads[$#alt_reads];
 				my $capture_flag=1;
-				if (grep /CAPTURE=0/,@call)	{
+				if (grep /CAPTURE=0/,$call[$info_col])	{
 					$capture_flag=0;
 				}
-				print OUT "$chr\t$Start\t$Stop\t$capture_flag\t$call[3]\t$call[4]\t$Bases\t$alt_reads[$#alt_reads]\t$ReadDepth\n";
+				my $reg=$call[$info_col];
+				$reg =~ /(\w*)ED=(\S+)/; 
+				my $multi=$2;
+				if (length($multi) < 1 )	{
+					$multi=0;	
+				}
+				print OUT "$chr\t$Start\t$Stop\t$capture_flag\t$multi\t$call[3]\t$call[4]\t$Bases\t$alt_reads[$#alt_reads]\t$ReadDepth\n";
 			}
 			
 		}

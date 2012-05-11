@@ -18,7 +18,7 @@ my @ColToDel;
 for (my $i=0; $i<$header_len; $i++){
 	if ( ($header_array[$i] =~ /Coordinates/) || ($header_array[$i] =~ /chromosome/) || ($header_array[$i] =~ /position/) || 
 		($header_array[$i] =~ /referenceBase/) || ($header_array[$i] =~ /sampleGenotype/) || ($header_array[$i] =~ /functionDBSNP/) || 
-		($header_array[$i] =~ /nickLab/) || ($header_array[$i] =~ /dbSNPValidation/) || ($header_array[$i] =~ /clinicalAssociation/) || ($header_array[$i] =~ /^rsID/) || ($header_array[$i] =~ /^dbSNP ID/))
+		($header_array[$i] =~ /dbSNPValidation/) || ($header_array[$i] =~ /reference/) || ($header_array[$i] =~ /Change/) || ($header_array[$i] =~ /^rsID/) || ($header_array[$i] =~ /^dbSNP ID/))
 	{
 		 $ColToDel[$j]= $i;
 		 $j++;
@@ -31,8 +31,6 @@ my $count=0;
 
 open(OUT,">$ARGV[1]");
 open(REPORT1,"$ARGV[0]");
-my $hdr_new=<REPORT1>;
-print OUT "$hdr_new";
 
 while(my $l = <REPORT1>)	{
 	chomp $l;
@@ -55,6 +53,5 @@ while(my $l = <REPORT1>)	{
 		}
 	}
 	print OUT "\n";
-	#print <STDIN>;
 }
 close REPORT1;		

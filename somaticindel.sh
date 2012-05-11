@@ -5,7 +5,7 @@ then
     echo -e "Usage: script to run somtic indel caller \n <normal bam ><tumor bam><chromosome><tumor sample><output dir><output file vcf><run info>"
 else
     set -x
-    echo` date`
+    echo `date`
     tumor_bam=$1
     normal_bam=$2
     chr=$3

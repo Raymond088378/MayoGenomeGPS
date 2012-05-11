@@ -144,15 +144,15 @@ else
             do
                 if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
 				then
-					s=`cat $ontarget/$sample.chr${chr}.raw.snvs.bed.i.ToMerge | wc -l`
+					s=`cat $ontarget/$sample.variants.chr${chr}.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' |  wc -l`
 					genomic_snvs=`expr $genomic_snvs "+" $s`
-					s_c=`cat $ontarget/$sample.chr${chr}.raw.snvs.bed.i.ToMerge | awk '$(NF-1) == 1' | wc -l`
+					s_c=`cat $ontarget/$sample.variants.chr${chr}.SNV.filter.i.c.vcf | awk '$0 !~ /^#/'  | grep -c 'CAPTURE=1'`
 					capture_snvs=`expr $capture_snvs "+" $s_c`
                 fi
 				if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
 				then
-					i=`cat $ontarget/$sample.chr${chr}.raw.indels.bed.i.ToMerge | wc -l`
-					i_c=`cat $ontarget/$sample.chr${chr}.raw.indels.bed.i.ToMerge | awk '$NF == 1' | wc -l`
+					i=`cat $ontarget/$sample.variants.chr${chr}.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' |  wc -l`
+					i_c=`cat $ontarget/$sample.variants.chr${chr}.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/'  | grep -c 'CAPTURE=1'`
 					capture_indels=`expr $capture_indels "+" $i_c`
 					genomic_indels=`expr $genomic_indels "+" $i`
 				fi

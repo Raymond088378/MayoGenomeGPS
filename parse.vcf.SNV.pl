@@ -24,11 +24,11 @@ else	{
 	open FH, "<$source" or die "can not open $source :$! \n";
 	open OUT, ">$output" or die "can not open $output : $! \n";		
 	if ($flag == 1)	{
-		print OUT "\t" x 5 . "$sample" . "\t" x 5 . "\n";
-		print OUT "Chr\tPosition\tInCaptureKit\tRef\tAlt\tGenotypeClass\tAlt-SupportedReads\tRef-SupportedReads\tReadDepth\tQuality\tCloseToIndel\n";
+		print OUT "\t" x 6 . "$sample" . "\t" x 5 . "\n";
+		print OUT "Chr\tPosition\tInCaptureKit\t#AlternateHits\tRef\tAlt\tGenotypeClass\tAlt-SupportedReads\tRef-SupportedReads\tReadDepth\tQuality\tCloseToIndel\n";
 	}
 	
-	my ($header_len,$sample_col,$qual_col,$format_col,$chr,$ReadDepth,$GenoType,$AllelicDepth,$format_len,$pos_col,$ref_col,$alt_col,$chr_col,$Genoqual);
+	my ($header_len,$sample_col,$qual_col,$info_col,$format_col,$chr,$ReadDepth,$GenoType,$AllelicDepth,$format_len,$pos_col,$ref_col,$alt_col,$chr_col,$Genoqual);
 	$Genoqual=0;
 	my (@alt_reads,@format_data,@sample_data);
 	while( my $l = <FH>)	{
@@ -38,6 +38,9 @@ else	{
 		if( $l =~ /^#/)	{		## reading the header to get header information
 			$header_len=scalar(@call);
 			for( my $i = 0; $i < $header_len ; $i++ )	{	## to get the position of sample specific data	
+				if ($call[$i] eq 'INFO')	{
+					$info_col=$i;
+				}
 				if($call[$i] eq 'FORMAT')	{
 					$format_col=$i;
 				}	
@@ -81,29 +84,35 @@ else	{
 	    
 			}
 		}	
-    if ($Genoqual == 0) {
-	$quality=99;
-    }
-    else    {
-	$quality=$sample_data[$Genoqual];
-    }
+		if ($Genoqual == 0) {
+			$quality=99;
+		}
+		else    {
+			$quality=$sample_data[$Genoqual];
+		}
 		@alt_reads=split(/,/,$sample_data[$AllelicDepth]);
 		$ReadDepth=$alt_reads[0]+$alt_reads[$#alt_reads];
 		#CAPTURE=1
 		my $close2indel_flag=0;
-		if (grep /CLOSE2INDEL=1/,@call)	{
+		if (grep /CLOSE2INDEL=1/,$call[$info_col])	{
 			$close2indel_flag=1;	
 		}
 		my $capture_flag=1;
-		if (grep /CAPTURE=0/,@call)	{
+		if (grep /CAPTURE=0/,$call[$info_col])	{
 			$capture_flag=0;	
 		}
-		#CLOSE2INDEL=1
+		my $reg=$call[$info_col];
+		$reg =~ /(\w*)ED=(\S+)/; 
+		my $multi=$2;
+		if (length($multi) < 1 )	{
+			$multi=0;	
+		}
+		
 		if ($sample_data[$GenoType] eq '0/1' )	{
-			print OUT "$call[$chr_col]\t$call[$pos_col]\t$capture_flag\t$call[$ref_col]\t$call[$alt_col]\t$call[$ref_col]$call[$alt_col]\t$alt_reads[$#alt_reads]\t$alt_reads[0]\t$ReadDepth\t$quality\t$close2indel_flag\n";	
+			print OUT "$call[$chr_col]\t$call[$pos_col]\t$capture_flag\t$multi\t$call[$ref_col]\t$call[$alt_col]\t$call[$ref_col]$call[$alt_col]\t$alt_reads[$#alt_reads]\t$alt_reads[0]\t$ReadDepth\t$quality\t$close2indel_flag\n";	
 		}
 		if ($sample_data[$GenoType] eq '1/1' )	{
-			print OUT "$call[$chr_col]\t$call[$pos_col]\t$capture_flag\t$call[$ref_col]\t$call[$alt_col]\t$call[$alt_col]$call[$alt_col]\t$alt_reads[$#alt_reads]\t$alt_reads[0]\t$ReadDepth\t$quality\t$close2indel_flag\n";	
+			print OUT "$call[$chr_col]\t$call[$pos_col]\t$capture_flag\t$multi\t$call[$ref_col]\t$call[$alt_col]\t$call[$alt_col]$call[$alt_col]\t$alt_reads[$#alt_reads]\t$alt_reads[0]\t$ReadDepth\t$quality\t$close2indel_flag\n";	
 		}
 	}	
 	close FH;

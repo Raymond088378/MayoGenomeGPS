@@ -15,22 +15,41 @@ else
     run_info=$8
     
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    mutect==$( cat $tool_info | grep -w '^MUTECT' | cut -d '=' -f2)
+    mutect=$( cat $tool_info | grep -w '^MUTECT' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
     threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2)
+    TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
+	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+	#only_ontarget=$( cat $tool_info | grep -w '^TARGETTED' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
+    
+    if [ $only_ontarget == "YES" ]
+    then
+		cat $TargetKit | grep -w chr$chr > $output/$tumor_sample.chr$chr.target.bed
+        param="-L $output/$tumor_sample.chr$chr.target.bed"
+    else
+        param="-L chr$chr"
+    fi
     
     $java/java -Xmx3g -Xms512m -jar $mutect/muTect-1.0.27783.jar \
     -T MuTect \
     --reference_sequence $ref \
-    --intervals chr$chr \
+    $param \
     --input_file:tumor $tumor_bam \
     --input_file:normal $normal_bam \
     -B:dbsnp,VCF $dbSNP \
     -et NO_ET \
     -nt $threads \
     --out $output/$output_file \
-    --coverage_file coverage.wig.txt
-    echo `date`
+    --coverage_file $output/$tumor_sample.chr$chr.coverage.wig.txt
+    
+	perl $script_path/mutect2vcf.pl -i $output/$output_file -o $output/$output_file.temp -ns $normal_sample -ts $tumor_sample
+	mv $output/$output_file.temp  $output/$output_file
+	
+	if [ ! -s  $output/$output_file ]
+	then
+		echo "ERROR: failed to run mutect for $tumor_samples and $normal_sample for $chr"
+	fi	
+	echo `date`
 fi    

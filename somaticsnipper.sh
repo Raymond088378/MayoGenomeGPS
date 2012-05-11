@@ -26,11 +26,12 @@ else
     $somatic_sniper/bam-somaticsniper -q $mqual -Q $squal -F vcf -f $ref $tumor_bam $normal_bam $output/$output_file
     cat $output/$output_file | sed -e "/NORMAL/s//$normal_sample/g" | sed -e "/TUMOR/s//$tumor_sample/g" > $output/$output_file.temp
     mv $output/$output_file.temp $output/$output_file	
+	cat $output/$output_file | awk '$0 ~ /^#/ || length($5) > 1' > $output/$output_file.multi.vcf
 	
     if [ ! -s $output/$output_file ]
 	then
         echo "ERROR: $output/$output_file not found"
-	exit 1;
+		exit 1;
     fi
     echo `date`
 fi	
