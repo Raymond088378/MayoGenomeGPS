@@ -4,7 +4,7 @@
 
 if [ $# != 6 ]
 then
-    echo -e "Usage: wrapper script to do realiagnemnt and varaint calling \nMulti-Samples\n<input ':' sep> <bam ':' sep[normal:tumor1:tumor2:tumorN]> <samples ':' sep[normal:tumor1:tumor2:tumorN]> <outputdir bams> <run_info><1 for realign-recal or 0 for recal-realign>\nelse\n<input> <bam > <samples> <outputdir bams><run_info><1 for realign-recal or 0 for recal-realign>\n"
+    echo -e "Usage: wrapper script to do realignment and variant calling \nMulti-Samples\n<input ':' sep> <bam ':' sep[normal:tumor1:tumor2:tumorN]> <samples ':' sep[normal:tumor1:tumor2:tumorN]> <outputdir bams> <run_info><1 for realign-recal or 0 for recal-realign>\nelse\n<input> <bam > <samples> <outputdir bams><run_info><1 for realign-recal or 0 for recal-realign>\n"
 else
     set -x
     echo `date`
