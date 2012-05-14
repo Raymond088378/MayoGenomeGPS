@@ -49,21 +49,20 @@ else{
 			else{
 			    my @snv_array = split(/\t/,$snv_l);
 			    my @indel_array = split(/\t/,$indel_l);
+				
 			    my $start=$snv_array[$pos]-$distance;
 			    my $stop=$snv_array[$pos]+$distance;
-			    if( ($indel_array[$pos] > $start) && ($indel_array[$pos] < $stop) ){
-				print OUT "$snv_l\t1\n";
-				$snv_l=<SNV>;
-				$indel_l=<INDEL>;
+				if( ($indel_array[$pos] > $start) && ($indel_array[$pos] < $stop) ){
+					print OUT "$snv_l\t1\n";
+					$snv_l=<SNV>;
+					$indel_l=<INDEL>;
 			    }
 			    elsif($indel_array[$pos] < $snv_array[$pos]){
-				print OUT "$snv_l\t0\n";
-				$snv_l=<SNV>;
-				$indel_l=<INDEL>;
+					$indel_l=<INDEL>;
 			    } 
 			    else{
-				print OUT "$snv_l\t0\n";
-				$snv_l=<SNV>;
+					print OUT "$snv_l\t0\n";
+					$snv_l=<SNV>;
 			    }
 			}
 		}

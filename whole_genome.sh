@@ -82,7 +82,6 @@ else
         output_annot=$output_dir/annotation
         TempReports=$output_dir/TempReports
         sift=$output_annot/SIFT
-        sseq=$output_annot/SSEQ
         snpeff=$output_annot/SNPEFF
         polyphen=$output_annot/POLYPHEN
         misc=$output_annot/MISC
@@ -206,21 +205,6 @@ else
 				COVERAGE=`qsub $args -N $type.$version.getCoverage.$sample.$run_num -hold_jid ${job_ids_target_p},${job_ids_target_b} $script_path/getCoverage.sh $output_dir/OnTarget $output_dir/numbers $sample $run_info`
 				job_ids_coverage=`echo $COVERAGE | cut -d ' ' -f3| tr "\n" ","`
             fi
-            if [ $analysis == "ontarget" ]
-            then
-                variant_dir=$output_dir/variants/$sample
-                mkdir -p $variant_dir
-                if [ $variant_type == "BOTH" ]
-                then
-                    REFORMAT=`qsub $args -N $type.$version.reformat_VARIANTs_OnTarget.$sample.$run_num -l h_vmem=4G $script_path/reformat_VARIANTs.sh $variant_dir $sample $run_info 2`
-                elif [ $variant_type == "SNV" -o $variant_type == "INDEL" ]
-                then
-                    REFORMAT=`qsub $args -N $type.$version.reformat_VARIANTs_OnTarget.$sample.$run_num -l h_vmem=4G $script_path/reformat_VARIANTs.sh $variant_dir $sample $run_info 1`
-                fi
-                job_id_mergevariant=`echo $REFORMAT | cut -d ' ' -f3` 
-            fi
-			ANNOTATE_SNV=`qsub $args -N $type.$version.OnTarget_variant.$sample.$run_num -l h_vmem=4G -hold_jid $job_id_mergevariant -t 1-$numchrs:1 $script_path/OnTarget_variant.sh $output_dir/variants $output_dir/OnTarget $sample $run_info`
-			job_id_annotate_snv=`echo $ANNOTATE_SNV | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
 			if [ $analysis == "annotation" ]
 			then
 				if [ $variant_type == "BOTH" ]
@@ -230,8 +214,8 @@ else
 				then
 					REFORMAT=`qsub $args -N $type.$version.reformat_VARIANTs.$sample.$run_num -l h_vmem=4G $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 1`
 				fi
-					job_ids_format=`echo $REFORMAT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
-					hold_args="-hold_jid $job_ids_format"
+				job_ids_format=`echo $REFORMAT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
+				hold_args="-hold_jid $job_ids_format"
 			elif [ $analysis != "alignment" ]
 			then
 				hold_args="-hold_jid $job_id_annotate_snv"
@@ -240,16 +224,20 @@ else
 			then
 				if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
 				then
-					SIFT=`qsub $args -N $type.$version.sift.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $sample $run_info` 
+					SIFT=`qsub $args -N $type.$version.sift.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=8G $script_path/sift.sh $sift $output_OnTarget $sample $run_info` 
+					POLY=`qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=8G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info`
+					job_ids_sift=`echo $SIFT | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`
+					job_ids_poly=`echo $POLY | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`	
 				fi
 				SNPEFF=`qsub $args -N $type.$version.snpeff.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info`
-				echo -e $SNPEFF >> $job_ids_dir/ANNOT	
-				POLY=`qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info`
-				echo -e $POLY >> $job_ids_dir/ANNOT            
-				job_ids_sift=`echo $SIFT | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`
 				job_ids_snpeff=`echo $SNPEFF | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`
-				job_ids_poly=`echo $POLY | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`
-				ADD_ANOT=`qsub $args -N $type.$version.sample_reports.$sample.$run_num -hold_jid $job_ids_snpeff,$job_ids_sift,$job_ids_poly -t 1-$numchrs:1 -l h_vmem=8G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $sseq $output_dir`
+				if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
+				then
+					hold="-hold_jid $job_ids_snpeff,$job_ids_sift,$job_ids_poly"
+				else
+					hold="-hold_jid $job_ids_snpeff"
+				fi	
+				ADD_ANOT=`qsub $args -N $type.$version.sample_reports.$sample.$run_num $hold -t 1-$numchrs:1 -l h_vmem=8G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir`
 				job_ids_anot=`echo $ADD_ANOT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
 				MERGE=`qsub $args -N $type.$version.sample_report.$sample.$run_num -hold_jid $job_ids_anot $script_path/sample_report.sh $output_dir $TempReports $sample $run_info`
 				echo -e $MERGE >> $job_ids_dir/PER_SAMPLE
@@ -258,9 +246,7 @@ else
 					crest=$output_dir/struct/crest
 					break=$output_dir/struct/break
 					cnv=$output_dir/cnv/$sample
-					mkdir -p $break
-					mkdir -p $crest
-					mkdir -p $cnv
+					mkdir -p $break $crest $cnv
 					### not smooth for all the samples so commenting out for time being
 					SVCALL=`qsub $args -N $type.$version.run_single_crest.sh.$sample.$run_num -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=8G $script_path/run_single_crest.sh $sample $realign_dir $crest $run_info`
 					job_id_sv=`echo $SVCALL | cut -d ' ' -f3 |  tr "\n" "," | sed -e "s/\..*,//g"`
@@ -273,48 +259,43 @@ else
 					job_id_break_in=`echo $BREAKDANCER_IN | cut -d ' ' -f3 |  tr "\n" "," | sed -e "s/\..*,//g"`
 					### merge the structural variants
 					MERGESTRUCT=`qsub $args -N $type.$version.summaryze_struct_single.$sample.$run_num -l h_vmem=8G -hold_jid $job_id_break_in,$job_ids_coverage,$job_id_sv,$job_id_cnv,$job_id_break $script_path/summaryze_struct_single.sh $sample $output_dir $run_info`
-					echo -e $MERGESTRUCT >> $job_ids_dir/SV
 					job_id_mergestruct=`echo $MERGESTRUCT | cut -d ' ' -f3`
 					RUNCIRCOS=`qsub $args -N $type.$version.plot_circos_cnv_sv.$sample.$run_num -hold_jid $job_id_mergestruct -l h_vmem=8G $script_path/plot_circos_cnv_sv.sh $break/$sample/$sample.break $crest/$sample/$sample.filter.crest $cnv/$sample.cnv.filter.bed $sample $output_dir/circos $run_info` 
+					echo -e $RUNCIRCOS >> $job_ids_dir/SV
 				fi
 			fi
         done
-        
-		if [ $analysis != "alignment" ]
-		then
-			job_ids_annn=$( cat $job_ids_dir/ANNOT |  cut -d ' ' -f3 | tr "\n" ",")
-		fi
 		if [[ $analysis != "annotation" && $analysis != "alignment" ]]
 		then
 			if [ $tool == "whole_genome" ]
 			then
 				job_ids=$( cat $job_ids_dir/SV | cut -d ' ' -f3  | tr "\n" "," )
 				mkdir -p $output_dir/Reports_per_Sample/ANNOT
+				job_ids_sample=$( cat $job_ids_dir/PER_SAMPLE | cut -d ' ' -f3  | tr "\n" "," )
 				ANNOTATE_CNV=`qsub $args -N $type.$version.annotation.CNV.sh.$run_num -l h_vmem=4G -hold_jid $job_ids -t 1-$numsamples:1 $script_path/annotation_CNV.sh $output_dir/Reports_per_Sample/SV/ $run_info $output_dir/Reports_per_Sample/ANNOT`
 				ANNOTATE_SV=`qsub $args -N $type.$version.annotation.SV.sh.$run_num -l h_vmem=4G -hold_jid $job_ids -t 1-$numsamples:1 $script_path/annotation_SV.sh $output_dir $run_info $output_dir/Reports_per_Sample/ANNOT`
 				job_id_annotate_sv=`echo $ANNOTATE_SV | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
 				job_id_annotate_cnv=`echo $ANNOTATE_CNV | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
-				hold_arg="-hold_jid $job_id_annotate_snv,$job_id_annotate_cnv,$job_id_annotate_sv,$job_ids_annn"    
+				hold_arg="-hold_jid $job_id_annotate_cnv,$job_id_annotate_sv,$job_ids_sample"    
 			else
-				hold_arg="-hold_jid $job_ids_annn"	
+				job_ids_sample=$( cat $job_ids_dir/PER_SAMPLE | cut -d ' ' -f3  | tr "\n" "," )
+				hold_arg="-hold_jid $job_ids_sample"	
 			fi	
-		else
-			hold_arg="-hold_jid $job_ids_annn"
+		elif [ $analysis == "annotation" ]
+		then
+			job_ids_sample=$( cat $job_ids_dir/PER_SAMPLE | cut -d ' ' -f3  | tr "\n" "," )
+			hold_arg="-hold_jid $job_ids_sample"
+		elif [ $analysis == "alignment" ]
+		then
+			job_ids_sample=$( cat $job_ids_dir/ALIGN | cut -d ' ' -f3  | tr "\n" "," )
+			hold_arg="-hold_jid $job_ids_sample"
 		fi
 		if [ $analysis != "alignment" ]
 		then
-			job_ids_sample=$( cat $job_ids_dir/PER_SAMPLE | cut -d ' ' -f3  | tr "\n" ",")
-			ANNOT_SAMPLE=`qsub $args -N $type.$version.annotate_sample.$run_num -hold_jid $job_ids_sample -l h_vmem=8G $script_path/annotate_sample.sh $output_dir $run_info`   
+			ANNOT_SAMPLE=`qsub $args -N $type.$version.annotate_sample.$run_num $hold_arg -l h_vmem=8G $script_path/annotate_sample.sh $output_dir $run_info`   
 			job_ids_annot_sample=`echo $ANNOT_SAMPLE | cut -d ' ' -f3 | tr "\n" ","`
-			if [ $analysis != "annotation" ]
-			then
-				job_ids_igv=$( cat $job_ids_dir/IGV | cut -d ' ' -f3  | tr "\n" ",")
-				hold="-hold_jid $job_ids_annot_sample,$job_ids_merge_sample,$job_ids_sample,$job_ids_annn,$job_ids_igv"
-			else
-				hold="-hold_jid $job_ids_report,$job_ids_annot_sample,$job_ids_merge_sample,$job_ids_sample,$job_ids_annn"
-			fi	
-			NUMBERS=`qsub $args -N $type.$version.sample_numbers.$run_num $hold -t 1-$numsamples:1 $script_path/sample_numbers.sh $output_dir $run_info`
-			GENE_SUMMARY=`qsub $args -N $type.$version.gene_summary.$run_num $hold -t 1-$numsamples:1 -l h_vmem=4G $script_path/gene_summary.sh $output_dir $run_info $output_dir/Reports_per_Sample`
+			NUMBERS=`qsub $args -N $type.$version.sample_numbers.$run_num -hold_jid $job_ids_annot_sample -t 1-$numsamples:1 $script_path/sample_numbers.sh $output_dir $run_info`
+			GENE_SUMMARY=`qsub $args -N $type.$version.gene_summary.$run_num -hold_jid $job_ids_annot_sample -t 1-$numsamples:1 -l h_vmem=4G $script_path/gene_summary.sh $output_dir $run_info $output_dir/Reports_per_Sample`
 			job_ids=`echo $NUMBERS | cut -d ' ' -f3 | cut -d '.' -f1 | tr "\n" ","`
 			job_ids_summary=`echo $GENE_SUMMARY | cut -d ' ' -f3 | cut -d '.' -f1 | tr "\n" ","`
 			if [[  $tool == "exome"  && $all_sites == "YES" ]]
@@ -325,8 +306,7 @@ else
 				job_id_raw=`echo $CONCAT | cut -d ' ' -f3 | tr "\n" ","` 
 			fi			
 		else
-			job_ids=$( cat $job_ids_dir/ALIGN |  cut -d ' ' -f3 | tr "\n" ",")
-			NUMBERS=`qsub $args -N $type.$version.sample_numbers.$run_num -hold_jid $job_ids -t 1-$numsamples:1 $script_path/sample_numbers.sh $output_dir $run_info`
+			NUMBERS=`qsub $args -N $type.$version.sample_numbers.$run_num $hold_arg -t 1-$numsamples:1 $script_path/sample_numbers.sh $output_dir $run_info`
 			job_ids=`echo $NUMBERS | cut -d ' ' -f3 | cut -d '.' -f1 | tr "\n" ","`
 		fi
 		if [[  $tool == "exome"  && $all_sites == "YES" ]]
@@ -443,7 +423,7 @@ else
 				SIFT=`qsub $args -N $type.$version.sift.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $sample $run_info` 
 				SNPEFF=`qsub $args -N $type.$version.snpeff.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info`
 				POLY=`qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info`  
-				MISC=`qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/beautyAnnotation.sh $misc $output_OnTarget $sample $run_info`	
+			#	MISC=`qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/beautyAnnotation.sh $misc $output_OnTarget $sample $run_info`	
 				job_ids_sift=`echo $SIFT | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`
 				job_ids_snpeff=`echo $SNPEFF | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`
 				job_ids_poly=`echo $POLY | cut -d ' ' -f3|  tr "\n" "," | sed -e "s/\..*,//g"`

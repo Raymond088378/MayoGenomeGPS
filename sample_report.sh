@@ -11,13 +11,7 @@ else
 	sample=$3
 	run_info=$4
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
-    run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
-    flowcell=`echo $run_num | awk -F'_' '{print $NF}' | sed 's/.\(.*\)/\1/'`
-	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
-    version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
 	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
-
 	chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2)
 	chrIndexes=$( echo $chrs | tr ":" "\n" )
 	variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
@@ -31,51 +25,35 @@ else
 	
 	if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
 	then
-		touch $output_dir/Reports_per_Sample/$sample.SNV.report
-		cat $TempReports/$sample.chr${chrArray[1]}.SNV.report >> $output_dir/Reports_per_Sample/$sample.SNV.report
-		
+		cat $TempReports/$sample.chr${chrArray[1]}.SNV.xls > $output_dir/Reports_per_Sample/$sample.SNV.xls
+		cat $TempReports/$sample.chr${chrArray[1]}.filtered.SNV.xls > $output_dir/Reports_per_Sample/$sample.SNV.filtered.xls
 		if [ ${#chrArray[@]} -gt 1 ]
 		then
 			for j in $(seq 2 ${#chrArray[@]})
 			do
-				cat $TempReports/$sample.chr${chrArray[$j]}.SNV.report | awk 'NR>2' >> $output_dir/Reports_per_Sample/$sample.SNV.report
+				cat $TempReports/$sample.chr${chrArray[$j]}.SNV.xls | awk 'NR>2' >> $output_dir/Reports_per_Sample/$sample.SNV.xls
+				cat $TempReports/$sample.chr${chrArray[$j]}.filtered.SNV.xls | awk 'NR>2' >> $output_dir/Reports_per_Sample/$sample.SNV.filtered.xls
 			done
 		fi
 	fi	
 	
 	if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
 	then
-		touch $output_dir/Reports_per_Sample/$sample.INDEL.report
-		cat $TempReports/$sample.chr${chrArray[1]}.INDEL.report >> $output_dir/Reports_per_Sample/$sample.INDEL.report
+		cat $TempReports/$sample.chr${chrArray[1]}.INDEL.xls > $output_dir/Reports_per_Sample/$sample.INDEL.xls
+		cat $TempReports/$sample.chr${chrArray[1]}.filtered.INDEL.xls > $output_dir/Reports_per_Sample/$sample.INDEL.filtered.xls
 
 		if [ ${#chrArray[@]} -gt 1 ]
 		then
 			for j in $(seq 2 ${#chrArray[@]})
 			do
-				cat $TempReports/$sample.chr${chrArray[$j]}.INDEL.report | awk 'NR>2' >> $output_dir/Reports_per_Sample/$sample.INDEL.report
+				cat $TempReports/$sample.chr${chrArray[$j]}.INDEL.xls | awk 'NR>2' >> $output_dir/Reports_per_Sample/$sample.INDEL.xls
+				cat $TempReports/$sample.chr${chrArray[$j]}.filtered.INDEL.xls | awk 'NR>2' >> $output_dir/Reports_per_Sample/$sample.INDEL.filtered.xls
 			done
 		fi
 	fi
 	
 	### update the dash board
-	
-	if [ $analysis == "mayo" -o $analysis == "realign-mayo" ]
-	then
-		pos=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | grep -n $sample | cut -d ":" -f1)
-		lanes=$( cat $run_info | grep -w '^LANEINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tail -n 1 | tr "," " ")
-		i=1
-		for lane in $lanes
-		do
-			index=$( cat $run_info | grep -w '^LABINDEXES' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tail -n 1 | tr "," "\n" | head -n $i | tail -n 1)
-			if [ $index == "-" ]
-			then
-				$java/java -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -c -f $flowcell -r $run_num -s Annotation -a WholeGenome -v $version
-			else
-				$java/java -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -c -f $flowcell -i $index -r $run_num -s Annotation -a WholeGenome -v $version
-			fi
-			let i=i+1
-		done		
-	fi   
+	$script_path/dashboard.sh $sample $run_info Annotation complete
 	echo `date`
 fi	
 

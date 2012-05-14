@@ -83,7 +83,6 @@
 					$INDEL = '-';
 					$Bases=length(substr( $call[3],1,$ref_len ));
 					$Start = $call[1];
-					
 					$Stop = $Start + $Bases;
 				}
 				$ReadDepth=$alt_reads[0]+$alt_reads[$#alt_reads];
@@ -92,7 +91,7 @@
 					$capture_flag=0;
 				}
 				my $reg=$call[$info_col];
-				$reg =~ /(\w*)ED=(\S+)/; 
+				$reg =~ /(\w*)ED=(\d*)/; 
 				my $multi=$2;
 				if (length($multi) < 1 )	{
 					$multi=0;	

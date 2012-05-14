@@ -25,83 +25,47 @@ else
     dbsnp_rsids_indel=$( cat $tool_info | grep -w '^dbSNP_INDEL_rsIDs' | cut -d '=' -f2)
     chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" " " )
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
-    
+    distance=$( cat $tool_info | grep -w '^SNP_DISTANCE_INDEL' | cut -d '=' -f2 )
+	
     if [ $marker -eq 2 ]
     then
         snv_file=$( cat $sample_info | grep -w SNV:${sample} | cut -d '=' -f2)
         indel_file=$( cat $sample_info | grep -w INDEL:${sample} | cut -d '=' -f2)
         ## format the vcf file to text delimited file
         ## determine if the file is vcf or text input
-    
-        type=`cat $input/$snv_file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'` 
-        if [ $type == "vcf" ]
-        then
-            perl $script_path/parse.vcf.SNV.pl -i $input/$snv_file -o $output/$sample.snvs -s $sample
-        elif [ $type == "txt" ]
-        then
-            cat $input/$snv_file | awk '{print $0"\t-\t-\t-\t-\t-"}' > $output/$sample.snvs
-        fi
-        
-        type=`cat $input/$indel_file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'`
-        if [ $type == "vcf" ]
-        then
-            perl $script_path/parse.vcf.INDEL.pl -i $input/$indel_file -o $output/$sample.indels -s $sample
-            elif [ $type == "txt" ]
-        then
-            cat $input/$indel_file | awk '{print $0"\t-\t-\t-"}' > $output/$sample.indels
-        fi
-
         for chr in $chrs
         do
             ## extract the file for the chromosome
             ##SNV
-            cat $output/$sample.snvs | grep -w chr${chr} | awk '{print $0"\t1"}' | sort -T $output -n -k 2,12n > $output/$sample.chr${chr}.raw.snvs.bed.i.ToMerge
-            `dos2unix $output/$sample.chr${chr}.raw.snvs`
+            cat $input/$snv_file | awk -v num=chr$chr '$0 ~ /^#/ || ( length($4) == 1 && length($5) == 1 ) || $1 == "num" ' > $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf
             ## INDEL
-            cat $output/$sample.indels | grep -w chr${chr} | awk '{print $0"\t1"}' | sort -T $output -n -k 2,12n > $output/$sample.chr${chr}.raw.indels.bed.i.ToMerge
-            `dos2unix $output/$sample.chr${chr}.raw.indels`
+			cat $input/$indel_file | awk -v num=chr$chr '$0 ~ /^#/ || ( length($4) > 1 || length($5) > 1 ) || $1 == "num" ' > $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
             
-            perl $script_path/markSnv_IndelnPos.pl -s $output/$sample.chr${chr}.raw.snvs.bed.i.ToMerge -i $output/$sample.chr${chr}.raw.indels.bed.i.ToMerge -n 10 -p 2 -o $output/$sample.chr${chr}.raw.snvs.bed.i.ToMerge.pos
-            mv $output/$sample.chr${chr}.raw.snvs.bed.i.ToMerge.pos $output/$sample.chr${chr}.raw.snvs.bed.i.ToMerge
+			perl $script_path/markSnv_IndelnPos.pl -s $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -i $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf \
+				-n $distance -o $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
+			cat $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL="$NF,$9,$10;}' \
+				> $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf  
+			rm $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf		
         done
-        rm $output/$sample.indels
-        rm $output/$sample.snvs
     else
         if [ $variant_type == "SNV" ]
         then
             snv_file=$( cat $sample_info | grep -w SNV:${sample} | cut -d '=' -f2)
-            type=`cat $input/$snv_file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'` 
-            if [ $type == "vcf" ]
-            then
-                perl $script_path/parse.vcf.SNV.pl -i $input/$snv_file -o $output/$sample.snvs -s $sample
-            elif [ $type == "txt" ]
-            then
-                cat $input/$snv_file | awk '{print $0"\t-\t-\t-\t-\t-"}' > $output/$sample.snvs
-            fi
-
-            for chr in $chrs	
+			for chr in $chrs	
             do
-                cat $output/$sample.snvs | grep -w chr${chr} | awk '{print $0"\t1\t0"}' | sort -T $output -n -k 2,12n > $output/$sample.chr${chr}.raw.snvs.bed.i.ToMerge
-                `dos2unix $output/$sample.chr${chr}.raw.snvs.bed.i.ToMerge`	
+                cat $input/$snv_file | awk -v num=chr$chr '$0 ~ /^#/ || ( length($4) == 1 && length($5) == 1 ) || $1 == "num" ' | > $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf
+                cat $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL=0",$9,$10;}' \
+					> $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
+				mv $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf	
+				
             done
-            rm $output/$sample.snvs
         elif [ $variant_type == "INDEL" ]
         then
             indel_file=$( cat $sample_info | grep -w INDEL:${sample} | cut -d '=' -f2)
-            type=`cat $input/$indel_file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'`
-            if [ $type == "vcf" ]
-            then
-                perl $script_path/parse.vcf.INDEL.pl -i $input/$indel_file -o $output/$sample.indels -s $sample
-            elif [ $type == "txt" ]
-            then
-                cat $input/$indel_file | awk '{print $0"\t-\t-\t-"}' > $output/$sample.indels
-            fi			
             for chr in $chrs		
             do
-                cat $output/$sample.indels | grep -w chr${chr} | awk '{print $0"\t1"}' | sort -T $output -n -k 2,12n > $output/$sample.chr${chr}.raw.indels.bed.i.ToMerge
-                `dos2unix $output/$sample.chr${chr}.raw.indels`
+                cat $input/$indel_file | awk -v num=chr$chr '$0 ~ /^#/ || ( length($4) > 1 || length($5) > 1 ) || $1 == "num" ' > $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
             done
-            rm $output/$sample.indels
         fi		
     fi
     echo `date`	

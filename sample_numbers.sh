@@ -9,7 +9,7 @@ else
     echo `date`
     input_dir=$1
     run_info=$2
-#SGE_TASK_ID=1
+	#SGE_TASK_ID=1
 ##############################################################		
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
@@ -63,13 +63,7 @@ else
 			if [ $markdup == "yes" ]
 			then
 				## assuming the remove duplicate is done using PICARD
-				file=`find . -name '*.dup.metrics' | sed -e '/\.\//s///g' `
-				for i in $file
-				do
-					cat $i | awk '$0 !~ /#/' | cut -f8 | awk '$1 ~ /[^0-9]/' | tail -1 >> $numbers/$sample.dup.out
-				done
-				percent_dup=`cat $numbers/$sample.dup.out | awk '{sum+=$1; print sum}' | tail -1` 
-				rm $numbers/$sample.dup.out 
+				percent_dup=`cat $sample.dup.metrics | awk '$0 !~ /#/' | cut -f8 | awk '$1 ~ /[^0-9]/' | tail -1`
 				echo $percent_dup >> $numbers/$sample.out
 			else
 				echo $percent_dup >> $numbers/$sample.out		
@@ -80,10 +74,6 @@ else
         if [[ $analysis != "alignment" && $analysis != "annotation" ]]
 		then
 			realign=$input_dir/realign/$sample
-			#for chr in $chrs
-			#do
-			#	rm $realign/chr$chr.cleaned.bam $realign/chr$chr.pileup $realign/chr$chr.cleaned.bam.bai
-            #done
 			cd $realign
             if [ $analysis == "variant" ]
 			then
@@ -175,67 +165,39 @@ else
 					echo "CaptureKit snvs ($caller)" >> $numbers/$sample.out
 					echo $capture_snvs >> $numbers/$sample.out	
 				fi
-
-				## Annotated SNVs
-				sseq_snv=$input_dir/annotation/SSEQ
-				touch $sseq_snv/$sample.snv.sseq
-				for chr in $chrs
-				do
-					cat $sseq_snv/$sample.chr${chr}.snv.sseq >> $sseq_snv/$sample.snv.sseq
-				done	
-				perl $script_path/to.parse.sseq.result.per.sample.pl $sseq_snv/$sample.snv.sseq > $sseq_snv/$sample.snv.sseq.formatted
 				
-				cat $sseq_snv/$sample.snv.sseq.formatted | awk '$1 ~ "none"' > $sseq_snv/$sample.snv.sseq.formatted.novel
-				cat $sseq_snv/$sample.snv.sseq.formatted | awk '$1 !~ "none"' > $sseq_snv/$sample.snv.sseq.formatted.known
+				# KNOWN variants (look at the reports for each sample, filtered report from GATK and SNPEFF combinations
+				file=$variants/$sample.SNV.filtered.xls
+				dbsnp=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /dbSNP/) {print i} } }'| head -1`
+				ref=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /Ref/) {print i} } }'`
+				alt=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /Alt/) {print i} } }'`
+				class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /functionGVS/) {print i} } }'`
 				
-				# KNOWN variants
 				echo -e "Total Known SNVs" >> $numbers/$sample.out
-				cat $sseq_snv/$sample.snv.sseq.formatted.known | wc -l >> $numbers/$sample.out
+				cat $file | awk -v num=$dbsnp '$num ~ /^rs/' | wc -l >> $numbers/$sample.out
 				echo -e "KNOWN Transition To Transversion Ratio" >> $numbers/$sample.out
-				perl $script_path/transition.transversion.persample.pl $sseq_snv/$sample.snv.sseq.formatted.known >> $numbers/$sample.out
-				echo -e "KNOWN Nonsense" >> $numbers/$sample.out
-				cat $sseq_snv/$sample.snv.sseq.formatted.known | awk '$7 ~ "nonsense"' | wc -l >> $numbers/$sample.out
-				echo -e "KNOWN Missense" >> $numbers/$sample.out
-				cat $sseq_snv/$sample.snv.sseq.formatted.known | awk '$7 ~ "missense"' | wc -l >> $numbers/$sample.out
-				echo -e "KNOWN coding-synonymous" >> $numbers/$sample.out
-				cat $sseq_snv/$sample.snv.sseq.formatted.known | awk '$7 ~ "coding-synonymous"' | wc -l >> $numbers/$sample.out
-				echo -e "KNOWN coding-notMod3" >> $numbers/$sample.out
-				cat $sseq_snv/$sample.snv.sseq.formatted.known | awk '$7 ~ "coding-notMod3"' | wc -l >> $numbers/$sample.out
-				echo -e "KNOWN splice-3" >> $numbers/$sample.out
-				cat $sseq_snv/$sample.snv.sseq.formatted.known | awk '$7 ~ "splice-3"' | wc -l >> $numbers/$sample.out
-				echo -e "KNOWN splice-5" >> $numbers/$sample.out
-				cat $sseq_snv/$sample.snv.sseq.formatted.known | awk '$7 ~ "splice-5"' | wc -l >> $numbers/$sample.out
-				echo -e "KNOWN utr-3" >> $numbers/$sample.out
-				cat $sseq_snv/$sample.snv.sseq.formatted.known | awk '$7 ~ "utr-3"' | wc -l >> $numbers/$sample.out
-				echo -e "KNOWN utr-5" >> $numbers/$sample.out
-				cat $sseq_snv/$sample.snv.sseq.formatted.known | awk '$7 ~ "utr-5"' | wc -l >> $numbers/$sample.out
-
-				# Novel variants
-				echo -e "Total Novel SNVs" >> $numbers/$sample.out
-				cat $sseq_snv/$sample.snv.sseq.formatted.novel | wc -l >> $numbers/$sample.out
-				echo -e "NOVEL Transition To Transversion Ratio" >> $numbers/$sample.out
-				perl $script_path/transition.transversion.persample.pl $sseq_snv/$sample.snv.sseq.formatted.novel >> $numbers/$sample.out
-				echo -e "NOVEL Nonsense" >> $numbers/$sample.out
-				cat $sseq_snv/$sample.snv.sseq.formatted.novel | awk '$7 ~ "nonsense"' | wc -l >> $numbers/$sample.out
-				echo -e "NOVEL Missense" >> $numbers/$sample.out
-				cat $sseq_snv/$sample.snv.sseq.formatted.novel | awk '$7 ~ "missense"' | wc -l >> $numbers/$sample.out
-				echo -e "NOVEL coding-synonymous" >> $numbers/$sample.out
-				cat $sseq_snv/$sample.snv.sseq.formatted.novel | awk '$7 ~ "coding-synonymous"' | wc -l >> $numbers/$sample.out
-				echo -e "NOVEL coding-notMod3" >> $numbers/$sample.out
-				cat $sseq_snv/$sample.snv.sseq.formatted.novel | awk '$7 ~ "coding-notMod3"' | wc -l >> $numbers/$sample.out
-				echo -e "NOVEL splice-3" >> $numbers/$sample.out
-				cat $sseq_snv/$sample.snv.sseq.formatted.novel | awk '$7 ~ "splice-3"' | wc -l >> $numbers/$sample.out
-				echo -e "NOVEL splice-5" >> $numbers/$sample.out
-				cat $sseq_snv/$sample.snv.sseq.formatted.novel | awk '$7 ~ "splice-5"' | wc -l >> $numbers/$sample.out
-				echo -e "NOVEL utr-3" >> $numbers/$sample.out
-				cat $sseq_snv/$sample.snv.sseq.formatted.novel | awk '$7 ~ "utr-3"' | wc -l >> $numbers/$sample.out
-				echo -e "NOVEL utr-5" >> $numbers/$sample.out
-				cat $sseq_snv/$sample.snv.sseq.formatted.novel | awk '$7 ~ "utr-5"' | wc -l >> $numbers/$sample.out
+				cat $file | awk -v num=$dbsnp '$num ~ /^rs/' > $file.known
+				perl $script_path/transition.transversion.persample.pl $file.known $ref $alt >> $numbers/$sample.out
 				
-				rm $sseq_snv/$sample.snv.sseq.formatted
-				rm $sseq_snv/$sample.snv.sseq.formatted.known
-				rm $sseq_snv/$sample.snv.sseq.formatted.novel
-				rm $sseq_snv/$sample.snv.sseq
+				for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST EXON_DELETED STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING CODON_CHANGE UTR_5_DELETED UTR_3_DELETED SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
+				do
+					echo -e "KNOWN $snv" >> $numbers/$sample.out 
+					cat $file.known | awk -v comp=$snv -v num=$class '$num ~ /comp/' | wc -l >> $numbers/$sample.out  
+				done	
+				rm $file.known
+				
+				echo -e "Total Novel SNVs" >> $numbers/$sample.out
+				cat $file | awk -v num=$dbsnp '$num !~ /^rs/' | wc -l >> $numbers/$sample.out
+				echo -e "KNOWN Transition To Transversion Ratio" >> $numbers/$sample.out
+				cat $file | awk -v num=$dbsnp '$num !~ /^rs/' > $file.novel
+				perl $script_path/transition.transversion.persample.pl $file.novel $ref $alt >> $numbers/$sample.out
+				
+				for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST EXON_DELETED STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING CODON_CHANGE UTR_5_DELETED UTR_3_DELETED SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
+				do
+					echo -e "NOVEL $snv" >> $numbers/$sample.out 
+					cat $file.novel | awk -v comp=$snv -v num=$class '$num ~ /comp/' | wc -l >> $numbers/$sample.out  
+				done
+				rm $file.novel
 			fi
 			
             if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
@@ -255,28 +217,13 @@ else
 					echo $capture_indels >> $numbers/$sample.out
 				fi
 				## Annotated INDELs
-				sseq_indel=$input_dir/annotation/SSEQ
-				touch $sseq_indel/$sample.indels.sseq
-				for chr in $chrs
+				file=$variants/$sample.INDEL.filtered.xls
+				class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /functionGVS/) {print i} } }'`
+				for indel in FRAME_SHIFT CODON_CHANGE CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR UTR_5_PRIME UTR_3_PRIME	
 				do
-					cat $sseq_indel/$sample.chr${chr}.indels.sseq >> $sseq_indel/$sample.indels.sseq
+					echo -e "$indel" >> $numbers/$sample.out 
+					cat $file -v comp=$indel -v num=$class '$num ~ /comp/' | wc -l >> $numbers/$sample.out 
 				done	
-				perl $script_path/to.parse.sseq.result.indel.per.sample.pl $sseq_indel/$sample.indels.sseq > $sseq_indel/$sample.indels.sseq.formatted
-				echo -e "CODING bySSEQ INDELs" >> $numbers/$sample.out
-				cat $sseq_indel/$sample.indels.sseq.formatted | awk '$7 ~ "coding"' | wc -l >> $numbers/$sample.out
-				echo -e "FRAMESHIFT INDELs" >> $numbers/$sample.out
-				cat $sseq_indel/$sample.indels.sseq.formatted | awk '$7 ~ "frameshift"' | wc -l >> $numbers/$sample.out
-				echo -e "SPLICE-3 INDELs" >> $numbers/$sample.out
-				cat $sseq_indel/$sample.indels.sseq.formatted | awk '$7 ~ "splice-3" ' | wc -l >> $numbers/$sample.out
-				echo -e "SPLICE-5 INDELs" >> $numbers/$sample.out
-				cat $sseq_indel/$sample.indels.sseq.formatted | awk '$7 ~ "splice-5" ' | wc -l >> $numbers/$sample.out
-				echo -e "UTR-3 INDELs" >> $numbers/$sample.out
-				cat $sseq_indel/$sample.indels.sseq.formatted | awk '$7 ~ "utr-3" ' | wc -l >> $numbers/$sample.out
-				echo -e "UTR-5 INDELs" >> $numbers/$sample.out
-				cat $sseq_indel/$sample.indels.sseq.formatted | awk '$7 ~ "utr-5" ' | wc -l >> $numbers/$sample.out
-				
-				rm $sseq_indel/$sample.indels.sseq
-				rm $sseq_indel/$sample.indels.sseq.formatted
 			fi
           
 			##############################################################		
@@ -319,20 +266,9 @@ else
 				DEL=0;
 				INS=0;
 				CTX=0;
-            
-				# if [ -d "$struct/crest/$sample" ]
-				# then
-						# crest=$struct/crest/$sample
-				# else
-						# echo "CREST folder does not exist"
-						# for i in $(seq 1 ${#chrArray[@]})
-						# do
-								# cat $break/$sample.$chrArray[$i].break.vcf >> $break/$sample.break.vcf
-						# done
 				num_break=`cat $input_dir/Reports_per_Sample/SV/$sample.break.vcf | awk '$0 !~ /#/' | wc -l`
 				num_crest=`cat $input_dir/Reports_per_Sample/SV/$sample.filter.crest.vcf | awk '$0 !~ /#/'|wc -l`
-				num_sv=`expr $num_break "+" $num_crest`
-				#num_sv=$num_break       
+				num_sv=`expr $num_break "+" $num_crest`     
 				genomic_sv=`cat $struct/$sample.SV.annotated.txt | wc -l`
 				genomic_sv=`expr $genomic_sv "-" 1`
             
@@ -402,13 +338,13 @@ else
             on_reads=0
             for chr in $chrs
             do
-                    on=`cat $input_dir/OnTarget/$sample.chr$chr.bam.i.out | head -1`
-                    on_reads=`expr $on_reads "+" $on`
+				on=`cat $input_dir/OnTarget/$sample.chr$chr.bam.i.out | head -1`
+				on_reads=`expr $on_reads "+" $on`
             done
             echo -e "OnTarget Reads" >> $numbers/$sample.out
             echo $on_reads >> $numbers/$sample.out	
 			
-	    ##### variants
+			##### variants
             variants=$input_dir/Reports_per_Sample
             ontarget=$input_dir/OnTarget
 
@@ -438,14 +374,14 @@ else
             genomic_indels=0
             for chr in $chrs
             do
-                s=`cat $ontarget/$sample.chr${chr}.raw.snvs.bed.i.ToMerge | wc -l`
-                genomic_snvs=`expr $genomic_snvs "+" $s`
-                s_c=`cat $ontarget/$sample.chr${chr}.raw.snvs.bed.i.ToMerge | awk '$(NF-1) == 1' | wc -l`
-                capture_snvs=`expr $capture_snvs "+" $s_c`
-                i=`cat $ontarget/$sample.chr${chr}.raw.indels.bed.i.ToMerge | wc -l`
-                i_c=`cat $ontarget/$sample.chr${chr}.raw.indels.bed.i.ToMerge | awk '$NF == 1' | wc -l`
-                capture_indels=`expr $capture_indels "+" $i_c`
-                genomic_indels=`expr $genomic_indels "+" $i`
+				s=`cat $ontarget/$sample.variants.chr${chr}.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' |  wc -l`
+				genomic_snvs=`expr $genomic_snvs "+" $s`
+				s_c=`cat $ontarget/$sample.variants.chr${chr}.SNV.filter.i.c.vcf | awk '$0 !~ /^#/'  | grep -c 'CAPTURE=1'`
+				capture_snvs=`expr $capture_snvs "+" $s_c`
+				i=`cat $ontarget/$sample.variants.chr${chr}.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' |  wc -l`
+				i_c=`cat $ontarget/$sample.variants.chr${chr}.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/'  | grep -c 'CAPTURE=1'`
+				capture_indels=`expr $capture_indels "+" $i_c`
+				genomic_indels=`expr $genomic_indels "+" $i`
             done
 
             echo "RAW snvs ($caller)" >> $numbers/$sample.out
@@ -454,95 +390,64 @@ else
             echo $filtered_snvs >> $numbers/$sample.out
             echo "CODING snvs ($caller)" >> $numbers/$sample.out
             echo $genomic_snvs >> $numbers/$sample.out
-            
+            if [ $tool == "exome" ]
+			then	
+				echo "CaptureKit snvs ($caller)" >> $numbers/$sample.out
+				echo $capture_snvs >> $numbers/$sample.out	
+			fi
+				
             ### annotation 
-            sseq_snv=$input_dir/annotation/SSEQ
-            touch $sseq_snv/$sample.snv.sseq
-            for chr in $chrs
-            do
-                cat $sseq_snv/$sample.chr${chr}.snv.sseq >> $sseq_snv/$sample.snv.sseq
-            done	
-            perl $script_path/to.parse.sseq.result.per.sample.pl $sseq_snv/$sample.snv.sseq > $sseq_snv/$sample.snv.sseq.formatted
-
-            cat $sseq_snv/$sample.snv.sseq.formatted | awk '$1 ~ "none"' > $sseq_snv/$sample.snv.sseq.formatted.novel
-            cat $sseq_snv/$sample.snv.sseq.formatted | awk '$1 !~ "none"' > $sseq_snv/$sample.snv.sseq.formatted.known
-
-            # KNOWN variants
-            echo -e "Total Known SNVs" >> $numbers/$sample.out
-            cat $sseq_snv/$sample.snv.sseq.formatted.known | wc -l >> $numbers/$sample.out
-            echo -e "KNOWN Transition To Transversion Ratio" >> $numbers/$sample.out
-            perl $script_path/transition.transversion.persample.pl $sseq_snv/$sample.snv.sseq.formatted.known >> $numbers/$sample.out
-            echo -e "KNOWN Nonsense" >> $numbers/$sample.out
-            cat $sseq_snv/$sample.snv.sseq.formatted.known | awk '$7 ~ "nonsense"' | wc -l >> $numbers/$sample.out
-            echo -e "KNOWN Missense" >> $numbers/$sample.out
-            cat $sseq_snv/$sample.snv.sseq.formatted.known | awk '$7 ~ "missense"' | wc -l >> $numbers/$sample.out
-            echo -e "KNOWN coding-synonymous" >> $numbers/$sample.out
-            cat $sseq_snv/$sample.snv.sseq.formatted.known | awk '$7 ~ "coding-synonymous"' | wc -l >> $numbers/$sample.out
-            echo -e "KNOWN coding-notMod3" >> $numbers/$sample.out
-            cat $sseq_snv/$sample.snv.sseq.formatted.known | awk '$7 ~ "coding-notMod3"' | wc -l >> $numbers/$sample.out
-            echo -e "KNOWN splice-3" >> $numbers/$sample.out
-            cat $sseq_snv/$sample.snv.sseq.formatted.known | awk '$7 ~ "splice-3"' | wc -l >> $numbers/$sample.out
-            echo -e "KNOWN splice-5" >> $numbers/$sample.out
-            cat $sseq_snv/$sample.snv.sseq.formatted.known | awk '$7 ~ "splice-5"' | wc -l >> $numbers/$sample.out
-            echo -e "KNOWN utr-3" >> $numbers/$sample.out
-            cat $sseq_snv/$sample.snv.sseq.formatted.known | awk '$7 ~ "utr-3"' | wc -l >> $numbers/$sample.out
-            echo -e "KNOWN utr-5" >> $numbers/$sample.out
-            cat $sseq_snv/$sample.snv.sseq.formatted.known | awk '$7 ~ "utr-5"' | wc -l >> $numbers/$sample.out
-
-            # Novel variants
-            echo -e "Total Novel SNVs" >> $numbers/$sample.out
-            cat $sseq_snv/$sample.snv.sseq.formatted.novel | wc -l >> $numbers/$sample.out
-            echo -e "NOVEL Transition To Transversion Ratio" >> $numbers/$sample.out
-            perl $script_path/transition.transversion.persample.pl $sseq_snv/$sample.snv.sseq.formatted.novel >> $numbers/$sample.out
-            echo -e "NOVEL Nonsense" >> $numbers/$sample.out
-            cat $sseq_snv/$sample.snv.sseq.formatted.novel | awk '$7 ~ "nonsense"' | wc -l >> $numbers/$sample.out
-            echo -e "NOVEL Missense" >> $numbers/$sample.out
-            cat $sseq_snv/$sample.snv.sseq.formatted.novel | awk '$7 ~ "missense"' | wc -l >> $numbers/$sample.out
-            echo -e "NOVEL coding-synonymous" >> $numbers/$sample.out
-            cat $sseq_snv/$sample.snv.sseq.formatted.novel | awk '$7 ~ "coding-synonymous"' | wc -l >> $numbers/$sample.out
-            echo -e "NOVEL coding-notMod3" >> $numbers/$sample.out
-            cat $sseq_snv/$sample.snv.sseq.formatted.novel | awk '$7 ~ "coding-notMod3"' | wc -l >> $numbers/$sample.out
-            echo -e "NOVEL splice-3" >> $numbers/$sample.out
-            cat $sseq_snv/$sample.snv.sseq.formatted.novel | awk '$7 ~ "splice-3"' | wc -l >> $numbers/$sample.out
-            echo -e "NOVEL splice-5" >> $numbers/$sample.out
-            cat $sseq_snv/$sample.snv.sseq.formatted.novel | awk '$7 ~ "splice-5"' | wc -l >> $numbers/$sample.out
-            echo -e "NOVEL utr-3" >> $numbers/$sample.out
-            cat $sseq_snv/$sample.snv.sseq.formatted.novel | awk '$7 ~ "utr-3"' | wc -l >> $numbers/$sample.out
-            echo -e "NOVEL utr-5" >> $numbers/$sample.out
-            cat $sseq_snv/$sample.snv.sseq.formatted.novel | awk '$7 ~ "utr-5"' | wc -l >> $numbers/$sample.out
-
-            echo "TOTAL indels ($caller)" >> $numbers/$sample.out
-            echo $raw_indels >> $numbers/$sample.out
-            echo "FILTERED indels ($caller)" >> $numbers/$sample.out
-            echo $filtered_indels >> $numbers/$sample.out
-            echo "CODING indels ($caller)" >> $numbers/$sample.out
-            echo $genomic_indels >> $numbers/$sample.out
-            sseq_indel=$input_dir/annotation/SSEQ
-            touch $sseq_indel/$sample.indels.sseq
-            for chr in $chrs
-            do
-                cat $sseq_indel/$sample.chr${chr}.indels.sseq >> $sseq_indel/$sample.indels.sseq
-            done	
-            perl $script_path/to.parse.sseq.result.indel.per.sample.pl $sseq_indel/$sample.indels.sseq > $sseq_indel/$sample.indels.sseq.formatted
-            echo -e "CODING bySSEQ INDELs" >> $numbers/$sample.out
-            cat $sseq_indel/$sample.indels.sseq.formatted | awk '$7 ~ "coding"' | wc -l >> $numbers/$sample.out
-            echo -e "FRAMESHIFT INDELs" >> $numbers/$sample.out
-            cat $sseq_indel/$sample.indels.sseq.formatted | awk '$7 ~ "frameshift"' | wc -l >> $numbers/$sample.out
-            echo -e "SPLICE-3 INDELs" >> $numbers/$sample.out
-            cat $sseq_indel/$sample.indels.sseq.formatted | awk '$7 ~ "splice-3" ' | wc -l >> $numbers/$sample.out
-            echo -e "SPLICE-5 INDELs" >> $numbers/$sample.out
-            cat $sseq_indel/$sample.indels.sseq.formatted | awk '$7 ~ "splice-5" ' | wc -l >> $numbers/$sample.out
-            echo -e "UTR-3 INDELs" >> $numbers/$sample.out
-            cat $sseq_indel/$sample.indels.sseq.formatted | awk '$7 ~ "utr-3" ' | wc -l >> $numbers/$sample.out
-            echo -e "UTR-5 INDELs" >> $numbers/$sample.out
-            cat $sseq_indel/$sample.indels.sseq.formatted | awk '$7 ~ "utr-5" ' | wc -l >> $numbers/$sample.out
-
-            rm $sseq_snv/$sample.snv.sseq.formatted
-            rm $sseq_snv/$sample.snv.sseq.formatted.known
-            rm $sseq_snv/$sample.snv.sseq.formatted.novel
-            rm $sseq_indel/$sample.indels.sseq
-            rm $sseq_indel/$sample.indels.sseq.formatted
-            rm $sseq_snv/$sample.snv.sseq
+            file=$variants/$sample.SNV.filtered.xls
+			dbsnp=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /dbSNP/) {print i} } }'| head -1`
+			ref=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /Ref/) {print i} } }'`
+			alt=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /Alt/) {print i} } }'`
+			class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /functionGVS/) {print i} } }'`
+			
+			echo -e "Total Known SNVs" >> $numbers/$sample.out
+			cat $file | awk -v num=$dbsnp '$num ~ /^rs/' | wc -l >> $numbers/$sample.out
+			echo -e "KNOWN Transition To Transversion Ratio" >> $numbers/$sample.out
+			cat $file | awk -v num=$dbsnp '$num ~ /^rs/' > $file.known
+			perl $script_path/transition.transversion.persample.pl $file.known $ref $alt >> $numbers/$sample.out
+			
+			for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST EXON_DELETED STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING CODON_CHANGE UTR_5_DELETED UTR_3_DELETED SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
+			do
+				echo -e "KNOWN $snv" >> $numbers/$sample.out 
+				cat $file.known | awk -v comp=$snv -v num=$class '$num ~ /comp/' | wc -l >> $numbers/$sample.out  
+			done	
+			rm $file.known
+			
+			echo -e "Total Novel SNVs" >> $numbers/$sample.out
+			cat $file | awk -v num=$dbsnp '$num !~ /^rs/' | wc -l >> $numbers/$sample.out
+			echo -e "KNOWN Transition To Transversion Ratio" >> $numbers/$sample.out
+			cat $file | awk -v num=$dbsnp '$num !~ /^rs/' > $file.novel
+			perl $script_path/transition.transversion.persample.pl $file.novel $ref $alt >> $numbers/$sample.out
+			
+			for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST EXON_DELETED STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING CODON_CHANGE UTR_5_DELETED UTR_3_DELETED SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
+			do
+				echo -e "NOVEL $snv" >> $numbers/$sample.out 
+				cat $file.novel | awk -v comp=$snv -v num=$class '$num ~ /comp/' | wc -l >> $numbers/$sample.out  
+			done
+			rm $file.novel
+			## INDELs
+			echo "TOTAL indels ($caller)" >> $numbers/$sample.out
+			echo $raw_indels >> $numbers/$sample.out
+			echo "FILTERED indels ($caller)" >> $numbers/$sample.out
+			echo $filtered_indels >> $numbers/$sample.out
+			echo "CODING indels ($caller)" >> $numbers/$sample.out
+			echo $genomic_indels >> $numbers/$sample.out
+			if [ $tool == "exome" ]
+			then
+				echo "Capture indels ($caller)" >> $numbers/$sample.out
+				echo $capture_indels >> $numbers/$sample.out
+			fi
+			## Annotated INDELs
+			file=$variants/$sample.INDEL.filtered.xls
+			class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /functionGVS/) {print i} } }'`
+			for indel in FRAME_SHIFT CODON_CHANGE CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR UTR_5_PRIME UTR_3_PRIME	
+			do
+				echo -e "$indel" >> $numbers/$sample.out 
+				cat $file -v comp=$indel -v num=$class '$num ~ /comp/' | wc -l >> $numbers/$sample.out 
+			done	
         done
         
 		### somatic calls

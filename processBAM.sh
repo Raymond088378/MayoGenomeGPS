@@ -58,16 +58,16 @@ else
 	num_times=`echo $INPUTARGS | tr " " "\n" | grep -c -w 'INPUT'`
 	if [ $num_times == 1 ]
 	then
-            bam=`echo $INPUTARGS | cut -d '=' -f2`
-            mv $bam $input/$sample.bam
-            SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input/$sample.bam -s $samtools`
-            if [ $SORT_FLAG == 1 ]
-            then
-                mv $input/$sample.bam $input/$sample.sorted.bam
-                $samtools/samtools index $input/$sample.sorted.bam
-            else
-                $script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate $max_reads true $run_info
-            fi
+		bam=`echo $INPUTARGS | cut -d '=' -f2`
+		mv $bam $input/$sample.bam
+		SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input/$sample.bam -s $samtools`
+		if [ $SORT_FLAG == 1 ]
+		then
+			mv $input/$sample.bam $input/$sample.sorted.bam
+			$samtools/samtools index $input/$sample.sorted.bam
+		else
+			$script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate $max_reads true $run_info
+		fi
 	else	
 	    $script_path/MergeBam.sh $INPUTARGS $input/$sample.sorted.bam $input true $run_info
 	fi
@@ -77,14 +77,14 @@ else
 
     if [ "$RG_ID" == "$sample" ]
     then
-	echo " [`date`] no need to convert same read group"
+		echo " [`date`] no need to convert same read group"
     else	
         $script_path/addReadGroup.sh $input/$sample.sorted.bam $input/$sample.sorted.rg.bam $input $run_info $sample
     fi
     
     if [ $dup == "YES" ]
     then
-	$script_path/rmdup.sh $input/$sample.sorted.bam $input/$sample.sorted.rmdup.bam $input/$sample.dup.metrics $input $max_files false true true $run_info   
+		$script_path/rmdup.sh $input/$sample.sorted.bam $input/$sample.sorted.rmdup.bam $input/$sample.dup.metrics $input $max_files false true true $run_info   
     fi
     ## reorder if required
     if [ $reorder == "YES" ]
@@ -93,7 +93,6 @@ else
     fi
     if [ $analysis == "realignment" -o $analysis == "realign-mayo" ]
     then
-        ### get the alignment statistics
         $samtools/samtools flagstat $input/$sample.sorted.bam > $input/$sample.flagstat
     fi
     ### index the bam again to mainatin the time stamp for bam and index generation for down stream tools

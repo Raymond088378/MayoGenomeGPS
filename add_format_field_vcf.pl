@@ -11,9 +11,9 @@ while(my $l = <FH>)	{
 		print "$l\n";
 	}
 	elsif ($l =~ m/^#/)	{
-		print "##INFO=<ID=CAPTURE,Number=1,Type=Boolean,Description=\"variant in capture kit ot not\">\n";
+		print "##INFO=<ID=CAPTURE,Number=1,Type=Integer,Description=\"variant in capture kit ot not\">\n";
 		if ($type eq 'SNV')	{
-			print "##INFO=<ID=CLOSE2INDEL,Number=1,Type=Boolean,Description=\"if a snp is close to indel for this sample\">\n";
+			print "##INFO=<ID=CLOSE2INDEL,Number=1,Type=Integer,Description=\"if a snp is close to indel for this sample\">\n";
 		}
 		print "$l\n";
 	}

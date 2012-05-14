@@ -65,7 +65,7 @@ else
     else
         for i in $chrs
         do
-            cat $out/$sample.variants.filter.vcf | awk -v num=chr${i} '$0 ~ /#/ || $1 == num' > $input/$sample/$sample.variants.chr$i.filter.vcf 
+            cat $out/$sample.variants.filter.vcf | awk -v num=chr${i} '$0 ~ /^#/ || $1 == num' > $input/$sample/$sample.variants.chr$i.filter.vcf 
         done
     fi  
 	echo `date`	

@@ -22,7 +22,7 @@ else
     sample=$3
     run_info=$4
     
-    #SGE_TASK_ID=1
+    SGE_TASK_ID=1
 ########################################################	
 ######		Reading run_info.txt and assigning to variables
 

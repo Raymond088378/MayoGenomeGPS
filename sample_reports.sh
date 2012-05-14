@@ -16,7 +16,7 @@ else
     poly=$7
     output_dir=$8
     SGE_TASK_ID=1
-	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
+    tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2)
     analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
@@ -42,10 +42,10 @@ else
 	
     if [ $variant_type == "BOTH" -o $variant_type = "INDEL" ]
     then	
-		indel_var=${sample}.chr${which_chr}.indel
+	indel_var=${sample}.chr${which_chr}.indel
         ## merge sseq to indel report
-		$script_path/add.rsids_indels.sh $TempReports $indel_var $which_chr $run_info
-		$script_path/merge.indel.sh $TempReports $sample $which_chr $sseq $indel_var $output_OnTarget $run_info	
+	$script_path/add.rsids_indels.sh $TempReports $indel_var $which_chr $run_info
+	$script_path/merge.indel.sh $TempReports $sample $which_chr $snpeff $indel_var $run_info	
     fi
     echo `date`
 fi	

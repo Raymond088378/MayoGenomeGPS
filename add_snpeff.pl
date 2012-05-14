@@ -24,6 +24,7 @@ else    {
 	my $eff_head=<SNPEFF>;chomp $eff_head;
 	my @eff_head_array=split(/\t/,$eff_head);
 	my $len_eff=$#eff_head_array;
+	my $num_bock=$len_eff+1;
 	my $num_tabs=$#eff_head_array-4;
 	while(my $line = <REPORT>)	{
 		chomp $line;
@@ -62,7 +63,7 @@ else    {
                         }
                     }
                     else    {
-                        print OUT "${$hashreport{$pos}{$ref}{$alt}}" . "\t-" x $len_eff . "\n"; 
+                        print OUT "${$hashreport{$pos}{$ref}{$alt}}" . "\t-" x $num_bock . "\n"; 
                     }
                 }
             }

@@ -5,19 +5,22 @@
 
 use strict;
 use warnings;
+my $file = shift @ARGV;
+open (DAT,"$file");
 
-open (DAT,"$ARGV[0]");
+my $ref= shift @ARGV;$ref=$ref-1;
+my $alt = shift @ARGV; $alt=$alt-1;
 my $transition=0;
 my $transversion=0;
 while ( my $l = <DAT>)		{
 	chomp $l;
 	my @a = split (/\t/,$l);
-	$a[2] =~ tr/[a-z]/[A-Z]/;
-	$a[3] =~ tr/[a-z]/[A-Z]/;
-	if( (($a[3] eq 'A') && ($a[4] eq 'G')) || 
-		(($a[3] eq 'G') && ($a[4] eq 'A')) ||
-		(($a[3] eq 'C') && ($a[4] eq 'T')) ||
-		(($a[3] eq 'T') && ($a[4] eq 'C')) )	{
+	$a[$ref] =~ tr/[a-z]/[A-Z]/;
+	$a[$alt] =~ tr/[a-z]/[A-Z]/;
+	if( (($a[$ref] eq 'A') && ($a[$alt] eq 'G')) || 
+		(($a[$ref] eq 'G') && ($a[$alt] eq 'A')) ||
+		(($a[$ref] eq 'C') && ($a[$alt] eq 'T')) ||
+		(($a[$ref] eq 'T') && ($a[$alt] eq 'C')) )	{
 			$transition++;
 	}
 	else	{

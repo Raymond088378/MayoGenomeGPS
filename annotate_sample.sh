@@ -13,52 +13,40 @@ else
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2 )
 	genome_version=$(cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2)
 	variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2)
-    ## jar script to add IGV, pathway, TIssue specificity and Gene Card link
-    $java/java -Xmx2g -Xms512m -jar $script_path/exome_annot.jar annotate $tool_info $output_dir/Reports_per_Sample/ $genome_version
+    samples=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" " ")
+	## jar script to add IGV, pathway, TIssue specificity and Gene Card link
+   
 	
-    if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
-	then
-		## sort the INDEL file
-		for i in *.INDEL.*.xls
-		do
-			perl $script_path/sort.variantReport.pl -i $i -o $i.sort -f Start
-			mv $i.sort $i
-		done
-    fi
-	if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
-	then
-		## sort the SNP file
-		for i in *.SNV.*.xls
-		do
-			perl $script_path/sort.variantReport.pl -i $i -o $i.sort -f Position
-			mv $i.sort $i
-		done
-    fi
 	### merge per sample files to make merged report to be uploaded to TBB
 	##Merge the unfiltered file
 	cd $output_dir/Reports_per_Sample/
+	mkdir -p $output_dir/Reports/
 	## SNV
-	ls *.SNV.cleaned_annot.xls | sort > list
-	perl $script_path/union.snv.pl list $output_dir/Reports/SNV.cleaned_annot.xls
-	perl $script_path/sort.variantReport.pl -i $output_dir/Reports/SNV.cleaned_annot.xls -o $output_dir/Reports/SNV.cleaned_annot.xls.sort -f Position
-	mv $output_dir/Reports/SNV.cleaned_annot.xls.sort $output_dir/Reports/SNV.cleaned_annot.xls
+	for sample in $samples
+	do
+		ls $sample.SNV.xls >> list
+	done	
+	perl $script_path/union.snv.pl list $output_dir/Reports/SNV.xls
+	rm list
 	
-	ls *.SNV.cleaned_annot_filtered.xls | sort > list
-	perl $script_path/union.snv.pl list $output_dir/Reports/SNV.cleaned_annot_filtered.xls
-	perl $script_path/sort.variantReport.pl -i $output_dir/Reports/SNV.cleaned_annot_filtered.xls -o $output_dir/Reports/SNV.cleaned_annot_filtered.xls.sort -f Position
-	mv $output_dir/Reports/SNV.cleaned_annot_filtered.xls.sort $output_dir/Reports/SNV.cleaned_annot_filtered.xls	
-	
-	
+	for sample in $samples
+	do
+	ls $sample.SNV.filtered.xls >> list
+	done
+	perl $script_path/union.snv.pl list $output_dir/Reports/SNV.filtered.xls
+	rm list
 	## INDEL
-	ls *.INDEL.cleaned_annot.xls | sort > list
-	perl $script_path/union.indel.pl list $output_dir/Reports/INDEL.cleaned_annot.xls
-	perl $script_path/sort.variantReport.pl -i $output_dir/Reports/INDEL.cleaned_annot.xls -o $output_dir/Reports/INDEL.cleaned_annot.xls.sort -f Start
-	mv $output_dir/Reports/INDEL.cleaned_annot.xls.sort $output_dir/Reports/INDEL.cleaned_annot.xls
+	for sample in $samples
+	do
+		ls $sample.INDEL.xls >> list
+	done
+	perl $script_path/union.indel.pl list $output_dir/Reports/INDEL.xls
+	rm list
 	
-	ls *.INDEL.cleaned_annot_filtered.xls | sort > list
-	perl $script_path/union.indel.pl list $output_dir/Reports/INDEL.cleaned_annot_filtered.xls
-	perl $script_path/sort.variantReport.pl -i $output_dir/Reports/INDEL.cleaned_annot_filtered.xls -o $output_dir/Reports/INDEL.cleaned_annot_filtered.xls.sort -f Start
-	mv $output_dir/Reports/INDEL.cleaned_annot_filtered.xls.sort $output_dir/Reports/INDEL.cleaned_annot_filtered.xls	
+	for sample in $samples
+	do
+		ls $sample.INDEL.filtered.xls >> list
+	perl $script_path/union.indel.pl list $output_dir/Reports/INDEL.filtered.xls
 	rm list
 	echo `date`
 fi	

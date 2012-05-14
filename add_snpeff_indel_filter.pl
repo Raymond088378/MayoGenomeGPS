@@ -48,16 +48,14 @@ else    {
 			chomp $line;
 			my @a = split(/\t/,$line);
 			if (length($a[8]) eq 1)	{		##INS
-				my $pos=$a[1]+1;
 				$allele=substr($a[9],1);
-				${$hashreport{$pos}{$allele}{'+'}}=$line;
+				${$hashreport{$a[1]}{$allele}{'+'}}=$line;
 			#	print "$pos\t$allele\t+\n";
 			#	<STDIN>;
 			}
 			if (length($a[8]) gt 1 )	{  ## DEL
-				my $pos=$a[1]+1;
 				$allele=substr($a[8],1);
-				${$hashreport{$pos}{$allele}{'-'}}=$line;
+				${$hashreport{$a[1]}{$allele}{'-'}}=$line;
 			#	print "$pos\t$allele\t-\n";
 			#	<STDIN>;
 			}	
@@ -69,11 +67,21 @@ else    {
 	while(my $line = <SNPEFF>)	{
 		chomp $line;
 		my @a = split(/\t/,$line);
-		my $ext=$a[3];
-		$ext =~ /(\W)(\w*)/;
-		my $sign=$1;
-		my $allele=$2;
-		push( @{$hasheff{$a[1]}{$allele}{$sign}},$line);
+		my $ref_length=length($a[2]);
+		my $alt_length=length($a[3]);
+		my ($allele);
+		if ($ref_length == 1)	{
+			$allele = substr($a[3],1);
+			push( @{$hasheff{$a[1]}{$allele}{'+'}},$line);
+			#print "$a[1]\t$allele\t+\n";
+			#<STDIN>;
+		}
+		else	{
+			$allele = substr($a[2],1);
+			push( @{$hasheff{$a[1]}{$allele}{'-'}},$line);
+			#print "$a[1]\t$allele\t$-\n";
+			#<STDIN>;
+		}
 		#print "$a[1]\t$allele\t$sign\n";
 		#<STDIN>;
 	}

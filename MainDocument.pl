@@ -50,7 +50,7 @@ else    {
 	@line=split(/=/,`perl -ne "/^SAMPLE_INFO/ && print" $run_info`);
 	my $sample_info=$line[$#line];chomp $sample_info;
 	@line=split(/=/,`perl -ne "/^LABINDEXES/ && print" $run_info`);
-    my $labindex=$line[$#line];chomp $labindex;
+	my $labindex=$line[$#line];chomp $labindex;
 	my @IndexArray = split(/:/,$labindex);
 	@line=split(/=/,`perl -ne "/^dbSNP_SNV_rsIDs/ && print" $tool_info`);
 	my $dbsnp_file=$line[$#line];chomp $dbsnp_file;
@@ -60,11 +60,11 @@ else    {
 	my $script_path=$line[$#line];chomp $script_path;
 	my ($read_length, $variant_type, $target_region, $SNV_caller, $Aligner, $ontarget, $fastqc, $fastqc_path, $server, $upload_tb );
 	@line=split(/=/,`perl -ne "/^UPLOAD_TABLEBROWSER/ && print" $run_info`);
-	my $upload_tb=$line[$#line];chomp $upload_tb;
+	$upload_tb=$line[$#line];chomp $upload_tb;
 	@line=split(/=/,`perl -ne "/^READLENGTH/ && print" $run_info`);
 	$read_length=$line[$#line];chomp $read_length;
 	@line=split(/=/,`perl -ne "/^MULTISAMPLE/ && print" $run_info`);
-	my $multi=$line[$#line];chomp $multi;
+	$multi=$line[$#line];chomp $multi;
 	@line=split(/=/,`perl -ne "/^ALIGNER/ && print" $run_info`);
 	$Aligner=$line[$#line];chomp $Aligner;
 	@line=split(/=/,`perl -ne "/^FASTQC/ && print" $run_info`);

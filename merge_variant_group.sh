@@ -57,16 +57,16 @@ else
     $script_path/filter_variant_vqsr.sh $out/$group.somatic.variants.raw.vcf $out/$group.somatic.variants.filter.vcf BOTH $run_info
 
     if [ ! -s $out/$group.somatic.variants.filter.vcf ]
-	then
-		echo "ERROR: $out/$group.somatic.variants.filter.vcf not exist"
-	else
-		for chr in $chrs
-		do
-			cat $out/$group.somatic.variants.filter.vcf | awk -v num=chr${chr} '$0 ~ /#/ || $1 == num' > $input/$group/$group.somatic.variants.chr$chr.filter.vcf 
-		done
-	fi
+    then
+	echo "ERROR: $out/$group.somatic.variants.filter.vcf not exist"
+    else
+	for chr in $chrs
+	do
+	    cat $out/$group.somatic.variants.filter.vcf | awk -v num=chr${chr} '$0 ~ /^#/ || $1 == num' > $input/$group/$group.somatic.variants.chr$chr.filter.vcf 
+	done
+    fi
 			
-	inputargs=""
+    inputargs=""
     for i in $chrs
     do
         inputfile=$input/$group/variants.chr$i.raw.vcf 
@@ -79,18 +79,18 @@ else
         fi
     done
 
-	$script_path/combinevcf.sh "$inputargs" $out/$group.variants.raw.vcf $run_info no
+    $script_path/combinevcf.sh "$inputargs" $out/$group.variants.raw.vcf $run_info no
 	
     $script_path/filter_variant_vqsr.sh $out/$group.variants.raw.vcf $out/$group.variants.filter.vcf BOTH $run_info
-	if [ ! -s $out/$group.variants.filter.vcf ]
+    if [ ! -s $out/$group.variants.filter.vcf ]
     then
         echo "ERROR: $out/$group.variants.filter.vcf failed to generate the filterd vcf for $sample"
         exit 1
     else
-		for chr in $chrs
+	for chr in $chrs
         do
-            cat $out/$group.variants.filter.vcf | awk -v num=chr${chr} '$0 ~ /#/ || $1 == num' > $input/$group/$group.variants.chr$chr.filter.vcf 
+            cat $out/$group.variants.filter.vcf | awk -v num=chr${chr} '$0 ~ /^#/ || $1 == num' > $input/$group/$group.variants.chr$chr.filter.vcf 
         done
-	fi
+    fi
     echo `date`
 fi
