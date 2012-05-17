@@ -38,7 +38,7 @@ else
     then
         snv_file=$sample.variants.chr$chr.SNV.filter.i.c.vcf
         num_snvs=`cat $input/$snv_file | awk '$0 !~ /^#/' | wc -l`
-        if [ $num_snvs -gt 1 ]
+        if [ $num_snvs -ge 1 ]
         then
             $java/java -Xmx2g -Xms512m -jar $snpeff_path/snpEff.jar eff -onlyCoding true -chr chr -noStats -noLog \
                 -c $snpeff_path/snpEff.config $genome_version $input/$snv_file > $snpeff/$sample.chr${chr}.snv.eff
@@ -92,7 +92,7 @@ else
     then
 		indel_file=$sample.variants.chr$chr.INDEL.filter.i.c.vcf
         num_indels=`cat $input/$indel_file | awk '$0 !~ /^#/' | wc -l`
-        if [ $num_indels -gt 1 ]
+        if [ $num_indels -ge 1 ]
         then
             $java/java -Xmx2g -Xms512m -jar $snpeff_path/snpEff.jar eff -onlyCoding true -chr chr -noStats -noLog \
                 -c $snpeff_path/snpEff.config $genome_version $input/$indel_file > $snpeff/$sample.chr${chr}.indel.eff
