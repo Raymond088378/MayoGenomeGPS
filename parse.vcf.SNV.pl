@@ -102,7 +102,7 @@ else	{
 			$capture_flag=0;	
 		}
 		my $reg=$call[$info_col];
-		my $multi="n/a"
+		my $multi="n/a";
 		$multi=$2 if ($reg =~ /(\w*)ED=(\d*)/); 
 
 		if (length($multi) < 1 )	{
