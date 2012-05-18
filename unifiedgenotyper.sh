@@ -40,7 +40,7 @@ else
     
     if [ ! -s $vcf ]
     then
-        echo "ERROR : variants.sh failed to create $vcf"
+        echo "ERROR : [`date`] variants.sh failed to create $vcf"
         exit 1;
     fi		
     echo `date`

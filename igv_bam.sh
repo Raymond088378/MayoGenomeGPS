@@ -17,12 +17,12 @@ else
     echo `date`
     input=$1
     output=$2
-	sample=$3
-	alignment=$4
+    sample=$3
+    alignment=$4
     run_info=$5
     
-	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-	sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
+    tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
+    sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2)
     chrIndexes=$( echo $chrs | tr ":" "\n" )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )

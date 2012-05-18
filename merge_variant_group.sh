@@ -35,7 +35,7 @@ else
     PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
-    
+    filter_variants=$( cat $tool_info | grep -w '^VARIANT_FILTER' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
     
 ########################################################	
 
@@ -54,8 +54,13 @@ else
 
     $script_path/combinevcf.sh "$inputargs" $out/$group.somatic.variants.raw.vcf $run_info no
 
-    $script_path/filter_variant_vqsr.sh $out/$group.somatic.variants.raw.vcf $out/$group.somatic.variants.filter.vcf BOTH $run_info
-
+    if [ $filter_variants == "YES" ]
+    then
+        $script_path/filter_variant_vqsr.sh $out/$group.somatic.variants.raw.vcf $out/$group.somatic.variants.filter.vcf BOTH $run_info
+    else
+        cp $out/$group.somatic.variants.raw.vcf $out/$group.somatic.variants.filter.vcf
+    fi
+    
     if [ ! -s $out/$group.somatic.variants.filter.vcf ]
     then
 	echo "ERROR: $out/$group.somatic.variants.filter.vcf not exist"
@@ -81,7 +86,13 @@ else
 
     $script_path/combinevcf.sh "$inputargs" $out/$group.variants.raw.vcf $run_info no
 	
-    $script_path/filter_variant_vqsr.sh $out/$group.variants.raw.vcf $out/$group.variants.filter.vcf BOTH $run_info
+    if [ $filter_variants == "YES" ]
+    then
+        $script_path/filter_variant_vqsr.sh $out/$group.variants.raw.vcf $out/$group.variants.filter.vcf BOTH $run_info
+    else
+        cp $out/$group.variants.raw.vcf $out/$group.variants.filter.vcf
+    fi    
+    
     if [ ! -s $out/$group.variants.filter.vcf ]
     then
         echo "ERROR: $out/$group.variants.filter.vcf failed to generate the filterd vcf for $sample"

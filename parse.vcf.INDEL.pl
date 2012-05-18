@@ -65,7 +65,7 @@
 			}	
 			@alt_reads=split(/,/,$sample_data[$AllelicDepth]);
             
-			if (($sample_data[$GenoType] ne '0/0') && ($sample_data[$GenoType] ne './.'))	{
+			if ($sample_data[$GenoType] ne './.')	{
 				# to get INS or DEL information and bases
 				my $ref_len=length($call[3]);
 				my $alt_len=length($call[4]);
@@ -91,12 +91,14 @@
 					$capture_flag=0;
 				}
 				my $reg=$call[$info_col];
-				$reg =~ /(\w*)ED=(\d*)/; 
-				my $multi=$2;
-				if (length($multi) < 1 )	{
-					$multi=0;	
+				my $multi="-";
+				$multi=$2 if ($reg =~ /(\w*)ED=(\d*)/);
+				if ($sample_data[$GenoType] eq '.')	{
+					print OUT "$chr\t$Start\t$Stop\t$capture_flag\t$multi\t$call[3]\t$call[4]\t$Bases\t-\t-\n";		
 				}
-				print OUT "$chr\t$Start\t$Stop\t$capture_flag\t$multi\t$call[3]\t$call[4]\t$Bases\t$alt_reads[$#alt_reads]\t$ReadDepth\n";
+				else	{
+					print OUT "$chr\t$Start\t$Stop\t$capture_flag\t$multi\t$call[3]\t$call[4]\t$Bases\t$alt_reads[$#alt_reads]\t$ReadDepth\n";
+				}
 			}
 			
 		}

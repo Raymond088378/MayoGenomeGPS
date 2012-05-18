@@ -36,7 +36,7 @@ else
     PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
-    errorfile=$output/$PI/$tool/$run_num/error.log
+    filter_variants=$( cat $tool_info | grep -w '^VARIANT_FILTER' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
     
 ########################################################	
 
@@ -56,8 +56,13 @@ else
     $script_path/combinevcf.sh "$inputargs" $out/$sample.variants.raw.vcf $run_info no
 
     ### filter the variant calls
-	$script_path/filter_variant_vqsr.sh $out/$sample.variants.raw.vcf $out/$sample.variants.filter.vcf BOTH $run_info
-
+    if [ $filter_variants == "YES" ]
+    then
+        $script_path/filter_variant_vqsr.sh $out/$sample.variants.raw.vcf $out/$sample.variants.filter.vcf BOTH $run_info
+    else
+        cp $out/$sample.variants.raw.vcf $out/$sample.variants.filter.vcf
+    fi
+    
     if [ ! -s $out/$sample.variants.filter.vcf ]
     then
         echo "ERROR: failed to generate the filterd vcf for $sample"

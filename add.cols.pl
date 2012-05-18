@@ -18,7 +18,7 @@ my $genome=$line[$#line];chomp $genome;
  ## gene card = =Hyperlink("http://www.genecards.org/cgi-bin/carddisp.pl?gene=SAMD11","link")
 ## kaviar = =Hyperlink("http://db.systemsbiology.net/kaviar/cgi-pub/Kaviar.pl?chr=chr1&pos=761732&frz=hg19&onebased=1","link")
 open FH , "$file" or die " cannot open $file : $!\n";
-my $header=<FH>;chmomp $header;
+my $header=<FH>;chomp $header;
 print "\t$header" . "\t" x 4 . "\n";
 $header=<FH>;chomp $header;
 my ($chr,$pos,$gene,$gene_id);

@@ -37,8 +37,8 @@ else
 	perl $script_path/add_snpeff_indel.pl -i $TempReports/$indel_file.rsIDs.frequencies -s $snpeff/$sample.chr${which_chr}.indel.eff -o $TempReports/$sample.chr${which_chr}.INDEL.report 
 	perl $script_path/add_snpeff_indel_filter.pl -i $TempReports/$indel_file.rsIDs.frequencies -s $snpeff/$sample.chr${which_chr}.indel.filtered.eff -o $TempReports/$sample.chr${which_chr}.filtered.INDEL.report 
 	
-        num=`cat $TempReports/$sample.chr${which_chr}.INDEL.report | awk '{print $1"_"$2"_"$3}' | sort | uniq | wc -l`
-        num_b=`cat $TempReports/$sample.chr${which_chr}.filtered.INDEL.report  | wc -l `
+	num=`cat $TempReports/$sample.chr${which_chr}.INDEL.report | awk '{print $1"_"$2"_"$3"_"$9"_"$10}' | sort | uniq | wc -l`
+	num_b=`cat $TempReports/$sample.chr${which_chr}.filtered.INDEL.report  | wc -l `
 	if [[ $num == $num_a  && $num_a == $num_b ]]
 	then
 	    rm $TempReports/$indel_file.rsIDs.frequencies
@@ -46,14 +46,14 @@ else
 	    echo "ERROR: failed to add snpeff results to indel file $indel_file"
 	fi	
 	for report in $TempReports/$sample.chr${which_chr}.INDEL.report $TempReports/$sample.chr${which_chr}.filtered.INDEL.report
-        do
-            perl $script_path/add_entrezID.pl -i $report -m $GeneIdMap -o $report.entrezid
-            mv $report.entrezid $report
-            perl $script_path/to.exclude.redundant.columns.from.report.pl $report $report.formatted
-            mv $report.formatted $report
+	do
+		perl $script_path/add_entrezID.pl -i $report -m $GeneIdMap -o $report.entrezid
+		mv $report.entrezid $report
+		perl $script_path/to.exclude.redundant.columns.from.report.pl $report $report.formatted
+		mv $report.formatted $report
 	done
-        perl $script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.INDEL.report $run_info INDEL > $TempReports/$sample.chr${which_chr}.INDEL.xls
-        perl $script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.filtered.INDEL.report $run_info INDEL > $TempReports/$sample.chr${which_chr}.filtered.INDEL.xls
-        rm $TempReports/$sample.chr${which_chr}.INDEL.report $TempReports/$sample.chr${which_chr}.filtered.INDEL.report
-        echo `date`
+	perl $script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.INDEL.report $run_info INDEL > $TempReports/$sample.chr${which_chr}.INDEL.xls
+	perl $script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.filtered.INDEL.report $run_info INDEL > $TempReports/$sample.chr${which_chr}.filtered.INDEL.xls
+	rm $TempReports/$sample.chr${which_chr}.INDEL.report $TempReports/$sample.chr${which_chr}.filtered.INDEL.report
+	echo `date`
 fi	

@@ -27,6 +27,7 @@ while ( my $l = <DAT>)		{
 		$transversion++;
 	}
 }
+close DAT;
 my $ratio=$transition/$transversion;$ratio=sprintf ("%.2f",$ratio);
 print "$ratio\n";
 		

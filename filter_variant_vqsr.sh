@@ -36,6 +36,7 @@ else
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
     Kgenome=$( cat $tool_info | grep -w '^KGENOME_REF' | cut -d '=' -f2)
+	mills=$( cat $tool_info | grep -w '^MILLS_REF' | cut -d '=' -f2)
     hapmap=$( cat $tool_info | grep -w '^HAPMAP_VCF' | cut -d '=' -f2)
     omni=$( cat $tool_info | grep -w '^OMNI_VCF' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
@@ -46,9 +47,14 @@ else
     PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
+    
+    ### split the vcf file for indels and snvs to appy the vqsr seperately
+    cat $inputvcf | awk '(length($4) == 1 && length($5) == 1 ) || $0 ~ /^#/' > $inputvcf.SNV.vcf
+    cat $inputvcf | awk '(length($4) > 1 || length($5) > 1) || $0 ~ /^#/' > $inputvcf.INDEL.vcf        
 
+	raw_calls_snvs=`cat $inputvcf.SNV.vcf | awk '$0 !~ /#/' | wc -l`
+	raw_calls_indels=`cat $inputvcf.INDEL.vcf | awk '$0 !~ /#/' | wc -l`
 	
-
     if [ ! -s $hapmap ]
     then
         echo "ERROR: filter_variant_per_chr File $hapmap not available" 
@@ -73,13 +79,13 @@ else
         exit 1
     fi
     
-	a=`echo $inputvcf | awk -F '/' '$NF ~/somatic/'`
+	a=`echo $inputvcf.SNV.vcf | awk -F '/' '$NF ~/somatic/'`
 	b=${#a}
-	if [ $b -gt 0 ]
+	if [ $b -le 0 ]
 	then
-		train="-an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP"
+		train_snv="-an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP"
 	else
-		tain="-an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP"
+		train_snv="-an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP"
 	fi	
     ## Variant Recalibrator SNP
 	$java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
@@ -87,13 +93,13 @@ else
 	-et NO_ET \
 	-K $gatk/Hossain.Asif_mayo.edu.key \
 	-T VariantRecalibrator \
-	-mode $variant \
+	-mode SNP  \
 	-nt $threads \
-	-input $inputvcf \
+	-input $inputvcf.SNV.vcf \
 	-resource:hapmap,known=false,training=true,truth=true,prior=15.0 $hapmap \
 	-resource:omni,known=false,training=true,truth=false,prior=12.0 $omni \
 	-resource:dbsnp,known=true,training=false,truth=false,prior=8.0 $dbSNP \
-	$train \
+	$train_snv \
 	-recalFile $output/temp/$input_name.recal \
 	-tranchesFile $output/temp/$input_name.tranches \
 	--maxGaussians 4 \
@@ -117,26 +123,27 @@ else
 		-R $ref \
 		-et NO_ET \
 		-K $gatk/Hossain.Asif_mayo.edu.key \
-		-mode $variant \
+		-mode SNP \
 		-T ApplyRecalibration \
 		-nt $threads \
-		-input $inputvcf \
+		-input $inputvcf.SNV.vcf \
 		-recalFile $output/temp/$input_name.recal \
 		-tranchesFile $output/temp/$input_name.tranches \
-		-o $outfile
+		-o $outfile.SNV.vcf
 	else
 		 echo "ERROR: filter_variant_vqsr failed for $inputvcf"
 	fi
 	
-	filter_calls=`cat $outfile | awk '$0 !~ /#/' | wc -l`
+	filter_calls_snvs=`cat $outfile.SNV.vcf | awk '$0 !~ /#/' | wc -l`
 	
-    if [[ ! -s $outfile || ! -s ${outfile}.idx || $raw_calls != $filter_calls ]]
+    if [[ ! -s $outfile.SNV.vcf || ! -s ${outfile}.SNV.vcf.idx || $raw_calls_snv != $filter_calls_snv ]]
     then
-		echo "WARNING: filter_variant_vqsr, ApplyRecalibration File $outfile not generated"
+		echo "WARNING: filter_variant_vqsr, ApplyRecalibration File $outfile (SNV) not generated"
         ### V3 best practice from GATK
-		$script_path/hardfilters_variants.sh $inputvcf $outfile $run_info
+		$script_path/hardfilters_variants.sh $inputvcf.SNV.vcf $outfile.SNV.vcf $run_info SNP
     fi
-            
+    rm $inputvcf.SNV.vcf $inputvcf.SNV.vcf.idx        
+			
     ## remove the file
     if [ -s $output/temp/$input_name.recal ]
     then
@@ -147,5 +154,77 @@ else
     then
 		rm $output/temp/$input_name.tranches	
     fi
-    echo `date`
+	
+	### applt vqsr for indels
+	
+	
+	$java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+	-R $ref \
+	-et NO_ET \
+	-K $gatk/Hossain.Asif_mayo.edu.key \
+	-T VariantRecalibrator \
+	-mode INDEL  \
+	-nt $threads \
+	-input $inputvcf.INDEL.vcf \
+	-resource:mills,VCF,known=true,training=true,truth=true,prior=12.0 $mills \
+	-an QD -an FS -an HaplotypeScore -an ReadPosRankSum \
+	-recalFile $output/temp/$input_name.recal \
+	-tranchesFile $output/temp/$input_name.tranches \
+	--maxGaussians 4 \
+	--percentBadVariants 0.05 \
+	-rscriptFile $output/plot/$input_name.plots.R
+	
+	if [ `cat $output/temp/$input_name.recal | wc -l` -le 2 ]
+    then
+        echo "ERROR: filter_variant_per_chr, VariantRecalibrator File $output/temp/$input_name.recal not generated"
+    fi
+
+    if [ ! -s $output/temp/$input_name.tranches ]
+    then
+        echo "ERROR: filter_variant_per_chr, VariantRecalibrator File $output/temp/$input_name.tranches not generated"
+    fi
+
+    ## Apply Recalibrator
+	if [[ `cat $output/temp/$input_name.recal | wc -l` -gt 2  && -s $output/temp/$input_name.tranches ]]
+    then
+		$java/java -Xmx6g -XX:-UseGCOverheadLimit -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+		-R $ref \
+		-et NO_ET \
+		-K $gatk/Hossain.Asif_mayo.edu.key \
+		-mode INDEL \
+		-T ApplyRecalibration \
+		-nt $threads \
+		-input $inputvcf.INDEL.vcf \
+		-recalFile $output/temp/$input_name.recal \
+		-tranchesFile $output/temp/$input_name.tranches \
+		-o $outfile.INDEL.vcf
+	else
+		 echo "ERROR: filter_variant_vqsr failed for $inputvcf"
+	fi
+	
+	filter_calls_indels=`cat $outfile.INDEL.vcf | awk '$0 !~ /#/' | wc -l`
+	
+    if [[ ! -s $outfile.INDEL.vcf || ! -s ${outfile}.INDEL.vcf.idx || $raw_calls_indels != $filter_calls_indels ]]
+    then
+		echo "WARNING: filter_variant_vqsr, ApplyRecalibration File (INDEL) $outfile not generated"
+        ### V3 best practice from GATK
+		$script_path/hardfilters_variants.sh $inputvcf.INDEL.vcf $outfile.INDEL.vcf $run_info INDEL
+    fi
+    rm $inputvcf.INDEL.vcf $inputvcf.INDEL.vcf.idx        
+			
+    ## remove the file
+    if [ -s $output/temp/$input_name.recal ]
+    then
+		rm $output/temp/$input_name.recal
+    fi
+	
+    if [ -s $output/temp/$input_name.tranches ]
+    then
+		rm $output/temp/$input_name.tranches	
+    fi
+	
+	### combine both the indels and SNVs
+	in="-V $outfile.INDEL.vcf -V $outfile.SNV.vcf"
+	$script_path/combinevcf.sh "$in" $outfile $run_info YES
+	echo `date`
 fi	

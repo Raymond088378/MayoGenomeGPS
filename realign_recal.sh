@@ -60,7 +60,7 @@ else
     ## update the dash board
     if [ $SGE_TASK_ID == 1 ]
     then
-	$script_path/dashboard.sh $samples $run_info Realignment complete
+		$script_path/dashboard.sh $samples $run_info Realignment complete
     fi    
     echo `date`
 fi	

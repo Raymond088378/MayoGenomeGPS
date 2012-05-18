@@ -33,29 +33,29 @@ else
     cd $input
     for file in $input/*sorted.bam
     do
-      INPUTARGS="INPUT="$file" "$INPUTARGS;
-      files=$file" $files";
+		INPUTARGS="INPUT="$file" "$INPUTARGS;
+		files=$file" $files";
     done
     
     num_times=`echo $INPUTARGS | tr " " "\n" | grep -c -w 'INPUT'`
     if [ $num_times == 1 ]
     then
-	bam=`echo $INPUTARGS | cut -d '=' -f2`
-	mv $bam $input/$sample.bam
-        SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input/$sample.bam -s $samtools`
+		bam=`echo $INPUTARGS | cut -d '=' -f2`
+		mv $bam $input/$group.bam
+        SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input/$group.bam -s $samtools`
         if [ $SORT_FLAG == 1 ]
         then
-            mv $input/$sample.bam $input/$sample.sorted.bam
-            $samtools/samtools index $input/$sample.sorted.bam
+            mv $input/$group.bam $input/$group.sorted.bam
+            $samtools/samtools index $input/$group.sorted.bam
         else
-            $script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate $max_reads $run_info
+            $script_path/sortbam.sh $input/$group.bam $input/$group.sorted.bam $input coordinate $max_reads $run_info
         fi
     else	
-        $script_path/MergeBam.sh $INPUTARGS $input/$sample.sorted.bam $input true $run_info
+        $script_path/MergeBam.sh $INPUTARGS $input/$group.sorted.bam $input true $run_info
     fi
 
     ### add read grouup information
-    RG_ID=`$samtools/samtools view -H $input/$sample.sorted.bam | grep "^@RG" | tr '\t' '\n' | grep "^ID"| cut -f 2 -d ":"`
+    RG_ID=`$samtools/samtools view -H $input/$group.sorted.bam | grep "^@RG" | tr '\t' '\n' | grep "^ID"| cut -f 2 -d ":"`
     
     check=0
     for sample in $samples
@@ -73,7 +73,7 @@ else
 	
     if [ $reorder == "YES" ]
     then
-        $script_path/reoderBam.sh $input/$sample.sorted.bam $input/$sample.sorted.tmp.bam $input $run_info  
+        $script_path/reoderBam.sh $input/$group.sorted.bam $input/$group.sorted.tmp.bam $input $run_info  
     fi
     echo `date`
 fi	

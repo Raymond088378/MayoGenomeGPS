@@ -1,15 +1,16 @@
 #!/bin/sh
 
-if [ $# != 4 ]
+if [ $# != 5 ]
 then
-	echo "usage: <output><sample><run_info><marker>";
+    echo "usage: <output><sample><run_info><marker>";
 else	
     set -x
     echo `date`
     output=$1
-    sample=$2
-    run_info=$3
-    marker=$4
+    reports=$2
+    sample=$3
+    run_info=$4
+    marker=$5
     
     input=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
@@ -22,43 +23,88 @@ else
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     vcftools=$( cat $tool_info | grep -w '^VCFTOOLS' | cut -d '=' -f2)
     perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
+    blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
+    blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
+    blat_ref=$( cat $tool_info | grep -w '^BLAT_REF' | cut -d '=' -f2 )
+    blat_server=$( cat $tool_info | grep -w '^BLAT_SERVER' | cut -d '=' -f2 )
+    window_blat=$( cat $tool_info | grep -w '^WINDOW_BLAT' | cut -d '=' -f2 )
+    
+    mkdir -p $output/$sample/
     
     if [ $marker == 2 ]
     then
         snv_file=$( cat $sample_info | grep -w SNV:${sample} | cut -d '=' -f2)
-        indel_file=$( cat $sample_info | grep -w INDEL:${sample} | cut -d '=' -f2)
-            
+        indel_file=$( cat $sample_info | grep -w INDEL:${sample} | cut -d '=' -f2)	
+	
         if [ $input/$snv_file == $input/$indel_file ]
         then
+	    n=`cat $input/$snv_file |  awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
+	    if [ $n == 0 ]
+	    then
+		perl $script_path/vcf_blat_verify.pl -i $input/$snv_file -o $reports/$sample.variants.raw.vcf -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
+	    else
+		cp $input/$snv_file $reports/$sample.variants.raw.vcf
+	    fi
+	    cp $reports/$sample.variants.raw.vcf $reports/$sample.variants.filter.vcf
             for chr in $chrs
             do
-                cat $input/$snv_file | awk -v num=chr${chr} '$0 ~ /#/ || $1 == num' > $output/$sample/$sample.variants.chr$chr.filter.vcf
+                cat $reports/$sample.variants.filter.vcf | awk -v num=chr${chr} '$0 ~ /^#/ || $1 == num' > $output/$sample/$sample.variants.chr$chr.filter.vcf
             done
         else
             ### concat both the vcf files to get one vcf file
-            for chr in $chrs
+            snv=`cat $input/$snv_file | awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
+	    if [ $n == 0 ]
+	    then
+		perl $script_path/vcf_blat_verify.pl -i $input/$snv_file -o $reports/$sample.variants.SNV.raw.vcf -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
+	    else
+		cp $input/$snv_file $reports/$sample.variants.SNV.raw.vcf
+	    fi
+	    indel=`cat $input/$indel_file | awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
+	    if [ $n == 0 ]
+	    then
+		perl $script_path/vcf_blat_verify.pl -i $input/$indel_file -o $reports/$sample.variants.INDEL.raw.vcf -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
+	    else
+		cp $input/$indel_file $reports/$sample.variants.INDEL.raw.vcf
+	    fi	
+	    in="-V $reports/$sample.variants.SNV.raw.vcf $reports/$sample.variants.INDEL.raw.vcf"
+	    $script_path/combinevcf.sh "$in" $reports/$sample.variants.raw.vcf $run_info yes
+	    cp $reports/$sample.variants.raw.vcf $reports/$sample.variants.filter.vcf
+	    for chr in $chrs
             do
-                cat $input/$snv_file | awk -v num=chr${chr} '$0 ~ /#/ || $1 == num' > $output/$sample/$sample.variants.chr$chr.filter.SNV.vcf
-                cat $input/$indel_file | awk -v num=chr${chr} '$0 ~ /#/ || $1 == num' > $output/$sample/$sample.variants.chr$chr.filter.INDEL.vcf
-                in="-V $output/$sample/$sample.variants.chr$chr.filter.SNV.vcf -V $output/$sample/$sample.variants.chr$chr.filter.INDEL.vcf"
-                $script_path/combinevcf.sh $in $output/$sample/$sample.variants.chr$chr.filter.vcf $run_info yes
+               cat $reports/$sample.variants.filter.vcf | awk -v num=chr${chr} '$0 ~ /^#/ || $1 == num' > $output/$sample/$sample.variants.chr$chr.filter.vcf 
             done    
         fi
     else
         if [ $variant_type == "SNV" ]
         then
             snv_file=$( cat $sample_info | grep -w SNV:${sample} | cut -d '=' -f2)
+            snv=`cat $input/$snv_file | awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
+	    if [ $n == 0 ]
+	    then
+		perl $script_path/vcf_blat_verify.pl -i $input/$snv_file -o $reports/$sample.variants.raw.vcf -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
+	    else
+		cp $input/$snv_file $reports/$sample.variants.raw.vcf
+	    fi
+            cp $reports/$sample.variants.raw.vcf $reports/$sample.variants.filter.vcf
             for chr in $chrs
             do
-                cat $input/$snv_file | awk -v num=chr${chr} '$0 ~ /#/ || $1 == num' > $output/$sample/$sample.variants.chr$chr.filter.vcf
-            done
+                cat $reports/$sample.variants.filter.vcf | awk -v num=chr${chr} '$0 ~ /^#/ || $1 == num' > $output/$sample/$sample.variants.chr$chr.filter.vcf 
+            done 
         elif [ $variant_type == "INDEL" ]
         then
             indel_file=$( cat $sample_info | grep -w INDEL:${sample} | cut -d '=' -f2)
+            indel=`cat $input/$indel_file | awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
+	    if [ $n == 0 ]
+	    then
+		perl $script_path/vcf_blat_verify.pl -i $input/$indel_file -o $reports/$sample.variants.raw.vcf -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
+	    else
+		cp $input/$indel_file $reports/$sample.variants.raw.vcf
+	    fi
+            cp $reports/$sample.variants.raw.vcf $reports/$sample.variants.filter.vcf
             for chr in $chrs
             do
-                cat $input/$indel_file | awk -v num=chr${chr} '$0 ~ /#/ || $1 == num' >  $output/$sample/$sample.variants.chr$chr.filter.vcf
-            done
+                cat $reports/$sample.variants.filter.vcf | awk -v num=chr${chr} '$0 ~ /^#/ || $1 == num' > $output/$sample/$sample.variants.chr$chr.filter.vcf 
+            done 
         fi
     fi
     echo `date`

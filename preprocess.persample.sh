@@ -12,7 +12,7 @@
 #	$7		=		chromosome
 ###############################################	
 
-if [ $# != 5 ]
+if [ $# -le 4 ]
 then
     echo "Usage:<sample> <tempReport dir> <run info> <input variant folder><chromosome>";
 else			
@@ -23,23 +23,39 @@ else
     run_info=$3
     input_dir=$4
     chr=$5
-    
+	if [ $6 ]
+	then
+		group=$6
+    fi
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
-    
+    multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
+	
    
     if [[ $variant_type == 'BOTH' || $variant_type == 'SNV' ]]
     then
         ## SNVs  parse the vcf file for on target
-        var=$sample.variants.chr$chr.SNV.filter.i.c.vcf
-        perl $script_path/parse.vcf.SNV.pl -i $input_dir/$var -o $TempReports/${sample}.chr$chr.snv -s $sample -h 1
-    fi
+        if [ $6 ]
+		then
+			var=$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf
+			perl $script_path/parse.vcf.SNV.pl -i $input_dir/$var -o $TempReports/$group.$sample.chr$chr.snv -s $sample -h 1
+		else
+			var=$sample.variants.chr$chr.SNV.filter.i.c.vcf	
+			perl $script_path/parse.vcf.SNV.pl -i $input_dir/$var -o $TempReports/${sample}.chr$chr.snv -s $sample -h 1
+		fi
+	fi
     if [[ $variant_type == 'BOTH' || $variant_type == 'INDEL' ]]
     then
         ## INDELs
-        indel=$sample.variants.chr$chr.INDEL.filter.i.c.vcf
-        perl $script_path/parse.vcf.INDEL.pl -i $input_dir/$indel -o $TempReports/$sample.chr$chr.indel -s $sample -h 1
-    fi
+        if [ $6 ]
+		then
+			indel=$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf
+			perl $script_path/parse.vcf.INDEL.pl -i $input_dir/$indel -o $TempReports/$group.$sample.chr$chr.indel -s $sample -h 1
+		else
+			indel=$sample.variants.chr$chr.INDEL.filter.i.c.vcf
+			perl $script_path/parse.vcf.INDEL.pl -i $input_dir/$indel -o $TempReports/$sample.chr$chr.indel -s $sample -h 1
+		fi
+	fi
     echo `date`
 fi	

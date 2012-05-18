@@ -16,10 +16,12 @@ else
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
+    reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
     
     $java/java -Xmx6g -Xms512m \
     -jar $picard/MergeSamFiles.jar \
     $inbam\
+    MAX_RECORDS_IN_RAM=$reads
     OUTPUT=$outbam \
     TMP_DIR=$tmp_dir \
     CREATE_INDEX=false \

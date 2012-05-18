@@ -5,7 +5,7 @@
 
 if [ $# != 4 ]
 then
-	echo "usage: <output><sample><run_info><marker>";
+    echo "usage: <output><sample><run_info><marker>";
 else	
     set -x
     echo `date`
@@ -33,39 +33,68 @@ else
         indel_file=$( cat $sample_info | grep -w INDEL:${sample} | cut -d '=' -f2)
         ## format the vcf file to text delimited file
         ## determine if the file is vcf or text input
+        type=`cat $input/$snv_file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'`
+        if [ $type == "txt" ]
+        then
+            perl $script_path/convert_txt_vcf.pl $input/$snv_file $sample > $output/$sample.SNV.vcf
+            perl $script_path/convert_txt_vcf.pl $input/$indel_file $sample > $output/$sample.INDEL.vcf
+        else
+            ln -s $input/$snv_file $output/$sample.SNV.vcf
+            ln -s $input/$indel_file $output/$sample.INDEL.vcf 
+        fi
         for chr in $chrs
         do
-            ## extract the file for the chromosome
-            ##SNV
-            cat $input/$snv_file | awk -v num=chr$chr '$0 ~ /^#/ || ( length($4) == 1 && length($5) == 1 ) || $1 == "num" ' > $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf
-            ## INDEL
-			cat $input/$indel_file | awk -v num=chr$chr '$0 ~ /^#/ || ( length($4) > 1 || length($5) > 1 ) || $1 == "num" ' > $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
-            
-			perl $script_path/markSnv_IndelnPos.pl -s $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -i $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf \
-				-n $distance -o $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
-			cat $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL="$NF,$9,$10;}' \
-				> $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf  
-			rm $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf		
+            perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.SNV.vcf -v $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -l $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -c chr$chr -s $sample
+            rm $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
+            perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.INDEL.vcf -v $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf.temp -l $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -c chr$chr -s $sample
+            rm $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf.temp
+            cat $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' > $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp
+            perl $script_path/add_format_field_vcf.pl $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp INDEL > $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
+            rm $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp
+            perl $script_path/markSnv_IndelnPos.pl -s $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -i $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
+            cat $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1;CLOSE2INDEL="$NF,$9,$10;}' > $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf  
+	    perl $script_path/add_format_field_vcf.pl $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf SNV > $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf 
+            mv $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf		
         done
+        rm $output/$sample.SNV.vcf $output/$sample.INDEL.vcf 
     else
         if [ $variant_type == "SNV" ]
         then
             snv_file=$( cat $sample_info | grep -w SNV:${sample} | cut -d '=' -f2)
-			for chr in $chrs	
+            type=`cat $input/$snv_file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'`
+            if [ $type == "txt" ]
+            then
+                perl $script_path/convert_txt_vcf.pl $input/$snv_file $sample > $output/$sample.SNV.vcf
+            else
+                ln -s $input/$snv_file $output/$sample.SNV.vcf
+            fi    
+            for chr in $chrs	
             do
-                cat $input/$snv_file | awk -v num=chr$chr '$0 ~ /^#/ || ( length($4) == 1 && length($5) == 1 ) || $1 == "num" ' | > $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf
-                cat $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL=0",$9,$10;}' \
-					> $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
-				mv $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf	
-				
+                perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.SNV.vcf -v $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -l $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -c chr$chr -s $sample
+                rm $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
+                cat $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1;CLOSE2INDEL=0",$9,$10;}' > $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
+		perl $script_path/add_format_field_vcf.pl $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf SNV > $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf
+                rm $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf			
             done
+            rm $output/$sample.SNV.vcf
         elif [ $variant_type == "INDEL" ]
         then
             indel_file=$( cat $sample_info | grep -w INDEL:${sample} | cut -d '=' -f2)
+            type=`cat $input/$indel_file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'`
+            if [ $type == "txt" ]
+            then
+                perl $script_path/convert_txt_vcf.pl $input/$indel_file $sample > $output/$sample.INDEL.vcf 
+            else
+                ln -s $input/$indel_file $output/$sample.INDEL.vcf 
+            fi    
             for chr in $chrs		
             do
-                cat $input/$indel_file | awk -v num=chr$chr '$0 ~ /^#/ || ( length($4) > 1 || length($5) > 1 ) || $1 == "num" ' > $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
+                perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.INDEL.vcf -v $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -l $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -c chr$chr -s $sample
+                rm $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf
+                cat $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' > $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp
+                mv $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf 
             done
+            rm $output/$sample.INDEL.vcf 
         fi		
     fi
     echo `date`	

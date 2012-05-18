@@ -51,15 +51,15 @@ if ($runinfomsg ne "") {
 }
 my $analysis=$runinfovars->{ANALYSIS};
 
-if ( ($analysis ne 'mayo') && ($analysis ne 'external') && ($analysis ne 'variant') && ($analysis ne 'alignment') && ($analysis ne 'realignment') && ($analysis ne 'realign-mayo') ) {
-    print "$runinfo: TYPE=$analysis should be mayo, external, variant , realignment , realign-mayo or alignment\n";
+if ( ($analysis ne 'mayo') && ($analysis ne 'external') && ($analysis ne 'variant') && ($analysis ne 'alignment') && ($analysis ne 'realignment') && ($analysis ne 'realign-mayo') && ($analysis ne 'ontarget') ) {
+    print "$runinfo: TYPE=$analysis should be mayo, external, variant , realignment , realign-mayo ontarget or alignment\n";
     exit 1;
 }
 
 my $tool=$runinfovars->{TYPE};
 
 if ( ($tool ne 'whole_genome') && ($tool ne 'exome'))	{
-	print "$runinfo : TOOL= $tool should be whole_genome or exome\n";
+    print "$runinfo : TOOL= $tool should be whole_genome or exome\n";
 }		
 
 my $input=$runinfovars->{INPUT_DIR};
@@ -72,7 +72,7 @@ if ( ($runinfovars->{MULTISAMPLE}) && (@samples < 2)) {
 my $toolinfo=$runinfovars->{TOOL_INFO};
 my $sampleinfo=$runinfovars->{SAMPLE_INFO};
 my ($toolinfovars, $toolinfomsg) = read_file_var($toolinfo);
-my ($sampleinfovars, $sampleinfomsg) = read_file_var($sampleinfo);
+my ($sampleinfovars, $sampleinfomsg) = read_files_var($sampleinfo);
 
 if ($sampleinfomsg ne "") {
     print $sampleinfomsg."\n";
@@ -225,6 +225,26 @@ sub check_variables {
     }
 }
 
+sub read_files_var{
+    my ($filename) = @_;
+    open INFILE, "<$filename" or die "$filename $!\n";
+    my %variables;
+    my $errmsg="";
+ 
+    LINE:while (<INFILE>) {
+	next LINE if /^#|^\s/;
+	chomp;
+
+	my ($var, $value) = split (/=/,$_);
+	if ($var =~ /:/)	{
+	    if (exists $variables{$var}) {
+		$errmsg.="$var in $filename defined twice\n";
+	    }
+	    $variables{$var}=$value;
+	}
+    }
+    return (\%variables, $errmsg)
+}
 
 sub read_file_var {
     my ($filename) = @_;

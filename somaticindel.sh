@@ -19,16 +19,17 @@ else
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
-
+    window=$( cat $tool_info | grep -w '^INDEL_WINDOW_SIZE' | cut -d '=' -f2)
     ## Somatic Indel detector
     
     indel_v=$tumor_sample.chr$chr.indel.txt
+	
     $java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
     -R $ref \
     -et NO_ET \
     -K $gatk/Hossain.Asif_mayo.edu.key \
     -T SomaticIndelDetector \
-    --window_size 1000 \
+    --window_size $window \
     -o $output/$output_file \
     -verbose $output/$indel_v \
     -I:normal $normal_bam \

@@ -34,7 +34,14 @@ else
         if [ $flag == "YES" ]
         then
             rm `echo $input | sed -e '/-V/s///g'`
-            rm `echo $input | sed -e '/-V/s///g' | sed -e '/.vcf/s//.vcf.idx/g'`	
+            sample=`echo $input | sed -e '/-V/s///g' | tr " " "\n" | awk '{print $0".idx"}'`
+			for i in $sample
+			do
+				if [ $i != ".idx" ]
+				then
+					rm $i
+				fi
+			done	
         fi
     fi
     echo `date`
