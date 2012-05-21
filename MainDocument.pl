@@ -75,9 +75,9 @@ else    {
 	my $delivery=$line[$#line];chomp $delivery;
 	@line=split(/=/,`perl -ne "/^TERTIARY_FOLDER/ && print" $run_info`);
 	my $tertiary=$line[$#line];chomp $tertiary;
-	if ( ( $analysis eq 'external' ) || ( $analysis eq 'variant' ) || ($analysis eq 'mayo') || ($analysis eq 'realignment') || ($analysis eq 'realign-mayo') )	{
-		@line=split(/=/,`perl -ne "/^SNV_CALLER/ && print" $run_info`);
-		$SNV_caller=$line[$#line];chomp $SNV_caller;
+	@line=split(/=/,`perl -ne "/^SNV_CALLER/ && print" $run_info`);
+	$SNV_caller=$line[$#line];chomp $SNV_caller;
+		if ( ( $analysis eq 'external' ) || ( $analysis eq 'variant' ) || ($analysis eq 'mayo') || ($analysis eq 'realignment') || ($analysis eq 'realign-mayo') )	{
 		if ($tool eq 'exome')	{
 			@line=split(/=/,`perl -ne "/^CAPTUREKIT/ && print" $tool_info`);
 			$ontarget=$line[$#line];chomp $ontarget;
@@ -1904,7 +1904,7 @@ else    {
 	}
 	print OUT "<a name=\"Results and Conclusions\" id=\"Results and Conclusions\"></a><p align='left'><u><b> VI.  Results and Conclusions:</p></u></b>";
 	$per_mapped_reads=sprintf("%.2f",$per_mapped_reads);
-	if  ($analysis ne "annotation" || $analysis ne "ontarget") 	{
+	if  ($analysis ne "annotation" && $analysis ne "ontarget") 	{
 		print OUT"
 		<ul>
 		<li> $per_mapped_reads % of the data has been mapped to the genome.

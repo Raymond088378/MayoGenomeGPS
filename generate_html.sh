@@ -47,14 +47,14 @@ else
 	# generate Coverage plot
 	
 	cd $output_dir/numbers
-	if [[ $analysis != "alignment" && $analysis != "annotation" ]] 
+	if [[ $analysis != "alignment" && $analysis != "annotation"  && $analysis != "ontarget" ]] 
 	then
 		region=`awk '{sum+=$3-$2+1; print sum}' $kit | tail -1`
 		Rscript $script_path/coverage_plot.r $region $samples
 		mv $output_dir/numbers/coverage.jpeg $output_dir/Coverage.JPG
 	fi
 	#rm $output_dir/bed_file.bed
-	if [ $analysis != "annotation" -a $analysis != "alignment" ]
+	if [[ $analysis != "alignment" && $analysis != "annotation"  && $analysis != "ontarget" ]] 
 	then
 		perl $script_path/create.igv.pl -o $output_dir -r $run_info
 	fi
@@ -63,7 +63,7 @@ else
 	## create tsv file for sample statistcs
 	perl $script_path/SampleStatistics.pl -r $run_info -p $output_dir
 	## TableBrowser upload
-	if [ $upload_tb == "YES" ]
+	if [[ $upload_tb == "YES"  && $analysis != "alignment" ]]
 	then
 		PI_LANID=$( echo $PI | cut -d '_' -f 3 )
 		if [ $GenomeBuild == "hg19" ]
@@ -84,8 +84,8 @@ else
 	files=`ls -lhrt | awk 'NR>1' |awk -F' ' '{print $NF}' | tr "\n" " "`
 	cat $files > $output_dir/LOG
 	
-    cat $output_dir/LOG | grep -w '^ERROR' > $output_dir/errorlog
-	cat $output_dir/LOG | grep -w '^WARNING' > $output_dir/warninglog	
+    cat $output_dir/LOG | grep -w '^ERROR ' > $output_dir/errorlog
+	cat $output_dir/LOG | grep -w '^WARNING ' > $output_dir/warninglog	
     rm $output_dir/LOG
 	
 	e_size=`ls -l $output_dir/errorlog | awk '{ print $5 }'`

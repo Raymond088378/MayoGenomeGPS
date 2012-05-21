@@ -190,12 +190,12 @@ print STDERR "INFO: Clearing tmp files and shutting down gfServer\n";
 
 #gfServer stop doesn't work.
 #`gfServer stop $blat_server $blat_port`;
-$status = `ps | grep "gfServer" | cut -d ' ' -f1`;
-chomp $status;
+#$status = `ps | grep "gfServer" | cut -d ' ' -f1`;
+#chomp $status;
 
-print "kill $status\n";
+#print "kill $status\n";
 
-`kill $status`;
+#`kill $status`;
 
 
 

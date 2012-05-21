@@ -18,7 +18,7 @@ else
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 
     cd $input/$sample
-    pair=$( cat $sample_info | grep -w "$sample" | cut -d '=' -f2)
+    pair=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2 | tr "\t" " ")
     if [ -f $input/$sample/chr$chr.cleaned.bam ]
     then
         $samtools/samtools view -H chr$chr.cleaned.bam > $output/$sample.chr$chr.header.sam

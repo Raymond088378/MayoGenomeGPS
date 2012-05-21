@@ -23,15 +23,14 @@ else
     mqual=$( cat $tool_info | grep -w 'MAPPING_QUALITY' | cut -d '=' -f2)
     snv=$tumor_sample.chr$chr.snv.output
 	
-    $somatic_sniper/bam-somaticsniper -q $mqual -Q $squal -F vcf -f $ref $tumor_bam $normal_bam $output/$output_file
-    cat $output/$output_file | sed -e "/NORMAL/s//$normal_sample/g" | sed -e "/TUMOR/s//$tumor_sample/g" > $output/$output_file.temp
-    mv $output/$output_file.temp $output/$output_file	
-	cat $output/$output_file | awk '$0 ~ /^#/ || length($5) > 1' > $output/$output_file.multi.vcf
+    $somatic_sniper/bam-somaticsniper -q $mqual -Q $squal -F vcf -f $ref $tumor_bam $normal_bam $output/$snv
+    cat $output/$snv | sed -e "/NORMAL/s//$normal_sample/g" | sed -e "/TUMOR/s//$tumor_sample/g"  | awk '$0 ~ /^#/ || $5 !~ /,/' | $script_path/ssniper_vcf_add_AD.pl > $output/$output_file
+    
 	
     if [ ! -s $output/$output_file ]
-	then
+    then
         echo "ERROR: $output/$output_file not found"
-		exit 1;
+	exit 1;
     fi
     echo `date`
 fi	

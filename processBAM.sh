@@ -39,6 +39,7 @@ else
     dup=$( cat $run_info | grep -w '^MARKDUP' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
     max_files=$( cat $tool_info | grep -w '^MAX_FILE_HANDLES' | cut -d '=' -f2 )
     max_reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
+	dup_flag=$( cat $tool_info | grep -w '^REMOVE_DUP' | cut -d '=' -f2 |  tr "[a-z]" "[A-Z]")
 	
 ########################################################	
 ######		PICARD to merge BAM file
@@ -84,7 +85,7 @@ else
     
     if [ $dup == "YES" ]
     then
-		$script_path/rmdup.sh $input/$sample.sorted.bam $input/$sample.sorted.rmdup.bam $input/$sample.dup.metrics $input $max_files false true true $run_info   
+		$script_path/rmdup.sh $input/$sample.sorted.bam $input/$sample.sorted.rmdup.bam $input/$sample.dup.metrics $input $max_files $dup_flag true true $run_info   
     fi
     ## reorder if required
     if [ $reorder == "YES" ]

@@ -63,14 +63,14 @@ else
         if [ $paired == 0 ]
         then
             rm $fastq/$filename1
+            rm $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai
         else
             rm $fastq/$filename1 $fastq/$filename2
+            rm $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai $output_dir_sample/$sample.$SGE_TASK_ID.R2.sai
         fi    
     fi  
 
-    $samtools/samtools view -bt $ref.fai $output_dir_sample/$sample.$SGE_TASK_ID.sam > $output_dir_sample/$sample.$SGE_TASK_ID.bam 
-	$samtools/samtools view -b -q 1 $output_dir_sample/$sample.$SGE_TASK_ID.bam > $output_dir_sample/$sample.$SGE_TASK_ID.q1.bam
-	mv $output_dir_sample/$sample.$SGE_TASK_ID.q1.bam $output_dir_sample/$sample.$SGE_TASK_ID.bam  
+    $samtools/samtools view -bt $ref.fai $output_dir_sample/$sample.$SGE_TASK_ID.sam > $output_dir_sample/$sample.$SGE_TASK_ID.bam  
     if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.bam ]
     then
         echo "Error:  align_bwa.sh File $output_dir_sample/$sample.$SGE_TASK_ID.bam not generated"
@@ -82,7 +82,6 @@ else
 	########################################################	
 ######		Sort BAM, adds RG 
 
-    $script_path/convert.bam.sh $output_dir_sample $sample.$SGE_TASK_ID.bam $sample.$SGE_TASK_ID $run_info
-
-	echo `date`
+    $script_path/convert.bam.sh $output_dir_sample $sample.$SGE_TASK_ID.bam $sample.$SGE_TASK_ID $SGE_TASK_ID $run_info
+    echo `date`
 fi	

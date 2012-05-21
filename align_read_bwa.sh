@@ -75,7 +75,7 @@ else
 		let fidx=($SGE_TASK_ID*2)
     fi	
 	
-    R1=`cat $sample_info | grep -w "$sample" | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
+    R1=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
     extension=$(echo $R1 | sed 's/.*\.//')
     filename1=$(echo $R1 | sed 's/\.[^\.]*$//')
     if [ $extension == "gz" ]

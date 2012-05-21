@@ -182,8 +182,8 @@ else
                 $script_path/combinevcf.sh "$in" $output/$sample.variants.chr${chr}.raw.vcf $run_info yes
 			fi		
 		fi
-		perl $script_path/vcf_blat_verify.pl -i $output/$sample.variants.chr${chr}.raw.vcf -o $output/$sample.variants.chr${chr}.raw.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
-		mv $output/$sample.variants.chr${chr}.raw.vcf.tmp $output/$sample.variants.chr${chr}.raw.vcf
+		#perl $script_path/vcf_blat_verify.pl -i $output/$sample.variants.chr${chr}.raw.vcf -o $output/$sample.variants.chr${chr}.raw.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
+		#mv $output/$sample.variants.chr${chr}.raw.vcf.tmp $output/$sample.variants.chr${chr}.raw.vcf
 	else
         ## assuming that normal is the first column/sample 
         normal=${sampleArray[1]}.chr$chr-sorted.bam
@@ -219,8 +219,8 @@ else
         done
         param="-L chr${chr}"
 		$script_path/unifiedgenotyper.sh "$inputfiles" $output/variants.chr${chr}.raw.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info
-		perl $script_path/vcf_blat_verify.pl -i $output/variants.chr${chr}.raw.vcf -o $output/variants.chr${chr}.raw.vcf.tmp -w $window_blat -r $ref -b $blat -br $blat_ref -bs $blat_server -bp $blat_port
-		mv $output/variants.chr${chr}.raw.vcf.tmp $output/variants.chr${chr}.raw.vcf
+		#perl $script_path/vcf_blat_verify.pl -i $output/variants.chr${chr}.raw.vcf -o $output/variants.chr${chr}.raw.vcf.tmp -w $window_blat -r $ref -b $blat -br $blat_ref -bs $blat_server -bp $blat_port
+		#mv $output/variants.chr${chr}.raw.vcf.tmp $output/variants.chr${chr}.raw.vcf
     fi
     ### after this we get multiple indels and snp files which need to be merged for Multi samples but just filter for 	
     if [ ${#sampleArray[@]} -gt 1 ]
@@ -254,8 +254,8 @@ else
         ## combine both snv and indel
         in="-V $output/MergeAllSamples.chr$chr.snvs.raw.vcf -V $output/MergeAllSamples.chr$chr.Indels.raw.vcf"
         $script_path/combinevcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.vcf $run_info yes   
-		perl $script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.vcf -o $output/MergeAllSamples.chr$chr.raw.vcf.tmp -r $ref -w $window_blat -b $blat -br $blat_ref -bs $blat_server -bp $blat_port
-		mv $output/MergeAllSamples.chr$chr.raw.vcf.tmp $output/MergeAllSamples.chr$chr.raw.vcf
+		#perl $script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.vcf -o $output/MergeAllSamples.chr$chr.raw.vcf.tmp -r $ref -w $window_blat -b $blat -br $blat_ref -bs $blat_server -bp $blat_port
+		#mv $output/MergeAllSamples.chr$chr.raw.vcf.tmp $output/MergeAllSamples.chr$chr.raw.vcf
     fi
             
     ## remove files

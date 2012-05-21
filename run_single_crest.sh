@@ -54,20 +54,6 @@ else
 	min_id=$( cat $tool_info | grep -w '^STRUCT_MIN_IDENTITY' | cut -d '=' -f2)
 	blacklist_sv=$( cat $tool_info | grep -w '^BLACKLIST_SV' | cut -d '=' -f2 )
 	bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
-    PATH=$bedtools/:$PATH
-#filter_sv_crest ()
-#{
-    # Filter SV's from file ($1), that have at leat $min_read supporting reads with
-    # $min_id identity and that do not intersect $blacklist_sv and puts the result in
-    # outfile ($2)
-#    file=$1
-#    outfile=$2
-    
-#    awk "((\$10>=$min_read)&&(\$11>=$min_read)&&(\$14>=$min_id)&&(\$16>=$min_id))" $file |\
-#	awk '{ print $1"\t"$2"\t"$2+1"\t"$5"\t"$6"\t"$6+1}' |\ 
-#	$bedtools/pairToBed -a stdin -b $blacklist_sv -type neither |\ 
-#	$script_path/report_original.pl $file > $outfile
-#}
 
 ########################################################	
 ######		
@@ -112,19 +98,19 @@ else
 
 	if [ "$status" -eq 0 ]
 	then
-        echo "WARNING : Crest_single: Blat server not available at port: $blat_port. Sample:$sample Chr:$chr "
-        blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
-        range=20000
-        let blat_port+=$RANDOM%range
-        status=`$blat/gfServer status localhost $blat_port | wc -l`;
-        if [ "$status" -le 1 ]
-        then
-            rm $output_dir/$sample/log/blat.$sample.$chr.txt
-			$blat/gfServer start localhost $blat_port -log=$output_dir/$sample/log/blat.$sample.$chr.txt $blat_ref  &
-            sleep 2m
-			echo "WARNING : Crest_single: Blat server available at port: $blat_port. Sample:$sample Chr:$chr "
+            echo "WARNING : Crest_single: Blat server not available at port: $blat_port. Sample:$sample Chr:$chr "
+            blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
+            range=20000
+            let blat_port+=$RANDOM%range
+            status=`$blat/gfServer status localhost $blat_port | wc -l`;
+            if [ "$status" -le 1 ]
+            then
+                rm $output_dir/$sample/log/blat.$sample.$chr.txt
+		$blat/gfServer start localhost $blat_port -log=$output_dir/$sample/log/blat.$sample.$chr.txt $blat_ref  &
+                sleep 2m
+                echo "WARNING : Crest_single: Blat server available at port: $blat_port. Sample:$sample Chr:$chr "
+            fi
         fi
-    fi
 	
 	cd $crest    
 	if [ -f $output_dir/$sample/$sample.chr$chr.cover ]

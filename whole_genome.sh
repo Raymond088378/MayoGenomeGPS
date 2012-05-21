@@ -127,9 +127,9 @@ else
             then
                 if [ $paired == 1 ]
                 then
-                    let numfiles=(`cat $sample_info | grep -w FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`)/2
+                    let numfiles=(`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`)/2
                 else
-                    let numfiles=`cat $sample_info | grep -w FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`
+                    let numfiles=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`
                 fi	
                     
                 if [ $aligner == "novoalign" ]

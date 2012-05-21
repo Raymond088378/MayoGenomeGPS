@@ -36,7 +36,37 @@ else
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
     filter_variants=$( cat $tool_info | grep -w '^VARIANT_FILTER' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
+    blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
+    blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
+    blat_ref=$( cat $tool_info | grep -w '^BLAT_REF' | cut -d '=' -f2 )
+    blat_server=$( cat $tool_info | grep -w '^BLAT_SERVER' | cut -d '=' -f2 )
+    window_blat=$( cat $tool_info | grep -w '^WINDOW_BLAT' | cut -d '=' -f2 )
+
+    range=20000
+    let blat_port+=$RANDOM%range
+    status=`$blat/gfServer status localhost $blat_port | wc -l`;
+    if [ "$status" -le 1 ]
+    then
+	$blat/gfServer start localhost $blat_port -log=$out/$group.somatic.variants.raw.vcf.blat.log $blat_ref  &
+	sleep 2m
+    fi
+    status=`$blat/gfServer status localhost $blat_port | wc -l`;
+
+    if [ "$status" -eq 0 ]
+    then
+        blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
+        range=20000
+        let blat_port+=$RANDOM%range
+        status=`$blat/gfServer status localhost $blat_port | wc -l`;
+        if [ "$status" -le 1 ]
+        then
+            rm $out/$group.somatic.variants.raw.vcf.blat.log
+            $blat/gfServer start localhost $blat_port -log=$out/$group.somatic.variants.raw.vcf.blat.log $blat_ref  &
+            sleep 2m
+        fi
+    fi
     
+        
 ########################################################	
 
     inputargs=""
@@ -53,6 +83,8 @@ else
     done
 
     $script_path/combinevcf.sh "$inputargs" $out/$group.somatic.variants.raw.vcf $run_info no
+    perl $script_path/vcf_blat_verify.pl -i $out/$group.somatic.variants.raw.vcf -o $out/$group.somatic.variants.raw.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
+    mv $out/$group.somatic.variants.raw.vcf.tmp $out/$group.somatic.variants.raw.vcf
 
     if [ $filter_variants == "YES" ]
     then
@@ -71,6 +103,31 @@ else
 	done
     fi
 			
+    range=20000
+    let blat_port+=$RANDOM%range
+    status=`$blat/gfServer status localhost $blat_port | wc -l`;
+    if [ "$status" -le 1 ]
+    then
+	$blat/gfServer start localhost $blat_port -log=$out/$group.variants.raw.vcf.blat.log $blat_ref  &
+	sleep 2m
+    fi
+    status=`$blat/gfServer status localhost $blat_port | wc -l`;
+
+    if [ "$status" -eq 0 ]
+    then
+        blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
+        range=20000
+        let blat_port+=$RANDOM%range
+        status=`$blat/gfServer status localhost $blat_port | wc -l`;
+        if [ "$status" -le 1 ]
+        then
+            rm $out/$group.variants.raw.vcf.blat.log
+            $blat/gfServer start localhost $blat_port -log=$out/$group.variants.raw.vcf.blat.log $blat_ref  &
+            sleep 2m
+        fi
+    fi
+    
+    
     inputargs=""
     for i in $chrs
     do
@@ -85,6 +142,8 @@ else
     done
 
     $script_path/combinevcf.sh "$inputargs" $out/$group.variants.raw.vcf $run_info no
+    perl $script_path/vcf_blat_verify.pl -i $out/$group.variants.raw.vcf -o $out/$group.variants.raw.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
+    mv $out/$group.variants.raw.vcf.tmp $out/$group.variants.raw.vcf
 	
     if [ $filter_variants == "YES" ]
     then

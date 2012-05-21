@@ -20,7 +20,6 @@ else
     variant_type=`echo "$variant_type" | tr "[a-z]" "[A-Z]"`
     dbsnp_rsids_indel=$( cat $tool_info | grep -w '^dbSNP_INDEL_rsIDs' | cut -d '=' -f2)
     chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" " " )
-    sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     vcftools=$( cat $tool_info | grep -w '^VCFTOOLS' | cut -d '=' -f2)
     perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
     blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
@@ -36,40 +35,40 @@ else
         snv_file=$( cat $sample_info | grep -w SNV:${sample} | cut -d '=' -f2)
         indel_file=$( cat $sample_info | grep -w INDEL:${sample} | cut -d '=' -f2)	
 	
-        if [ $input/$snv_file == $input/$indel_file ]
+        if [ "$input/$snv_file" == "$input/$indel_file" ]
         then
-	    n=`cat $input/$snv_file |  awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
-	    if [ $n == 0 ]
-	    then
-		perl $script_path/vcf_blat_verify.pl -i $input/$snv_file -o $reports/$sample.variants.raw.vcf -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
-	    else
-		cp $input/$snv_file $reports/$sample.variants.raw.vcf
-	    fi
-	    cp $reports/$sample.variants.raw.vcf $reports/$sample.variants.filter.vcf
-            for chr in $chrs
-            do
-                cat $reports/$sample.variants.filter.vcf | awk -v num=chr${chr} '$0 ~ /^#/ || $1 == num' > $output/$sample/$sample.variants.chr$chr.filter.vcf
-            done
-        else
-            ### concat both the vcf files to get one vcf file
-            snv=`cat $input/$snv_file | awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
-	    if [ $n == 0 ]
-	    then
-		perl $script_path/vcf_blat_verify.pl -i $input/$snv_file -o $reports/$sample.variants.SNV.raw.vcf -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
-	    else
-		cp $input/$snv_file $reports/$sample.variants.SNV.raw.vcf
-	    fi
-	    indel=`cat $input/$indel_file | awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
-	    if [ $n == 0 ]
-	    then
-		perl $script_path/vcf_blat_verify.pl -i $input/$indel_file -o $reports/$sample.variants.INDEL.raw.vcf -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
-	    else
-		cp $input/$indel_file $reports/$sample.variants.INDEL.raw.vcf
-	    fi	
-	    in="-V $reports/$sample.variants.SNV.raw.vcf $reports/$sample.variants.INDEL.raw.vcf"
-	    $script_path/combinevcf.sh "$in" $reports/$sample.variants.raw.vcf $run_info yes
-	    cp $reports/$sample.variants.raw.vcf $reports/$sample.variants.filter.vcf
-	    for chr in $chrs
+			n=`cat $input/$snv_file |  awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
+			if [ $n == 0 ]
+			then
+				perl $script_path/vcf_blat_verify.pl -i $input/$snv_file -o $reports/$sample.variants.raw.vcf -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
+			else
+				cp $input/$snv_file $reports/$sample.variants.raw.vcf
+			fi
+			cp $reports/$sample.variants.raw.vcf $reports/$sample.variants.filter.vcf
+			for chr in $chrs
+			do
+				cat $reports/$sample.variants.filter.vcf | awk -v num=chr${chr} '$0 ~ /^#/ || $1 == num' > $output/$sample/$sample.variants.chr$chr.filter.vcf
+			done
+		else
+			### concat both the vcf files to get one vcf file
+			snv=`cat $input/$snv_file | awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
+			if [ $snv == 0 ]
+			then
+				perl $script_path/vcf_blat_verify.pl -i $input/$snv_file -o $reports/$sample.variants.SNV.raw.vcf -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
+			else
+				cp $input/$snv_file $reports/$sample.variants.SNV.raw.vcf
+			fi
+			indel=`cat $input/$indel_file | awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
+			if [ $indel == 0 ]
+			then
+				perl $script_path/vcf_blat_verify.pl -i $input/$indel_file -o $reports/$sample.variants.INDEL.raw.vcf -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
+			else
+				cp $input/$indel_file $reports/$sample.variants.INDEL.raw.vcf
+			fi	
+				in="-V $reports/$sample.variants.SNV.raw.vcf $reports/$sample.variants.INDEL.raw.vcf"
+				$script_path/combinevcf.sh "$in" $reports/$sample.variants.raw.vcf $run_info yes
+				cp $reports/$sample.variants.raw.vcf $reports/$sample.variants.filter.vcf
+			for chr in $chrs
             do
                cat $reports/$sample.variants.filter.vcf | awk -v num=chr${chr} '$0 ~ /^#/ || $1 == num' > $output/$sample/$sample.variants.chr$chr.filter.vcf 
             done    
@@ -79,7 +78,7 @@ else
         then
             snv_file=$( cat $sample_info | grep -w SNV:${sample} | cut -d '=' -f2)
             snv=`cat $input/$snv_file | awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
-	    if [ $n == 0 ]
+	    if [ $snv == 0 ]
 	    then
 		perl $script_path/vcf_blat_verify.pl -i $input/$snv_file -o $reports/$sample.variants.raw.vcf -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
 	    else
@@ -94,7 +93,7 @@ else
         then
             indel_file=$( cat $sample_info | grep -w INDEL:${sample} | cut -d '=' -f2)
             indel=`cat $input/$indel_file | awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
-	    if [ $n == 0 ]
+	    if [ $indel == 0 ]
 	    then
 		perl $script_path/vcf_blat_verify.pl -i $input/$indel_file -o $reports/$sample.variants.raw.vcf -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
 	    else

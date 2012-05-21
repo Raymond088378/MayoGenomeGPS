@@ -34,13 +34,15 @@ else
     -verbose $output/$indel_v \
     -I:normal $normal_bam \
     -I:tumor $tumor_bam
-
+	
     if [ ! -s $output/$output_file ]
     then
         echo "ERROR : variants.sh SomaticIndelDetector failed, file $output/$output_file not generated "
         exit 1;
     else
         rm $output/$indel_v
+		cat $output/$output_file | awk '$0 ~ /^#/ || $8 ~ /SOMATIC/' > $output/$output_file.tmp
+		mv $output/$output_file.tmp $output/$output_file
     fi
     echo `date`
 fi	

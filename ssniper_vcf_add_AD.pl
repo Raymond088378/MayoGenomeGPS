@@ -49,9 +49,9 @@ while (<>) {
        }
        #Calculate alternate allele
        my $ad = $freq{$sample}->{$fields{'ALT'}};
-       $sample_values{$sample}->{AD}=$ad;
+       my $ad1 = $freq{$sample}->{$fields{'REF'}};
+       $sample_values{$sample}->{AD}="$ad1,$ad";
    }
-
    #Change fields to reflect change
    push (@names_format, "AD");
    $fields{'FORMAT'} = join (':', @names_format);

@@ -28,7 +28,7 @@ else
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
     delivery_folder=$( cat $run_info | grep -w '^DELIVERY_FOLDER' | cut -d '=' -f2)
     multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
-
+	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]" )
     i=1
     for chr in $chrIndexes
     do
@@ -39,7 +39,7 @@ else
     if [ $multi == "YES" ]
     then
         cd $input/$sample
-        pair=$( cat $sample_info | grep -w "$sample" | cut -d '=' -f2)
+        pair=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2)
         for i in *.cleaned.bam
         do
             $samtools/samtools view -H $i > $output/$sample.header.sam
@@ -76,8 +76,11 @@ else
             then
                 $samtools/samtools index $output/$i.igv-sorted.bam
                 rm $output/$sample.$i.header.sam
-				rm $alignment/$i/$i.sorted.bam $alignment/$i/$i.sorted.bam.bai
-            else
+				if [ $analysis != "variant" ]
+				then
+					rm $alignment/$i/$i.sorted.bam $alignment/$i/$i.sorted.bam.bai
+				fi
+			else
                 echo "ERROR: $output/$i.igv-sorted.bam not exist Merging fails for $i to create IGV BAM"
                 exit 1;
             fi
@@ -112,8 +115,11 @@ else
         then
             $samtools/samtools index $output/$sample.igv-sorted.bam
             rm $output/$sample.header.sam
-			rm $alignment/$sample/$sample.sorted.bam $alignment/$sample/$sample.sorted.bam.bai
-        else
+			if [ $analysis != "variant" ]
+			then
+				rm $alignment/$sample/$sample.sorted.bam $alignment/$sample/$sample.sorted.bam.bai
+			fi
+		else
             echo "ERROR: Merging fails for $sample to create IGV BAM"
             exit 1;
         fi

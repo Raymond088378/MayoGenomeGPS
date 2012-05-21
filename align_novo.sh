@@ -69,8 +69,8 @@ else
     then
         let fidx=($SGE_TASK_ID*2)-1 
         let sidx=$SGE_TASK_ID*2
-        R1=`cat $sample_info | grep -w "$sample" | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
-        R2=`cat $sample_info | grep -w "$sample" | cut -d '=' -f2| tr "\t" "\n" | head -n $sidx | tail -n 1`
+        R1=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
+        R2=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" | head -n $sidx | tail -n 1`
 		## run fastqc depending on flag and convert the zip to unzip fastq
         j=1
         for i in $R1 $R2
@@ -89,7 +89,7 @@ else
     elif [ $paired == 0 ]
     then
         let fidx=$SGE_TASK_ID
-        R1=`cat $sample_info | grep -w "$sample" | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
+        R1=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
         extension=$(echo $R1 | sed 's/.*\.//')
         filename1=$(echo $R1 | sed 's/\.[^\.]*$//')
         if [ $extension == "gz" ]

@@ -20,7 +20,7 @@ else
     
     if [ $multi == "YES" ]
     then
-        pair=$( cat $sample_info | grep -w "$sample" | cut -d '=' -f2)
+        pair=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2)
         for i in $pair
         do
             for chr in $chrs
