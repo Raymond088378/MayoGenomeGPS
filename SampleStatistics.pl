@@ -185,9 +185,9 @@
 				@names=(@align,@snv,@indel,@sv);
 			}	
 		}
-		elsif ($analysis == "variant")	{
+		elsif ($analysis eq 'variant')	{
 			if ($tool eq 'exome')	{
-				@align=("Realigned Mapped Reads","Mapped Reads(in CaptureRegion)");
+				@align=("Mapped Reads(in CaptureRegion)");
 				
 				@snv=("Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","SNVs in CaptureRegion",
 				"Total SNVs","Ti/Tv Ratio","SPLICE_SITE_ACCEPTOR","SPLICE_SITE_DONOR","START_LOST","STOP_GAINED","STOP_LOST","RARE_AMINO_ACID","NON_SYNONYMOUS_CODING","SYNONYMOUS_START","NON_SYNONYMOUS_START","START_GAINED","SYNONYMOUS_CODING","SYNONYMOUS_STOP","NON_SYNONYMOUS_STOP","UTR_5_PRIME","UTR_3_PRIME",
@@ -197,7 +197,7 @@
 				@names=(@align,@snv,@indel);
 			}	
 			elsif ($tool eq 'whole_genome')	{
-				@align=("Realigned Mapped Reads","Mapped Reads(in CodingRegion)");
+				@align=("Mapped Reads(in CodingRegion)");
 				
 				@snv=("Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","Total SNVs","Ti/Tv Ratio","SPLICE_SITE_ACCEPTOR","SPLICE_SITE_DONOR","START_LOST","STOP_GAINED","STOP_LOST","RARE_AMINO_ACID","NON_SYNONYMOUS_CODING","SYNONYMOUS_START","NON_SYNONYMOUS_START","START_GAINED","SYNONYMOUS_CODING","SYNONYMOUS_STOP","NON_SYNONYMOUS_STOP","UTR_5_PRIME","UTR_3_PRIME","Total SNVs","Ti/Tv Ratio","SPLICE_SITE_ACCEPTOR","SPLICE_SITE_DONOR","START_LOST","STOP_GAINED","STOP_LOST","RARE_AMINO_ACID","NON_SYNONYMOUS_CODING","SYNONYMOUS_START","NON_SYNONYMOUS_START","START_GAINED","SYNONYMOUS_CODING","SYNONYMOUS_STOP","NON_SYNONYMOUS_STOP","UTR_5_PRIME","UTR_3_PRIME");
 				
@@ -253,20 +253,20 @@
 	#printing the statistics for each sample
 	foreach my $key (sort {$a <=> $b} keys %sample_numbers)	{
 		print OUT "$names[$key]";
-		if ( $key eq '1' && $analysis ne 'annotation'  && $analysis ne 'ontarget' )	{
+		if ( $key eq '1' && $analysis ne 'annotation'  && $analysis ne 'ontarget' && $multi eq 'NO')	{
 			for (my $c=0; $c < $num_samples;$c++)	{
 				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
 				my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 				print OUT "\t$print ($per_mapped \%)";
 			}
 		}
-		if ($key eq '2' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' )	{
+		if ($key eq '2' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' && $multi eq 'NO')	{
 			for (my $c=0; $c < $num_samples;$c++)	{
 				my $print=sprintf("%.2f",$sample_numbers{$key}[$c]);
 				print OUT "\t$print\%";
 			}		
 		}
-		elsif ($key eq '2' && $analysis eq 'variant')	{
+		elsif ($key eq '2' && $analysis eq 'variant' && $multi eq 'NO')	{
 			for (my $c=0; $c < $num_samples;$c++)	{
 				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
 				my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
@@ -311,10 +311,8 @@
 						}
 					}
 					elsif ($analysis eq 'variant')	{
-						if ( ( $key ne '1') && ( $key ne '2') )	{
-							my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
-							print OUT "\t$print";	
-						}
+						my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+						print OUT "\t$print";	
 					}
 				}	
 			}

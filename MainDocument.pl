@@ -558,8 +558,8 @@ else    {
 		}
 		elsif ($analysis == "variant")	{
 			if ($tool eq 'exome')	{
-				@align=("Realigned Mapped Reads","Mapped Reads(in CaptureRegion)");
-				@align_h=("Number of reads after recalibration and realignment (using GATK)","Number of mapped reads overlapping with the capture kit used");
+				@align=("Mapped Reads(in CaptureRegion)");
+				@align_h=("Number of mapped reads overlapping with the capture kit used");
 				
 				@snv=("Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","SNVs in CaptureRegion",
 				"Total SNVs","Ti/Tv Ratio","SPLICE_SITE_ACCEPTOR","SPLICE_SITE_DONOR","START_LOST","STOP_GAINED","STOP_LOST","RARE_AMINO_ACID","NON_SYNONYMOUS_CODING","SYNONYMOUS_START","NON_SYNONYMOUS_START","START_GAINED","SYNONYMOUS_CODING","SYNONYMOUS_STOP","NON_SYNONYMOUS_STOP","UTR_5_PRIME","UTR_3_PRIME",
@@ -574,8 +574,8 @@ else    {
 				@values=(@align_h,@snv_h,@indel_h);
 			}	
 			elsif ($tool eq 'whole_genome')	{
-				@align=("Realigned Mapped Reads","Mapped Reads(in CodingRegion)");
-				@align_h=("Number of reads after recalibration and realignment (using GATK)","Number of mapped reads overlapping with the coding region from UCSC refFlat file");
+				@align=("Mapped Reads(in CodingRegion)");
+				@align_h=("Number of mapped reads overlapping with the coding region from UCSC refFlat file");
 				
 				@snv=("Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","Total SNVs","Ti/Tv Ratio","SPLICE_SITE_ACCEPTOR","SPLICE_SITE_DONOR","START_LOST","STOP_GAINED","STOP_LOST","RARE_AMINO_ACID","NON_SYNONYMOUS_CODING","SYNONYMOUS_START","NON_SYNONYMOUS_START","START_GAINED","SYNONYMOUS_CODING","SYNONYMOUS_STOP","NON_SYNONYMOUS_STOP","UTR_5_PRIME","UTR_3_PRIME","Total SNVs","Ti/Tv Ratio","SPLICE_SITE_ACCEPTOR","SPLICE_SITE_DONOR","START_LOST","STOP_GAINED","STOP_LOST","RARE_AMINO_ACID","NON_SYNONYMOUS_CODING","SYNONYMOUS_START","NON_SYNONYMOUS_START","START_GAINED","SYNONYMOUS_CODING","SYNONYMOUS_STOP","NON_SYNONYMOUS_STOP","UTR_5_PRIME","UTR_3_PRIME");
 				@snv_h=("Total number of SNVs obtained using ${SNV_caller}","Filtered SNVs obtained using ${SNV_caller} recommendations","Number of SNVs observed in  UCSC RefFlat coding regions",
@@ -616,9 +616,8 @@ else    {
 	
 	foreach my $key (sort {$a <=> $b} keys %sample_numbers)	{
 		print OUT "<td class=\"helpHed\"><p align='left'><a href=\"#$names[$key]\" title=\"$values[$key]\">$names[$key]</a></td>";
-		if ( $key eq '1' && $analysis ne 'annotation'  && $analysis ne 'ontarget' )	{
+		if ( $key eq '1' && $analysis ne 'annotation'  && $analysis ne 'ontarget' && $multi eq 'NO' )	{
 				for (my $c=0; $c < $num_samples;$c++)	{
-					#my $per_mapped=0;
 					my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
 					my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 					print OUT "<td class=\"helpBod\">$print <br> <b>($per_mapped \%) <b></td>";
@@ -629,14 +628,14 @@ else    {
 				$per_mapped_reads =$per_mapped_reads/$num_samples;
 				print OUT "</tr>\n";
 		}
-		if ($key eq '2' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' )	{
+		if ($key eq '2' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' && $multi eq 'NO'  )	{
 			for (my $c=0; $c < $num_samples;$c++)	{
 				my $print=sprintf("%.2f",$sample_numbers{$key}[$c]);
 				print OUT "<td class=\"helpBod\"> $print\%</td>";
 			}		
 			print OUT "</tr>\n";
 		}
-		elsif ($key eq '2' && $analysis eq 'variant')	{
+		elsif ($key eq '2' && $analysis eq 'variant' && $multi eq 'NO')	{
 			for (my $c=0; $c < $num_samples;$c++)	{
 				#my $per_mapped=0;
 				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
@@ -645,7 +644,7 @@ else    {
 			}
 			print OUT "</tr>\n";
 		}
-		if ($key eq '3' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' )	{
+		if ($key eq '3' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' && $multi eq 'NO' )	{
 			for (my $c=0; $c < $num_samples;$c++)	{
 				#my $per_mapped=0;
 				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
@@ -689,10 +688,9 @@ else    {
 						}
 					}
 					elsif ($analysis eq 'variant')	{
-						if ( ( $key ne '1') && ( $key ne '2') )	{
 							my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 							print OUT "<td class=\"helpBod\">$print</td>\n";	
-						}
+						
 					}
 				}	
 			}
@@ -1332,192 +1330,382 @@ else    {
 		}
 		
 		elsif ($analysis eq 'variant') {
-			if ($tool eq 'exome')	{
-				if ($key eq '2' )	{
-					print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}	
-				if ($key eq '6' )	{
-					print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}	
-				if ($key eq '8' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '14' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '15' )	{
-					print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}				
-				if ($key eq '23' )	{
-					print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}	
-				if ($key eq '25' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '31' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '32' )	{
-					print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}				
-				if ($key eq '40' )	{
-					print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '44' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '48' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}			
-			}
-			elsif ($tool eq 'whole_genome')	{
+			if ($multi eq 'NO')	{
+				if ($tool eq 'exome')	{
 					if ($key eq '2' )	{
-					print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
+						print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}	
+					if ($key eq '6' )	{
+						print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}	
+					if ($key eq '8' )	{
+						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '14' )	{
+						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '15' )	{
+						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}				
+					if ($key eq '23' )	{
+						print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}	
+					if ($key eq '25' )	{
+						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '31' )	{
+						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '32' )	{
+						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}				
+					if ($key eq '40' )	{
+						print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '44' )	{
+						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '48' )	{
+						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}			
+				}
+				elsif ($tool eq 'whole_genome')	{
+						if ($key eq '2' )	{
+						print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}	
+					if ($key eq '5' )	{
+						print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}	
+					if ($key eq '7' )	{
+						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '13' )	{
+						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '14' )	{
+						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}				
+					if ($key eq '22' )	{
+						print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}	
+					if ($key eq '24' )	{
+						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '30' )	{
+						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '31' )	{
+						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}				
+					if ($key eq '39' )	{
+						print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '42' )	{
+						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '46' )	{
+						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}				
+					if ($key eq '55' )	{
+						print OUT "<th class=\"helpBod\">Copy Number Variants (CNVs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '59' )	{
+						print OUT "<th class=\"helpBod\">Structural Variants (SVs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
 				}	
-				if ($key eq '5' )	{
-					print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}	
-				if ($key eq '7' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
+			}
+			else	{
+				if ($tool eq 'exome')	{
+					if ($key eq '0' )	{
+						print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}	
+					if ($key eq '4' )	{
+						print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}	
+					if ($key eq '6' )	{
+						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '12' )	{
+						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '13' )	{
+						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}				
+					if ($key eq '21' )	{
+						print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}	
+					if ($key eq '23' )	{
+						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '29' )	{
+						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '30' )	{
+						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}				
+					if ($key eq '38' )	{
+						print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '42' )	{
+						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '46' )	{
+						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}			
 				}
-				if ($key eq '13' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
+				elsif ($tool eq 'whole_genome')	{
+						if ($key eq '2' )	{
+						print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}	
+					if ($key eq '5' )	{
+						print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}	
+					if ($key eq '7' )	{
+						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '13' )	{
+						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '14' )	{
+						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}				
+					if ($key eq '22' )	{
+						print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}	
+					if ($key eq '24' )	{
+						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '30' )	{
+						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '31' )	{
+						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}				
+					if ($key eq '39' )	{
+						print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '42' )	{
+						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '46' )	{
+						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}				
+					if ($key eq '55' )	{
+						print OUT "<th class=\"helpBod\">Copy Number Variants (CNVs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
+					if ($key eq '59' )	{
+						print OUT "<th class=\"helpBod\">Structural Variants (SVs)</th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
 				}
-				if ($key eq '14' )	{
-					print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}				
-				if ($key eq '22' )	{
-					print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}	
-				if ($key eq '24' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '30' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '31' )	{
-					print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}				
-				if ($key eq '39' )	{
-					print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '42' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '46' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}				
-				if ($key eq '55' )	{
-					print OUT "<th class=\"helpBod\">Copy Number Variants (CNVs)</th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '59' )	{
-					print OUT "<th class=\"helpBod\">Structural Variants (SVs)</th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-			}	
+			}
 		}
 	# print OUT "</tr>";
 	}	
@@ -1532,7 +1720,7 @@ else    {
 		my $tot=0;
 		for(my $k = 0; $k < $num_groups;$k++)	
 		{
-			my $sams=`cat $sample_info | grep -w "$groupArray[$k]" | cut -d '=' -f2`;
+			my $sams=`cat $sample_info | grep -w "^$groupArray[$k]" | cut -d '=' -f2`;
 			my @sam=split('\s+',$sams);
 			for (my $q=1;$q <=$#sam;$q++)	{
 				print OUT "<td class=\"helpHed\"><p align='center'>$groupArray[$k] - $sam[$q] </td>";
@@ -1586,7 +1774,8 @@ else    {
 				@values=(@align_h,@snv_h,@indel_h,@sv_h);
 		}	
 		
-		foreach my $key (sort {$a <=> $b} keys %group_numbers)	{
+		foreach my $key (sort {$a <=> $b} keys %group_numbers)	{	
+			
 			if ($tool eq 'exome')	{
 				if ($key eq '2' )	{
 					print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
@@ -1824,44 +2013,41 @@ else    {
 		</table></ul>";	
 	}	
 	
-	if ( ($analysis eq "external") || ($analysis eq "variant" ) || ($analysis eq 'realignment') || ($analysis eq "mayo") || ($analysis eq 'realign-mayo') )	{
+	if ( ($analysis eq "external") || ($analysis eq "variant" ) || ($analysis eq 'realignment') || ($analysis eq "mayo") || ($analysis eq 'realign-mayo') || ($analysis eq "ontarget") )	{
 		print DESC"
 		<td class=\"helpBod\">Total Reads</td><td class=\"helpBod\">Total number of reads obtained</td></tr>
 		<td class=\"helpBod\">Mapped Reads</td><td class=\"helpBod\">Number and percentage of reads mapped to reference genome(${GenomeBuild})</td></tr>
 		<td class=\"helpBod\">Percent duplication</td><td class=\"helpBod\">Percentage of duplicated reads as identified by(${SNV_caller}) and flagged in the BAM files</td></tr>
-		<td class=\"helpBod\">Realigned Reads (Q >= 20)</td><td class=\"helpBod\">Number and percenatge of realigned reads with a quality >= 20 mapped to reference genome(${GenomeBuild})</td></tr>
+		<td class=\"helpBod\">Realigned Reads </td><td class=\"helpBod\">Number and percenatge of realigned reads with a quality >= 20 mapped to reference genome(${GenomeBuild})</td></tr>
 		<td class=\"helpBod\">Total SNVs ${SNV_caller}</td><td class=\"helpBod\">Total number of SNVs obtained using ${SNV_caller} </td></tr>
 		<td class=\"helpBod\">Filtered SNVs ${SNV_caller}</td><td class=\"helpBod\">Number of SNVs obtained after passing through ${SNV_caller} VQSR filtering</td></tr>
 		<td class=\"helpBod\">Coding SNVs</td><td class=\"helpBod\">Number of SNVs observed to occur in UCSC RefFlat genomic coordinates</td></tr>
 		<td class=\"helpBod\">Total SNVs </td><td class=\"helpBod\">Total number of known SNVs, either in dbSNP$dbsnp_v or 1000 Genomes</td></tr>
-		<td class=\"helpBod\">Transition to Transversion ratio</td><td class=\"helpBod\">Number of transtitions over number of transversions. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)</td></tr>
-		<td class=\"helpBod\">Nonsense</td><td class=\"helpBod\">Number of Known SNVs that lead to a stop codon</td></tr>
-		<td class=\"helpBod\">Missense</td><td class=\"helpBod\">Number of Known SNVs that lead to codons coding for different amino acids</td></tr>
-		<td class=\"helpBod\">Coding-synonymous</td><td class=\"helpBod\">Number of Known SNVs that lead to codon change without changing the amino acid</td></tr>
-		<td class=\"helpBod\">Coding-notMod3</td><td class=\"helpBod\">Number of Known SNVs that lead to codon change, but number of coding bases is not a multiple of 3</td></tr>
-		<td class=\"helpBod\">Splice-3</td><td class=\"helpBod\">Number of Known SNVs present in the splice-3 sites</td></tr>
-		<td class=\"helpBod\">Splice-5</td><td class=\"helpBod\">Number of Known SNVs present in the splice-5 sites</td></tr>
-		<td class=\"helpBod\">UTR-3</td><td class=\"helpBod\">Number of Known SNVs present in the utr-3 sites</td></tr>
-		<td class=\"helpBod\">UTR-5</td><td class=\"helpBod\">Number of Known SNVs present in the utr-5 sites</td></tr>
-		<td class=\"helpBod\">Total SNVs </td><td class=\"helpBod\">Total number of Novel SNVs, either in dbSNP or 1000 Genomes</td></tr>
-		<td class=\"helpBod\">Transition to Transversion ratio</td><td class=\"helpBod\">Number of transtitions over number of transversions. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)</td></tr>
-		<td class=\"helpBod\">Nonsense</td><td class=\"helpBod\">Number of Novel SNVs that lead to a stop codon</td></tr>
-		<td class=\"hel pBod\">Missense</td><td class=\"helpBod\">Number of Novel SNVs that lead to codons coding for different amino acids</td></tr>
-		<td class=\"helBod\">Coding-synonymous</td><td class=\"helpBod\">Number of Novel SNVs that lead to codon change without changing the amino acid</td></tr>
-		<td class=\"helpBod\">Coding-notMod3</td><td class=\"helpBod\">Number of Novel SNVs that lead to codon change, but number of coding bases is not a multiple of 3</td></tr>
-		<td class=\"helpBod\">Splice-3</td><td class=\"helpBod\">Number of Novel SNVs present in the splice-3 sites</td></tr>
-		<td class=\"helpBod\">Splice-5</td><td class=\"helpBod\">Number of Novel SNVs present in the splice-5 sites</td></tr>
-		<td class=\"helpBod\">UTR-3</td><td class=\"helpBod\">Number of Novel SNVs present in the utr-3 sites</td></tr>
-		<td class=\"helpBod\">UTR-5</td><td class=\"helpBod\">Number of Novel SNVs present in the utr-5 sites</td></tr>
-		<td class=\"helpBod\">Total INDELs ${SNV_caller}</td><td class=\"helpBod\">Total number of INDELs identified by ${SNV_caller} </td></tr>
-		<td class=\"helpBod\">Filtered INDELs ${SNV_caller}</td><td class=\"helpBod\">Number of INDELs obtained after passing through the VQSR filtering by ${SNV_caller}</td></tr>
-		<td class=\"helpBod\">Coding INDELs</td><td class=\"helpBod\">Number of INDELs observed to occur in genomic coordinates</td></tr>
-		<td class=\"helpBod\">In coding</td><td class=\"helpBod\">Number of SeattleSeq annotated INDELs present in coding regions of the genome where inserted or deleted bases are multiples of 3</td></tr>
-		<td class=\"helpBod\">Leading to Frameshift</td><td class=\"helpBod\">Number of INDELs leading to frameshift mutations where inserted or deleted bases ae not multiples of 3</td></tr>
-		<td class=\"helpBod\">Splice-3</td><td class=\"helpBod\">Number of INDELs present in the splice-3 sites</td></tr>
-		<td class=\"helpBod\">Splice-5</td><td class=\"helpBod\">Number of INDELs present in the splice-5 sites</td></tr>
-		<td class=\"helpBod\">UTR-3</td><td class=\"helpBod\">Number of INDELs present in the utr-3 sites</td></tr>
-		<td class=\"helpBod\">UTR-5</td><td class=\"helpBod\">Number of INDELs present in the utr-5 sites</td></tr>";
+		<td class=\"helpBod\">Ti/Tv Ratio</td><td class=\"helpBod\">Number of transtitions over number of transversions. Transition is defined as a change among purines or pyrimidines (A to G, G to A, C to T, and T to C). Transversion is defined as a change from purine to pyrimidine or vice versa (A to C, A to T, G to C, G to T, C to A, C to G, T to A, and T to G)</td></tr>
+		<td class=\"helpBod\">SPLICE_SITE_ACCEPTOR</td><td class=\"helpBod\">The variant hits a splice acceptor site (defined as two bases before exon start, except for the first exon). </td></tr>
+		<td class=\"helpBod\">SPLICE_SITE_DONOR</td><td class=\"helpBod\">The variant hits a Splice donor site (defined as two bases after coding exon end, except for the last exon).</td></tr>
+		<td class=\"helpBod\">START_LOST</td><td class=\"helpBod\">	Variant causes start codon to be mutated into a non-start codon. 	aTg/aGg, M/R </td></tr>
+		<td class=\"helpBod\">STOP_GAINED</td><td class=\"helpBod\">Variant causes a STOP codon 	Cag/Tag, Q/* </td></tr>
+		<td class=\"helpBod\">STOP_LOST</td><td class=\"helpBod\">Variant causes stop codon to be mutated into a non-stop codon 	Tga/Cga, */R </td></tr>
+		<td class=\"helpBod\">RARE_AMINO_ACID</td><td class=\"helpBod\">The variant hits a rare amino acid thus is likely to produce protein loss of function </td></tr>
+		<td class=\"helpBod\">NON_SYNONYMOUS_CODING</td><td class=\"helpBod\">	Variant causes a codon that produces a different amino acid</td></tr>
+		<td class=\"helpBod\">SYNONYMOUS_START</td><td class=\"helpBod\">Variant causes start codon to be mutated into another start codon.</td></tr>
+		<td class=\"helpBod\">NON_SYNONYMOUS_START</td><td class=\"helpBod\">Variant causes start codon to be mutated into another start codon (the new codon produces a different AA). </td></tr>
+		<td class=\"helpBod\">START_GAINED</td><td class=\"helpBod\">A variant in 5'UTR region produces a three base sequence that can be a START codon. </td></tr>
+		<td class=\"helpBod\">SYNONYMOUS_CODING</td><td class=\"helpBod\">Variant causes a codon that produces the same amino acid </td></tr>
+		<td class=\"helpBod\">SYNONYMOUS_STOP</td><td class=\"helpBod\">	Variant causes stop codon to be mutated into another stop codon. </td></tr>
+		<td class=\"helpBod\">NON_SYNONYMOUS_STOP</td><td class=\"helpBod\">	Variant causes stop codon to be mutated into another stop codon. </td></tr>
+		<td class=\"helpBod\">UTR_5_PRIME</td><td class=\"helpBod\">Variant hits 5'UTR region </td></tr>
+		<td class=\"helpBod\">UTR_3_PRIME</td><td class=\"helpBod\">Variant hits 3'UTR region </td></tr>
+		<td class=\"helpBod\">EXON_DELETED</td><td class=\"helpBod\">Number of Known SNVs that lead to a stop codon</td></tr>
+		<td class=\"helpBod\">FRAME_SHIFT</td><td class=\"helpBod\">Insertion or deletion causes a frame shift (An indel size is not multple of 3 )</td></tr>
+		<td class=\"helpBod\">CODON_CHANGE</td><td class=\"helpBod\">One or many codons are changed </td></tr>
+		<td class=\"helpBod\">UTR_5_DELETED</td><td class=\"helpBod\">The variant deletes and exon which is in the 5'UTR of the transcript </td></tr>
+		<td class=\"helpBod\">UTR_3_DELETED</td><td class=\"helpBod\">	The variant deletes and exon which is in the 3'UTR of the transcript </td></tr>
+		<td class=\"helpBod\">CODON_INSERTION</td><td class=\"helpBod\">One or many codons are inserted </td></tr>
+		<td class=\"helpBod\">CODON_CHANGE_PLUS_CODON_INSERTION</td><td class=\"helpBod\">One codon is changed and one or many codons are inserted </td></tr>
+		<td class=\"helpBod\">CODON_DELETION</td><td class=\"helpBod\">	One or many codons are deleted </td></tr>
+		<td class=\"helpBod\">CODON_CHANGE_PLUS_CODON_DELETION</td><td class=\"helpBod\">One codon is changed and one or more codons are deleted</td></tr>";
 		
 		if ($tool eq 'whole_genome')	{
 			print DESC"
@@ -1904,7 +2090,7 @@ else    {
 	}
 	print OUT "<a name=\"Results and Conclusions\" id=\"Results and Conclusions\"></a><p align='left'><u><b> VI.  Results and Conclusions:</p></u></b>";
 	$per_mapped_reads=sprintf("%.2f",$per_mapped_reads);
-	if  ($analysis ne "annotation" && $analysis ne "ontarget") 	{
+	if  ($analysis ne "annotation" && $analysis ne "ontarget" && $analysis ne "variant" ) 	{
 		print OUT"
 		<ul>
 		<li> $per_mapped_reads % of the data has been mapped to the genome.

@@ -78,11 +78,21 @@ else
 	fi    
 	### blacklisted, Alignablility or Uniqueness columns
 	cat $file.sift.codons | awk 'NR>2' | awk '{print $1"\t"($2-1)"\t"$2}' > $file.sift.codons.ChrPos.bed
-	$bed/intersectBed -a $file.sift.codons.ChrPos.bed -b $blacklisted -c | awk '{print $NF}' > $file.sift.codons.ChrPos.bed.black.i
+	if [ -s $file.sift.codons.ChrPos.bed ]
+	then
+		$bed/intersectBed -a $file.sift.codons.ChrPos.bed -b $blacklisted -c | awk '{print $NF}' > $file.sift.codons.ChrPos.bed.black.i
+	else
+		touch $file.sift.codons.ChrPos.bed.black.i
+	fi	
 	echo -e "\nBlacklistedRegion" > $file.sift.codons.ChrPos.bed.black.i.tmp
 	cat  $file.sift.codons.ChrPos.bed.black.i.tmp $file.sift.codons.ChrPos.bed.black.i > $file.sift.codons.ChrPos.bed.black
 	rm $file.sift.codons.ChrPos.bed.black.i.tmp $file.sift.codons.ChrPos.bed.black.i
-	$bed/intersectBed -a $file.sift.codons.ChrPos.bed -b $mapability -c | awk '{print $NF}' > $file.sift.codons.ChrPos.bed.map.i
+	if [ -s $file.sift.codons.ChrPos.bed ]
+	then
+		$bed/intersectBed -a $file.sift.codons.ChrPos.bed -b $mapability -c | awk '{print $NF}' > $file.sift.codons.ChrPos.bed.map.i
+	else
+		touch $file.sift.codons.ChrPos.bed.map.i
+	fi
 	echo -e "\nAlignability/Uniquness" > $file.sift.codons.ChrPos.bed.map.i.tmp
 	cat  $file.sift.codons.ChrPos.bed.map.i.tmp $file.sift.codons.ChrPos.bed.map.i > $file.sift.codons.ChrPos.bed.map
 	rm $file.sift.codons.ChrPos.bed.map.i.tmp $file.sift.codons.ChrPos.bed.map.i
@@ -97,7 +107,12 @@ else
 	fi    
 	## intersect with repeat region bed file
 	cat $file.sift.codons.map | awk 'NR>2' | awk '{print $1"\t"($2-1)"\t"$2}' > $file.sift.codons.map.ChrPos.bed
-	$bed/intersectBed -a $file.sift.codons.map.ChrPos.bed -b $repeat -c | awk '{print $NF}' > $file.sift.codons.map.ChrPos.bed.i
+	if [ -s $file.sift.codons.map.ChrPos.bed ]
+	then
+		$bed/intersectBed -a $file.sift.codons.map.ChrPos.bed -b $repeat -c | awk '{print $NF}' > $file.sift.codons.map.ChrPos.bed.i
+	else
+		touch $file.sift.codons.map.ChrPos.bed.i
+	fi
 	echo -e "\nRepeat_Region" >> $file.sift.codons.map.ChrPos.bed.i.tmp
 	cat $file.sift.codons.map.ChrPos.bed.i >> $file.sift.codons.map.ChrPos.bed.i.tmp
 	paste $file.sift.codons.map $file.sift.codons.map.ChrPos.bed.i.tmp > $file.sift.codons.map.repeat
@@ -111,7 +126,12 @@ else
 	fi    
 	### intersect with miRbase bed file
 	cat $file.sift.codons.map.repeat | awk 'NR>2' | awk '{print $1"\t"($2-1)"\t"$2}' > $file.sift.codons.map.repeat.ChrPos.bed
-	$bed/intersectBed -a $file.sift.codons.map.repeat.ChrPos.bed -b $miRbase -c | awk '{print $NF}' > $file.sift.codons.map.repeat.ChrPos.bed.i
+	if [ -s $file.sift.codons.map.repeat.ChrPos.bed ]
+	then
+		$bed/intersectBed -a $file.sift.codons.map.repeat.ChrPos.bed -b $miRbase -c | awk '{print $NF}' > $file.sift.codons.map.repeat.ChrPos.bed.i
+	else
+		touch $file.sift.codons.map.repeat.ChrPos.bed.i
+	fi
 	echo -e "\nmiRbase" >> $file.sift.codons.map.repeat.ChrPos.bed.i.tmp
 	cat $file.sift.codons.map.repeat.ChrPos.bed.i >> $file.sift.codons.map.repeat.ChrPos.bed.i.tmp
 	rm $file.sift.codons.map.repeat.ChrPos.bed.i $file.sift.codons.map.repeat.ChrPos.bed
@@ -128,8 +148,14 @@ else
 	## SSR=SNP Suspect Reason
 	## SCS=SNP Clinical Significance
 	cat $file.sift.codons.map.repeat.base | awk 'NR>2' | awk '{print $1"\t"($2-1)"\t"$2}' > $file.sift.codons.map.repeat.base.ChrPos.bed
-	$bed/intersectBed -a $file.sift.codons.map.repeat.base.ChrPos.bed -b $ssr -wb | awk '{print $(NF-3)"\t"$(NF-2)"\t"$(NF-1)"\t"$NF}' > $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.i
-	$bed/intersectBed -a $file.sift.codons.map.repeat.base.ChrPos.bed -b $scs -wb | awk '{print $(NF-3)"\t"$(NF-2)"\t"$(NF-1)"\t"$NF}' > $file.sift.codons.map.repeat.base.ChrPos.bed.scs.i
+	if [ -s $file.sift.codons.map.repeat.base.ChrPos.bed ]
+	then
+		$bed/intersectBed -a $file.sift.codons.map.repeat.base.ChrPos.bed -b $ssr -wb | awk '{print $(NF-3)"\t"$(NF-2)"\t"$(NF-1)"\t"$NF}' > $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.i
+		$bed/intersectBed -a $file.sift.codons.map.repeat.base.ChrPos.bed -b $scs -wb | awk '{print $(NF-3)"\t"$(NF-2)"\t"$(NF-1)"\t"$NF}' > $file.sift.codons.map.repeat.base.ChrPos.bed.scs.i
+	else
+		touch $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.i 
+		touch $file.sift.codons.map.repeat.base.ChrPos.bed.scs.i
+	fi	
 	perl $script_path/match.pl -b $file.sift.codons.map.repeat.base.ChrPos.bed -i $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.i -o $file.sift.codons.map.repeat.base.ChrPos.bed.ssr
 	perl $script_path/match.pl -b $file.sift.codons.map.repeat.base.ChrPos.bed -i $file.sift.codons.map.repeat.base.ChrPos.bed.scs.i -o $file.sift.codons.map.repeat.base.ChrPos.bed.scs
 	echo -e "\nSNP_SuspectRegion" >> $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.tmp
@@ -152,8 +178,13 @@ else
 	cat $file.sift.codons.map.repeat.base.snp | awk 'NR>2' | awk '{print $1"\t"($2-1)"\t"$2}' > $file.sift.codons.map.repeat.base.snp.ChrPos.bed
 	for i in conservation regulation tfbs tss enhancer
 	do
-	    $bed/intersectBed -b $file.sift.codons.map.repeat.base.snp.ChrPos.bed -a $UCSC/${i}.bed -wb > $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i}
-	    perl $script_path/matching_ucsc_tracks.pl $file.sift.codons.map.repeat.base.snp.ChrPos.bed $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i} $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i}.txt ${i} $chr
+	    if [ -s $file.sift.codons.map.repeat.base.snp.ChrPos.bed ]
+		then
+			$bed/intersectBed -b $file.sift.codons.map.repeat.base.snp.ChrPos.bed -a $UCSC/${i}.bed -wb > $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i}
+	    else
+			touch $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i}
+		fi
+		perl $script_path/matching_ucsc_tracks.pl $file.sift.codons.map.repeat.base.snp.ChrPos.bed $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i} $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i}.txt ${i} $chr
 	done
 	paste $file.sift.codons.map.repeat.base.snp $file.sift.codons.map.repeat.base.snp.ChrPos.bed.conservation.txt $file.sift.codons.map.repeat.base.snp.ChrPos.bed.regulation.txt $file.sift.codons.map.repeat.base.snp.ChrPos.bed.tfbs.txt $file.sift.codons.map.repeat.base.snp.ChrPos.bed.tss.txt $file.sift.codons.map.repeat.base.snp.ChrPos.bed.enhancer.txt > $file.sift.codons.map.repeat.base.snp.UCSCtracks 
 	rm $file.sift.codons.map.repeat.base.snp.ChrPos.bed
@@ -181,9 +212,9 @@ else
 	fi    
    
 	### add snpeff prediction
-        perl $script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $snpeff/$sample.chr${which_chr}.snv.eff -o $TempReports/$sample.chr${which_chr}.SNV.report
+	perl $script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $snpeff/$sample.chr${which_chr}.snv.eff -o $TempReports/$sample.chr${which_chr}.SNV.report
 	perl $script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $snpeff/$sample.chr${which_chr}.snv.filtered.eff -o $TempReports/$sample.chr${which_chr}.filtered.SNV.report
-        num_a=`cat $TempReports/$sample.chr${which_chr}.SNV.report | awk '{print $1"_"$2}' | sort | uniq | wc -l`
+	num_a=`cat $TempReports/$sample.chr${which_chr}.SNV.report | awk '{print $1"_"$2}' | sort | uniq | wc -l`
 	num_b=`cat $TempReports/$sample.chr${which_chr}.filtered.SNV.report | wc -l `
         if [[ $num_a == $num  && $num_b == $num ]]
 	then
@@ -193,18 +224,18 @@ else
 	fi	
 	### add the entrez id to the report
 	for report in $TempReports/$sample.chr${which_chr}.SNV.report $TempReports/$sample.chr${which_chr}.filtered.SNV.report
-        do
-            perl $script_path/add_entrezID.pl -i $report -m $GeneIdMap -o $report.entrezid
-            mv $report.entrezid $report
-            ## exclude the redundant columns from the report
-            perl $script_path/to.exclude.redundant.columns.from.report.pl $report $report.formatted
-            mv $report.formatted $report
-        done
+	do
+		perl $script_path/add_entrezID.pl -i $report -m $GeneIdMap -o $report.entrezid
+		mv $report.entrezid $report
+		## exclude the redundant columns from the report
+		perl $script_path/to.exclude.redundant.columns.from.report.pl $report $report.formatted
+		mv $report.formatted $report
+	done
         
-        ### add igv, tissue, pathway, kaviar column to the reports
-        perl $script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.SNV.report $run_info SNV > $TempReports/$sample.chr${which_chr}.SNV.xls
-        perl $script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.filtered.SNV.report $run_info SNV > $TempReports/$sample.chr${which_chr}.filtered.SNV.xls
+	### add igv, tissue, pathway, kaviar column to the reports
+	perl $script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.SNV.report $run_info SNV > $TempReports/$sample.chr${which_chr}.SNV.xls
+	perl $script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.filtered.SNV.report $run_info SNV > $TempReports/$sample.chr${which_chr}.filtered.SNV.xls
 	rm $TempReports/$sample.chr${which_chr}.SNV.report
-        rm $TempReports/$sample.chr${which_chr}.filtered.SNV.report
-        echo `date`	
+	rm $TempReports/$sample.chr${which_chr}.filtered.SNV.report
+	echo `date`	
 fi

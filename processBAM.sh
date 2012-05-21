@@ -71,6 +71,7 @@ else
 		fi
 	else	
 	    $script_path/MergeBam.sh $INPUTARGS $input/$sample.sorted.bam $input true $run_info
+		rm $indexes
 	fi
 	
     ### add read grouup information

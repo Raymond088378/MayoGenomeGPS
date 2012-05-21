@@ -194,7 +194,7 @@ else
                 fi
                 qsub $args -N $type.$version.igv_bam.$sample.$run_num -l h_vmem=8G -hold_jid $variant_id $script_path/igv_bam.sh $output_dir/realign $output_dir/IGV_BAM $sample $output_dir/alignment $run_info
                 qsub $args -N $type.$version.variants.$sample.$run_num -hold_jid $variant_id -pe threaded $threads -l h_vmem=8G -t 1-$numchrs:1 $script_path/variants.sh $realign_dir $sample $variant_dir 1 $run_info
-                qsub $args -N $type.$version.merge_variant_single.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.variants.$sample.$run_num $script_path/merge_variant_single.sh $output_dir/variants $sample $output_dir/Reports_per_Sample/ $run_info
+                qsub $args -N $type.$version.merge_variant_single.$sample.$run_num -l h_vmem=8G -pe threaded $threads -hold_jid $type.$version.variants.$sample.$run_num $script_path/merge_variant_single.sh $output_dir/variants $sample $output_dir/Reports_per_Sample/ $run_info
                 qsub $args -N $type.$version.OnTarget_BAM.$sample.$run_num -hold_jid $variant_id -l h_vmem=8G -t 1-$numchrs:1 $script_path/OnTarget_BAM.sh $realign_dir $output_dir/OnTarget $sample $run_info
                 qsub $args -N $type.$version.OnTarget_PILEUP.$sample.$run_num -hold_jid $variant_id -l h_vmem=8G -t 1-$numchrs:1 $script_path/OnTarget_PILEUP.sh $realign_dir $output_dir/OnTarget $sample $run_info
                 qsub $args -N $type.$version.getCoverage.$sample.$run_num -hold_jid $type.$version.OnTarget_PILEUP.$sample.$run_num $script_path/getCoverage.sh $output_dir/OnTarget $output_dir/numbers $sample $run_info    
@@ -282,8 +282,11 @@ else
 		hold_args="-hold_jid $type.$version.processBAM.$sample.$run_num"
 	    fi	
 	    qsub $args -N $type.$version.sample_numbers.$sample.$run_num $hold_args -l h_vmem=4G $script_path/sample_numbers.sh $output_dir $sample $run_info $output_dir/numbers
-	    qsub $args -N $type.$version.gene_summary.$sample.$run_num $hold_args -l h_vmem=4G $script_path/gene_summary.sh $output_dir $sample $run_info $output_dir/Reports_per_Sample		
-        done
+	    if [ $analysis != "alignment" ]
+		then
+			qsub $args -N $type.$version.gene_summary.$sample.$run_num $hold_args -l h_vmem=4G $script_path/gene_summary.sh $output_dir $sample $run_info $output_dir/Reports_per_Sample		
+        fi
+		done
 	### concat raw varaints
         if [[  $tool == "exome"  && $all_sites == "YES" ]]
         then
@@ -361,148 +364,148 @@ else
                 align_dir=$output_dir/alignment/$sample;
                 mkdir -p $align_dir
                 if [[ $analysis == "mayo" || $analysis == "external" || $analysis == "alignment" ]]
-		then
-		    if [ $paired == 1 ]
-		    then
-			let numfiles=(`cat $sample_info | grep -w FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`)/2
-		    else
-			let numfiles=`cat $sample_info | grep -w FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`
-		    fi
-                    if [ $aligner == "novoalign" ]
-                    then
-                        echo "novoalign is used as aligner"
-                        qsub $args -N $type.$version.align_novo.$sample.$run_num -l h_vmem=8G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_novo.sh $sample $output_dir $run_info
-                    elif [ $aligner == "bwa" ]
-                    then
-                        echo "bwa is used as aligner"
-                        qsub $args -N $type.$version.align_read_bwa.R1.$sample.$run_num -l h_vmem=8G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_read_bwa.sh $sample $output_dir 1 $run_info
-                        if [ $paired == 1 ]
-                        then
-                            qsub $args -N $type.$version.align_read_bwa.R2.$sample.$run_num -l h_vmem=8G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_read_bwa.sh $sample $output_dir 2 $run_info	
-                            hold="-hold_jid $type.$version.align_read_bwa.R2.$sample.$run_num,$type.$version.align_read_bwa.R1.$sample.$run_num"
-                        else
-                            hold="-hold_jid $type.$version.align_read_bwa.R1.$sample.$run_num"
-                        fi	
-                        qsub $args -N $type.$version.align_bwa.$sample.$run_num -l h_vmem=8G -pe threaded $threads $hold -t 1-$numfiles:1 $script_path/align_bwa.sh $sample $output_dir $run_info
-                    else
-                        echo "ERROR : Doesn't support the aligner"
-                        exit 1
-                    fi	    
-                    job_id_align=`echo $ALIGNMENT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
-                    qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=8G -hold_jid $job_id_align $script_path/processBAM.sh $align_dir $sample $run_info             
-                elif [[ $analysis == "realignment" || $analysis == "realign-mayo" ]]
-                then
-                    infile=`cat $sample_info | grep -w BAM:${sample} | cut -d '=' -f2 `
-                    num_bams=`echo $infile | tr " " "\n" | wc -l`
-                    for ((i=1; i <=$num_bams; i++));
-                    do
-                        bam=`echo $infile | awk -v num=$i '{print $num}'`
-                        ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
-                    done
-                    qsub $args -pe threaded $threads -N $type.$version.processBAM.$sample.$run_num -l h_vmem=8G $script_path/processBAM.sh $align_dir $sample $run_info
-                fi
-                ### setting the bams and its path for multiple sample anaylysis
-                names_samples=$names_samples"$sample:"
-                bam_samples=$bam_samples"$sample.sorted.bam:"
-                input_dirs=$input_dirs"$output_dir/alignment/$sample:"
-	    done
-            realign_dir=$output_dir/realign/$group
-            variant_dir=$output_dir/variants/$group
-            mkdir -p $realign_dir $variant_dir
-            if [ $analysis == "variant" ]
-            then
-                infile=`cat $sample_info | grep -w BAM:${group} | cut -d '=' -f2`
-                num_bams=`echo $infile | tr " " "\n" | wc -l`
-                for ((i=1; i <=$num_bams; i++));
-                do
-                    bam=`echo $infile | awk -v num=$i '{print $num}'`
-                    ln -s $input/$bam $realign_dir/$group.$i.sorted.bam
-                done
-                qsub $args -N $type.$version.reformat_BAM.$group.$run_num -l h_vmem=8G $script_path/reformat_pairBAM.sh $realign_dir $group $run_info
-                qsub $args -N $type.$version.split_bam_chr.$group.$run_num -hold_jid $type.$version.reformat_BAM.$group.$run_num -l h_vmem=8G -t 1-$numchrs:1 $script_path/split_bam_chr.sh $realign_dir $group $run_info
-                variant_id="$type.$version.split_bam_chr.$group.$run_num"
-            else        
-                id=""
-                for sample in $samples
-                do
-                    id="$type.$version.processBAM.$sample.$run_num,$id,"
-                done    
-                qsub $args -N $type.$version.realign_recal.$group.$run_num -hold_jid $id -l h_vmem=8G -t 1-$numchrs:1 $script_path/realign_recal.sh $input_dirs $bam_samples $names_samples $realign_dir $run_info 1
-                variant_id="$type.$version.realign_recal.$group.$run_num"
-            fi
-            qsub $args -N $type.$version.split_sample_pair.$group.$run_num -hold_jid $variant_id -t 1-$numchrs:1 $script_path/split_sample_pair.sh $output_dir/realign $output_dir/IGV_BAM $group $output_dir/alignment $run_info
-            qsub $args -N $type.$version.igv_bam.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num $script_path/igv_bam.sh $output_dir/realign $output_dir/IGV_BAM $group $output_dir/alignment $run_info 
-            qsub $args -N $type.$version.variants.$group.$run_num -hold_jid $variant_id -pe threaded $threads -l h_vmem=8G -t 1-$numchrs:1 $script_path/variants.sh $realign_dir $names_samples $variant_dir 1 $run_info
-	    qsub $args -N $type.$version.merge_variant_group.$group.$run_num -l h_vmem=8G -hold_jid $type.$version.variants.$group.$run_num $script_path/merge_variant_group.sh $output_dir/variants $group $output_dir/Reports_per_Sample/ $run_info 
-            qsub $args -N $type.$version.OnTarget_BAM.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=8G -t 1-$numchrs:1 $script_path/OnTarget_BAM.sh $output_dir/IGV_BAM $output_dir/OnTarget $group $run_info
-	    qsub $args -N $type.$version.OnTarget_PILEUP.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=8G -t 1-$numchrs:1 $script_path/OnTarget_PILEUP.sh $output_dir/IGV_BAM $output_dir/OnTarget $group $run_info
-	    qsub $args -N $type.$version.getCoverage.$group.$run_num -hold_jid $type.$version.OnTarget_PILEUP.$group.$run_num $script_path/getCoverage.sh $output_dir/OnTarget $output_dir/numbers $group $run_info
-	    qsub $args -N $type.$version.OnTarget_variant.$group.$run_num -l h_vmem=4G -hold_jid $type.$version.merge_variant_group.$group.$run_num -t 1-$numchrs:1 $script_path/OnTarget_variant.sh $output_dir/variants $output_dir/OnTarget $group $run_info
-	    hold_args="-hold_jid $type.$version.OnTarget_variant.$group.$run_num"
+				then
+					if [ $paired == 1 ]
+					then
+						let numfiles=(`cat $sample_info | grep -w FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`)/2
+					else
+						let numfiles=`cat $sample_info | grep -w FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`
+					fi
+					if [ $aligner == "novoalign" ]
+					then
+						echo "novoalign is used as aligner"
+						qsub $args -N $type.$version.align_novo.$sample.$run_num -l h_vmem=8G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_novo.sh $sample $output_dir $run_info
+					elif [ $aligner == "bwa" ]
+					then
+						echo "bwa is used as aligner"
+						qsub $args -N $type.$version.align_read_bwa.R1.$sample.$run_num -l h_vmem=8G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_read_bwa.sh $sample $output_dir 1 $run_info
+						if [ $paired == 1 ]
+						then
+							qsub $args -N $type.$version.align_read_bwa.R2.$sample.$run_num -l h_vmem=8G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_read_bwa.sh $sample $output_dir 2 $run_info	
+							hold="-hold_jid $type.$version.align_read_bwa.R2.$sample.$run_num,$type.$version.align_read_bwa.R1.$sample.$run_num"
+						else
+							hold="-hold_jid $type.$version.align_read_bwa.R1.$sample.$run_num"
+						fi	
+						qsub $args -N $type.$version.align_bwa.$sample.$run_num -l h_vmem=8G -pe threaded $threads $hold -t 1-$numfiles:1 $script_path/align_bwa.sh $sample $output_dir $run_info
+					else
+						echo "ERROR : Doesn't support the aligner"
+						exit 1
+					fi	    
+					job_id_align=`echo $ALIGNMENT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
+					qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=8G -hold_jid $job_id_align $script_path/processBAM.sh $align_dir $sample $run_info             
+				elif [[ $analysis == "realignment" || $analysis == "realign-mayo" ]]
+				then
+					infile=`cat $sample_info | grep -w BAM:${sample} | cut -d '=' -f2 `
+					num_bams=`echo $infile | tr " " "\n" | wc -l`
+					for ((i=1; i <=$num_bams; i++));
+					do
+						bam=`echo $infile | awk -v num=$i '{print $num}'`
+						ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
+					done
+					qsub $args -pe threaded $threads -N $type.$version.processBAM.$sample.$run_num -l h_vmem=8G $script_path/processBAM.sh $align_dir $sample $run_info
+				fi
+				### setting the bams and its path for multiple sample anaylysis
+				names_samples=$names_samples"$sample:"
+				bam_samples=$bam_samples"$sample.sorted.bam:"
+				input_dirs=$input_dirs"$output_dir/alignment/$sample:"
+			done
+			realign_dir=$output_dir/realign/$group
+			variant_dir=$output_dir/variants/$group
+			mkdir -p $realign_dir $variant_dir
+			if [ $analysis == "variant" ]
+			then
+				infile=`cat $sample_info | grep -w BAM:${group} | cut -d '=' -f2`
+				num_bams=`echo $infile | tr " " "\n" | wc -l`
+				for ((i=1; i <=$num_bams; i++));
+				do
+					bam=`echo $infile | awk -v num=$i '{print $num}'`
+					ln -s $input/$bam $realign_dir/$group.$i.sorted.bam
+				done
+				qsub $args -N $type.$version.reformat_BAM.$group.$run_num -l h_vmem=8G $script_path/reformat_pairBAM.sh $realign_dir $group $run_info
+				qsub $args -N $type.$version.split_bam_chr.$group.$run_num -hold_jid $type.$version.reformat_BAM.$group.$run_num -l h_vmem=8G -t 1-$numchrs:1 $script_path/split_bam_chr.sh $realign_dir $group $run_info
+				variant_id="$type.$version.split_bam_chr.$group.$run_num"
+			else        
+				id=""
+				for sample in $samples
+				do
+					id="$type.$version.processBAM.$sample.$run_num,$id,"
+				done    
+				qsub $args -N $type.$version.realign_recal.$group.$run_num -hold_jid $id -l h_vmem=8G -t 1-$numchrs:1 $script_path/realign_recal.sh $input_dirs $bam_samples $names_samples $realign_dir $run_info 1
+				variant_id="$type.$version.realign_recal.$group.$run_num"
+			fi
+			qsub $args -N $type.$version.split_sample_pair.$group.$run_num -hold_jid $variant_id -t 1-$numchrs:1 $script_path/split_sample_pair.sh $output_dir/realign $output_dir/IGV_BAM $group $output_dir/alignment $run_info
+			qsub $args -N $type.$version.igv_bam.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num $script_path/igv_bam.sh $output_dir/realign $output_dir/IGV_BAM $group $output_dir/alignment $run_info 
+			qsub $args -N $type.$version.variants.$group.$run_num -hold_jid $variant_id -pe threaded $threads -l h_vmem=8G -t 1-$numchrs:1 $script_path/variants.sh $realign_dir $names_samples $variant_dir 1 $run_info
+			qsub $args -N $type.$version.merge_variant_group.$group.$run_num -l h_vmem=8G -pe threaded $threads -hold_jid $type.$version.variants.$group.$run_num $script_path/merge_variant_group.sh $output_dir/variants $group $output_dir/Reports_per_Sample/ $run_info 
+			qsub $args -N $type.$version.OnTarget_BAM.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=8G -t 1-$numchrs:1 $script_path/OnTarget_BAM.sh $output_dir/IGV_BAM $output_dir/OnTarget $group $run_info
+			qsub $args -N $type.$version.OnTarget_PILEUP.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=8G -t 1-$numchrs:1 $script_path/OnTarget_PILEUP.sh $output_dir/IGV_BAM $output_dir/OnTarget $group $run_info
+			qsub $args -N $type.$version.getCoverage.$group.$run_num -hold_jid $type.$version.OnTarget_PILEUP.$group.$run_num $script_path/getCoverage.sh $output_dir/OnTarget $output_dir/numbers $group $run_info
+			qsub $args -N $type.$version.OnTarget_variant.$group.$run_num -l h_vmem=4G -hold_jid $type.$version.merge_variant_group.$group.$run_num -t 1-$numchrs:1 $script_path/OnTarget_variant.sh $output_dir/variants $output_dir/OnTarget $group $run_info
+			hold_args="-hold_jid $type.$version.OnTarget_variant.$group.$run_num"
             for sample in $samples
-	    do      
-		qsub $args -N $type.$version.sift.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $sample $run_info
-		qsub $args -N $type.$version.snpeff.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info
-		qsub $args -N $type.$version.polyphen.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info  
-		#qsub $args -N $type.$version.polyphen.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/beautyAnnotation.sh $misc $output_OnTarget $sample $run_info	
-		hold="$type.$version.sift.$group.$sample.$run_num,$type.$version.snpeff.$group.$sample.$run_num,$type.$version.polyphen.$group.$sample.$run_num"
-                qsub $args -N $type.$version.sample_reports.$group.$sample.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=12G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir
-		qsub $args -N $type.$version.sample_report.$sample.$run_num -hold_jid $type.$version.sample_reports.$group.$sample.$run_num $script_path/sample_report.sh $output_dir $TempReports $sample $run_info
-	    done
-	    sampleNames=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" "\n")
-	    i=1
-            for sample in $sampleNames
-	    do
-		sampleArray[$i]=$sample
-		let i=i+1
-	    done
-	    for i in $(seq 2 ${#sampleArray[@]})
-	    do  
-		tumor=${sampleArray[$i]}
-                qsub $args -N $type.$version.sift.${group}.${tumor}.$i.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $group.$tumor $run_info
-		qsub $args -N $type.$version.snpeff.$group.$tumor.$i.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $group.$tumor $run_info
-		qsub $args -N $type.$version.polyphen.$group.$tumor.$i.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $group.$tumor $run_info
-		hold="$type.$version.sift.${group}.${tumor}.$i.$run_num,$type.$version.snpeff.$group.$tumor.$i.$run_num,$type.$version.polyphen.$group.$tumor.$i.$run_num"
-                qsub $args -N $type.$version.sample_reports.$group.$tumor.$i.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=12G $script_path/sample_reports.sh $run_info $tumor $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir $group
-		qsub $args -N $type.$version.sample_report.$group.$tumor.$i.$run_num -hold_jid $type.$version.sample_reports.$group.$tumor.$i.$run_num $script_path/sample_report.sh $output_dir $TempReports $group.$tumor $run_info
-	    done                    		
-	    if [ $tool == "whole_genome" ]
-	    then
-		crest=$output_dir/struct/crest
-		break=$output_dir/struct/break
-		mkdir -p $break
-		mkdir -p $crest
-                id=""
-                for sam in `cat $sample_info| grep -w "^$group" | cut -d '=' -f2`
-		do
-		    qsub $args -N $type.$version.run_crest_multi_cover.$group.$sam.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=8G -t 1-$numchrs:1 $script_path/run_crest_multi_cover.sh $sam $group $output_dir/IGV_BAM $crest $run_info
-                    id="$type.$version.run_crest_multi_cover.$group.$sam.$run_num,$id,"
-                done
-                qsub $args -N $type.$version.run_crest_multi.$group.$run_num -hold_jid $id -l h_vmem=8G -t 1-$numchrs:1 $script_path/run_crest_multi.sh $group $output_dir/IGV_BAM $crest $run_info
-		qsub $args -N $type.$version.run_segseq.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=24G -t 1-$numchrs:1 -l matlab_lic=1 $script_path/run_segseq.sh $group $output_dir/IGV_BAM $output_dir/cnv $run_info    
-		let nump=$numchrs+1;    
-		mkdir -p $break/$group
-		id=""
-                for sam in `cat $sample_info| grep -w "^$group" | cut -d '=' -f2`
-		do
-                    qsub $args -N $type.$version.run_breakdancer.$group.$sam.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=8G -t 1-$numchrs:1 $script_path/run_breakdancer.sh $sam $output_dir/IGV_BAM $break/$group $run_info $group
-		    qsub $args -N $type.$version.run_breakdancer_in.$group.$sam.$run_num -hold_jid $type.$version.igv_bam.$group.$run_num -l h_vmem=8G -t $nump-$nump:$nump $script_path/run_breakdancer.sh $sam $output_dir/IGV_BAM $break/$group $run_info
-                    id="$type.$version.run_breakdancer.$group.$sam.$run_num,$type.$version.run_breakdancer_in.$group.$sam.$run_num,$id,"
-                done
-		hhold="$id,$type.$version.run_segseq.$group.$run_num,$type.$version.run_crest_multi.$group.$run_num"
-                qsub $args -N $type.$version.summaryze_struct_group.$group.$run_num -l h_vmem=8G -hold_jid $hhold $script_path/summaryze_struct_group.sh $group $output_dir $run_info
-		mkdir -p $output_dir/circos;
-		for i in $(seq 2 ${#sampleArray[@]})
-		do  
-		    tumor=${sampleArray[$i]}
-		    qsub $args -N $type.$version.plot_circos_cnv_sv.$group.$tumor.$i.$run_num -hold_jid $type.$version.summaryze_struct_group.$group.$run_num -l h_vmem=8G $script_path/plot_circos_cnv_sv.sh $output_dir/struct/$group.$tumor.somatic.break $output_dir/struct/$group.$tumor.somatic.filter.crest $output_dir/cnv/$group/$tumor.cnv.filter.bed $group.$tumor $output_dir/circos $run_info
+			do      
+				qsub $args -N $type.$version.sift.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $sample $run_info
+				qsub $args -N $type.$version.snpeff.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info
+				qsub $args -N $type.$version.polyphen.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info  
+				#qsub $args -N $type.$version.polyphen.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/beautyAnnotation.sh $misc $output_OnTarget $sample $run_info	
+				hold="$type.$version.sift.$group.$sample.$run_num,$type.$version.snpeff.$group.$sample.$run_num,$type.$version.polyphen.$group.$sample.$run_num"
+				qsub $args -N $type.$version.sample_reports.$group.$sample.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=12G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir
+				qsub $args -N $type.$version.sample_report.$sample.$run_num -hold_jid $type.$version.sample_reports.$group.$sample.$run_num $script_path/sample_report.sh $output_dir $TempReports $sample $run_info
+			done
+			sampleNames=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" "\n")
+			i=1
+				for sample in $sampleNames
+			do
+			sampleArray[$i]=$sample
+			let i=i+1
+			done
+			for i in $(seq 2 ${#sampleArray[@]})
+			do  
+				tumor=${sampleArray[$i]}
+				qsub $args -N $type.$version.sift.${group}.${tumor}.$i.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $group.$tumor $run_info
+				qsub $args -N $type.$version.snpeff.$group.$tumor.$i.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $group.$tumor $run_info
+				qsub $args -N $type.$version.polyphen.$group.$tumor.$i.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $group.$tumor $run_info
+				hold="$type.$version.sift.${group}.${tumor}.$i.$run_num,$type.$version.snpeff.$group.$tumor.$i.$run_num,$type.$version.polyphen.$group.$tumor.$i.$run_num"
+				qsub $args -N $type.$version.sample_reports.$group.$tumor.$i.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=12G $script_path/sample_reports.sh $run_info $tumor $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir $group
+				qsub $args -N $type.$version.sample_report.$group.$tumor.$i.$run_num -hold_jid $type.$version.sample_reports.$group.$tumor.$i.$run_num $script_path/sample_report.sh $output_dir $TempReports $group.$tumor $run_info
+			done                    		
+			if [ $tool == "whole_genome" ]
+			then
+				crest=$output_dir/struct/crest
+				break=$output_dir/struct/break
+				mkdir -p $break
+				mkdir -p $crest
+				id=""
+				for sam in `cat $sample_info| grep -w "^$group" | cut -d '=' -f2`
+				do
+					qsub $args -N $type.$version.run_crest_multi_cover.$group.$sam.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=8G -t 1-$numchrs:1 $script_path/run_crest_multi_cover.sh $sam $group $output_dir/IGV_BAM $crest $run_info
+					id="$type.$version.run_crest_multi_cover.$group.$sam.$run_num,$id,"
+				done
+				qsub $args -N $type.$version.run_crest_multi.$group.$run_num -hold_jid $id -l h_vmem=8G -t 1-$numchrs:1 $script_path/run_crest_multi.sh $group $output_dir/IGV_BAM $crest $run_info
+				qsub $args -N $type.$version.run_segseq.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=24G -t 1-$numchrs:1 -l matlab_lic=1 $script_path/run_segseq.sh $group $output_dir/IGV_BAM $output_dir/cnv $run_info    
+				let nump=$numchrs+1;    
+				mkdir -p $break/$group
+				id=""
+				for sam in `cat $sample_info| grep -w "^$group" | cut -d '=' -f2`
+				do
+					qsub $args -N $type.$version.run_breakdancer.$group.$sam.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=8G -t 1-$numchrs:1 $script_path/run_breakdancer.sh $sam $output_dir/IGV_BAM $break/$group $run_info $group
+					qsub $args -N $type.$version.run_breakdancer_in.$group.$sam.$run_num -hold_jid $type.$version.igv_bam.$group.$run_num -l h_vmem=8G -t $nump-$nump:$nump $script_path/run_breakdancer.sh $sam $output_dir/IGV_BAM $break/$group $run_info
+					id="$type.$version.run_breakdancer.$group.$sam.$run_num,$type.$version.run_breakdancer_in.$group.$sam.$run_num,$id,"
+				done
+				hhold="$id,$type.$version.run_segseq.$group.$run_num,$type.$version.run_crest_multi.$group.$run_num"
+				qsub $args -N $type.$version.summaryze_struct_group.$group.$run_num -l h_vmem=8G -hold_jid $hhold $script_path/summaryze_struct_group.sh $group $output_dir $run_info
+				mkdir -p $output_dir/circos;
+				for i in $(seq 2 ${#sampleArray[@]})
+				do  
+					tumor=${sampleArray[$i]}
+					qsub $args -N $type.$version.plot_circos_cnv_sv.$group.$tumor.$i.$run_num -hold_jid $type.$version.summaryze_struct_group.$group.$run_num -l h_vmem=8G $script_path/plot_circos_cnv_sv.sh $output_dir/struct/$group.$tumor.somatic.break $output_dir/struct/$group.$tumor.somatic.filter.crest $output_dir/cnv/$group/$tumor.cnv.filter.bed $group.$tumor $output_dir/circos $run_info
+				done
+			fi
 		done
-	    fi
-	done
         mkdir -p $output_dir/Reports_per_Sample/ANNOT
-	if [ $tool == "whole_genome" ]
-	then
-	    id=""
+		if [ $tool == "whole_genome" ]
+		then
+			id=""
             for group in `echo $groups | tr ":" "\n"`
             do
                 samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" "\n")
