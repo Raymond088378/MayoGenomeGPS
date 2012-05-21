@@ -48,8 +48,8 @@ else
     status=`$blat/gfServer status localhost $blat_port | wc -l`;
     if [ "$status" -le 1 ]
     then
-	$blat/gfServer start localhost $blat_port -log=$out/$sample.variants.raw.vcf.blat.log $blat_ref  &
-	sleep 2m
+		$blat/gfServer start localhost $blat_port -log=$out/$sample.variants.raw.vcf.blat.log $blat_ref  &
+		sleep 2m
     fi
     status=`$blat/gfServer status localhost $blat_port | wc -l`;
 

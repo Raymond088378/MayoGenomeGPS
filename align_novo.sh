@@ -100,14 +100,14 @@ else
             $script_path/fastq.sh $R1 $seq_file $filename1 $fastq $run_info $fastqc
         fi
     else
-        echo "ERROR: $run info file is not synced with $sample_info file (sequencing information is not correct)"
+        echo "ERROR: $run info file is not synced with $sample_info file (sequencing information is not correct) [`date`]"
         exit 1;
     fi    
     ## check if the fastqs are zipped or not
     
     if [ ! -s $fastq/$filename1 ]
     then
-        echo "ERROR: align_novo.sh File $fastq/$filename1 does not exist" 
+		$script_path/errorlog.sh align_novo.sh $fastq/$filename1 ERROR empty
         exit 1
     fi
 
@@ -115,7 +115,7 @@ else
     then
         if [ ! -s $fastq/$filename2 ]
         then
-            echo "ERROR: align_novo.sh File $fastq/$filename2 does not exist"
+			$script_path/errorlog.sh align_novo.sh $fastq/$filename2 ERROR empty
             exit 1
         fi
     fi    
@@ -152,7 +152,7 @@ else
     
     if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.sam ]
     then
-        echo "ERROR: align_novo.sh File $output_dir_sample/$sample.$SGE_TASK_ID.sam not generated"
+        $script_path/errorlog.sh align_novo.sh $output_dir_sample/$sample.$SGE_TASK_ID.sam ERROR empty
         exit 1
     else
         if [ $paired == 0 ]
@@ -166,12 +166,11 @@ else
     $samtools/samtools view -bS $output_dir_sample/$sample.$SGE_TASK_ID.sam > $output_dir_sample/$sample.$SGE_TASK_ID.bam  
     if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.bam ]
     then
-        echo "Error: align_novo.sh File $output_dir_sample/$sample.$SGE_TASK_ID.bam not generated"
+        $script_path/errorlog.sh align_novo.sh $output_dir_sample/$sample.$SGE_TASK_ID.bam ERROR empty
         exit 1
     else
         rm $output_dir_sample/$sample.$SGE_TASK_ID.sam  
     fi
-
 
 ########################################################	
 ######		Sort BAM, adds RG & remove duplicates

@@ -89,7 +89,7 @@ else
     
     if [ ! -s $fastq/$filename1 ]
     then
-        echo "ERROR: align_read_bwa.sh File $fastq/$filename1 does not exist" 
+        $script_path/errorlog.sh align_read_bwa.sh $fastq/$filename1 ERROR empty
         exit 1
     fi
     ILL2SANGER1=`perl $script_path/checkFastqQualityScores.pl $fastq/$filename1 1000`
@@ -106,7 +106,7 @@ else
   
     if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.R$read.sai ]
     then
-        echo "ERROR: align_read_bwa.sh File $output_dir_sample/$sample.$SGE_TASK_ID.sam not generated"
+        $script_path/errorlog.sh align_read_bwa.sh $output_dir_sample/$sample.$SGE_TASK_ID.R$read.sai ERROR "not created"
         exit 1 
     fi  
 	echo `date`

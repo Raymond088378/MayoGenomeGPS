@@ -20,8 +20,14 @@ else
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
     window=$( cat $tool_info | grep -w '^INDEL_WINDOW_SIZE' | cut -d '=' -f2)
-    ## Somatic Indel detector
-    
+    expression=$( cat $tool_info | grep -w '^SOMATIC_INDEL_FILTER_EXPRESSION'| cut -d '=' -f2)
+	## Somatic Indel detector
+    if [ $expression == "NA" ]
+	then
+		filter="T_COV<6||N_COV<4||T_INDEL_F<0.3||T_INDEL_CF<0.7"
+	else
+		filter="$expression"
+	fi	
     indel_v=$tumor_sample.chr$chr.indel.txt
 	
     $java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
@@ -29,6 +35,7 @@ else
     -et NO_ET \
     -K $gatk/Hossain.Asif_mayo.edu.key \
     -T SomaticIndelDetector \
+	--filter_expressions $filter \
     --window_size $window \
     -o $output/$output_file \
     -verbose $output/$indel_v \

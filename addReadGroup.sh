@@ -19,6 +19,7 @@ else
     GenomeBuild=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2 )
     center=$( cat $run_info | grep -w '^CENTER' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
+	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
                     
     $java/java -Xmx6g -Xms512m \
     -jar $picard/AddOrReplaceReadGroups.jar \
@@ -33,7 +34,8 @@ else
         mv $outbam $inbam
         $samtools/samtools index $inbam
     else
-        echo "ERROR: add read group failed for $inbam"
-    fi
+        $script_path/errorlog.sh convert.bam.sh $outbam ERROR empty
+		exit 1;
+	fi
     echo `date`
 fi	

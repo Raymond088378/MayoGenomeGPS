@@ -57,7 +57,7 @@ else
 	
 	if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.sam ]
     then
-        echo "ERROR: align_bwa.sh File $output_dir_sample/$sample.$SGE_TASK_ID.sam not generated"
+        $script_path/errorlog.sh align_bwa.sh $output_dir_sample/$sample.$SGE_TASK_ID.sam ERROR empty
         exit 1
     else
         if [ $paired == 0 ]
@@ -73,7 +73,7 @@ else
     $samtools/samtools view -bt $ref.fai $output_dir_sample/$sample.$SGE_TASK_ID.sam > $output_dir_sample/$sample.$SGE_TASK_ID.bam  
     if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.bam ]
     then
-        echo "Error:  align_bwa.sh File $output_dir_sample/$sample.$SGE_TASK_ID.bam not generated"
+        $script_path/errorlog.sh align_bwa.sh $output_dir_sample/$sample.$SGE_TASK_ID.bam ERROR empty
         exit 1
     else
         rm $output_dir_sample/$sample.$SGE_TASK_ID.sam  

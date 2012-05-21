@@ -20,7 +20,8 @@ else
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
-    
+    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
+	
     $java/java -Xmx6g -Xms512m \
     -jar $picard/MarkDuplicates.jar \
     INPUT=$inbam \
@@ -40,7 +41,8 @@ else
             $samtools/samtools index $inbam
         fi
     else
-        echo "ERROR: [`date`] remove duplicate failed for $inbam"
+        $script_path/errorlog.sh rmdup.sh $outbam ERROR empty
+		exit 1;
     fi
     echo `date`
 fi	

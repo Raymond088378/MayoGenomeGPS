@@ -53,12 +53,6 @@ else
 ########################################################	
 ######		PICARD to sort raw BAM file
 
-    if [ ! -s $input/$input_bam ]
-    then
-        echo "ERROR: [`date`] convert.bam.sh File $input/$input_bam does not exist"
-        exit 1
-    fi
-
     ## check if BAM is sorted
     SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input/$input_bam -s $samtools`
     if [ $SORT_FLAG == 1 ]
@@ -83,8 +77,9 @@ else
     $samtools/samtools flagstat $input/$sample.sorted.bam > $input/$sample.flagstat
     if [ ! -s $input/$sample.flagstat ]
     then
-        echo "ERROR: [`date`] convert.bam.sh flagstat failed for $input/$sample.flagstat"
-    fi
+        $script_path/errorlog.sh convert.bam.sh $input/$sample.flagstat ERROR empty
+		exit 1;
+	fi
     ## update secondary dahboard
     $script_path/dashboard.sh $sample $run_info Alignment complete $id
     echo `date`

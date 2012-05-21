@@ -67,59 +67,52 @@ else
 	    function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "functionGVS") {print i} } }' $file`
 	    gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
 		id=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Entrez_id") {print i} } }' $file`
-	    cat $file | awk 'NR>2' | cut -f "$function","$gene" > $SNV_dir/$sample.SNV.tmp
-	    input=""	
-            for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
-            do
-                cat $SNV_dir/$sample.SNV.tmp | grep "$snv" | cut -f2 | tr "," "\n" > $SNV_dir/$sample.$snv.tmp
-                input="$input $SNV_dir/$sample.$snv.tmp"
-            done    
-            file=$SNV_dir/$sample.INDEL.filtered.xls
-            function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "functionGVS") {print i} } }' $file`
-			gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
-            cat $file | awk 'NR>2' | cut -f "$function","$gene" > $SNV_dir/$sample.INDEL.tmp
+	    cat $file | awk 'NR>2' | cut -f "$function","$gene" > $SNV_dir/$sample.SNV.tmp	
+		for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
+		do
+			cat $SNV_dir/$sample.SNV.tmp | grep "$snv" | cut -f2 | tr "," "\n" > $SNV_dir/$sample.$snv.tmp
+			if [ -s $SNV_dir/$sample.$snv.tmp ]
+			then
+				echo "NOGENE"  > $SNV_dir/$sample.$snv.tmp
+			fi	
+		done    
  
-			Rscript $script_path/summary.SNV.r $report_dir/$sample.gene.temp $SNV_dir/$sample.SPLICE_SITE_ACCEPTOR.tmp $SNV_dir/$sample.SPLICE_SITE_DONOR.tmp $SNV_dir/$sample.START_LOST.tmp $SNV_dir/$sample.STOP_GAINED.tmp $SNV_dir/$sample.STOP_LOST.tmp $SNV_dir/$sample.RARE_AMINO_ACID.tmp $SNV_dir/$sample.NON_SYNONYMOUS_CODING.tmp $SNV_dir/$sample.SYNONYMOUS_START.tmp $SNV_dir/$sample.NON_SYNONYMOUS_START.txt $SNV_dir/$sample.START_GAINED.txt $SNV_dir/$sample.SYNONYMOUS_CODING.txt $SNV_dir/$sample.SYNONYMOUS_STOP.txt $SNV_dir/$sample.NON_SYNONYMOUS_STOP.txt $SNV_dir/$sample.UTR_5_PRIME.txt $SNV_dir/$sample.UTR_3_PRIME.txt
+		Rscript $script_path/summary.SNV.r $report_dir/$sample.gene.temp $SNV_dir/$sample.SPLICE_SITE_ACCEPTOR.tmp $SNV_dir/$sample.SPLICE_SITE_DONOR.tmp $SNV_dir/$sample.START_LOST.tmp $SNV_dir/$sample.STOP_GAINED.tmp $SNV_dir/$sample.STOP_LOST.tmp $SNV_dir/$sample.RARE_AMINO_ACID.tmp $SNV_dir/$sample.NON_SYNONYMOUS_CODING.tmp $SNV_dir/$sample.SYNONYMOUS_START.tmp $SNV_dir/$sample.NON_SYNONYMOUS_START.txt $SNV_dir/$sample.START_GAINED.txt $SNV_dir/$sample.SYNONYMOUS_CODING.txt $SNV_dir/$sample.SYNONYMOUS_STOP.txt $SNV_dir/$sample.NON_SYNONYMOUS_STOP.txt $SNV_dir/$sample.UTR_5_PRIME.txt $SNV_dir/$sample.UTR_3_PRIME.txt
+		
+		join $SNV_dir/$sample.SPLICE_SITE_ACCEPTOR.txt $SNV_dir/$sample.SPLICE_SITE_DONOR.txt > $SNV_dir/$sample.join1.txt
+		join $SNV_dir/$sample.join1.txt $SNV_dir/$sample.START_LOST.txt > $SNV_dir/$sample.join2.txt
+		join $SNV_dir/$sample.join2.txt $SNV_dir/$sample.STOP_GAINED.txt > $SNV_dir/$sample.join3.txt
+		join $SNV_dir/$sample.join3.txt $SNV_dir/$sample.STOP_LOST.txt > $SNV_dir/$sample.join4.txt
+		join $SNV_dir/$sample.join4.txt $SNV_dir/$sample.RARE_AMINO_ACID.txt > $SNV_dir/$sample.join5.txt
+		join $SNV_dir/$sample.join5.txt $SNV_dir/$sample.NON_SYNONYMOUS_CODING.txt > $SNV_dir/$sample.join6.txt
+		join $SNV_dir/$sample.join6.txt $SNV_dir/$sample.SYNONYMOUS_START.txt > $SNV_dir/$sample.join7.txt
+		join $SNV_dir/$sample.join7.txt $SNV_dir/$sample.NON_SYNONYMOUS_START.txt > $SNV_dir/$sample.join8.txt
+		join $SNV_dir/$sample.join8.txt $SNV_dir/$sample.START_GAINED.txt > $SNV_dir/$sample.join9.txt
+		join $SNV_dir/$sample.join9.txt $SNV_dir/$sample.SYNONYMOUS_CODING.txt > $SNV_dir/$sample.join10.txt
+		join $SNV_dir/$sample.join10.txt $SNV_dir/$sample.SYNONYMOUS_STOP.txt > $SNV_dir/$sample.join11.txt
+		join $SNV_dir/$sample.join11.txt $SNV_dir/$sample.NON_SYNONYMOUS_STOP.txt > $SNV_dir/$sample.join12.txt
+		join $SNV_dir/$sample.join12.txt $SNV_dir/$sample.UTR_5_PRIME.txt > $SNV_dir/$sample.join13.txt
+		join $SNV_dir/$sample.join13.txt $SNV_dir/$sample.UTR_3_PRIME.txt > $SNV_dir/$sample.join14.txt
+		cat $SNV_dir/$sample.join14.txt | tr " " "\t" > $SNV_dir/$sample.join15.txt
 			
-			join $SNV_dir/$sample.SPLICE_SITE_ACCEPTOR.txt $SNV_dir/$sample.SPLICE_SITE_DONOR.txt > $SNV_dir/$sample.join1.txt
-			join $SNV_dir/$sample.join1.txt $SNV_dir/$sample.START_LOST.txt > $SNV_dir/$sample.join2.txt
-			join $SNV_dir/$sample.join2.txt $SNV_dir/$sample.STOP_GAINED.txt > $SNV_dir/$sample.join3.txt
-			join $SNV_dir/$sample.join3.txt $SNV_dir/$sample.STOP_LOST.txt > $SNV_dir/$sample.join4.txt
-			join $SNV_dir/$sample.join4.txt $SNV_dir/$sample.RARE_AMINO_ACID.txt > $SNV_dir/$sample.join5.txt
-			join $SNV_dir/$sample.join5.txt $SNV_dir/$sample.NON_SYNONYMOUS_CODING.txt > $SNV_dir/$sample.join6.txt
-			join $SNV_dir/$sample.join6.txt $SNV_dir/$sample.SYNONYMOUS_START.txt > $SNV_dir/$sample.join7.txt
-			join $SNV_dir/$sample.join7.txt $SNV_dir/$sample.NON_SYNONYMOUS_START.txt > $SNV_dir/$sample.join8.txt
-			join $SNV_dir/$sample.join8.txt $SNV_dir/$sample.START_GAINED.txt > $SNV_dir/$sample.join9.txt
-			join $SNV_dir/$sample.join9.txt $SNV_dir/$sample.SYNONYMOUS_CODING.txt > $SNV_dir/$sample.join10.txt
-			join $SNV_dir/$sample.join10.txt $SNV_dir/$sample.SYNONYMOUS_STOP.txt > $SNV_dir/$sample.join11.txt
-			join $SNV_dir/$sample.join11.txt $SNV_dir/$sample.NON_SYNONYMOUS_STOP.txt > $SNV_dir/$sample.join12.txt
-			join $SNV_dir/$sample.join12.txt $SNV_dir/$sample.UTR_5_PRIME.txt > $SNV_dir/$sample.join13.txt
-			join $SNV_dir/$sample.join13.txt $SNV_dir/$sample.UTR_3_PRIME.txt > $SNV_dir/$sample.join14.txt
-			cat $SNV_dir/$sample.join14.txt | tr " " "\t" > $SNV_dir/$sample.join15.txt
-			
-			touch $SNV_dir/$sample.SNV.summary
-			echo -e "SPLICE_SITE_ACCEPTOR\SPLICE_SITE_DONOR\tSTART_LOST\tSTOP_GAINED\tSTOP_LOST\tRARE_AMINO_ACID\tNON_SYNONYMOUS_CODING\tSYNONYMOUS_START\tNON_SYNONYMOUS_START\tSTART_GAINED\tSYNONYMOUS_CODING\tSYNONYMOUS_STOP\tNON_SYNONYMOUS_STOP\tUTR_5_PRIME\tUTR_3_PRIME" >> $SNV_dir/$sample.SNV.summary
-			cat $SNV_dir/$sample.join15.txt >> $SNV_dir/$sample.SNV.summary
+		touch $SNV_dir/$sample.SNV.summary
+		echo -e "SPLICE_SITE_ACCEPTOR\tSPLICE_SITE_DONOR\tSTART_LOST\tSTOP_GAINED\tSTOP_LOST\tRARE_AMINO_ACID\tNON_SYNONYMOUS_CODING\tSYNONYMOUS_START\tNON_SYNONYMOUS_START\tSTART_GAINED\tSYNONYMOUS_CODING\tSYNONYMOUS_STOP\tNON_SYNONYMOUS_STOP\tUTR_5_PRIME\tUTR_3_PRIME" >> $SNV_dir/$sample.SNV.summary
+		cat $SNV_dir/$sample.join15.txt >> $SNV_dir/$sample.SNV.summary
 			Rscript $script_path/sum.cols.r $SNV_dir/$sample.SNV.summary $SNV_dir/$sample.SNV.sum
 			
-			rm $SNV_dir/$sample.*.tmp $SNV_dir/$sample.join*.txt $SNV_dir/$sample.SPLICE_SITE_ACCEPTOR.txt $SNV_dir/$sample.SPLICE_SITE_DONOR.txt
+			rm $SNV_dir/$sample.*.tmp $SNV_dir/$sample.join*.txt $SNV_dir/$sample.SPLICE_SITE_ACCEPTOR.txt $SNV_dir/$sample.SPLICE_SITE_DONOR.txt $SNV_dir/$sample.START_LOST.txt $SNV_dir/$sample.STOP_GAINED.txt $SNV_dir/$sample.STOP_LOST.txt $SNV_dir/$sample.RARE_AMINO_ACID.txt $SNV_dir/$sample.NON_SYNONYMOUS_CODING.txt $SNV_dir/$sample.SYNONYMOUS_START.txt $SNV_dir/$sample.NON_SYNONYMOUS_START.txt $SNV_dir/$sample.START_GAINED.txt $SNV_dir/$sample.SYNONYMOUS_CODING.txt $SNV_dir/$sample.SYNONYMOUS_STOP.txt $SNV_dir/$sample.UTR_5_PRIME.txt $SNV_dir/$sample.UTR_3_PRIME.txt 
 	#################################################################################################	
 			### summarizing INDEL files
-			file=$INDEL_dir/$sample.INDEL.cleaned_annot_filtered.xls
-			function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "functionGVS") {print i} } }' $file`
+            file=$INDEL_dir/$sample.INDEL.filtered.xls
+            function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "functionGVS") {print i} } }' $file`
 			gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
-			cat $file |  cut -f "$function","$gene" > $INDEL_dir/$sample.INDEL.tmp
-			            for indel in EXON_DELETED FRAME_SHIFT CODON_CHANGE UTR_5_DELETED UTR_3_DELETED CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR UTR_5_PRIME UTR_3_PRIME		
-            do
-			cat $SNV_dir/$sample.INDEL.tmp | grep "$indel" | cut -f2 | tr "," "\n" > $SNV_dir/$sample.$indel.tmp
-            done
+            cat $file | awk 'NR>2' | cut -f "$function","$gene" > $INDEL_dir/$sample.INDEL.tmp
 
-			cat $INDEL_dir/$sample.INDEL.tmp | grep "coding" | cut -f2 | tr "," "\n" > $INDEL_dir/$sample.coding.tmp
-			cat $INDEL_dir/$sample.INDEL.tmp | grep "frameshift" | cut -f2 | tr "," "\n" > $INDEL_dir/$sample.frameshift.tmp
-			cat $INDEL_dir/$sample.INDEL.tmp | grep "splice-3" | cut -f2 | tr "," "\n" > $INDEL_dir/$sample.splice3.tmp
-			cat $INDEL_dir/$sample.INDEL.tmp | grep "splice-5" | cut -f2 | tr "," "\n" > $INDEL_dir/$sample.splice5.tmp
-			cat $INDEL_dir/$sample.INDEL.tmp | grep "utr-3" | cut -f2 | tr "," "\n" > $INDEL_dir/$sample.utr3.tmp
-			cat $INDEL_dir/$sample.INDEL.tmp | grep "utr-5" | cut -f2 | tr "," "\n" > $INDEL_dir/$sample.utr5.tmp
+            for indel in EXON_DELETED FRAME_SHIFT CODON_CHANGE UTR_5_DELETED UTR_3_DELETED CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR UTR_5_PRIME UTR_3_PRIME		
+            do
+			cat $INDEL_dir/$sample.INDEL.tmp | grep "$indel" | cut -f2 | tr "," "\n" > $INDEL_dir/$sample.$indel.tmp
+            done
+			
 			if [ -s $INDEL_dir/$sample.coding.tmp ]
 			then
 				echo "Not empty"
