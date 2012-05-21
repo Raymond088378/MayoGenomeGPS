@@ -24,6 +24,7 @@ else
 	## Somatic Indel detector
     if [ $expression == "NA" ]
 	then
+		### default filter
 		filter="T_COV<6||N_COV<4||T_INDEL_F<0.3||T_INDEL_CF<0.7"
 	else
 		filter="$expression"
