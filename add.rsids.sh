@@ -39,10 +39,10 @@ else
         ## add column to add flag for disease variant
         if [ $GenomeBuild == "hg19" ]
         then
-                perl $script_path/add.dbsnp.disease.snv.pl -i $TempReports/$snv.forrsIDs.added -b 1 -s $dbsnp_rsids_disease -c 1 -p 2 -o $TempReports/$snv.forrsIDs.added.disease -r $chr
+			perl $script_path/add.dbsnp.disease.snv.pl -i $TempReports/$snv.forrsIDs.added -b 1 -s $dbsnp_rsids_disease -c 1 -p 2 -o $TempReports/$snv.forrsIDs.added.disease -r $chr
         elif [ $GenomeBuild == "hg18" ]	
         then
-                perl $script_path/add.0.pl $TempReports/$snv.forrsIDs.added > $TempReports/$snv.forrsIDs.added.disease
+			perl $script_path/add.0.pl $TempReports/$snv.forrsIDs.added > $TempReports/$snv.forrsIDs.added.disease
         fi	
         perl $script_path/extract.rsids.pl -i $TempReports/$snv -r $TempReports/$snv.forrsIDs.added.disease -o $TempReports/$snv.rsIDs -v SNV
         rm $TempReports/$snv.forrsIDs.added
@@ -50,7 +50,7 @@ else
         rm $TempReports/$snv.forrsIDs.added.disease
         if [ ! -s $TempReports/$snv.rsIDs ]
         then
-            echo "ERROR : $TempReports/$snv.rsIDs is empty"
+            $script_path/errorlog.sh $TempReports/$snv.rsIDs add.rsids.sh ERROR "failed to create"
         fi    
     fi
     if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
@@ -68,7 +68,7 @@ else
     fi
     if [ ! -s $TempReports/$indel.rsIDs ]
     then
-        echo "ERROR : $TempReports/$indel.rsIDs is empty "
+        $script_path/errorlog.sh $TempReports/$indel.rsIDs add.rsids.sh ERROR "failed to create"
     fi    
     echo `date`
 fi	

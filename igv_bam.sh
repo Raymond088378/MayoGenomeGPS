@@ -29,6 +29,7 @@ else
     delivery_folder=$( cat $run_info | grep -w '^DELIVERY_FOLDER' | cut -d '=' -f2)
     multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]" )
+	remove_bam=$( cat $tool_info | grep -w '^REMOVE_ALIGNED_BAM' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
     i=1
     for chr in $chrIndexes
     do
@@ -78,7 +79,10 @@ else
                 rm $output/$sample.$i.header.sam
 				if [ $analysis != "variant" ]
 				then
-					rm $alignment/$i/$i.sorted.bam $alignment/$i/$i.sorted.bam.bai
+					if [ $remove_bam == "YES" ]
+					then
+						rm $alignment/$i/$i.sorted.bam $alignment/$i/$i.sorted.bam.bai
+					fi
 				fi
 			else
                 echo "ERROR: $output/$i.igv-sorted.bam not exist Merging fails for $i to create IGV BAM"
@@ -117,7 +121,10 @@ else
             rm $output/$sample.header.sam
 			if [ $analysis != "variant" ]
 			then
-				rm $alignment/$sample/$sample.sorted.bam $alignment/$sample/$sample.sorted.bam.bai
+				if [ $remove_bam == "YES" ]
+				then
+					rm $alignment/$sample/$sample.sorted.bam $alignment/$sample/$sample.sorted.bam.bai
+				fi
 			fi
 		else
             echo "ERROR: Merging fails for $sample to create IGV BAM"

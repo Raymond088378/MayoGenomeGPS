@@ -628,6 +628,19 @@ else    {
 				$per_mapped_reads =$per_mapped_reads/$num_samples;
 				print OUT "</tr>\n";
 		}
+		if ($key eq '1' && ( $analysis eq 'realignment' || $analysis eq 'realign-mayo' || $analysis eq 'external' || $analysis eq 'mayo')	&& $multi eq 'YES')	{
+			for (my $c=0; $c < $num_samples;$c++)	{
+					my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
+					my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+					print OUT "<td class=\"helpBod\">$print <br> <b>($per_mapped \%) <b></td>";
+					$avg_mapped_reads=$avg_mapped_reads + ${$sample_numbers{$key}}[$c];
+					$per_mapped_reads = $per_mapped_reads + $per_mapped; 
+				}
+				$avg_mapped_reads=$avg_mapped_reads/$num_samples;$avg_mapped_reads=int($avg_mapped_reads/1000000);
+				$per_mapped_reads =$per_mapped_reads/$num_samples;
+				print OUT "</tr>\n";
+		}
+		
 		if ($key eq '2' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' && $multi eq 'NO'  )	{
 			for (my $c=0; $c < $num_samples;$c++)	{
 				my $print=sprintf("%.2f",$sample_numbers{$key}[$c]);
@@ -644,7 +657,23 @@ else    {
 			}
 			print OUT "</tr>\n";
 		}
+		elsif ($key eq '2' && ( $analysis eq 'realignment' || $analysis eq 'realign-mayo' || $analysis eq 'external' || $analysis eq 'mayo')	&& $multi eq 'YES')	{
+			for (my $c=0; $c < $num_samples;$c++)	{
+				my $print=sprintf("%.2f",$sample_numbers{$key}[$c]);
+				print OUT "<td class=\"helpBod\"> $print\%</td>";
+			}		
+			print OUT "</tr>\n";
+		}
 		if ($key eq '3' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' && $multi eq 'NO' )	{
+			for (my $c=0; $c < $num_samples;$c++)	{
+				#my $per_mapped=0;
+				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
+				my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+				print OUT "<td class=\"helpBod\">$print <br> <b>($per_mapped \%) <b></td>";	
+			}
+			print OUT "</tr>\n";
+		}
+		if ($key eq '3' && ( $analysis eq 'realignment' || $analysis eq 'realign-mayo' || $analysis eq 'external' || $analysis eq 'mayo')	&& $multi eq 'YES')	{
 			for (my $c=0; $c < $num_samples;$c++)	{
 				#my $per_mapped=0;
 				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
@@ -2142,6 +2171,10 @@ else    {
 				if ($variant_type eq 'BOTH' || $variant_type eq 'INDEL')	{
 					print OUT "<u> <a href= \"Reports/INDEL.xls\"target=\"_blank\">INDEL Report</a></u> <br><br>";
 				}
+				if ($multi eq "YES")	{
+					print OUT "<u> <a href= \"Reports/Paired.SNV.xls\"target=\"_blank\">Paired SNV Report</a></u> <br>";
+					print OUT "<u> <a href= \"Reports/Paired.INDEL.xls\"target=\"_blank\">Paired INDEL Report</a></u> <br><br>";
+				}	
 				print OUT "</ul>";
 			
 		print OUT "<ul>

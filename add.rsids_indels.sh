@@ -39,7 +39,7 @@ else
 		rm $TempReports/$indel.forrsIDs.added.disease
 		rm $TempReports/$indel
 	else
-		echo "ERROR: adding dbsnp for indel $findel failed"
+		$script_path/errorlog.sh $TempReports/$indel.rsIDs add.rsids_indel.sh ERROR "failed to create"
 	fi	
 	echo `date`
 fi	

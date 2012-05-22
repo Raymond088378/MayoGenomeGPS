@@ -51,7 +51,7 @@ else
         rm $TempReports/$var.forFrequencies.allele.frequency.CEU
         rm $TempReports/$var.forFrequencies.temp
     else
-        echo "ERROR : $TempReports/$var.rsIDs.allele_frequencies is empty"
+        $script_path/errorlog.sh $TempReports/$var.rsIDs.allele_frequencies add.frequencies.sh ERROR "failed to create"
     fi    
     echo `date`
 fi	

@@ -24,7 +24,7 @@ else
 
 	mkdir -p $basedir/Reports_per_Sample
 	output=$basedir/Reports_per_Sample
-	mkdir $output/SV
+	mkdir -p $output/SV
 
 	#Summaryzing CNVs
 
@@ -78,33 +78,10 @@ else
 		fi
 	done
 
-	$java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-	-R $ref \
-	-et NO_ET \
-	-T CombineVariants \
-	$inputargs \
-	-o $output/SV/$sample.cnv.vcf
+	$script_path/combinevcf.sh "$inputargs" $output/SV/$sample.cnv.vcf $run_info yes
+	
+	$script_path/combinevcf.sh "$inputargs_filter" $output/SV/$sample.cnv.filter.vcf $run_info yes
 
-	$java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-	-R $ref \
-	-et NO_ET \
-	-T CombineVariants \
-	$inputargs_filter \
-	-o $output/SV/$sample.cnv.filter.vcf
-
-	if [ -s $output/SV/$sample.cnv.vcf ]
-	then
-		file=`echo $inputargs | sed -e '/-V/s///g'`
-		rm $file
-	fi
-
-	if [ -s $output/SV/$sample.cnv.filter.vcf ]
-	then
-		file=`echo $inputargs_filter | sed -e '/-V/s///g'`
-		rm $file
-	fi    
-
-	rm $basedir/cnv/$sample/*.idx
 	
     #Summaryzing Breakdancer
 	inputargs=""
@@ -132,14 +109,6 @@ else
     cat $basedir/struct/break/$sample/$sample.header.break $output/SV/$sample.break.vcf > $output/SV/$sample.break.vcf.temp
 	mv $output/SV/$sample.break.vcf.temp $output/SV/$sample.break.vcf
 	rm $basedir/struct/break/$sample/$sample.header.break
-	
-    # $java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-    # -R $ref \
-    # -et NO_ET \
-    # -T CombineVariants \
-    # $inputargs \
-    # -V $basedir/struct/break/$sample/$sample.inter.break.vcf \
-    # -o $output/SV/$sample.break.vcf
 
 
 	if [ ! -s $output/SV/$sample.break.vcf ]
@@ -186,29 +155,14 @@ else
 	rm $basedir/struct/crest/$sample/vcf.header.$sample.crest
 
 
-#   $java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-#    -R $ref \
-#    -et NO_ET \
-#    -T CombineVariants \
-#    $inputargs \
-#    -o $output/SV/$sample.raw.crest.vcf
-#
-#    $java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-#    -R $ref \
-#    -et NO_ET \
-#    -T CombineVariants \
-#    $inputargs_filter \
-#    -o $output/SV/$sample.filter.crest.vcf
-#
+
 
     if [ ! -s $output/SV/$sample.raw.crest.vcf ]
     then
         echo "ERROR : summaryze_struct_single.sh  file $output/SV/$sample.raw.crest.vcf not created"
     else
         file=`echo $inputargs | sed -e '/-V/s///g'`
-#rm $file
         file=`echo $inputargs_filter | sed -e '/-V/s///g'`
-#        rm $file
     fi    
 	echo `date`
 fi    

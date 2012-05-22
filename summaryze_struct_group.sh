@@ -86,32 +86,9 @@ else
 			fi
 		done
 		
-		$java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-		-R $ref_genome \
-		-et NO_ET \
-		-T CombineVariants \
-		$inputargs \
-		-o $output/SV/$group.$sample.cnv.vcf
+		$script_path/combinevcf.sh "$inputargs" $output/SV/$group.$sample.cnv.vcf $run_info yes
 		
-		$java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-		-R $ref_genome \
-		-et NO_ET \
-		-T CombineVariants \
-		$inputargs_filter \
-		-o $output/SV/$group.$sample.cnv.filter.vcf
-		
-		if [ -s $output/SV/$group.$sample.cnv.vcf ]
-		then
-			file=`echo $inputargs | sed -e '/-V/s///g'`
-			rm $file
-		fi
-
-		if [ -s $output/SV/$group.$sample.cnv.filter.vcf ]
-		then
-			file=`echo $inputargs_filter | sed -e '/-V/s///g'`
-			rm $file
-		fi    
-		rm $basedir/cnv/$group/$sample.*.idx
+		$script_path/combinevcf.sh "$inputargs"$output/SV/$group.$sample.cnv.filter.vcf $run_info yes
 	done
 
 	#Summaryzing Breakdancer

@@ -12,7 +12,7 @@ else
     chopped=$4
     run_info=$5
 
-    #SGE_TASK_ID=22
+    #SGE_TASK_ID=15
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
     tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2)
@@ -34,15 +34,8 @@ else
     TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
     SNV_caller=$( cat $run_info | grep -w '^SNV_CALLER' | cut -d '=' -f2)
     somatic_caller=$( cat $run_info | grep -w '^SOMATIC_CALLER' | cut -d '=' -f2)
-	blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
-	blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
-	blat_ref=$( cat $tool_info | grep -w '^BLAT_REF' | cut -d '=' -f2 )
-	blat_server=$( cat $tool_info | grep -w '^BLAT_SERVER' | cut -d '=' -f2 )
-	window_blat=$( cat $tool_info | grep -w '^WINDOW_BLAT' | cut -d '=' -f2 )
 	ped=$( cat $tool_info | grep -w '^PEDIGREE' | cut -d '=' -f2 )
 
-    range=20000
-	let blat_port+=$RANDOM%range
 	export PERL5LIB=$PERL5LIB:$perllib
     export PATH=$tabix/:$PATH
 
@@ -56,7 +49,7 @@ else
     ## update dashborad
     if [ $SGE_TASK_ID == 1 ]
     then
-	$script_path/dashboard.sh $samples $run_info VariantCalling started
+		$script_path/dashboard.sh $samples $run_info VariantCalling started
     fi
 
     i=1
@@ -150,7 +143,7 @@ else
                 rm $output/$sample.variants.chr${chr}.raw.vcf.idx
 
 				## add phase by transmission if pedigree information provided.
-				if [$ped != "NA"]
+				if [ $ped != "NA" ]
 				then
 					$script_path/phaseByTransmission.sh $output/$sample.variants.chr${chr}.raw.all.vcf $output/$sample.variants.chr${chr}.raw.all.pbt.vcf $run_info
 				fi
@@ -177,10 +170,11 @@ else
                 $script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.snv.all.vcf $chr $run_info "$bam"
                 ### merge snvs and indels to give on vcf
                 in="-V $output/$sample.variants.chr${chr}.raw.snv.all.vcf -V $output/$sample.variants.chr${chr}.raw.indel.all.vcf "
-                $script_path/combinevcf.sh "$in" $output/$sample.variants.chr${chr}.raw.all.vcf $run_info
+                $script_path/combinevcf.sh "$in" $output/$sample.variants.chr${chr}.raw.all.vcf $run_info yes
                 cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "N" || $0 ~ /^#/' | grep -v "\./\." > $output/$sample.variants.chr${chr}.raw.vcf
                 rm $output/$sample.variants.chr${chr}.raw.all.vcf.idx
                 $tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
+				rm $output/$sample.$chr.target.bed
 			else
                 ## call indeles using GATK
                 param="-L chr${chr}"
@@ -232,8 +226,6 @@ else
         done
         param="-L chr${chr}"
 		$script_path/unifiedgenotyper.sh "$inputfiles" $output/variants.chr${chr}.raw.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info
-		#perl $script_path/vcf_blat_verify.pl -i $output/variants.chr${chr}.raw.vcf -o $output/variants.chr${chr}.raw.vcf.tmp -w $window_blat -r $ref -b $blat -br $blat_ref -bs $blat_server -bp $blat_port
-		#mv $output/variants.chr${chr}.raw.vcf.tmp $output/variants.chr${chr}.raw.vcf
     fi
     ### after this we get multiple indels and snp files which need to be merged for Multi samples but just filter for
     if [ ${#sampleArray[@]} -gt 1 ]
@@ -267,8 +259,6 @@ else
         ## combine both snv and indel
         in="-V $output/MergeAllSamples.chr$chr.snvs.raw.vcf -V $output/MergeAllSamples.chr$chr.Indels.raw.vcf"
         $script_path/combinevcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.vcf $run_info yes
-		#perl $script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.vcf -o $output/MergeAllSamples.chr$chr.raw.vcf.tmp -r $ref -w $window_blat -b $blat -br $blat_ref -bs $blat_server -bp $blat_port
-		#mv $output/MergeAllSamples.chr$chr.raw.vcf.tmp $output/MergeAllSamples.chr$chr.raw.vcf
     fi
 
     ## remove files

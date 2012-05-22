@@ -199,14 +199,14 @@ else
 				cat $file | awk -v num=$dbsnp '$num !~ /^rs/' | wc -l >> $numbers/$sample.out
 				echo -e "NOVEL Transition To Transversion Ratio" >> $numbers/$sample.out
 				cat $file | awk -v num=$dbsnp '$num !~ /^rs/' > $file.novel
-				tt=`$script_path/transition.transversion.persample.pl $file.novel $ref $alt`
-                                if [ ${#tt} -gt 0 ]
-                                then
-                                    echo $tt >> $numbers/$sample.out
+				tt=`perl $script_path/transition.transversion.persample.pl $file.novel $ref $alt`
+				if [ ${#tt} -gt 0 ]
+				then
+					echo $tt >> $numbers/$sample.out
 				else
-                                    tt=0
-                                    echo $tt >> $numbers/$sample.out
-                                fi 
+					tt=0
+					echo $tt >> $numbers/$sample.out
+				fi 
 				
 				for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
 				do
@@ -394,6 +394,8 @@ else
             #### SNV in target region anf capture kit
             genomic_snvs=0
             genomic_indels=0
+			capture_indels=0
+			capture_snvs=0
             for chr in $chrs
             do
 				s=`cat $ontarget/$sample.variants.chr${chr}.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' |  wc -l`
@@ -429,14 +431,14 @@ else
 			cat $file | awk -v num=$dbsnp '$num ~ /^rs/' | wc -l >> $numbers/$sample.out
 			echo -e "KNOWN Transition To Transversion Ratio" >> $numbers/$sample.out
 			cat $file | awk -v num=$dbsnp '$num ~ /^rs/' > $file.known
-			tt=`$script_path/transition.transversion.persample.pl $file.known $ref $alt`
+			tt=`perl $script_path/transition.transversion.persample.pl $file.known $ref $alt`
 			if [ ${#tt} -gt 0 ]
-                                then
-                                    echo $tt >> $numbers/$sample.out
-				else
-                                    tt=0
-                                    echo $tt >> $numbers/$sample.out
-                                fi 
+			then
+				echo $tt >> $numbers/$sample.out
+			else
+				tt=0
+				echo $tt >> $numbers/$sample.out
+			fi 
 			for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
 			do
 				echo -e "KNOWN $snv" >> $numbers/$sample.out 
@@ -448,14 +450,14 @@ else
 			cat $file | awk -v num=$dbsnp '$num !~ /^rs/' | wc -l >> $numbers/$sample.out
 			echo -e "KNOWN Transition To Transversion Ratio" >> $numbers/$sample.out
 			cat $file | awk -v num=$dbsnp '$num !~ /^rs/' > $file.novel
-			tt=`$script_path/transition.transversion.persample.pl $file.novel $ref $alt`
+			tt=`perl $script_path/transition.transversion.persample.pl $file.novel $ref $alt`
 			if [ ${#tt} -gt 0 ]
-                                then
-                                    echo $tt >> $numbers/$sample.out
-				else
-                                    tt=0
-                                    echo $tt >> $numbers/$sample.out
-                                fi 
+			then
+				echo $tt >> $numbers/$sample.out
+			else
+				tt=0
+				echo $tt >> $numbers/$sample.out
+			fi 
 			for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
 			do
 				echo -e "NOVEL $snv" >> $numbers/$sample.out 
@@ -484,7 +486,6 @@ else
 			done	
 			$script_path/dashboard.sh $sample $run_info Statistics complete
 		done
-        
 		### somatic calls
         sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
         samples=$( cat $sample_info | grep -w "^$group" | cut -d '=' -f2 )
@@ -574,14 +575,14 @@ else
 			cat $file | awk -v num=$dbsnp '$num ~ /^rs/' | wc -l >> $numbers/$group.$tumor.out
 			echo -e "KNOWN Transition To Transversion Ratio" >>$numbers/$group.$tumor.out
 			cat $file | awk -v num=$dbsnp '$num ~ /^rs/' > $file.known
-			tt=`$script_path/transition.transversion.persample.pl $file.known $ref $alt`
+			tt=`perl $script_path/transition.transversion.persample.pl $file.known $ref $alt`
 			if [ ${#tt} -gt 0 ]
-                                then
-                                    echo $tt >> $numbers/$sample.out
-				else
-                                    tt=0
-                                    echo $tt >> $numbers/$sample.out
-                                fi 
+			then
+				echo $tt >> $numbers/$sample.out
+			else
+				tt=0
+				echo $tt >> $numbers/$sample.out
+			fi 
 			for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
 			do
 				echo -e "KNOWN $snv" >> $numbers/$group.$tumor.out
@@ -593,14 +594,14 @@ else
 			cat $file | awk -v num=$dbsnp '$num !~ /^rs/' | wc -l >> $numbers/$group.$tumor.out
 			echo -e "KNOWN Transition To Transversion Ratio" >> $numbers/$group.$tumor.out
 			cat $file | awk -v num=$dbsnp '$num !~ /^rs/' > $file.novel
-			tt=`$script_path/transition.transversion.persample.pl $file.novel $ref $alt`
+			tt=`perl $script_path/transition.transversion.persample.pl $file.novel $ref $alt`
 			if [ ${#tt} -gt 0 ]
-                                then
-                                    echo $tt >> $numbers/$sample.out
-				else
-                                    tt=0
-                                    echo $tt >> $numbers/$sample.out
-                                fi 
+			then
+				echo $tt >> $numbers/$sample.out
+			else
+				tt=0
+				echo $tt >> $numbers/$sample.out
+			fi 
 			for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
 			do
 				echo -e "NOVEL $snv" >> $numbers/$group.$tumor.out

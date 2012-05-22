@@ -209,147 +209,147 @@ else
                     qsub $args -N $type.$version.reformat_VARIANTs_OnTarget.$sample.$run_num -l h_vmem=4G $script_path/reformat_VARIANTs_OnTarget.sh $output_dir/variants $output_dir/Reports_per_Sample $sample $run_info 1
                 fi
                 hold_args="-hold_jid $type.$version.reformat_VARIANTs_OnTarget.$sample.$run_num"				
-	    elif [[ $analysis != "alignment" && $analysis != "annotation" ]]
-	    then
-		hold_args="-hold_jid $type.$version.merge_variant_single.$sample.$run_num"	
-	    fi
-	    if [[ $analysis != "alignment" && $analysis != "annotation" ]]
+			elif [[ $analysis != "alignment" && $analysis != "annotation" ]]
+			then
+				hold_args="-hold_jid $type.$version.merge_variant_single.$sample.$run_num"	
+			fi
+			if [[ $analysis != "alignment" && $analysis != "annotation" ]]
             then
                 qsub $args -N $type.$version.OnTarget_variant.$sample.$run_num -t 1-$numchrs:1 $hold_args $script_path/OnTarget_variant.sh $output_dir/variants $output_dir/OnTarget $sample $run_info
-	    fi
+			fi
             if [ $analysis == "annotation" ]
-	    then
-		if [ $variant_type == "BOTH" ]
-		then
-		    qsub $args -N $type.$version.reformat_VARIANTs.$sample.$run_num -l h_vmem=4G $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 2
-		elif [ $variant_type == "SNV" -o $variant_type == "INDEL" ]
-		then
-		    qsub $args -N $type.$version.reformat_VARIANTs.$sample.$run_num -l h_vmem=4G $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 1
-		fi
+			then
+				if [ $variant_type == "BOTH" ]
+				then
+				qsub $args -N $type.$version.reformat_VARIANTs.$sample.$run_num -l h_vmem=4G $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 2
+			elif [ $variant_type == "SNV" -o $variant_type == "INDEL" ]
+			then
+				qsub $args -N $type.$version.reformat_VARIANTs.$sample.$run_num -l h_vmem=4G $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 1
+			fi
 		    
-		hold_args="-hold_jid $type.$version.reformat_VARIANTs.$sample.$run_num"
-	    elif [ $analysis != "alignment" ]
-	    then
-		hold_args="-hold_jid $type.$version.OnTarget_variant.$sample.$run_num"
-	    fi
-	    if [ $analysis != "alignment" ]
-	    then
-		if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
-		then
-		    qsub $args -N $type.$version.sift.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=8G $script_path/sift.sh $sift $output_OnTarget $sample $run_info
-		    qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=8G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info	    	
-		fi
-		qsub $args -N $type.$version.snpeff.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info		
-		if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
-		then
-		    hold="-hold_jid $type.$version.sift.$sample.$run_num,$type.$version.polyphen.$sample.$run_num,$type.$version.snpeff.$sample.$run_num"
-		else
-		    hold="-hold_jid $type.$version.snpeff.$sample.$run_num"
-		fi	
-		qsub $args -N $type.$version.sample_reports.$sample.$run_num $hold -t 1-$numchrs:1 -l h_vmem=12G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir
-		qsub $args -N $type.$version.sample_report.$sample.$run_num -hold_jid $type.$version.sample_reports.$sample.$run_num $script_path/sample_report.sh $output_dir $TempReports $sample $run_info
-		if [[ $tool == "whole_genome"  && $analysis != "annotation" ]]
-		then
-		    crest=$output_dir/struct/crest
-		    break=$output_dir/struct/break
-		    cnv=$output_dir/cnv/$sample
-		    mkdir -p $break $crest $cnv
-		    qsub $args -N $type.$version.run_single_crest.sh.$sample.$run_num -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=8G $script_path/run_single_crest.sh $sample $realign_dir $crest $run_info
-		    qsub $args -N $type.$version.run_cnvnator.$sample.$run_num -hold_jid $variant_id -l h_vmem=8G -t 1-$numchrs:1 $script_path/run_cnvnator.sh $sample $realign_dir $cnv $run_info
-		    let nump=$numchrs+1;
-		    qsub $args -N $type.$version.run_breakdancer.$sample.$run_num -hold_jid $variant_id -l h_vmem=8G -t 1-$numchrs:1 $script_path/run_breakdancer.sh $sample $output_dir/realign $break $run_info
-		    qsub $args -N $type.$version.run_breakdancer_in.$sample.$run_num -hold_jid $type.$version.igv_bam.$sample.$run_num -l h_vmem=8G -t $nump-$nump:$nump $script_path/run_breakdancer.sh $sample $output_dir/IGV_BAM $break $run_info
-		    ### merge the structural variants
-		    hold="-hold_jid $type.$version.run_single_crest.sh.$sample.$run_num,$type.$version.run_cnvnator.$sample.$run_num,$type.$version.run_breakdancer.$sample.$run_num,$type.$version.run_breakdancer_in.$sample.$run_num"
-                    mkdir -p $output_dir/Reports_per_Sample/SV
-                    qsub $args -N $type.$version.summaryze_struct_single.$sample.$run_num -l h_vmem=8G $hold $script_path/summaryze_struct_single.sh $sample $output_dir $run_info
-		    qsub $args -N $type.$version.plot_circos_cnv_sv.$sample.$run_num -hold_jid $type.$version.summaryze_struct_single.$sample.$run_num -l h_vmem=8G $script_path/plot_circos_cnv_sv.sh $break/$sample/$sample.break $crest/$sample/$sample.filter.crest $cnv/$sample.cnv.filter.bed $sample $output_dir/circos $run_info	
-		fi
-	    fi
+			hold_args="-hold_jid $type.$version.reformat_VARIANTs.$sample.$run_num"
+			elif [ $analysis != "alignment" ]
+			then
+				hold_args="-hold_jid $type.$version.OnTarget_variant.$sample.$run_num"
+			fi
+			if [ $analysis != "alignment" ]
+			then
+				if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
+				then
+					qsub $args -N $type.$version.sift.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=8G $script_path/sift.sh $sift $output_OnTarget $sample $run_info
+					qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=8G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info	    	
+				fi
+				qsub $args -N $type.$version.snpeff.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info		
+				if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
+				then
+					hold="-hold_jid $type.$version.sift.$sample.$run_num,$type.$version.polyphen.$sample.$run_num,$type.$version.snpeff.$sample.$run_num"
+				else
+					hold="-hold_jid $type.$version.snpeff.$sample.$run_num"
+				fi	
+				qsub $args -N $type.$version.sample_reports.$sample.$run_num $hold -t 1-$numchrs:1 -l h_vmem=12G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir
+				qsub $args -N $type.$version.sample_report.$sample.$run_num -hold_jid $type.$version.sample_reports.$sample.$run_num $script_path/sample_report.sh $output_dir $TempReports $sample $run_info
+				if [[ $tool == "whole_genome"  && $analysis != "annotation" ]]
+				then
+					crest=$output_dir/struct/crest
+					break=$output_dir/struct/break
+					cnv=$output_dir/cnv/$sample
+					mkdir -p $break $crest $cnv
+					qsub $args -N $type.$version.run_single_crest.sh.$sample.$run_num -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=8G $script_path/run_single_crest.sh $sample $realign_dir $crest $run_info
+					qsub $args -N $type.$version.run_cnvnator.$sample.$run_num -hold_jid $variant_id -l h_vmem=8G -t 1-$numchrs:1 $script_path/run_cnvnator.sh $sample $realign_dir $cnv $run_info
+					let nump=$numchrs+1;
+					qsub $args -N $type.$version.run_breakdancer.$sample.$run_num -hold_jid $variant_id -l h_vmem=8G -t 1-$numchrs:1 $script_path/run_breakdancer.sh $sample $output_dir/realign $break $run_info
+					qsub $args -N $type.$version.run_breakdancer_in.$sample.$run_num -hold_jid $type.$version.igv_bam.$sample.$run_num -l h_vmem=8G -t $nump-$nump:$nump $script_path/run_breakdancer.sh $sample $output_dir/IGV_BAM $break $run_info
+					### merge the structural variants
+					hold="-hold_jid $type.$version.run_single_crest.sh.$sample.$run_num,$type.$version.run_cnvnator.$sample.$run_num,$type.$version.run_breakdancer.$sample.$run_num,$type.$version.run_breakdancer_in.$sample.$run_num"
+					mkdir -p $output_dir/Reports_per_Sample/SV
+					qsub $args -N $type.$version.summaryze_struct_single.$sample.$run_num -l h_vmem=8G $hold $script_path/summaryze_struct_single.sh $sample $output_dir $run_info
+					qsub $args -N $type.$version.plot_circos_cnv_sv.$sample.$run_num -hold_jid $type.$version.summaryze_struct_single.$sample.$run_num -l h_vmem=8G $script_path/plot_circos_cnv_sv.sh $break/$sample/$sample.break $crest/$sample/$sample.filter.crest $cnv/$sample.cnv.filter.bed $sample $output_dir/circos $run_info	
+				fi
+				if [[ $tool == "whole_genome" && $analysis != "alignment" && $analysis != "annotation" && $analysis != "ontarget" ]]
+				then
+					id=""
+					for sample in `echo $samples | tr ":" "\n"`
+					do
+						id="$type.$version.plot_circos_cnv_sv.$sample.$run_num,$id,"
+					done 
+					mkdir -p $output_dir/Reports_per_Sample/ANNOT
+					qsub $args -N $type.$version.annotation_CNV.$sample.$run_num -l h_vmem=4G -hold_jid $id $script_path/annotation_CNV.sh $output_dir/Reports_per_Sample/SV/ $run_info $output_dir/Reports_per_Sample/ANNOT/ $sample
+					qsub $args -N $type.$version.annotation_SV.sh.$sample.$run_num -l h_vmem=4G -hold_jid $id $script_path/annotation_SV.sh $output_dir $run_info $output_dir/Reports_per_Sample/ANNOT/ $sample
+				fi	
+			fi
             if [[ $analysis != "annotation" && $analysis != "alignment" ]]
-	    then
-		if [ $tool == "whole_genome" ]
-		then
-		    hold_args="-hold_jid $type.$version.plot_circos_cnv_sv.$sample.$run_num,$type.$version.sample_report.$sample.$run_num"
-		else
-		    hold_args="-hold_jid $type.$version.sample_report.$sample.$run_num"
-		fi
-	    elif [ $analysis == "annotation" -o $analysis == "ontarget" ]
-	    then
-		hold_args="-hold_jid $type.$version.sample_report.$sample.$run_num"
+			then
+				if [ $tool == "whole_genome" ]
+				then
+					hold_args="-hold_jid $type.$version.plot_circos_cnv_sv.$sample.$run_num,$type.$version.sample_report.$sample.$run_num,$type.$version.annotation.CNV.sh.$run_num, $type.$version.annotation.SV.sh.$run_num"
+				else
+					hold_args="-hold_jid $type.$version.sample_report.$sample.$run_num"
+				fi
+			elif [ $analysis == "annotation" -o $analysis == "ontarget" ]
+			then
+				hold_args="-hold_jid $type.$version.sample_report.$sample.$run_num"
             elif [ $analysis == "alignment" ]
-	    then
-		hold_args="-hold_jid $type.$version.processBAM.$sample.$run_num"
-	    fi	
-	    qsub $args -N $type.$version.sample_numbers.$sample.$run_num $hold_args -l h_vmem=4G $script_path/sample_numbers.sh $output_dir $sample $run_info $output_dir/numbers
+			then
+				hold_args="-hold_jid $type.$version.processBAM.$sample.$run_num"
+			fi	
+			qsub $args -N $type.$version.sample_numbers.$sample.$run_num $hold_args -l h_vmem=4G $script_path/sample_numbers.sh $output_dir $sample $run_info $output_dir/numbers
 	    if [ $analysis != "alignment" ]
 		then
 			qsub $args -N $type.$version.gene_summary.$sample.$run_num $hold_args -l h_vmem=4G $script_path/gene_summary.sh $output_dir $sample $run_info $output_dir/Reports_per_Sample		
         fi
-		done
+	done
 	### concat raw varaints
-        if [[  $tool == "exome"  && $all_sites == "YES" ]]
-        then
-	    id=""
-            for sample in `echo $samples | tr ":" "\n"`
-            do
-                id="$type.$version.variants.$sample.$run_num,$id,"
-            done
-            qsub $args -N $type.$version.merge_raw_variants.$run_num -t 1-$numchrs:1 -hold_jid $id -l h_vmem=8G $script_path/merge_raw_variants.sh $output_dir $run_info
-	    qsub $args -N $type.$version.concat_raw_variants.$run_num -hold_jid $type.$version.merge_raw_variants.$run_num -l h_vmem=8G $script_path/concat_raw_variants.sh $output_dir $run_info	    
+	if [[  $tool == "exome"  && $all_sites == "YES" ]]
+	then
+		id=""
+		for sample in `echo $samples | tr ":" "\n"`
+		do
+			id="$type.$version.variants.$sample.$run_num,$id,"
+		done
+		qsub $args -N $type.$version.merge_raw_variants.$run_num -t 1-$numchrs:1 -hold_jid $id -l h_vmem=8G $script_path/merge_raw_variants.sh $output_dir $run_info
+		qsub $args -N $type.$version.concat_raw_variants.$run_num -hold_jid $type.$version.merge_raw_variants.$run_num -l h_vmem=8G $script_path/concat_raw_variants.sh $output_dir $run_info	    
 	fi	
-        if [[ $tool == "whole_genome" && $analysis != "alignment" && $analysis != "annotation" && $analysis != "ontarget" ]]
-        then
-            id=""
-            for sample in `echo $samples | tr ":" "\n"`
-            do
-                id="$type.$version.plot_circos_cnv_sv.$sample.$run_num,$id,"
-            done 
-            mkdir -p $output_dir/Reports_per_Sample/ANNOT
-	    qsub $args -N $type.$version.annotation.CNV.sh.$run_num -l h_vmem=4G -hold_jid $id -t 1-$numsamples:1 $script_path/annotation_CNV.sh $output_dir/Reports_per_Sample/SV/ $run_info $output_dir/Reports_per_Sample/ANNOT
-	    qsub $args -N $type.$version.annotation.SV.sh.$run_num -l h_vmem=4G -hold_jid $id -t 1-$numsamples:1 $script_path/annotation_SV.sh $output_dir $run_info $output_dir/Reports_per_Sample/ANNOT
-	fi	
+       
 	if [ $analysis != "alignment" ]
-        then
-            id=""
-            for sample in `echo $samples | tr ":" "\n"`
-            do
-                id="$type.$version.sample_report.$sample.$run_num,$id,"
-            done
-            qsub $args -N $type.$version.annotate_sample.$run_num -hold_jid $id -l h_vmem=8G $script_path/annotate_sample.sh $output_dir $run_info    
-        fi
-        id_igv=""
-        id_numbers=""
-        id_gene_summary=""
-        id_coverage=""
-        for sample in `echo $samples | tr ":" "\n"`
-        do
-            id_igv="$type.$version.igv_bam.$sample.$run_num,$id_igv,"
-            id_numbers="$type.$version.sample_numbers.$sample.$run_num,$id_numbers,"
-            id_gene_summary="$type.$version.gene_summary.$sample.$run_num,$id_gene_summary,"
-            id_coverage="$type.$version.getCoverage.$sample.$run_num,$id_coverage,"
-        done 
-        if [ $analysis == "alignment" ]
-        then
-            hold="-hold_jid $id_numbers,$id_gene_summary"
-        elif [ $analysis == "annotation" -o $analysis == "ontarget" ]
-        then
-            hold="-hold_jid $type.$version.annotate_sample.$run_num,$id_numbers,$id_gene_summary"
-        elif [[ $analysis == "mayo" || $analysis == "external" || $analysis == "variant" || $analysis == "realign-mayo" || $analysis == "realignment" ]]
-        then
-            if [ $tool == "whole_genome" ]
-            then
-                hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.annotate_sample.$run_num,$type.$version.annotation.CNV.sh.$run_num,$type.$version.annotation.SV.sh.$run_num "
-            elif [[  $tool == "exome"  && $all_sites == "YES" ]]
-            then
-                hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.annotate_sample.$run_num,$type.$version.concat_raw_variants.$run_num"
-            elif  [[  $tool == "exome"  && $all_sites == "NO" ]]
-            then
-                hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.annotate_sample.$run_num"
-             fi
-        fi
-        qsub $args -l h_vmem=8G -N $type.$version.generate_html.$run_num $hold $script_path/generate_html.sh $output_dir $run_info
-        echo `date`
+	then
+		id=""
+		for sample in `echo $samples | tr ":" "\n"`
+		do
+			id="$type.$version.sample_report.$sample.$run_num,$id,"
+		done
+		qsub $args -N $type.$version.annotate_sample.$run_num -hold_jid $id -l h_vmem=8G $script_path/annotate_sample.sh $output_dir $run_info    
+	fi
+	id_igv=""
+	id_numbers=""
+	id_gene_summary=""
+	id_coverage=""
+	for sample in `echo $samples | tr ":" "\n"`
+	do
+		id_igv="$type.$version.igv_bam.$sample.$run_num,$id_igv,"
+		id_numbers="$type.$version.sample_numbers.$sample.$run_num,$id_numbers,"
+		id_gene_summary="$type.$version.gene_summary.$sample.$run_num,$id_gene_summary,"
+		id_coverage="$type.$version.getCoverage.$sample.$run_num,$id_coverage,"
+	done 
+	if [ $analysis == "alignment" ]
+	then
+		hold="-hold_jid $id_numbers,$id_gene_summary"
+	elif [ $analysis == "annotation" -o $analysis == "ontarget" ]
+	then
+		hold="-hold_jid $type.$version.annotate_sample.$run_num,$id_numbers,$id_gene_summary"
+	elif [[ $analysis == "mayo" || $analysis == "external" || $analysis == "variant" || $analysis == "realign-mayo" || $analysis == "realignment" ]]
+	then
+		if [ $tool == "whole_genome" ]
+		then
+			hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.annotate_sample.$run_num,$type.$version.annotation.CNV.sh.$run_num,$type.$version.annotation.SV.sh.$run_num "
+		elif [[  $tool == "exome"  && $all_sites == "YES" ]]
+		then
+			hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.annotate_sample.$run_num,$type.$version.concat_raw_variants.$run_num"
+		elif  [[  $tool == "exome"  && $all_sites == "NO" ]]
+		then
+			hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.annotate_sample.$run_num"
+		 fi
+	fi
+	qsub $args -l h_vmem=8G -N $type.$version.generate_html.$run_num $hold $script_path/generate_html.sh $output_dir $run_info
     else
         echo "Multi-sample"
         numgroups=$(cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2 | tr ":" "\n" | wc -l)
@@ -520,12 +520,12 @@ else
                     tumor=${sampleArray[$i]}
                     id="$type.$version.plot_circos_cnv_sv.$group.$tumor.$i.$run_num,$id,"
                 done
-            done
-            qsub $args -N $type.$version.annotation_CNV.$run_num -l h_vmem=4G -hold_jid $id -t 1-$numgroups:1 $script_path/annotation_CNV.sh $output_dir/Reports_per_Sample/SV/ $run_info $output_dir/Reports_per_Sample/ANNOT
-	    qsub $args -N $type.$version.annotation_SV.$run_num -l h_vmem=4G -hold_jid $id -t 1-$numgroups:1 $script_path/annotation_SV.sh $output_dir $run_info $output_dir/Reports_per_Sample/ANNOT
-        fi
-	### generate reports for all the samples
-	id=""
+				qsub $args -N $type.$version.annotation_CNV.$group.$run_num -l h_vmem=4G -hold_jid $id $script_path/annotation_CNV.sh $output_dir/Reports_per_Sample/SV/ $run_info $output_dir/Reports_per_Sample/ANNOT $group
+				qsub $args -N $type.$version.annotation_SV.$group.$run_num -l h_vmem=4G -hold_jid $id $script_path/annotation_SV.sh $output_dir $run_info $output_dir/Reports_per_Sample/ANNOT/ $group
+			done
+		fi
+		### generate reports for all the samples
+		id=""
         for group in `echo $groups | tr ":" "\n"`
         do
             samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" "\n")
@@ -554,14 +554,14 @@ else
         then
             for group in `echo $groups | tr ":" "\n"`
             do
-                id="$type.$version.summaryze_struct_group.$group.$run_num,$id,"
+                id="$type.$version.summaryze_struct_group.$group.$run_num,$type.$version.annotation_CNV.$group.$run_num,$type.$version.annotation_SV.$group.$run_num,$id,"
             done
         fi    
         qsub $args -N $type.$version.annotate_sample.$run_num -hold_jid $id -l h_vmem=8G $script_path/annotate_sample.sh $output_dir $run_info
-	for group in `echo $groups | tr ":" "\n"`
+		for group in `echo $groups | tr ":" "\n"`
         do
             qsub $args -N $type.$version.sample_numbers.$group.$run_num -hold_jid $id $script_path/sample_numbers.sh $output_dir $group $run_info $output_dir/numbers
-	    qsub $args -N $type.$version.gene_summary.$group.$run_num -hold_jid $id $script_path/gene_summary.sh $output_dir $group $run_info $output_dir/Reports_per_Sample
+			qsub $args -N $type.$version.gene_summary.$group.$run_num -hold_jid $id $script_path/gene_summary.sh $output_dir $group $run_info $output_dir/Reports_per_Sample
         done
         
         if [ $tool == "exome" ]
@@ -580,6 +580,6 @@ else
             done    
         fi
         qsub $args -N $type.$version.generate_html.$run_num -hold_jid $id $script_path/generate_html.sh $output_dir $run_info 	
-	echo `date`
     fi
+	echo `date`
 fi

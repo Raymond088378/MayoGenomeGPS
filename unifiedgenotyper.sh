@@ -20,11 +20,13 @@ else
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
     threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2)
+	alt_alleles=$( cat $tool_info | grep -w '^MAX_ALT_ALLELES' | cut -d '=' -f2)
+	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
 
     check=`[ -s $vcf.idx ] && echo "1" || echo "0"`
     while [ $check -eq 0 ]
     do
-		if [$ped != "NA"]
+		if [ $ped != "NA" ]
 		then
 			$java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
 			-R $ref \
@@ -33,7 +35,7 @@ else
 			-T UnifiedGenotyper \
 			--output_mode $mode \
 			-nt $threads \
-			--max_alternate_alleles 2 \
+			--max_alternate_alleles $alt_alleles \
 			-glm $type \
 			$range \
 			$bam \
@@ -47,7 +49,7 @@ else
 			-T UnifiedGenotyper \
 			--output_mode $mode \
 			-nt $threads \
-			--max_alternate_alleles 2 \
+			--max_alternate_alleles $alt_alleles \
 			-glm $type \
 			$range \
 			$bam \
@@ -58,7 +60,7 @@ else
 
     if [ ! -s $vcf ]
     then
-        echo "ERROR : [`date`] variants.sh failed to create $vcf"
+        $script_path/errorlog.sh $vcf unifiedgenotyper.sh ERROR empty
         exit 1;
     fi
     echo `date`

@@ -11,15 +11,17 @@
 ######		$2	=	/path/to/run_info.txt
 ########################################################
 
-if [ $# != 3 ]
+if [ $# != 4 ]
 then
-    echo "\nUsage: </path/to/output dir> </path/to/run_info.txt>";
+    echo "\nUsage: </path/to/output dir> </path/to/run_info.txt> <sample/group>";
 else
     set -x
     echo `date`
     output_dir=$1
     run_info=$2
     report_dir=$3
+	sample=$4
+	group=$sample
 #SGE_TASK_ID=1
     
 ########################################################	
@@ -31,8 +33,8 @@ else
     email=$( cat $run_info | grep -w '^EMAIL' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
-    sample=$(cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1) 
-    group=$(cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1) 
+   # sample=$(cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1) 
+   # group=$(cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1) 
     groups=$( cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2)
     master_gene_file=$( cat $tool_info | grep -w '^MASTER_GENE_FILE' | cut -d '=' -f2 )
     multi_sample=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2)

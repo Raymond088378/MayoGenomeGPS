@@ -45,8 +45,6 @@ else
         mv $output.i $output
     else
         perl $script_path/snvmix_to_vcf.pl -i $temp -o $output -s $sample
-		cat $output | awk '$0 ~ /^#/ || $NF !~ /^0\/0/' > $output.tmp
-		mv $output.tmp $output
     fi
     
     if [ -s $output ]
@@ -54,7 +52,7 @@ else
         rm $temp
         rm $pileup
     else
-        echo "ERROR : variants.sh failed to create $output"
+		$script_path/errorlog.sh $output snvmix2.sh ERROR "failed to create"	
         exit 1;
     fi	
     echo `date`
