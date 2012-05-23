@@ -18,7 +18,8 @@ else
 	perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
 	tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2)
 	chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
-	export PERL5LIB=$perllib
+	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
+        export PERL5LIB=$perllib
 	PATH=$tabix/:$PATH
 	var_dir=$output_dir/variants
 	inputargs=""
@@ -38,7 +39,7 @@ else
 			inputargs="$inputfile "$inputargs
 			input_index=" $input_indexfile"$input_index 
 		else
-			echo "WARNING : $inputfile not there"
+			$script_path/errorlog.sh $inputfile merge_raw_variants.sh WARNING "does not exist"
 		fi			
 	done
 	

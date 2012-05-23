@@ -107,7 +107,7 @@ else
     
     if [ ! -s $fastq/$filename1 ]
     then
-		$script_path/errorlog.sh align_novo.sh $fastq/$filename1 ERROR empty
+		$script_path/errorlog.sh $fastq/$filename1 align_novo.sh ERROR empty
         exit 1
     fi
 
@@ -115,7 +115,7 @@ else
     then
         if [ ! -s $fastq/$filename2 ]
         then
-			$script_path/errorlog.sh align_novo.sh $fastq/$filename2 ERROR empty
+			$script_path/errorlog.sh $fastq/$filename2 align_novo.sh ERROR empty
             exit 1
         fi
     fi    
@@ -152,7 +152,7 @@ else
     
     if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.sam ]
     then
-        $script_path/errorlog.sh align_novo.sh $output_dir_sample/$sample.$SGE_TASK_ID.sam ERROR empty
+        $script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.sam align_novo.sh ERROR empty
         exit 1
     else
         if [ $paired == 0 ]
@@ -166,7 +166,7 @@ else
     $samtools/samtools view -bS $output_dir_sample/$sample.$SGE_TASK_ID.sam > $output_dir_sample/$sample.$SGE_TASK_ID.bam  
     if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.bam ]
     then
-        $script_path/errorlog.sh align_novo.sh $output_dir_sample/$sample.$SGE_TASK_ID.bam ERROR empty
+        $script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.bam align_novo.sh ERROR empty
         exit 1
     else
         rm $output_dir_sample/$sample.$SGE_TASK_ID.sam  

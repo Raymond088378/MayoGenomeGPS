@@ -75,7 +75,7 @@ else
         inputfile=$input/$group/MergeAllSamples.chr$i.raw.vcf 
         if [ ! -s $inputfile ]
         then		
-            echo "ERROR :merge_variant_group_chr. Somatic variant file for group $group, chromosome $i: $inputfile does not exist "
+            $script_path/errorlog.sh $inputfile merge_variant_greoup.sh ERROR "does not exist"
             exit 1
         else
             inputargs="-V $inputfile "$inputargs
@@ -95,7 +95,8 @@ else
     
     if [ ! -s $out/$group.somatic.variants.filter.vcf ]
     then
-	echo "ERROR: $out/$group.somatic.variants.filter.vcf not exist"
+	$script_path/errorlog.sh $out/$group.somatic.variants.filter.vcf merge_variant_greoup.sh ERROR "does not exist"
+        exit 1;
     else
 	for chr in $chrs
 	do
@@ -134,7 +135,7 @@ else
         inputfile=$input/$group/variants.chr$i.raw.vcf 
         if [ ! -s $inputfile ]
         then		
-            echo "ERROR :merge_variant_group_chr. Variant file for group $group, chromosome $i: $inputfile does not exist "
+            $script_path/errorlog.sh $inputfile merge_variant_greoup.sh ERROR "does not exist"
             exit 1
         else
             inputargs="-V $inputfile "$inputargs
@@ -154,7 +155,7 @@ else
     
     if [ ! -s $out/$group.variants.filter.vcf ]
     then
-        echo "ERROR: $out/$group.variants.filter.vcf failed to generate the filterd vcf for $sample"
+        $script_path/errorlog.sh $out/$group.variants.filter.vcf merge_variant_greoup.sh ERROR "does not exist"
         exit 1
     else
 	for chr in $chrs

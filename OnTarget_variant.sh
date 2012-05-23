@@ -22,7 +22,7 @@ else
     sample=$3
     run_info=$4
     
-    #SGE_TASK_ID=2
+   #SGE_TASK_ID=1
 ########################################################	
 ######		Reading run_info.txt and assigning to variables
 
@@ -150,33 +150,33 @@ else
         for i in $(seq 2 ${#sampleArray[@]})
         do  
             tumor=${sampleArray[$i]}
-            perl $script_path/vcf_to_variant_vcf.pl -i $input/$group.variants.chr$chr.filter.vcf -v $input/$group.$tumor.variants.chr$chr.SNV.filter.vcf -l $input/$group.$tumor.variants.chr$chr.INDEL.filter.vcf -s $tumor -f 
-            $bedtools/intersectBed -header -a $input/$group.$tumor.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/$group.$tumor.variants.chr$chr.SNV.filter.i.vcf
-            rm $input/$group.$tumor.variants.chr$chr.SNV.filter.vcf
-            $bedtools/intersectBed -header -a $input/$group.$tumor.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/$group.$tumor.variants.chr$chr.INDEL.filter.i.vcf
-            rm $input/$group.$tumor.variants.chr$chr.INDEL.filter.vcf
-            cat $OnTarget/$group.$tumor.variants.chr$chr.SNV.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' > $OnTarget/$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf
-            rm $OnTarget/$group.$tumor.variants.chr$chr.SNV.filter.i.vcf
-            cat $OnTarget/$group.$tumor.variants.chr$chr.INDEL.filter.i.vcf| awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' > $OnTarget/$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf
-            rm $OnTarget/$group.$tumor.variants.chr$chr.INDEL.filter.i.vcf
-            if [ `cat $OnTarget/$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
+            perl $script_path/vcf_to_variant_vcf.pl -i $input/$group.somatic.variants.chr$chr.filter.vcf -v $input/$group.$tumor.somatic.variants.chr$chr.SNV.filter.vcf -l $input/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.vcf -s $tumor -f 
+            $bedtools/intersectBed -header -a $input/$group.$tumor.somatic.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.vcf
+            rm $input/$group.$tumor.somatic.variants.chr$chr.SNV.filter.vcf
+            $bedtools/intersectBed -header -a $input/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.vcf
+            rm $input/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.vcf
+            cat $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' > $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.vcf
+            rm $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.vcf
+            cat $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.vcf| awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' > $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.c.vcf
+            rm $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.vcf
+            if [ `cat $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
             then
                 echo "WARNING: No Ontarget calls for $group, $sample, chr$chr, INDELs"
-		cp $OnTarget/$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf $OnTarget/$group.$tumor.variants.chr$chr.SNV.filter.i.c.pos.vcf
-		cat $OnTarget/$group.$tumor.variants.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL=0",$9,$10;}' > $OnTarget/$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf
+		cp $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.vcf $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.pos.vcf
+		cat $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL=0",$9,$10;}' > $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.vcf
 	    else   
-		perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $OnTarget/$group.$tumor.variants.chr$chr.SNV.filter.i.c.pos.vcf
-                cat $OnTarget/$group.$tumor.variants.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL="$NF,$9,$10;}' > $OnTarget/$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf
+		perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.pos.vcf
+                cat $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL="$NF,$9,$10;}' > $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.vcf
             fi
-	    rm $OnTarget/$group.$tumor.variants.chr$chr.SNV.filter.i.c.pos.vcf
-            if [ `cat $OnTarget/$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
+	    rm $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.pos.vcf
+            if [ `cat $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
             then
                 echo "WARNING: No Ontarget calls for $group, $sample, chr$chr, SNVs"
             fi   
-	    perl $script_path/add_format_field_vcf.pl $OnTarget/$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf SNV > $OnTarget/$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf.tmp
-            mv $OnTarget/$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf.tmp $OnTarget/$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf
-	    perl $script_path/add_format_field_vcf.pl $OnTarget/$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf INDEL > $OnTarget/$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf.tmp
-	    mv $OnTarget/$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf.tmp $OnTarget/$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf	
+	    perl $script_path/add_format_field_vcf.pl $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.vcf SNV > $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.vcf.tmp
+            mv $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.vcf.tmp $OnTarget/$group.$tumor.somatic.variants.chr$chr.SNV.filter.i.c.vcf
+	    perl $script_path/add_format_field_vcf.pl $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.c.vcf INDEL > $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.c.vcf.tmp
+	    mv $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.c.vcf.tmp $OnTarget/$group.$tumor.somatic.variants.chr$chr.INDEL.filter.i.c.vcf	
         done
     fi
     echo `date`

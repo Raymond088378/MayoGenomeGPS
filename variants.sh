@@ -171,7 +171,7 @@ else
                 ### merge snvs and indels to give on vcf
                 in="-V $output/$sample.variants.chr${chr}.raw.snv.all.vcf -V $output/$sample.variants.chr${chr}.raw.indel.all.vcf "
                 $script_path/combinevcf.sh "$in" $output/$sample.variants.chr${chr}.raw.all.vcf $run_info yes
-                cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "N" || $0 ~ /^#/' | grep -v "\./\." > $output/$sample.variants.chr${chr}.raw.vcf
+                cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "." || $0 ~ /^#/' | grep -v "\./\." > $output/$sample.variants.chr${chr}.raw.vcf
                 rm $output/$sample.variants.chr${chr}.raw.all.vcf.idx
                 $tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
 				rm $output/$sample.$chr.target.bed

@@ -15,7 +15,7 @@ else
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)	
-    
+    export JAVA_HOME=$java
     
     if [ $type == "SNP" ]
 	then
@@ -44,7 +44,7 @@ else
 			then
 				rm $inputvcf.idx
 			else
-				echo "ERROR: failed to appply hard filters $inputvcf (SNV)"
+				$script_path/errorlog.sh $outputvcf.idx hardfilters_variants.sh ERROR "failed to create"
 				exit 1;
 			fi
 		fi	
@@ -71,7 +71,7 @@ else
 			then
 				rm $outputvcf.idx 
 			else
-				echo "ERROR: failed to appply hard filters $inputvcf (INDEL)"
+				$script_path/errorlog.sh $outputvcf.idx hardfilters_variants.sh ERROR "failed to create"
 				exit 1;
 			fi
 		fi

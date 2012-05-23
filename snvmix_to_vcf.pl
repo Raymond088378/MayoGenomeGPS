@@ -75,6 +75,9 @@ while(<IN>){
 	if(defined $filter_prob){
 		next if $prob < $filter_prob;
 	}
+	if ($line[2] eq 'N')	{
+		$line[2] = '.';
+	}	
 	
 	if(defined $output){
 		print OUT join("\t",$locus[0],$locus[1],".",$line[1],$line[2],".",".");

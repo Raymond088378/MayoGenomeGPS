@@ -70,14 +70,14 @@ else
     inputargs=""
     for i in $chrs
     do
-      inputfile=$input/$sample/$sample.variants.chr$i.raw.vcf 
-      if [ ! -s $inputfile ]
-      then	
-          echo "ERROR :merge_variant_single.sh Variant file for sample $sample, chromosome $i: $inputfile does not exist "
-          exit 1;
-      else
-          inputargs="-V $inputfile "$inputargs
-      fi
+		inputfile=$input/$sample/$sample.variants.chr$i.raw.vcf 
+		if [ ! -s $inputfile ]
+		then	
+			$script_path/errorlog.sh $inputfile merge_variant_single.sh ERROR "not exist"
+			exit 1;
+		else
+			inputargs="-V $inputfile "$inputargs
+		fi
     done
 
     $script_path/combinevcf.sh "$inputargs" $out/$sample.variants.raw.vcf $run_info no
@@ -94,7 +94,7 @@ else
     
     if [ ! -s $out/$sample.variants.filter.vcf ]
     then
-        echo "ERROR: failed to generate the filterd vcf for $sample"
+        $script_path/errorlog.sh $out/$sample.variants.filter.vcf merge_variant_single.sh ERROR "failed to create"
         exit 1;
     else
         for i in $chrs

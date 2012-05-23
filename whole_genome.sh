@@ -281,7 +281,7 @@ else
 			then
 				if [ $tool == "whole_genome" ]
 				then
-					hold_args="-hold_jid $type.$version.plot_circos_cnv_sv.$sample.$run_num,$type.$version.sample_report.$sample.$run_num,$type.$version.annotation.CNV.sh.$run_num, $type.$version.annotation.SV.sh.$run_num"
+					hold_args="-hold_jid $type.$version.plot_circos_cnv_sv.$sample.$run_num,$type.$version.sample_report.$sample.$run_num,$type.$version.annotation_CNV.$sample.$run_num,$type.$version.annotation_SV.sh.$sample.$run_num"
 				else
 					hold_args="-hold_jid $type.$version.sample_report.$sample.$run_num"
 				fi

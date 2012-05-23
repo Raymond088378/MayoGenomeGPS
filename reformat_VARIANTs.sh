@@ -53,7 +53,7 @@ else
             rm $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp
             perl $script_path/markSnv_IndelnPos.pl -s $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -i $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
             cat $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1;CLOSE2INDEL="$NF,$9,$10;}' > $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf  
-	    perl $script_path/add_format_field_vcf.pl $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf SNV > $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf 
+			perl $script_path/add_format_field_vcf.pl $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf SNV > $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf 
             mv $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf		
         done
         rm $output/$sample.SNV.vcf $output/$sample.INDEL.vcf 
@@ -73,8 +73,8 @@ else
                 perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.SNV.vcf -v $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -l $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -c chr$chr -s $sample
                 rm $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
                 cat $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1;CLOSE2INDEL=0",$9,$10;}' > $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
-		perl $script_path/add_format_field_vcf.pl $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf SNV > $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf
-                rm $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf			
+				perl $script_path/add_format_field_vcf.pl $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf SNV > $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf
+                rm $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf			
             done
             rm $output/$sample.SNV.vcf
         elif [ $variant_type == "INDEL" ]
@@ -92,7 +92,8 @@ else
                 perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.INDEL.vcf -v $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -l $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -c chr$chr -s $sample
                 rm $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf
                 cat $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' > $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp
-                mv $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf 
+				perl $script_path/add_format_field_vcf.pl $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp INDEL > $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf  
+                rm $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp
             done
             rm $output/$sample.INDEL.vcf 
         fi		

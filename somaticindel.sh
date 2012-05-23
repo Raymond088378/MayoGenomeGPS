@@ -21,7 +21,8 @@ else
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
     window=$( cat $tool_info | grep -w '^INDEL_WINDOW_SIZE' | cut -d '=' -f2)
     expression=$( cat $tool_info | grep -w '^SOMATIC_INDEL_FILTER_EXPRESSION'| cut -d '=' -f2)
-	## Somatic Indel detector
+	export JAVA_HOME=$java
+        ## Somatic Indel detector
     if [ $expression == "NA" ]
 	then
 		### default filter

@@ -17,10 +17,11 @@ else
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
-
+    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
+    export JAVA_HOME=$java
 
     # ## annotate SNVs
-    $java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+    $java/java -Xmx6g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
     -R $ref \
     -et NO_ET \
     -K $gatk/Hossain.Asif_mayo.edu.key \
@@ -36,7 +37,7 @@ else
     then
         mv $vcf.temp $vcf
     else		
-        echo "ERROR : variants.sh SNV VariantAnnotator failed, file: $vcf.temp"
+        $script_path/errorlog.sh $vcf.temp annotate_vcf.sh ERROR "failed to create"
         exit 1
     fi
 
@@ -44,7 +45,7 @@ else
     then
         mv $vcf.temp.idx $vcf.idx
     else	
-        echo "ERROR: variants.sh SNV VariantAnnotator did not generated index, file: $vcf.idx" 
+        $script_path/errorlog.sh $vcf.temp.idx annotate_vcf.sh ERROR "failed to create"
         exit 1
     fi
     echo `date`

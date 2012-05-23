@@ -38,7 +38,6 @@ else
 		exit 1;
 	fi 
 	
-	rm $secondary/Reports_per_Sample/*.report
 	rm -R $secondary/Reports_per_Sample/temp
 	rm -R $secondary/Reports_per_Sample/plot
 	mkdir $delivery/Reports_per_Sample
@@ -60,7 +59,6 @@ else
 	
 	rm -R $secondary/Reports_per_Sample/
 	
-	rm $secondary/Reports/*.report
 	mkdir $delivery/Reports/
 	mv $secondary/Reports/* $delivery/Reports/
 	rm -R $secondary/Reports/

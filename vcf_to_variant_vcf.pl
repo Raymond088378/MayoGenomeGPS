@@ -31,11 +31,10 @@ while (my $l = <FH>)	{
 		print OUT "$l\n";
 		print OUT1 "$l\n";
 	}
-	elsif ($l =~ /^#/)	{
+	elsif ($l =~ /^#CHROM/)	{
 		my @a = split(/\t/,$l);
 		if (defined $sample)	{
 			for(my $i =0 ; $i <=$#a; $i++)	{
-				print "$a[$i]\n";
 				if ($a[$i] eq "$sample")	{
 					$s=$i;
 					last;

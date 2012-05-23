@@ -25,12 +25,14 @@ else
 	
     $somatic_sniper/bam-somaticsniper -q $mqual -Q $squal -F vcf -f $ref $tumor_bam $normal_bam $output/$snv
     cat $output/$snv | sed -e "/NORMAL/s//$normal_sample/g" | sed -e "/TUMOR/s//$tumor_sample/g"  | awk '$0 ~ /^#/ || $5 !~ /,/' | $script_path/ssniper_vcf_add_AD.pl > $output/$output_file
-    
+        
 	
     if [ ! -s $output/$output_file ]
     then
         echo "ERROR: $output/$output_file not found"
 	exit 1;
+    else
+        rm $output/$snv   
     fi
     echo `date`
 fi	

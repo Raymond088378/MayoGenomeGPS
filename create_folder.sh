@@ -42,7 +42,7 @@ else
 	mkdir $output_dir/job_ids
 	mkdir $output_dir/logs
 
-	if [ $analysis != "annotation" ]
+	if [[ $analysis != "annotation"  && $analysis != "ontarget" ]]
 	then
 		if [ $analysis == "external" -o $analysis == "mayo" -o $analysis == "alignment" ]
 		then
@@ -52,9 +52,15 @@ else
 		mkdir $output_dir/alignment
 		if [ $analysis != "alignment" ]
         then
-            mkdir $output_dir/realign
-            mkdir $output_dir/IGV_BAM
-            mkdir $output_dir/variants
+            if [[ $analysis != "annotation" && $analysis != "ontarget"  ]]
+            then
+                mkdir $output_dir/realign
+                mkdir $output_dir/IGV_BAM
+            fi
+            if [ $analysis != "annotation" ]
+            then
+                mkdir $output_dir/variants
+            fi
             if [ $tool == "whole_genome" ]
             then
                 mkdir $output_dir/cnv
@@ -69,8 +75,8 @@ else
         mkdir $output_dir/OnTarget
         mkdir $output_dir/annotation
         output_annot=$output_dir/annotation
-        mkdir $output_annot/SIFT
-        mkdir $output_annot/SSEQ
+		mkdir $output_annot/SIFT
+        #mkdir $output_annot/SSEQ
         mkdir $output_annot/SNPEFF
         mkdir $output_annot/POLYPHEN
         mkdir $output_annot/MISC
