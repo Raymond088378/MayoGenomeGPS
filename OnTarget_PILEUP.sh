@@ -47,10 +47,10 @@ else
         kit=$CaptureKit
     fi
     
-    
     if [ ! -s $bam ]
     then
-        echo "ERROR : OnTarget.PILEUP.sh $bam not found"
+        $script_path/errorlog.sh $bam OnTarget_PILEUP.sh ERROR "not exist"
+		exit 1;
     fi    
     #make bed format pileup
     

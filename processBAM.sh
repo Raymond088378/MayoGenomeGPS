@@ -70,7 +70,7 @@ else
 			$script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate $max_reads true $run_info
 		fi
 	else	
-	    $script_path/MergeBam.sh $INPUTARGS $input/$sample.sorted.bam $input true $run_info
+	    $script_path/MergeBam.sh "$INPUTARGS" $input/$sample.sorted.bam $input true $run_info
 		rm $indexes
 	fi
 	
@@ -99,6 +99,7 @@ else
     fi
     ### index the bam again to mainatin the time stamp for bam and index generation for down stream tools
     $samtools/samtools index $input/$sample.sorted.bam
+	
     ## dashboard
     $script_path/dashboard.sh $sample $run_info Alignment complete
     echo `date`

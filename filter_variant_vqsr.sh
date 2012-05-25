@@ -48,7 +48,11 @@ else
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
     
-    export JAVA_HOME=$java
+    javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
+	
+	export JAVA_HOME=$javahome
+	export PATH=$JAVA_HOME/bin:$PATH
+	
     ### split the vcf file for indels and snvs to appy the vqsr seperately
     perl $script_path/vcf_to_variant_vcf.pl -i $inputvcf -v $inputvcf.SNV.vcf -l $inputvcf.INDEL.vcf   
 

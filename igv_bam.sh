@@ -26,7 +26,8 @@ else
     chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2)
     chrIndexes=$( echo $chrs | tr ":" "\n" )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
-    delivery_folder=$( cat $run_info | grep -w '^DELIVERY_FOLDER' | cut -d '=' -f2)
+    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )	
+	delivery_folder=$( cat $run_info | grep -w '^DELIVERY_FOLDER' | cut -d '=' -f2)
     multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]" )
 	remove_bam=$( cat $tool_info | grep -w '^REMOVE_ALIGNED_BAM' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
@@ -69,7 +70,7 @@ else
 						input_bam="$input_bam $output/$sample.$i.chr$chr.bam"
 					fi
 				done
-                $samtools/samtools merge -h $output/$sample.$i.header.sam $output/$i.igv-sorted.bam $input_bam
+                $samtools/samtools merge -h $output/$sample.$i.header.sam $output/$i.igv-sorted.bam $input_bam 
             else
                 mv $output/$i.igv-sorted.re.bam $output/$i.igv-sorted.bam
             fi
@@ -85,7 +86,7 @@ else
 					fi
 				fi
 			else
-                echo "ERROR: $output/$i.igv-sorted.bam not exist Merging fails for $i to create IGV BAM"
+                $script_path/errorlog.sh $output/$i.igv-sorted.bam igv_bam.sh ERROR "failed to create"
                 exit 1;
             fi
         done
@@ -127,8 +128,8 @@ else
 				fi
 			fi
 		else
-            echo "ERROR: Merging fails for $sample to create IGV BAM"
-            exit 1;
+            $script_path/errorlog.sh $output/$sample.igv-sorted.bam igv_bam.sh ERROR "failed to create"
+			exit 1;
         fi
     fi     
     out=$delivery_folder/IGV_BAM
@@ -157,7 +158,7 @@ else
                 ln -s $out/$sample.igv-sorted.bam.bai $output/$sample.igv-sorted.bam.bai
             fi
         else
-            echo "ERROR: $delivery_folder doesn't exist"
+            $script_path/errorlog.sh $delivery_folder igv_bam.sh ERROR "folder not exist"
             exit 1
         fi
     fi    

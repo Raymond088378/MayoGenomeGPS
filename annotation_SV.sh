@@ -31,12 +31,9 @@ else
     email=$( cat $run_info | grep -w '^EMAIL' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
-   # sample=$(cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)  
-    #group=$( cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     master_gene_file=$( cat $tool_info | grep -w '^MASTER_GENE_FILE' | cut -d '=' -f2 )
     multi_sample=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
-	PATH=$bedtools/:$PATH
 ##############################################################		
         
     SV_dir=$output_dir/Reports_per_Sample/
@@ -50,7 +47,7 @@ else
         
         if [ ! -s $break/$sample.break.vcf ]
         then
-            echo "ERROR :anotation.SV.sh $break/$sample.break.vcf is empty"
+           $script_path/errorlog.sh $break/$sample.break.vcf annotation_SV.sh ERROR "not exist"
             exit 1;
         fi
         
@@ -61,7 +58,7 @@ else
         
         if [ ! -s $break/$sample.breakdancer.txt ]
         then
-            echo "WARNING : no Structual variants for $sample "
+            $script_path/errorlog.sh $break/$sample.breakdancer.txt annotation_SV.sh WARNING "no SV "
             touch $report_dir/$sample.SV.annotated.txt
         else
 
@@ -92,7 +89,7 @@ else
             touch $report_dir/$sample.SV.annotated.txt
             if [ ! -s $SV_dir/$sample.SV.temp1 ]
             then
-                echo "ERROR : annotation.SV.sh file failed for $sample"
+                $script_path/errorlog.sh $SV_dir/$sample.SV.temp1 annotation_SV.sh ERROR "failed to create"
                 exit 1
             fi    
             echo -e "ChrA\tPosA\tChrB\tPosB\tSV_Type\tSpanning_Reads\tGeneA_GeneB" >> $report_dir/$sample.SV.annotated.txt
@@ -103,13 +100,14 @@ else
                 # removing intermediate files
                 rm $SV_dir/$sample.tmp $SV_dir/$sample.tmp1
                 rm $break/$sample.breakdancer.txt $crest/$sample.crest.txt $break/$sample.break.tmp $break/$sample.crest.tmp
-            rm $SV_dir/$sample.SV.leftend.bed $SV_dir/$sample.SV.rightend.bed $SV_dir/$sample.SV.tmp $SV_dir/$sample.SV.temp $SV_dir/$sample.SV.tmp1 $SV_dir/$sample.SV.temp1
+				rm $SV_dir/$sample.SV.leftend.bed $SV_dir/$sample.SV.rightend.bed $SV_dir/$sample.SV.tmp $SV_dir/$sample.SV.temp $SV_dir/$sample.SV.tmp1 $SV_dir/$sample.SV.temp1
                 rm $SV_dir/$sample.SV.leftend.intersect.bed $SV_dir/$sample.SV.rightend.intersect.bed
                 rm $SV_dir/$sample.SV.leftend.annotation.tmp $SV_dir/$sample.SV.rightend.annotation.tmp
                 rm $SV_dir/$sample.SV.leftend.annotation.txt $SV_dir/$sample.SV.rightend.annotation.txt $SV_dir/$sample.SV.rightend.annotation.final.txt
                 rm $SV_dir/$sample.SV.annotated.tmp $SV_dir/$sample.SV.annot.txt $SV_dir/$sample.SV.annot.tmp1 $SV_dir/$sample.SV.txt
             else
-                echo "ERROR : annotation.SV.sh file $report_dir/$sample.SV.annotated.txt is empty"
+                $script_path/errorlog.sh $report_dir/$sample.SV.annotated.txt annotation_SV.sh ERROR "failed to create"
+				exit 1;
             fi    
         fi
     else
@@ -124,7 +122,7 @@ else
 		do
 			if [ ! -s $break/$group.$tumor.somatic.break.vcf ]
 			then
-				echo "ERROR :anotation.SV.sh $break/$group.$tumor.somatic.break.vcf is empty"
+				$script_path/errorlog.sh $break/$group.$tumor.somatic.break.vcf annotation_SV.sh ERROR "not exist"
 				exit 1
 			fi
         
@@ -135,11 +133,10 @@ else
 							
 			if [ ! -s $break/$group.$tumor.breakdancer.txt ]
             then
-                echo " No Strutural variant for $group.$tumor"
+                $script_path/errorlog.sh $break/$group.$tumor.breakdancer.txt annotation_SV.sh WARNING "not SV"
                 touch $report_dir/$group.$tumor.SV.annotated.txt
-                exit 1;
             else
-                    ### concatenating & formatting crest and breakdancer files
+				### concatenating & formatting crest and breakdancer files
                 touch $SV_dir/$group.$tumor.SV.tmp
                 cat $break/$group.$tumor.breakdancer.txt $crest/$group.$tumor.crest.txt > $SV_dir/$group.$tumor.tmp
 
@@ -165,7 +162,7 @@ else
                 touch $report_dir/$group.$tumor.SV.annotated.txt
                 if [ ! -s $SV_dir/$group.$tumor.SV.temp1 ]
                 then
-                    echo "ERROR : annotation.SV.sh file failed for $tumor"
+                    $script_path/errorlog.sh $SV_dir/$group.$tumor.SV.temp1 annotation_SV.sh WARNING "failed to create"
                     exit 1
                 fi    
                 echo -e "ChrA\tPosA\tChrB\tPosB\tSV_Type\tSpanning_Reads\tGeneA_GeneB" >> $report_dir/$group.$tumor.SV.annotated.txt
@@ -182,7 +179,8 @@ else
                     rm $SV_dir/$group.$tumor.SV.leftend.annotation.txt $SV_dir/$group.$tumor.SV.rightend.annotation.txt $SV_dir/$group.$tumor.SV.rightend.annotation.final.txt
                     rm $SV_dir/$group.$tumor.SV.annotated.tmp $SV_dir/$group.$tumor.SV.annot.txt $SV_dir/$group.$tumor.SV.annot.tmp1 $SV_dir/$group.$tumor.SV.txt
                 else
-                    echo "ERROR : annotation.SV.sh file $report_dir/$group.$tumor.SV.annotated.txt is empty"
+                    $script_path/errorlog.sh $report_dir/$group.$tumor.SV.annotated.txt annotation_SV.sh WARNING "failed to create"
+					exit 1;
                 fi  
             fi
         done

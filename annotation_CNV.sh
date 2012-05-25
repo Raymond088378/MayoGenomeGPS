@@ -33,15 +33,13 @@ else
     email=$( cat $run_info | grep -w '^EMAIL' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
-   # sample=$(cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1) 
-   # group=$(cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1) 
     groups=$( cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2)
     master_gene_file=$( cat $tool_info | grep -w '^MASTER_GENE_FILE' | cut -d '=' -f2 )
     multi_sample=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2)
     chrIndexes=$( echo $chrs | tr ":" "\n" )
-    PATH=$bedtools/:$PATH
+
 ##############################################################		
     CNV_dir=$output_dir
             
@@ -54,13 +52,13 @@ else
         
         if [ ! -s $cnvnator/$sample.cnv.vcf ]
         then
-            echo "ERROR: annotation.CNV.sh file $cnvnator/$sample.cnv.vcf is empty "
+            $script_path/errorlog.sh $cnvnator/$sample.cnv.vcf annotation_CNV.sh ERROR "not exist"
             exit 1;
         fi
         
         if [ ! -s $cnvnator/$sample.cnv.filter.vcf ]
         then
-            echo "ERROR: annotation.CNV.sh file $cnvnator/$sample.cnv.filter.vcf is empty "
+            $script_path/errorlog.sh $cnvnator/$sample.cnv.filter.vcf annotation_CNV.sh ERROR "not exist"
             exit 1;
         fi
         cat $cnvnator/$sample.cnv.vcf | awk '$0 !~ /#/' | grep DEL >> $cnvnator/$sample.cnv.raw.del.vcf
@@ -80,7 +78,7 @@ else
         
         if [ ! -s $cnvnator/$sample.cnvnator.intersect.annotated.sorted.bed ]
         then
-            echo " ERROR: annotation.CNV.sh file failed for $sample"
+            $script_path/errorlog.sh $cnvnator/$sample.cnvnator.intersect.annotated.sorted.bed annotation_CNV.sh ERROR "not exist"
         fi
         ###  generating per sample CNV annotation files
         touch $report_dir/$sample.CNV.annotated.txt
@@ -92,9 +90,9 @@ else
             ### removing intermediate files
             rm $cnvnator/$sample.del.bed $cnvnator/$sample.dup.bed 
             rm $cnvnator/$sample.cnvnator.bed $cnvnator/$sample.cnvnator.intersect.bed $cnvnator/$sample.cnvnator.intersect.annotated.bed $cnvnator/$sample.cnvnator.intersect.annotated.sorted.bed 
-# rm $cnvnator/$sample.cnv.raw.del.vcf $cnvnator/$sample.cnv.raw.dup.vcf $cnvnator/$sample.cnv.filter.del.vcf $cnvnator/$sample.cnv.filter.dup.vcf
+			rm $cnvnator/$sample.cnv.raw.del.vcf $cnvnator/$sample.cnv.raw.dup.vcf $cnvnator/$sample.cnv.filter.del.vcf $cnvnator/$sample.cnv.filter.dup.vcf
         else
-            echo " ERROR: annotation.CNV.sh file failed for $sample "
+            $script_path/errorlog.sh $report_dir/$sample.CNV.annotated.txt annotation_CNV.sh ERROR "failed to create"
         fi    
     else
         echo "Multi sample"
@@ -108,13 +106,13 @@ else
 
 			if [ ! -s $cnvnator/$group.$tumor.cnv.vcf ]
 			then
-				echo "ERROR: annotation.CNV.sh file $cnvnator/$group.$tumor.cnv.vcf is empty "
+				$script_path/errorlog.sh $cnvnator/$group.$tumor.cnv.vcf annotation_CNV.sh ERROR "not exist"
 				exit 1;
 			fi
 
 			if [ ! -s $cnvnator/$group.$tumor.cnv.filter.vcf ]
 			then
-				echo "ERROR: annotation.CNV.sh file $cnvnator/$group.$tumor.cnv.filter.vcf is empty "
+				$script_path/errorlog.sh $cnvnator/$group.$tumor.cnv.filter.vcf annotation_CNV.sh ERROR "not exist"
 				exit 1;
 			fi
 
@@ -135,7 +133,7 @@ else
 
 			if [ ! -s $cnvnator/$group.$tumor.cnvnator.intersect.annotated.sorted.bed ]
 			then
-				echo " ERROR: annotation.CNV.sh file failed for $sample"
+				$script_path/errorlog.sh $cnvnator/$group.$tumor.cnvnator.intersect.annotated.sorted.bed annotation_CNV.sh ERROR "failed to create"
 			fi
 			###  generating per sample CNV annotation files
 			touch $report_dir/$group.$tumor.CNV.annotated.txt
@@ -145,11 +143,11 @@ else
 			if [ -s $report_dir/$group.$tumor.CNV.annotated.txt ]
 			then
 			### removing intermediate files
-			rm $cnvnator/$group.$tumor.del.bed $cnvnator/$group.$tumor.dup.bed 
-			rm $cnvnator/$group.$tumor.cnvnator.bed $cnvnator/$group.$tumor.cnvnator.intersect.bed $cnvnator/$group.$tumor.cnvnator.intersect.annotated.bed $cnvnator/$group.$tumor.cnvnator.intersect.annotated.sorted.bed 
-			# rm $cnvnator/$sample.cnv.raw.del.vcf $cnvnator/$sample.cnv.raw.dup.vcf $cnvnator/$sample.cnv.filter.del.vcf $cnvnator/$sample.cnv.filter.dup.vcf
+				rm $cnvnator/$group.$tumor.del.bed $cnvnator/$group.$tumor.dup.bed 
+				rm $cnvnator/$group.$tumor.cnvnator.bed $cnvnator/$group.$tumor.cnvnator.intersect.bed $cnvnator/$group.$tumor.cnvnator.intersect.annotated.bed $cnvnator/$group.$tumor.cnvnator.intersect.annotated.sorted.bed 
+				rm $cnvnator/$group.$tumor.cnv.raw.del.vcf $cnvnator/$group.$tumor.cnv.raw.dup.vcf $cnvnator/$group.$tumor.cnv.filter.del.vcf $cnvnator/$group.$tumor.cnv.filter.dup.vcf $cnvnator/$group.$tumor.del.bed $cnvnator/$group.$tumor.dup.bed 
 			else
-				echo " ERROR: annotation.CNV.sh file failed for $sample "
+				$script_path/errorlog.sh $report_dir/$group.$tumor.CNV.annotated.txt annotation_CNV.sh ERROR "failed to create"
 			fi  
 		done
 	fi

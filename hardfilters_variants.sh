@@ -15,7 +15,10 @@ else
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)	
-    export JAVA_HOME=$java
+    javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
+	
+	export JAVA_HOME=$javahome
+	export PATH=$JAVA_HOME/bin:$PATH
     
     if [ $type == "SNP" ]
 	then

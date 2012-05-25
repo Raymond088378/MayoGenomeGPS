@@ -22,8 +22,12 @@ else
     threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2)
 	alt_alleles=$( cat $tool_info | grep -w '^MAX_ALT_ALLELES' | cut -d '=' -f2)
 	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
-
-    export JAVA_HOME=$java
+	
+    javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
+	
+	export JAVA_HOME=$javahome
+	export PATH=$JAVA_HOME/bin:$PATH
+	
     check=`[ -s $vcf.idx ] && echo "1" || echo "0"`
     while [ $check -eq 0 ]
     do

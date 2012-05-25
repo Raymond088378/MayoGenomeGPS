@@ -518,7 +518,7 @@ else
             raw_snvs=0
             raw_indels=0
             col=`cat $variants/$group.somatic.variants.raw.vcf | awk '$0 ~ /^#/' | tail -1 | awk -v s=$tumor -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
-            a=`cat $variants/$group.somatic.variants.raw.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\./' | awk 'length($4) == 1 && length($5) == 1' | wc -l`
+            a=`cat $variants/$group.somatic.variants.raw.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\./' | awk 'length($4) == 1 && length($5) == 1' | wc -l `
             b=`cat $variants/$group.somatic.variants.raw.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\./' | awk 'length($4) > 1 || length($5) > 1' | wc -l`
             raw_indels=`expr $raw_indels "+" $b`
             raw_snvs=`expr $raw_snvs "+" $a`
@@ -528,8 +528,8 @@ else
             filtered_snvs=0
             filtered_indels=0
             col=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 ~ /^#/' | tail -1 | awk -v s=$tumor -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
-            a=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\./' | awk 'length($4) == 1 && length($5) == 1' | wc -l`
-            b=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\./' | awk 'length($4) > 1 || length($5) > 1' | wc -l `
+            a=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\./' | awk 'length($4) == 1 && length($5) == 1' | grep -c PASS`
+            b=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\./' | awk 'length($4) > 1 || length($5) > 1' | grep -c PASS `
             filtered_indels=`expr $filtered_indels "+" $b`
             filtered_snvs=`expr $filtered_snvs "+" $a`
 
@@ -637,8 +637,8 @@ else
 				genomic_deletions=0
 				genomic_duplications=0
 				cnv=$input_dir/Reports_per_Sample/SV
-				raw_del=`cat $cnv/$group.$tumor.cnv.raw.vcf | awk '$0 !~ /#/' | grep -c DEL`
-				raw_dup=`cat $cnv/$group.$tumor.cnv.raw.vcf | awk '$0 !~ /#/' | grep -c DUP`
+				raw_del=`cat $cnv/$group.$tumor.cnv.vcf | awk '$0 !~ /#/' | grep -c DEL`
+				raw_dup=`cat $cnv/$group.$tumor.cnv.vcf | awk '$0 !~ /#/' | grep -c DUP`
 				raw_cnvs=`expr $raw_del "+" $raw_dup`
 				genomic_deletions=`cat $cnv/$group.$tumor.cnv.filter.vcf | awk '$0 !~ /#/' | grep -c DEL`
 				genomic_duplications=`cat $cnv/$group.$tumor.cnv.filter.vcf | awk '$0 !~ /#/' | grep -c DUP`

@@ -136,9 +136,9 @@ else
             rm $snpeff/$indel_file.annotate.vcf.vcfidx
             rm $snpeff/$indel_file.annotate.vcf.idx
 	else
-            echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tfunctionGVS\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList" > $snpeff/$sample.chr${chr}.indel.eff
+            echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tfunctionGVS\taminoAcids\tCodon_Degeneracy\tgeneList" > $snpeff/$sample.chr${chr}.indel.eff
             cp $input/$indel_file $snpeff/$indel_file.annotate.vcf
-	    echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tfunctionGVS\tFunctionalClass\tFunctionalImpact\tproteinPosition\tCodon_Degeneracy\tgeneList\n" > $snpeff/$sample.chr${chr}.indel.filtered.eff
+	    echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tfunctionGVS\tFunctionalClass\tFunctionalImpact\tCodon_Degeneracy\tgeneList\n" > $snpeff/$sample.chr${chr}.indel.filtered.eff
         fi
     fi    
     echo `date`

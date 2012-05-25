@@ -57,6 +57,7 @@ while(<IN>){
 	my @ref = split(":",$stats[0]);
 	my @alt = split(":",$stats[1]);
 	my $total_depth = $ref[1] + $alt[1];
+	my @bases=qw (A C G T);
 
 	my $genotype = "0/0";
 	my $prob = $stats[2]; #hom ref
@@ -75,6 +76,8 @@ while(<IN>){
 	if(defined $filter_prob){
 		next if $prob < $filter_prob;
 	}
+	
+	next if (! grep (/$line[1]/,@bases));
 	if ($line[2] eq 'N')	{
 		$line[2] = '.';
 	}	

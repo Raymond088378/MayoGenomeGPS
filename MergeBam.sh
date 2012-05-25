@@ -20,8 +20,8 @@ else
     
     $java/java -Xmx6g -Xms512m \
     -jar $picard/MergeSamFiles.jar \
-    $inbam\
-    MAX_RECORDS_IN_RAM=$reads
+    $inbam \
+    MAX_RECORDS_IN_RAM=$reads \
     OUTPUT=$outbam \
     TMP_DIR=$tmp_dir \
     CREATE_INDEX=false \
@@ -31,12 +31,13 @@ else
     then
         echo "ERROR: merging bams failed $outbam"
     else
-        files=`echo $inbam | sed -e /INPUT=/s///g'`
-        rm $files
-        if [ $index == "TRUE" ]
-        then
+        files=`echo $inbam | sed -e '/INPUT=/s///g'`
+        indexes=`echo $inbam | sed -e '/INPUT=/s///g' | tr " " "\n" | awk '{print $0".bai"}'`
+		rm $files $indexes
+        #if [ $index == "TRUE" ]
+        #then
             $samtools/samtools index $outbam
-        fi
+        #fi
     fi
     echo `date`
 fi	

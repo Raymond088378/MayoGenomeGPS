@@ -88,7 +88,7 @@ else
 		
 		$script_path/combinevcf.sh "$inputargs" $output/SV/$group.$sample.cnv.vcf $run_info yes
 		
-		$script_path/combinevcf.sh "$inputargs"$output/SV/$group.$sample.cnv.filter.vcf $run_info yes
+		$script_path/combinevcf.sh "$inputargs_filter" $output/SV/$group.$sample.cnv.filter.vcf $run_info yes
 	done
 
 	#Summaryzing Breakdancer

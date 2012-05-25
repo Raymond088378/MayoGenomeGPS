@@ -16,6 +16,7 @@ else
     multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2)
     multi=`echo $multi | tr "[a-z]" "[A-Z]"`
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
+	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     #### assuming that each covergae file has 40 rows
     
     if [ $multi == "YES" ]
@@ -28,7 +29,8 @@ else
                 num_rows=`cat $input/$i.chr$chr.pileup.i.out | wc -l`
                 if [ $num_rows != 40 ]
                 then
-                    echo "ERROR : $input/$i.chr$chr.pileup.i.out is malformed (problem with OnTarget.PILEUP.sh script)"
+                    $script_path/errorlog.sh $input/$i.chr$chr.pileup.i.out getCoverage.sh ERROR "malformed"
+					exit 1;
                 fi
             done	
 
@@ -49,7 +51,8 @@ else
             num_rows=`cat $input/$sample.chr$chr.pileup.i.out | wc -l`
             if [ $num_rows != 40 ]
             then
-                "ERROR : $input/$sample.chr$chr.pileup.i.out is malformed (problem with OnTarget.PILEUP.sh script)"
+                $script_path/errorlog.sh $input/$sample.chr$chr.pileup.i.out getCoverage.sh ERROR "malformed"
+				exit 1;
             fi
         done	
         

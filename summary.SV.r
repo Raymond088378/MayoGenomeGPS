@@ -4,7 +4,7 @@ for (i in 1:1)
 {
 	if (length(stdin)==16)
 	{
-	gene=as.character(stdin[6])
+	input.gene=as.character(stdin[6])
 	input.ITX=as.character(stdin[7])
 	input.INV=as.character(stdin[8])
 	input.DEL=as.character(stdin[9])
@@ -17,7 +17,7 @@ for (i in 1:1)
 	output.CTX=as.character(stdin[16])
 	}
 }
-gene=as.matrix(read.table(file=gene))
+gene=as.matrix(read.table(file=input.gene))
 ITX=as.matrix(read.table(file=input.ITX))
 INV=as.matrix(read.table(file=input.INV))
 DEL=as.matrix(read.table(file=input.DEL))

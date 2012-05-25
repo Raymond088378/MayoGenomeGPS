@@ -110,8 +110,8 @@ while (my $l = <FH>)	{
 		}
 		else	{
 			### ref=3 alt=4 
-                        my @alt=split(/,/,$a[4]);
-                        my $ref=length($a[3]);
+			my @alt=split(/,/,$a[4]);
+			my $ref=length($a[3]);
 			my $len=1;
                         for(my $i=0; $i <= $#alt; $i++) {
                                 $len = length($alt[$i]);

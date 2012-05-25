@@ -31,7 +31,8 @@ else
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
     out=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
     PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
-    run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
+    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+	run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
     out_dir=$out/$PI/$tool/$run_num
     multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
     
@@ -45,7 +46,8 @@ else
     
     if [ ! -s $bam ]
     then
-        echo " ERROR: OnTarget.BAM.sh $bam not found"
+        $script_path/errorlog.sh $bam OnTarget_BAM.sh ERROR "not exist"
+		exit 1;
     fi
     
     if [ $multi == "YES" ]
@@ -53,20 +55,12 @@ else
         pair=$( cat $sample_info | grep -w "$sample" | cut -d '=' -f2)
         for i in $pair
         do
-            $bed/intersectBed -abam $input/$sample.$i.chr$chr.bam -b $kit | $samtools/samtools view -  | wc -l > $output/$i.chr$chr.bam.i.out
-            if [ ! -s $output/$i.chr$chr.bam.i.out ]
-            then
-                echo "ERROR: $output/$i.chr$chr.bam.i.out is empty"
-            fi    
+            $bed/intersectBed -abam $input/$sample.$i.chr$chr.bam -b $kit | $samtools/samtools view -  | wc -l > $output/$i.chr$chr.bam.i.out  
         done
     else   
         bam=$input/chr$chr.cleaned.bam
 		#intersect with the target kit
         $bed/intersectBed -abam $bam -b $kit | $samtools/samtools view -  | wc -l > $output/$sample.chr$chr.bam.i.out
-        if [ ! -s $output/$sample.chr$chr.bam.i.out ]
-        then
-            echo "ERROR : $output/$sample.chr$chr.bam.i.out is empty"
-        fi    
     fi
     echo `date`
 fi	

@@ -41,7 +41,11 @@ else
     blat_ref=$( cat $tool_info | grep -w '^BLAT_REF' | cut -d '=' -f2 )
     blat_server=$( cat $tool_info | grep -w '^BLAT_SERVER' | cut -d '=' -f2 )
     window_blat=$( cat $tool_info | grep -w '^WINDOW_BLAT' | cut -d '=' -f2 )
-
+	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
+	
+	export JAVA_HOME=$javahome
+	export PATH=$JAVA_HOME/bin:$PATH
+	
     range=20000
     let blat_port+=$RANDOM%range
     status=`$blat/gfServer status localhost $blat_port | wc -l`;

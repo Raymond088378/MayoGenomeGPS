@@ -1,6 +1,6 @@
 
 
-if [ $# != 5 ]
+if [ $# -le 4 ]
 then
     echo -e "Usage:\n<input dir><samples ':' sep[normal:tumor1:tumor2:tumorN]> <output directory> <1 or 0 chopped or not ><run info>\nNOTE: first sample is considered as normal and others are considered as tumor[Assumption]\n";
 else
@@ -11,9 +11,11 @@ else
     output=$3
     chopped=$4
     run_info=$5
-
-    #SGE_TASK_ID=15
-    tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
+	if [ $6 ]
+	then
+		SGE_TASK_ID=$6
+	fi	
+	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
     tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2)
     perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
@@ -35,16 +37,16 @@ else
     SNV_caller=$( cat $run_info | grep -w '^SNV_CALLER' | cut -d '=' -f2)
     somatic_caller=$( cat $run_info | grep -w '^SOMATIC_CALLER' | cut -d '=' -f2)
 	ped=$( cat $tool_info | grep -w '^PEDIGREE' | cut -d '=' -f2 )
-
+	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
+	
 	export PERL5LIB=$PERL5LIB:$perllib
     export PATH=$tabix/:$PATH
 
+	export JAVA_HOME=$javahome
+	export PATH=$JAVA_HOME/bin:$PATH
+	
+	
     bam=chr${chr}.cleaned.bam
-    if [ ! -s $input/$bam ]
-    then
-        echo "ERROR : variants.sh File $input/$bam does not exist"
-        exit 1
-    fi
 
     ## update dashborad
     if [ $SGE_TASK_ID == 1 ]
@@ -82,7 +84,7 @@ else
 
             if [ ! -s $output/$sample.chr$chr.rg.bam ]
             then
-                echo "ERROR : variants.sh File $output/$sample.chr$chr.rg.bam was not generated"
+                $script_path/errorlog.sh $output/$sample.chr$chr.rg.bam variants.sh ERROR "failed to create"
                 exit 1
             fi
             $script_path/samplecheckBAM.sh $output $sample.chr$chr.rg.bam $output $run_info $sample $chopped $chr
@@ -189,8 +191,6 @@ else
                 $script_path/combinevcf.sh "$in" $output/$sample.variants.chr${chr}.raw.vcf $run_info yes
 			fi
 		fi
-		#perl $script_path/vcf_blat_verify.pl -i $output/$sample.variants.chr${chr}.raw.vcf -o $output/$sample.variants.chr${chr}.raw.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
-		#mv $output/$sample.variants.chr${chr}.raw.vcf.tmp $output/$sample.variants.chr${chr}.raw.vcf
 	else
         ## assuming that normal is the first column/sample
         normal=${sampleArray[1]}.chr$chr-sorted.bam
@@ -213,8 +213,6 @@ else
             elif [ $somatic_caller == "MUTECT" ]
             then
                 $script_path/mutect.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.vcf $run_info
-            else
-                echo "ERROR: somatic caller is not available"
             fi
 	    ### annotate vcfs
             in="-I $input/$bam"

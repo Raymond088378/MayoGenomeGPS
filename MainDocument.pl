@@ -539,8 +539,8 @@ else    {
 				@values=(@align_h,@snv_h,@indel_h);
 			}	
 			elsif ($tool eq 'whole_genome')	{
-				@align=("Total Reads","Mapped Reads","Percent duplication","Realigned Mapped Reads","Mapped Reads(in CodingRegion)");
-				@align_h=("Total number of reads obtained","Number of reads mapped to the reference using ${Aligner}","Percent of duplicated reads flagged in BAM(using Picard)","Number of reads after recalibration and realignment (using GATK)","Number of mapped reads overlapping with the coding region from UCSC refFlat file");
+				@align=("Total Reads","Mapped Reads","Percent duplication","Mapped Reads(in CodingRegion)");
+				@align_h=("Total number of reads obtained","Number of reads mapped to the reference using ${Aligner}","Percent of duplicated reads flagged in BAM(using Picard)","Number of mapped reads overlapping with the coding region from UCSC refFlat file");
 				
 				@snv=("Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","Total SNVs","Ti/Tv Ratio","SPLICE_SITE_ACCEPTOR","SPLICE_SITE_DONOR","START_LOST","STOP_GAINED","STOP_LOST","RARE_AMINO_ACID","NON_SYNONYMOUS_CODING","SYNONYMOUS_START","NON_SYNONYMOUS_START","START_GAINED","SYNONYMOUS_CODING","SYNONYMOUS_STOP","NON_SYNONYMOUS_STOP","UTR_5_PRIME","UTR_3_PRIME","Total SNVs","Ti/Tv Ratio","SPLICE_SITE_ACCEPTOR","SPLICE_SITE_DONOR","START_LOST","STOP_GAINED","STOP_LOST","RARE_AMINO_ACID","NON_SYNONYMOUS_CODING","SYNONYMOUS_START","NON_SYNONYMOUS_START","START_GAINED","SYNONYMOUS_CODING","SYNONYMOUS_STOP","NON_SYNONYMOUS_STOP","UTR_5_PRIME","UTR_3_PRIME");
 				@snv_h=("Total number of SNVs obtained using ${SNV_caller}","Filtered SNVs obtained using ${SNV_caller} recommendations","Number of SNVs observed in  UCSC RefFlat coding regions",
@@ -821,7 +821,7 @@ else    {
 					}		
 				}
 				else	{
-					if ($key eq '2' )	{
+					if ($key eq '3' )	{
 						print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
@@ -1898,7 +1898,7 @@ else    {
 					}
 					print OUT "</tr>\n";
 				}
-				if ( $key eq '2' || $key eq '6' || $key eq '8' ||$key eq '14' ||$key eq '15' || $key eq '23' ||$key eq '25' ||$key eq '31' ||$key eq '32' ||$key eq '40' ||$key eq '44' ||$key eq '46' )	{
+				if ( $key ne '2' || $key ne '6' || $key ne '8' ||$key ne '14' ||$key ne '15' || $key ne '23' ||$key ne '25' ||$key ne '31' ||$key ne '32' ||$key ne '40' ||$key ne '44' ||$key ne '46' )	{
 					print OUT "<td class=\"helpHed\"><p align='left'><a href=\"#$names[$key]\" title=\"$values[$key]\">$names[$key]</a></td>";
 					for(my $k = 0; $k <= $tot;$k++)	{
 						my $print=CommaFormatted(${$group_numbers{$key}}[$k]);
@@ -1992,14 +1992,14 @@ else    {
 					}		
 					print OUT "</tr>\n";
 				}	
-				if ($key eq '53' )	{
+				elsif ($key eq '55' )	{
 					print OUT "<th class=\"helpBod\">Copy Number Variants (CNVs)</th>";
 					for (my $c=0; $c <= $tot;$c++)	{
 						print OUT "<td class=\"helpHed\"></td>";
 					}		
 					print OUT "</tr>\n";
 				}
-				if ($key eq '57' )	{
+				elsif ($key eq '59' )	{
 					print OUT "<th class=\"helpBod\">Structural Variants (SVs)</th>";
 					for (my $c=0; $c <= $tot;$c++)	{
 						print OUT "<td class=\"helpHed\"></td>";
@@ -2014,7 +2014,7 @@ else    {
 					}
 					print OUT "</tr>\n";
 				}
-				if ( $key eq '2' || $key eq '5' || $key eq '7' ||$key eq '13' ||$key eq '14' || $key eq '22' ||$key eq '24' ||$key eq '30' ||$key eq '31' ||$key eq '39' ||$key eq '42' ||$key eq '44' )	{
+				if ( $key eq '2' || $key eq '5' || $key eq '7' || $key eq '13' || $key eq '14' || $key eq '22' || $key eq '24' || $key eq '30' || $key eq '31' || $key eq '39' || $key eq '42' || $key eq '44' || $key eq '55' || $key eq '59' )	{
 					print OUT "<td class=\"helpHed\"><p align='left'><a href=\"#$names[$key]\" title=\"$values[$key]\">$names[$key]</a></td>";
 					for(my $k = 0; $k <= $tot;$k++)	{
 						my $print=CommaFormatted(${$group_numbers{$key}}[$k]);
@@ -2022,9 +2022,7 @@ else    {
 					}
 					print OUT "</tr>\n";
 				}				
-			}
-			
-			
+			}	
 		}
 	}
 	undef %group_numbers;
@@ -2042,13 +2040,15 @@ else    {
 		</table></ul>";	
 	}	
 	
-	if ( ($analysis eq "external") || ($analysis eq "variant" ) || ($analysis eq 'realignment') || ($analysis eq "mayo") || ($analysis eq 'realign-mayo') || ($analysis eq "ontarget") )	{
-		print DESC"
+	if ( ($analysis eq "external") || ($analysis eq "variant" ) || ($analysis eq 'realignment') || ($analysis eq "mayo") || ($analysis eq 'realign-mayo') || ($analysis eq "ontarget") || ($analysis eq "annotation") )	{
+		if ($analysis != "annotation")	{
+			print DESC"
 		<td class=\"helpBod\">Total Reads</td><td class=\"helpBod\">Total number of reads obtained</td></tr>
 		<td class=\"helpBod\">Mapped Reads</td><td class=\"helpBod\">Number and percentage of reads mapped to reference genome(${GenomeBuild})</td></tr>
 		<td class=\"helpBod\">Percent duplication</td><td class=\"helpBod\">Percentage of duplicated reads as identified by(${SNV_caller}) and flagged in the BAM files</td></tr>
-		<td class=\"helpBod\">Realigned Reads </td><td class=\"helpBod\">Number and percenatge of realigned reads with a quality >= 20 mapped to reference genome(${GenomeBuild})</td></tr>
-		<td class=\"helpBod\">Total SNVs ${SNV_caller}</td><td class=\"helpBod\">Total number of SNVs obtained using ${SNV_caller} </td></tr>
+		<td class=\"helpBod\">Realigned Reads </td><td class=\"helpBod\">Number and percenatge of realigned reads with a quality >= 20 mapped to reference genome(${GenomeBuild})</td></tr>";
+		}
+		print DESC "<td class=\"helpBod\">Total SNVs ${SNV_caller}</td><td class=\"helpBod\">Total number of SNVs obtained using ${SNV_caller} </td></tr>
 		<td class=\"helpBod\">Filtered SNVs ${SNV_caller}</td><td class=\"helpBod\">Number of SNVs obtained after passing through ${SNV_caller} VQSR filtering</td></tr>
 		<td class=\"helpBod\">Coding SNVs</td><td class=\"helpBod\">Number of SNVs observed to occur in UCSC RefFlat genomic coordinates</td></tr>
 		<td class=\"helpBod\">Total SNVs </td><td class=\"helpBod\">Total number of known SNVs, either in dbSNP$dbsnp_v or 1000 Genomes</td></tr>

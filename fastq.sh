@@ -30,7 +30,8 @@ else
     
     if [ ! -s $output/${out_fastq} ]
     then
-        echo "ERROR: fastq.sh $output/${out_fastq} is empty "
+        $script_path/errorlog.sh $output/${out_fastq} fastq.sh ERROR "not exist"
+		exit 1;
     fi
     
     ##FASTQC
@@ -55,13 +56,5 @@ else
 		fi		
 		ln -s $FOLDER_FASTQC/${file}_fastqc $fastqc_dir/
     fi		
-    
-    ## error checking
-    if [ -s $fastqc_dir/${file}_fastqc ]
-    then
-        echo "FASTQC generation is successful "
-    else
-        echo "ERROR : FASTQC generation failed "
-    fi	
     echo `date`
 fi	

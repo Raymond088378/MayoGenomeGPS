@@ -159,7 +159,11 @@ else
                     hold="-hold_jid $type.$version.align_novo.$sample.$run_num"
                 fi    
                 qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=8G $hold $script_path/processBAM.sh $align_dir $sample $run_info 	
-            elif [ $analysis == "realignment" -o $analysis == "realign-mayo" ]
+				if [ $analysis != "alignment" ]
+				then
+					qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info
+				fi
+			elif [ $analysis == "realignment" -o $analysis == "realign-mayo" ]
             then
                 infile=`cat $sample_info | grep -w BAM:${sample} | cut -d '=' -f2`
                 num_bams=`echo $infile | tr " " "\n" | wc -l`
@@ -169,6 +173,7 @@ else
                     ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
                 done  
                 qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=8G $script_path/processBAM.sh $align_dir $sample $run_info
+				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info
             fi    
             if [[ $analysis == "mayo" || $analysis == "external" || $analysis == "realignment" || $analysis == "variant" || $analysis == "realign-mayo" ]]
             then
@@ -185,7 +190,7 @@ else
                         ln -s $input/$bam $realign_dir/$sample.$i.sorted.bam
                     done
                     qsub $args -N $type.$version.reformat_BAM.$sample.$run_num -l h_vmem=8G $script_path/reformat_BAM.sh $realign_dir $sample $run_info	
-                    job_id_convert=`echo $REFORMAT | cut -d ' ' -f3`
+                    qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.reformat_BAM.$sample.$run_num $script_path/extract_reads_bam.sh $realign_dir $bamfile $run_info
                     qsub $args -N $type.$version.split_bam_chr.$sample.$run_num -hold_jid $type.$version.reformat_BAM.$sample.$run_num -l h_vmem=8G -t 1-$numchrs:1 $script_path/split_bam_chr.sh $realign_dir $sample $run_info
                     variant_id="$type.$version.split_bam_chr.$sample.$run_num"
                 else
@@ -226,8 +231,7 @@ else
 			then
 				qsub $args -N $type.$version.reformat_VARIANTs.$sample.$run_num -l h_vmem=4G $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 1
 			fi
-		    
-			hold_args="-hold_jid $type.$version.reformat_VARIANTs.$sample.$run_num"
+		    hold_args="-hold_jid $type.$version.reformat_VARIANTs.$sample.$run_num"
 			elif [ $analysis != "alignment" ]
 			then
 				hold_args="-hold_jid $type.$version.OnTarget_variant.$sample.$run_num"
@@ -267,14 +271,9 @@ else
 				fi
 				if [[ $tool == "whole_genome" && $analysis != "alignment" && $analysis != "annotation" && $analysis != "ontarget" ]]
 				then
-					id=""
-					for sample in `echo $samples | tr ":" "\n"`
-					do
-						id="$type.$version.plot_circos_cnv_sv.$sample.$run_num,$id,"
-					done 
 					mkdir -p $output_dir/Reports_per_Sample/ANNOT
-					qsub $args -N $type.$version.annotation_CNV.$sample.$run_num -l h_vmem=4G -hold_jid $id $script_path/annotation_CNV.sh $output_dir/Reports_per_Sample/SV/ $run_info $output_dir/Reports_per_Sample/ANNOT/ $sample
-					qsub $args -N $type.$version.annotation_SV.sh.$sample.$run_num -l h_vmem=4G -hold_jid $id $script_path/annotation_SV.sh $output_dir $run_info $output_dir/Reports_per_Sample/ANNOT/ $sample
+					qsub $args -N $type.$version.annotation_CNV.$sample.$run_num -l h_vmem=4G -hold_jid $type.$version.plot_circos_cnv_sv.$sample.$run_num $script_path/annotation_CNV.sh $output_dir/Reports_per_Sample/SV/ $run_info $output_dir/Reports_per_Sample/ANNOT/ $sample
+					qsub $args -N $type.$version.annotation_SV.sh.$sample.$run_num -l h_vmem=4G -hold_jid $type.$version.plot_circos_cnv_sv.$sample.$run_num $script_path/annotation_SV.sh $output_dir $run_info $output_dir/Reports_per_Sample/ANNOT/ $sample
 				fi	
 			fi
             if [[ $analysis != "annotation" && $analysis != "alignment" ]]
@@ -302,9 +301,9 @@ else
 	if [[  $tool == "exome"  && $all_sites == "YES" ]]
 	then
 		id=""
-		for sample in `echo $samples | tr ":" "\n"`
+		for s in `echo $samples | tr ":" "\n"`
 		do
-			id="$type.$version.variants.$sample.$run_num,$id,"
+			id=$id"$type.$version.variants.$s.$run_num,"
 		done
 		qsub $args -N $type.$version.merge_raw_variants.$run_num -t 1-$numchrs:1 -hold_jid $id -l h_vmem=8G $script_path/merge_raw_variants.sh $output_dir $run_info
 		qsub $args -N $type.$version.concat_raw_variants.$run_num -hold_jid $type.$version.merge_raw_variants.$run_num -l h_vmem=8G $script_path/concat_raw_variants.sh $output_dir $run_info	    
@@ -313,9 +312,9 @@ else
 	if [ $analysis != "alignment" ]
 	then
 		id=""
-		for sample in `echo $samples | tr ":" "\n"`
+		for s in `echo $samples | tr ":" "\n"`
 		do
-			id="$type.$version.sample_report.$sample.$run_num,$id,"
+			id=$id"$type.$version.sample_report.$s.$run_num,"
 		done
 		qsub $args -N $type.$version.annotate_sample.$run_num -hold_jid $id -l h_vmem=8G $script_path/annotate_sample.sh $output_dir $run_info    
 	fi
@@ -323,12 +322,14 @@ else
 	id_numbers=""
 	id_gene_summary=""
 	id_coverage=""
-	for sample in `echo $samples | tr ":" "\n"`
+	id_reads=
+	for s1 in `echo $samples | tr ":" "\n"`
 	do
-		id_igv="$type.$version.igv_bam.$sample.$run_num,$id_igv,"
-		id_numbers="$type.$version.sample_numbers.$sample.$run_num,$id_numbers,"
-		id_gene_summary="$type.$version.gene_summary.$sample.$run_num,$id_gene_summary,"
-		id_coverage="$type.$version.getCoverage.$sample.$run_num,$id_coverage,"
+		id_igv=$id_igv"$type.$version.igv_bam.$s1.$run_num,"
+		id_numbers=$id_numbers"$type.$version.sample_numbers.$s1.$run_num,"
+		id_gene_summary=$id_gene_summary"$type.$version.gene_summary.$s1.$run_num,"
+		id_coverage=$id_coverage"$type.$version.getCoverage.$s1.$run_num,"
+		id_reads=$id_reads"$type.$version.extract_reads_bam.$s1.$run_num,"
 	done 
 	if [ $analysis == "alignment" ]
 	then
@@ -340,15 +341,16 @@ else
 	then
 		if [ $tool == "whole_genome" ]
 		then
-			hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.annotate_sample.$run_num,$type.$version.annotation.CNV.sh.$run_num,$type.$version.annotation.SV.sh.$run_num "
+			hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.annotate_sample.$run_num,$type.$version.annotation.CNV.sh.$run_num,$type.$version.annotation.SV.sh.$run_num,$id_reads"
 		elif [[  $tool == "exome"  && $all_sites == "YES" ]]
 		then
-			hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.annotate_sample.$run_num,$type.$version.concat_raw_variants.$run_num"
+			hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.annotate_sample.$run_num,$type.$version.concat_raw_variants.$run_num,$id_reads"
 		elif  [[  $tool == "exome"  && $all_sites == "NO" ]]
 		then
-			hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.annotate_sample.$run_num"
+			hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.annotate_sample.$run_num,$id_reads"
 		 fi
 	fi
+	## generate html page for all teh modules
 	qsub $args -l h_vmem=8G -N $type.$version.generate_html.$run_num $hold $script_path/generate_html.sh $output_dir $run_info
     else
         echo "Multi-sample"
@@ -361,7 +363,8 @@ else
             names_samples=""
             for sample in $samples
             do
-                align_dir=$output_dir/alignment/$sample;
+                bamfile=$sample.sorted.bam
+				align_dir=$output_dir/alignment/$sample;
                 mkdir -p $align_dir
                 if [[ $analysis == "mayo" || $analysis == "external" || $analysis == "alignment" ]]
 				then
@@ -392,7 +395,8 @@ else
 						exit 1
 					fi	    
 					job_id_align=`echo $ALIGNMENT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
-					qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=8G -hold_jid $job_id_align $script_path/processBAM.sh $align_dir $sample $run_info             
+					qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=8G -hold_jid $job_id_align $script_path/processBAM.sh $align_dir $sample $run_info   
+					qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info		
 				elif [[ $analysis == "realignment" || $analysis == "realign-mayo" ]]
 				then
 					infile=`cat $sample_info | grep -w BAM:${sample} | cut -d '=' -f2 `
@@ -403,6 +407,7 @@ else
 						ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
 					done
 					qsub $args -pe threaded $threads -N $type.$version.processBAM.$sample.$run_num -l h_vmem=8G $script_path/processBAM.sh $align_dir $sample $run_info
+					qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info
 				fi
 				### setting the bams and its path for multiple sample anaylysis
 				names_samples=$names_samples"$sample:"
@@ -421,14 +426,15 @@ else
 					bam=`echo $infile | awk -v num=$i '{print $num}'`
 					ln -s $input/$bam $realign_dir/$group.$i.sorted.bam
 				done
-				qsub $args -N $type.$version.reformat_BAM.$group.$run_num -l h_vmem=8G $script_path/reformat_pairBAM.sh $realign_dir $group $run_info
-				qsub $args -N $type.$version.split_bam_chr.$group.$run_num -hold_jid $type.$version.reformat_BAM.$group.$run_num -l h_vmem=8G -t 1-$numchrs:1 $script_path/split_bam_chr.sh $realign_dir $group $run_info
+				qsub $args -N $type.$version.reformat_pairBAM.$group.$run_num -l h_vmem=8G $script_path/reformat_pairBAM.sh $realign_dir $group $run_info
+				qsub $args -N $type.$version.extract_reads_bam.$group.$run_num -l h_vmem=8G -hold_jid $type.$version.reformat_pairBAM.$group.$run_num $script_path/extract_reads_bam.sh $realign_dir $group.sorted.bam $run_info $group
+				qsub $args -N $type.$version.split_bam_chr.$group.$run_num -hold_jid $type.$version.reformat_pairBAM.$group.$run_num -l h_vmem=8G -t 1-$numchrs:1 $script_path/split_bam_chr.sh $realign_dir $group $run_info
 				variant_id="$type.$version.split_bam_chr.$group.$run_num"
 			else        
 				id=""
 				for sample in $samples
 				do
-					id="$type.$version.processBAM.$sample.$run_num,$id,"
+					id=$id"$type.$version.processBAM.$sample.$run_num,"
 				done    
 				qsub $args -N $type.$version.realign_recal.$group.$run_num -hold_jid $id -l h_vmem=8G -t 1-$numchrs:1 $script_path/realign_recal.sh $input_dirs $bam_samples $names_samples $realign_dir $run_info 1
 				variant_id="$type.$version.realign_recal.$group.$run_num"
@@ -447,7 +453,6 @@ else
 				qsub $args -N $type.$version.sift.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $sample $run_info
 				qsub $args -N $type.$version.snpeff.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info
 				qsub $args -N $type.$version.polyphen.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info  
-				#qsub $args -N $type.$version.polyphen.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/beautyAnnotation.sh $misc $output_OnTarget $sample $run_info	
 				hold="$type.$version.sift.$group.$sample.$run_num,$type.$version.snpeff.$group.$sample.$run_num,$type.$version.polyphen.$group.$sample.$run_num"
 				qsub $args -N $type.$version.sample_reports.$group.$sample.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=12G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir
 				qsub $args -N $type.$version.sample_report.$sample.$run_num -hold_jid $type.$version.sample_reports.$group.$sample.$run_num $script_path/sample_report.sh $output_dir $TempReports $sample $run_info
@@ -479,7 +484,7 @@ else
 				for sam in `cat $sample_info| grep -w "^$group" | cut -d '=' -f2`
 				do
 					qsub $args -N $type.$version.run_crest_multi_cover.$group.$sam.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=8G -t 1-$numchrs:1 $script_path/run_crest_multi_cover.sh $sam $group $output_dir/IGV_BAM $crest $run_info
-					id="$type.$version.run_crest_multi_cover.$group.$sam.$run_num,$id,"
+					id=$id"$type.$version.run_crest_multi_cover.$group.$sam.$run_num,"
 				done
 				qsub $args -N $type.$version.run_crest_multi.$group.$run_num -hold_jid $id -l h_vmem=8G -t 1-$numchrs:1 $script_path/run_crest_multi.sh $group $output_dir/IGV_BAM $crest $run_info
 				qsub $args -N $type.$version.run_segseq.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=24G -t 1-$numchrs:1 -l matlab_lic=1 $script_path/run_segseq.sh $group $output_dir/IGV_BAM $output_dir/cnv $run_info    
@@ -518,7 +523,7 @@ else
                 for i in $(seq 2 ${#sampleArray[@]})
                 do
                     tumor=${sampleArray[$i]}
-                    id="$type.$version.plot_circos_cnv_sv.$group.$tumor.$i.$run_num,$id,"
+                    id=$id"$type.$version.plot_circos_cnv_sv.$group.$tumor.$i.$run_num,"
                 done
 				qsub $args -N $type.$version.annotation_CNV.$group.$run_num -l h_vmem=4G -hold_jid $id $script_path/annotation_CNV.sh $output_dir/Reports_per_Sample/SV/ $run_info $output_dir/Reports_per_Sample/ANNOT $group
 				qsub $args -N $type.$version.annotation_SV.$group.$run_num -l h_vmem=4G -hold_jid $id $script_path/annotation_SV.sh $output_dir $run_info $output_dir/Reports_per_Sample/ANNOT/ $group
@@ -538,7 +543,7 @@ else
             for i in $(seq 2 ${#sampleArray[@]})
             do
                 tumor=${sampleArray[$i]}
-                id="$type.$version.sample_report.$group.$tumor.$i.$run_num,$id,"
+                id=$id"$type.$version.sample_report.$group.$tumor.$i.$run_num,"
             done
         done
         for group in `echo $groups | tr ":" "\n"`
@@ -546,7 +551,7 @@ else
             samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" " ")
             for sample in $samples
             do
-                id="$type.$version.sample_report.$sample.$run_num,$id,"
+                id=$id"$type.$version.sample_report.$sample.$run_num,$type.$version.extract_reads_bam.$sample.$run_num,"
             done
         done
         
@@ -554,7 +559,7 @@ else
         then
             for group in `echo $groups | tr ":" "\n"`
             do
-                id="$type.$version.summaryze_struct_group.$group.$run_num,$type.$version.annotation_CNV.$group.$run_num,$type.$version.annotation_SV.$group.$run_num,$id,"
+                id=$id"$type.$version.summaryze_struct_group.$group.$run_num,$type.$version.annotation_CNV.$group.$run_num,$type.$version.annotation_SV.$group.$run_num"
             done
         fi    
         qsub $args -N $type.$version.annotate_sample.$run_num -hold_jid $id -l h_vmem=8G $script_path/annotate_sample.sh $output_dir $run_info
@@ -569,14 +574,14 @@ else
             id=""
             for group in `echo $groups | tr ":" "\n"`
             do
-                id="$type.$version.sample_numbers.$group.$run_num,$type.$version.gene_summary.$group.$run_num,$type.$version.igv_bam.$group.$run_num,$type.$version.annotate_sample.$run_num,$type.$version.annotation_CNV.$run_num,$type.$version.annotation_SV.$run_num,$id,"
+                id=$id"$type.$version.sample_numbers.$group.$run_num,$type.$version.gene_summary.$group.$run_num,$type.$version.igv_bam.$group.$run_num,$type.$version.annotate_sample.$run_num,$type.$version.annotation_CNV.$run_num,$type.$version.annotation_SV.$run_num,"
             done          
         elif [ $tool == "whole_genome" ]
         then
             id=""
             for group in `echo $groups | tr ":" "\n"`
             do
-                id="$type.$version.sample_numbers.$group.$run_num,$type.$version.gene_summary.$group.$run_num,$type.$version.igv_bam.$group.$run_num,$type.$version.annotate_sample.$run_num,$id,"
+                id=$id"$type.$version.sample_numbers.$group.$run_num,$type.$version.gene_summary.$group.$run_num,$type.$version.igv_bam.$group.$run_num,$type.$version.annotate_sample.$run_num,"
             done    
         fi
         qsub $args -N $type.$version.generate_html.$run_num -hold_jid $id $script_path/generate_html.sh $output_dir $run_info 	

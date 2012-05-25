@@ -99,9 +99,6 @@ else
             filename1=$R1
             $script_path/fastq.sh $R1 $seq_file $filename1 $fastq $run_info $fastqc
         fi
-    else
-        echo "ERROR: $run info file is not synced with $sample_info file (sequencing information is not correct) [`date`]"
-        exit 1;
     fi    
     ## check if the fastqs are zipped or not
     

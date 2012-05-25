@@ -29,6 +29,4 @@ else
 	Rscript $script_path/coverage_plot.r $region $samples
 	mv $input/coverage.jpeg $output/Coverage.JPG
 	echo `date`
-	
-
 fi	

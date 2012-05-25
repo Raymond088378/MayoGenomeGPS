@@ -49,9 +49,7 @@ else
 	cd $output_dir/numbers
 	if [[ $analysis != "alignment" && $analysis != "annotation"  && $analysis != "ontarget" ]] 
 	then
-		region=`awk '{sum+=$3-$2+1; print sum}' $kit | tail -1`
-		Rscript $script_path/coverage_plot.r $region $samples
-		mv $output_dir/numbers/coverage.jpeg $output_dir/Coverage.JPG
+		$script_path/generate.coverage.sh $output_dir/numbers $output_dir $run_info
 	fi
 	#rm $output_dir/bed_file.bed
 	if [[ $analysis != "alignment" && $analysis != "annotation"  && $analysis != "ontarget" ]] 

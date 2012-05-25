@@ -36,13 +36,13 @@ else
     
     if [ ! -s $normal_bam ]
     then
-        echo "$normal_bam normal bam doesn't exist"
+        $script_path/errorlogs.sh $normal_bam Jointsnvmix.sh ERROR "not exist"
         exit 1;
     fi
     
     if [ ! -s $tumor_bam ]
     then
-        echo "$tumor_bam tumor bam doesn't exist"
+        $script_path/errorlogs.sh $tumor_bam Jointsnvmix.sh ERROR "not exist"
         exit 1;
     fi
     
@@ -56,7 +56,6 @@ else
     
 	$python $jointsnvmix/build/scripts-2.7/jsm.py classify --model snvmix2 --post_process --min_base_qual $bqual --min_map_qual $mqual --chromosome chr$chr --out_file $output/$output_file.txt --parameters_file $jointsnvmix/config/params.cfg $ref $normal_bam $tumor_bam
 	
-		
 	### script to convert text output to vcf output
 	perl $script_path/jsm2vcf.pl -i $output/$output_file.txt -o $output/$output_file -ns $normal_sample -ts $tumor_sample
 	rm $output/$output_file.txt

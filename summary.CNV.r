@@ -4,14 +4,14 @@ for (i in 1:1)
 {
 	if (length(stdin)==10)
 	{
-	gene=as.character(stdin[6])
+	input.gene=as.character(stdin[6])
 	input.DEL=as.character(stdin[7])
 	input.DUP=as.character(stdin[8])
 	output.DEL=as.character(stdin[9])
 	output.DUP=as.character(stdin[10])
 	}
 }
-gene=as.matrix(read.table(file=gene))
+gene=as.matrix(read.table(file=input.gene))
 DEL=as.matrix(read.table(file=input.DEL))
 DUP=as.matrix(read.table(file=input.DUP))
 out.DEL=matrix(0,nrow=nrow(gene), ncol=2)

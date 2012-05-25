@@ -58,7 +58,7 @@ else
 
     if [ "$RG_ID" == "$sample" ]
     then
-	echo "no need to convert same read group"
+		echo " [`date`] no need to convert same read group"
     else	
         $script_path/addReadGroup.sh $input/$sample.sorted.bam $input/$sample.sorted.rg.bam $input $run_info $sample
     fi
@@ -67,6 +67,7 @@ else
     then
         $script_path/reoderBam.sh $input/$sample.sorted.bam $input/$sample.sorted.tmp.bam $input $run_info  
     fi
+	
     echo `date`
 fi	
 	

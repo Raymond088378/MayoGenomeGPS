@@ -20,6 +20,10 @@ else
     center=$( cat $run_info | grep -w '^CENTER' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
 	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
+	
+	export JAVA_HOME=$javahome
+	export PATH=$JAVA_HOME/bin:$PATH
                     
     $java/java -Xmx6g -Xms512m \
     -jar $picard/AddOrReplaceReadGroups.jar \
@@ -34,7 +38,7 @@ else
         mv $outbam $inbam
         $samtools/samtools index $inbam
     else
-        $script_path/errorlog.sh convert.bam.sh $outbam ERROR empty
+        $script_path/errorlog.sh $outbam convert.bam.sh ERROR empty
 		exit 1;
 	fi
     echo `date`

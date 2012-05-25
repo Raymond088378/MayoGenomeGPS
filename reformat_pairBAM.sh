@@ -66,15 +66,15 @@ else
     
     if [ $check == 0 ]
     then
-        echo "ERROR : input bam file for $group doesn't have read group infroamtion for all the samples in the group"
+        $script_path/errorlog.sh $input/$group.sorted.bam reformat_pairBAM.sh ERROR "Read group Not available"
         exit 1;
     fi        
-	
 	
     if [ $reorder == "YES" ]
     then
         $script_path/reoderBam.sh $input/$group.sorted.bam $input/$group.sorted.tmp.bam $input $run_info  
     fi
+	
     echo `date`
 fi	
 	

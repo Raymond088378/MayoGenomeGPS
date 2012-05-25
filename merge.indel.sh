@@ -31,7 +31,8 @@ else
 	    rm $TempReports/$indel_file.rsIDs
 	    rm $TempReports/$indel_file.cosmic.txt
 	else
-	    echo "ERROR: adding cosmic data for indel failed for $indel_file"
+	    $script_path/errorlog.sh $TempReports/$indel_file.rsIDs.frequencies merge.indel.sh ERROR "failed to create"
+		exit 1;
 	fi	
 	## add snpeff prediction
 	perl $script_path/add_snpeff_indel.pl -i $TempReports/$indel_file.rsIDs.frequencies -s $snpeff/$sample.chr${which_chr}.indel.eff -o $TempReports/$sample.chr${which_chr}.INDEL.report 
