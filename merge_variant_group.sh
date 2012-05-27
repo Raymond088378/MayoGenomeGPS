@@ -92,7 +92,7 @@ else
 
     if [ $filter_variants == "YES" ]
     then
-        $script_path/filter_variant_vqsr.sh $out/$group.somatic.variants.raw.vcf $out/$group.somatic.variants.filter.vcf BOTH $run_info
+        $script_path/filter_variant_vqsr.sh $out/$group.somatic.variants.raw.vcf $out/$group.somatic.variants.filter.vcf BOTH $run_info somatic
     else
         cp $out/$group.somatic.variants.raw.vcf $out/$group.somatic.variants.filter.vcf
     fi

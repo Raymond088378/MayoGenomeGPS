@@ -1,0 +1,22 @@
+### Version 1.1
+
+1. Extract reads from the aligned BAM which are not used in calling variants, Workflow outputs a bam file with those reads.
+(this way we don't have to store the original  aligned bam)
+2. Replacing SSEQ (Seattle Seq annotation ) to SNPEFF and POLYPHEN2
+3. Added 2 more somtic caller ; JOINT SNVMIX and MUTECT
+4. Added scripts to merge single sample reports to get one big merge report for all the samples.
+5. Onatarget calls are now in VCF format which can be used by users
+6. Blat Column is added to the vcf and annoatated report. # of Alternate hits
+7. ESP allele frequencies are added to the annotated report
+8. To the filtered annotated report we add a column which comes from GATK which gives inforamtion about the impact of the variant.
+9. Fixed minro bugs from previous version.
+10. Fixed the issue with GATK variant annotator, which gives -ve QD value for non GATK vcf.
+11. Added a script to add AD field to the somatic sniper vcf 
+12. Switched to 1.6 version fo GATK
+13. Switched to 1.67 version of PICARD
+14. Switched to 1.19 version of Somatic sniper
+15. Switched to dbsnp135 from dbsnp132
+16. Added paired analysis for exomes too
+17. Added one more module to start with vcf varint files to just annotate ontarget variant calls (exome ) : module is called as "ontarget"
+18. Added variant module to paired analysis, user can start with realigned bam for pair.
+19. 	  	

@@ -20,6 +20,8 @@
 		my $analysis=$line[$#line];chomp $analysis;
 		@line=split(/=/,`perl -ne "/^MULTISAMPLE/ && print" $run_info`);
 		my $multi=$line[$#line];chomp $multi;
+		@line=split(/=/,`perl -ne "/^SAMPLE_INFO/ && print" $run_info`);
+		my $sample_info=$line[$#line];chomp $sample_info;
 		@line=split(/=/,`perl -ne "/^TYPE/ && print" $run_info`);
 		my $tool=$line[$#line];chomp $tool;
 		$tool=lc($tool);
@@ -34,6 +36,8 @@
 		@line=split(/=/,`perl -ne "/^SAMPLENAMES/ && print" $run_info`);
 		my $sampleNames=$line[$#line];chomp $sampleNames;
 		my @sampleArray = split(/:/,$sampleNames);
+		@line=split(/=/,`perl -ne "/^MULTISAMPLE/ && print" $run_info`);
+		$multi=$line[$#line];chomp $multi;
 		@line=split(/=/,`perl -ne "/^VARIANT_TYPE/ && print" $run_info`);
 		my $variant_type=$line[$#line];chomp $variant_type;
 		@line=split(/=/,`perl -ne "/^SNV_CALLER/ && print" $run_info`);
@@ -41,6 +45,10 @@
 		# @line=split(/=/,`perl -ne "/^NUM_SAMPLES/ && print" $run_info`);
 		# my $num_samples=$line[$#line];chomp $num_samples;
 		my $num_samples=`echo $sampleNames | tr ":" "\n" | wc -l`;
+		@line=split(/=/,`perl -ne "/^GROUPNAMES/ && print" $run_info`);
+		my $groupNames=$line[$#line];chomp $groupNames;
+		my $num_groups=`echo $groupNames | tr ":" "\n" | wc -l`;
+		my @groupArray = split(/:/,$groupNames);
 		$analysis=`echo "$analysis" | tr "[A-Z]" "[a-z]"`;chomp $analysis;
 		$variant_type=`echo "$variant_type" | tr "[a-z]" "[A-Z]"`;chomp $variant_type;
 		@line=split(/=/,`perl -ne "/^TOOL_INFO/ && print" $run_info`);
@@ -328,6 +336,63 @@
 	undef %sample_numbers;
 	close OUT;
 	
+	if ($multi eq 'YES')	{
+		my %group_numbers=();
+		$dest=$path."/SampleStatistics.pair.tsv";
+		open OUT, ">$dest" or die "can not open $dest : $!\n";
+		print OUT "GroupNamesUsed/info";
+		my $tot=0;
+		for(my $k = 0; $k < $num_groups;$k++)	
+		{
+			my $sams=`cat $sample_info | grep -w "^$groupArray[$k]" | cut -d '=' -f2`;
+			my @sam=split('\s+',$sams);
+			for (my $q=1;$q <=$#sam;$q++)	{
+				print OUT "\t$groupArray[$k] - $sam[$q]";
+				my $file="$path/numbers/$groupArray[$k].$sam[$q].out";
+				open SAMPLE, "<$file", or die "could not open $file : $!";
+				print"reading numbers from $groupArray[$k] - $sam[$q]\n";
+				my $id=0;
+				while(my $l = <SAMPLE>)	
+				{			
+					chomp $l;
+					if ( $l !~ /^\d/)	{
+						$uniq = $id;
+						$id++;
+					}	
+					else	{
+						push (@{$group_numbers{$uniq}},$l);
+					}
+				}	
+				close SAMPLE;
+			}
+			$tot=$tot+$#sam-1;
+		}
+		print OUT "\n";
+		@align=("Combined Total Reads","Combined Mapped Reads");
+		if ($tool eq 'exome')	{
+			@snv=("Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","SNVs in CaptureRegion",
+				"Total SNVs","Ti/Tv Ratio","SPLICE_SITE_ACCEPTOR","SPLICE_SITE_DONOR","START_LOST","STOP_GAINED","STOP_LOST","RARE_AMINO_ACID","NON_SYNONYMOUS_CODING","SYNONYMOUS_START","NON_SYNONYMOUS_START","START_GAINED","SYNONYMOUS_CODING","SYNONYMOUS_STOP","NON_SYNONYMOUS_STOP","UTR_5_PRIME","UTR_3_PRIME",
+				"Total SNVs","Ti/Tv Ratio","SPLICE_SITE_ACCEPTOR","SPLICE_SITE_DONOR","START_LOST","STOP_GAINED","STOP_LOST","RARE_AMINO_ACID","NON_SYNONYMOUS_CODING","SYNONYMOUS_START","NON_SYNONYMOUS_START","START_GAINED","SYNONYMOUS_CODING","SYNONYMOUS_STOP","NON_SYNONYMOUS_STOP","UTR_5_PRIME","UTR_3_PRIME");
+			@indel=("Total INDELs (GATK)","Filtered INDELs (GATK)","INDELs in CodingRegion","INDELs in CaptureRegion","EXON_DELETED","FRAME_SHIFT","CODON_CHANGE","UTR_5_DELETED","UTR_3_DELETED","CODON_INSERTION","CODON_CHANGE_PLUS_CODON_INSERTION","CODON_DELETION","CODON_CHANGE_PLUS_CODON_DELETION","SPLICE_SITE_ACCEPTOR","SPLICE_SITE_DONOR","UTR_5_PRIME","UTR_3_PRIME");
+			@names=(@align,@snv,@indel);
+		}
+		elsif ($tool eq 'whole_genome')	{
+			@snv=("Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","Total SNVs","Ti/Tv Ratio","SPLICE_SITE_ACCEPTOR","SPLICE_SITE_DONOR","START_LOST","STOP_GAINED","STOP_LOST","RARE_AMINO_ACID","NON_SYNONYMOUS_CODING","SYNONYMOUS_START","NON_SYNONYMOUS_START","START_GAINED","SYNONYMOUS_CODING","SYNONYMOUS_STOP","NON_SYNONYMOUS_STOP","UTR_5_PRIME","UTR_3_PRIME","Total SNVs","Ti/Tv Ratio","SPLICE_SITE_ACCEPTOR","SPLICE_SITE_DONOR","START_LOST","STOP_GAINED","STOP_LOST","RARE_AMINO_ACID","NON_SYNONYMOUS_CODING","SYNONYMOUS_START","NON_SYNONYMOUS_START","START_GAINED","SYNONYMOUS_CODING","SYNONYMOUS_STOP","NON_SYNONYMOUS_STOP","UTR_5_PRIME","UTR_3_PRIME");
+			@indel=("Total INDELs (GATK)","Filtered INDELs (GATK)","INDELs in CodingRegion","EXON_DELETED","FRAME_SHIFT","CODON_CHANGE","UTR_5_DELETED","UTR_3_DELETED","CODON_INSERTION","CODON_CHANGE_PLUS_CODON_INSERTION","CODON_DELETION","CODON_CHANGE_PLUS_CODON_DELETION","SPLICE_SITE_ACCEPTOR","SPLICE_SITE_DONOR","UTR_5_PRIME","UTR_3_PRIME");
+			@sv=("Total CNVs","Coding CNVs","Coding Deletions","Coding Duplications","Total SVs","Coding SVs","Intra-chr translocations","Inversions","Deletions","Insertions","Inter-chr translocations");
+			@names=(@align,@snv,@indel,@sv);
+		}	
+		foreach my $key (sort {$a <=> $b} keys %group_numbers)	{
+			print OUT "$names[$key]";
+			for ( my $c=0; $c < $num_groups; $c++ )	{
+				my $print=CommaFormatted(${$group_numbers{$key}}[$c]);
+				print OUT "\t$print";
+			}
+			print OUT "\n";
+		}
+	close OUT;
+	undef %group_numbers;
+	}
 }	
 	
 	

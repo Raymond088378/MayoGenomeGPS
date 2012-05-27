@@ -256,8 +256,8 @@ else
 				genomic_deletions=0
 				genomic_duplications=0
 				cnv=$input_dir/Reports_per_Sample/SV
-				raw_del=`cat $cnv/$sample.cnv.raw.vcf | awk '$0 !~ /#/' | grep -c DEL`
-				raw_dup=`cat $cnv/$sample.cnv.raw.vcf | awk '$0 !~ /#/' | grep -c DUP`
+				raw_del=`cat $cnv/$sample.cnv.vcf | awk '$0 !~ /#/' | grep -c DEL`
+				raw_dup=`cat $cnv/$sample.cnv.vcf | awk '$0 !~ /#/' | grep -c DUP`
 				raw_cnvs=`expr $raw_del "+" $raw_dup`
 				genomic_deletions=`cat $cnv/$sample.cnv.filter.vcf | awk '$0 !~ /#/' | grep -c DEL`
 				genomic_duplications=`cat $cnv/$sample.cnv.filter.vcf | awk '$0 !~ /#/' | grep -c DUP`

@@ -301,7 +301,7 @@ else    {
         <td class=\"helpHed\">Normal Sample</td>
         <td class=\"helpHed\">Tumor Samples</td></tr>";	
 		for (my $i = 0; $i < $num_groups; $i++)	{
-			my $sams=`cat $sample_info | grep -w "$groupArray[$i]" | cut -d '=' -f2`;
+			my $sams=`cat $sample_info | grep -w "^$groupArray[$i]" | cut -d '=' -f2`;
 			my @sam=split('\s+',$sams);
 			my $normal=$sam[0];
 			my $tumor=$sams;
@@ -1635,104 +1635,90 @@ else    {
 					}			
 				}
 				elsif ($tool eq 'whole_genome')	{
-						if ($key eq '2' )	{
+						if ($key eq '0' )	{
 						print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
 						}		
 						print OUT "</tr>\n";
 					}	
-					if ($key eq '5' )	{
+					if ($key eq '3' )	{
 						print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
 						}		
 						print OUT "</tr>\n";
 					}	
-					if ($key eq '7' )	{
+					if ($key eq '5' )	{
 						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
 						}		
 						print OUT "</tr>\n";
 					}
-					if ($key eq '13' )	{
+					if ($key eq '11' )	{
 						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
 						}		
 						print OUT "</tr>\n";
 					}
-					if ($key eq '14' )	{
+					if ($key eq '12' )	{
 						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
 						}		
 						print OUT "</tr>\n";
 					}				
-					if ($key eq '22' )	{
+					if ($key eq '20' )	{
 						print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
 						}		
 						print OUT "</tr>\n";
 					}	
-					if ($key eq '24' )	{
+					if ($key eq '22' )	{
 						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
 						}		
 						print OUT "</tr>\n";
 					}
-					if ($key eq '30' )	{
+					if ($key eq '28' )	{
 						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
 						}		
 						print OUT "</tr>\n";
 					}
-					if ($key eq '31' )	{
+					if ($key eq '29' )	{
 						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
 						}		
 						print OUT "</tr>\n";
 					}				
-					if ($key eq '39' )	{
+					if ($key eq '37' )	{
 						print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
 						}		
 						print OUT "</tr>\n";
 					}
-					if ($key eq '42' )	{
+					if ($key eq '40' )	{
 						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
 						}		
 						print OUT "</tr>\n";
 					}
-					if ($key eq '46' )	{
+					if ($key eq '44' )	{
 						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
 						}		
 						print OUT "</tr>\n";
 					}				
-					if ($key eq '55' )	{
-						print OUT "<th class=\"helpBod\">Copy Number Variants (CNVs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '59' )	{
-						print OUT "<th class=\"helpBod\">Structural Variants (SVs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
 				}
 			}
 		}
@@ -1898,7 +1884,7 @@ else    {
 					}
 					print OUT "</tr>\n";
 				}
-				if ( $key ne '2' || $key ne '6' || $key ne '8' ||$key ne '14' ||$key ne '15' || $key ne '23' ||$key ne '25' ||$key ne '31' ||$key ne '32' ||$key ne '40' ||$key ne '44' ||$key ne '46' )	{
+				if ( $key eq '2' || $key eq '6' || $key eq '8' || $key eq '14' || $key eq '15' || $key eq '23' || $key eq '25' || $key eq '31' || $key eq '32' || $key eq '40' || $key eq '44' || $key eq '46' )	{
 					print OUT "<td class=\"helpHed\"><p align='left'><a href=\"#$names[$key]\" title=\"$values[$key]\">$names[$key]</a></td>";
 					for(my $k = 0; $k <= $tot;$k++)	{
 						my $print=CommaFormatted(${$group_numbers{$key}}[$k]);
@@ -2199,8 +2185,12 @@ else    {
 	}	
 	print OUT "<ul>
 		<li>Statistics based on per Sample Analysis are recorded in the tab delimited file<br>
-		<u> <a href= \"SampleStatistics.tsv\"target=\"_blank\">SampleStatistics</a></u></ul>";
-	
+		<u> <a href= \"SampleStatistics.tsv\"target=\"_blank\">SampleStatistics</a></u>";
+	if ($multi eq 'YES')	{
+		print OUT
+		"<br><u> <a href= \"SampleStatistics.pair.tsv\"target=\"_blank\">paired SampleStatistics</a></u>";
+	}	
+	print OUT "<\ul>";
 	
 	if ($tool eq 'whole_genome' && $analysis ne 'alignment' && $analysis ne 'annotation')	{
 		if ($multi eq 'NO')	{

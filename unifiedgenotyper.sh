@@ -27,9 +27,14 @@ else
 	
 	export JAVA_HOME=$javahome
 	export PATH=$JAVA_HOME/bin:$PATH
-	
+    if [ ${#ped} -eq 0 ]
+    then
+        ped="NA"
+    fi
+    
     check=`[ -s $vcf.idx ] && echo "1" || echo "0"`
-    while [ $check -eq 0 ]
+    count=0
+	while [[ $check -eq 0 && $count -le 5 ]]
     do
 		if [ $ped != "NA" ]
 		then
@@ -61,6 +66,11 @@ else
 			--out $vcf
 		fi
         check=`[ -s $vcf.idx ] && echo "1" || echo "0"`
+        if [ $check -eq 0 ]
+        then
+            rm core.*
+        fi    
+		let count=count+1
     done
 
     if [ ! -s $vcf ]
