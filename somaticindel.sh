@@ -56,6 +56,9 @@ else
         rm $output/$indel_v
 		cat $output/$output_file | awk '$0 ~ /^#/ || $8 ~ /SOMATIC/' > $output/$output_file.tmp
 		mv $output/$output_file.tmp $output/$output_file
+		cat $output/$output_file | awk '$0 ~ /^#/ || $5 ~ /,/' > $output/$output_file.multi.vcf
+		cat $output/$output_file | awk '$0 ~ /^#/ || $5 !~ /,/' > $output/$output_file.tmp
+		mv $output/$output_file.tmp  $output/$output_file	
     fi
     echo `date`
 fi	

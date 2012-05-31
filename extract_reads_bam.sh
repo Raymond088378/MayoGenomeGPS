@@ -1,17 +1,18 @@
 #!/bin/sh
 
-if [ $# -le 2 ]
+if [ $# -le 3 ]
 then
-	echo -e "Usage: script to extract reads not used for downstream preocessing \n <bam file><input directory><run info><single/pair>"
+	echo -e "Usage: script to extract reads not used for downstream preocessing \n <bam file><input directory><run info><igv folder><single/pair>"
 else
 	set -x
 	echo `date`	
 	output=$1
 	bam=$2
 	run_info=$3
-	if [ $4 ]
+	igv=$4
+	if [ $5 ]
 	then
-		group=$4
+		group=$5
 	fi
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 	ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
@@ -20,7 +21,7 @@ else
 	chrindex=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | awk '{print "chr"$0}' )
 	delivery_folder=$( cat $run_info | grep -w '^DELIVERY_FOLDER' | cut -d '=' -f2)
 	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]" )
-	
+	out=$delivery_folder/IGV_BAM
 	chrs=`cat $ref.fai | cut -f1 | tr ":" "\n"`
 	i=1
 	for chr in $chrs
@@ -73,8 +74,39 @@ else
 			$samtools/samtools view -H $output/$sample.extra.bam | grep -E -v "$gr" | $samtools/samtools reheader - $output/$sample.extra.bam > $output/$sample.extra.re.bam
             mv $output/$sample.extra.re.bam $output/$sample.extra.bam
 			$samtools/samtools index $output/$sample.extra.bam
+			if [ $delivery_folder != "NA" ]
+			then
+				if [ -d $delivery_folder ]
+				then
+					if [ ! -d $out ]
+					then
+						mkdir $out
+					fi
+					mv $output/$sample.extra.bam $out/
+					mv $output/$sample.extra.bam.bai $out/
+				fi
+			else
+				mv $output/$sample.extra.bam $igv/
+				mv $output/$sample.extra.bam.bai $igv/
+			fi		
 		done
 		rm $output/$bam.extra.bam $output/$bam.extra.bam.bai
+	else
+		if [ $delivery_folder != "NA" ]
+		then
+			if [ -d $delivery_folder ]
+			then
+				if [ ! -d $out ]
+				then
+					mkdir $out
+				fi
+				mv $output/$bam.extra.bam $out/
+				mv $output/$bam.extra.bam.bai $out/
+			fi
+		else	
+			mv $output/$bam.extra.bam $igv/
+			mv $output/$bam.extra.bam.bai $igv/
+		fi		
 	fi
 	echo `date`
 fi 

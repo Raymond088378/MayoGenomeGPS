@@ -180,13 +180,16 @@ else
 		fi
 	else
 		cp $inputvcf.SNV.vcf $outfile.SNV.vcf
+                rm $inputvcf.SNV.vcf
 	fi
     
 	### applt vqsr for indels
 	
 	if [ $raw_calls_indels -gt 0 ]
 	then
-		count=0
+		if [ ! $5 ]
+                then
+                count=0
 		check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
 		while [[ $check -eq 0 && $count -le 5 ]]
 		do
@@ -259,8 +262,12 @@ else
 		then
 			rm $output/temp/$input_name.tranches $output/temp/$input_name.tranches.pdf	
 		fi
+            else
+                $script_path/hardfilters_variants.sh $inputvcf.INDEL.vcf $outfile.INDEL.vcf $run_info INDEL
+            fi    
     else
         cp $inputvcf.INDEL.vcf $outfile.INDEL.vcf
+        rm $inputvcf.INDEL.vcf
     fi    
 	### combine both the indels and SNVs
 	in="-V $outfile.INDEL.vcf -V $outfile.SNV.vcf"

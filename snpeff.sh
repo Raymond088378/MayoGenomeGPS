@@ -74,7 +74,7 @@ else
             --get-INFO SNPEFF_TRANSCRIPT_ID \
             --out $snpeff/$snv_file.annotate
             
-            perl $script_path/parse_snpeffect.pl $snpeff/$snv_file.annotate.INFO SNV > $snpeff/$sample.chr${chr}.snv.filtered.eff
+            perl $script_path/parse_snpeffect.pl $snpeff/$snv_file.annotate.INFO > $snpeff/$sample.chr${chr}.snv.filtered.eff
             rm $snpeff/$snv_file.annotate.INFO
             rm $snpeff/$snv_file.annotate.log
             rm $snpeff/$sample.chr${chr}.snv.eff.vcf
@@ -119,7 +119,8 @@ else
             -o $snpeff/$indel_file.annotate.vcf
             
             $vcftools/bin/vcftools --vcf $snpeff/$indel_file.annotate.vcf \
-            --get-INFO SNPEFF_EFFECT \
+            --get-INFO SNPEFF_AMINO_ACID_CHANGE \
+			--get-INFO SNPEFF_EFFECT \
             --get-INFO SNPEFF_EXON_ID \
             --get-INFO SNPEFF_FUNCTIONAL_CLASS \
             --get-INFO SNPEFF_GENE_BIOTYPE \
@@ -128,7 +129,7 @@ else
             --get-INFO SNPEFF_TRANSCRIPT_ID \
             --out $snpeff/$indel_file.annotate
             
-            perl $script_path/parse_snpeffect.pl $snpeff/$indel_file.annotate.INFO INDEL > $snpeff/$sample.chr${chr}.indel.filtered.eff
+            perl $script_path/parse_snpeffect.pl $snpeff/$indel_file.annotate.INFO > $snpeff/$sample.chr${chr}.indel.filtered.eff
             rm $snpeff/$indel_file.annotate.INFO
             rm $snpeff/$indel_file.annotate.log
             rm $snpeff/$sample.chr${chr}.indel.eff.vcf
@@ -136,9 +137,9 @@ else
             rm $snpeff/$indel_file.annotate.vcf.vcfidx
             rm $snpeff/$indel_file.annotate.vcf.idx
 	else
-            echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tfunctionGVS\taminoAcids\tCodon_Degeneracy\tgeneList" > $snpeff/$sample.chr${chr}.indel.eff
+            echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tfunctionGVS\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList" > $snpeff/$sample.chr${chr}.indel.eff
             cp $input/$indel_file $snpeff/$indel_file.annotate.vcf
-	    echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tfunctionGVS\tFunctionalClass\tFunctionalImpact\tCodon_Degeneracy\tgeneList\n" > $snpeff/$sample.chr${chr}.indel.filtered.eff
+	    echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tfunctionGVS\tFunctionalClass\tFunctionalImpact\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList\n" >  $snpeff/$sample.chr${chr}.indel.filtered.eff
         fi
     fi    
     echo `date`

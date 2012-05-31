@@ -1,16 +1,34 @@
 #!/bin/sh
 
-if [ $# != 4 ]
+if [ $# != 2 ]
 then
-	echo -e "Usage: wrapper to clean intermediate files and tansfer the data to tertiary, delivery folder \n <secondary folder> <delivery folder><tertiary folder> <whole_genome/exome>"
+	echo -e "Usage: wrapper to clean intermediate files and tansfer the data to tertiary, delivery folder \n <secondary folder> < run_info >"
 else
 	set -x
 	echo `date`
 	secondary=$1
-	delivery=$2
-	tertiary=$3
-	type=$4
-	type=`echo $type | tr "[A-Z]" "[a-z]"`
+	run_info=$2
+	delivery=$( cat $run_info | grep -w '^DELIVERY_FOLDER' | cut -d '=' -f2)
+	tertiary=$( cat $run_info | grep -w '^TERTIARY_FOLDER' | cut -d '=' -f2)
+	type=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 |tr "[A-Z]" "[a-z]")
+	
+	if [ ! -s $run_info ]
+	then
+		echo "Runinfo file doesn't exist"
+		exit 1;
+	fi
+	
+	if [ $tertiary == "NA" ]
+	then
+		echo "Runinfo file doesn't have tertiary path defined"
+		exit 1;
+	fi
+	
+	if [ $delivery == "NA" ]
+	then
+		echo "Runinfo file doesn't have delivery path defined"
+		exit 1;
+	fi	
 	
 	if [ ! -d $secondary ]
 	then
@@ -72,7 +90,7 @@ else
 	mv $secondary/igv_session.xml $delivery/
 	mv $secondary/IGV_Setup.doc $delivery/
 	mv $secondary/SampleStatistics.tsv $delivery/
-	
+	mv $secondary/ColumnDescription_Reports.xls $delivery/
 	### make tar balls
 	cd $secondary
 	tar -cvzf logs.tar.gz logs
@@ -94,7 +112,7 @@ else
 	rm -R $secondary/OnTarget
 	rm -R $secondary/realign
 	rm -R $secondary/TempReports
-	
+	rm -R $secondary/IGV_BAM
 	echo "data is transfered and intermediate files are deleted"	
 	echo `date`
 fi	

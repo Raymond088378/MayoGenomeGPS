@@ -44,6 +44,9 @@ while(defined $in_l || defined $an_l)	{
 			print OUT "$in_l\t-\tnone\n";
 			$in_l=<FH>;
 		}
+		else	{
+			$an_l=<ANNOT>;
+		}
 	}
 }
 close FH;

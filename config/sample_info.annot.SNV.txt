@@ -1,2 +1,0 @@
-SNV:s_normal=s_normal.variants.raw.vcf
-SNV:s_tumor=s_tumor.variants.raw.vcf

@@ -42,6 +42,8 @@ else
     blat_server=$( cat $tool_info | grep -w '^BLAT_SERVER' | cut -d '=' -f2 )
     window_blat=$( cat $tool_info | grep -w '^WINDOW_BLAT' | cut -d '=' -f2 )
 	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
+	threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2 )
+	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	
 	export JAVA_HOME=$javahome
 	export PATH=$JAVA_HOME/bin:$PATH
@@ -56,8 +58,8 @@ else
     fi
     status=`$blat/gfServer status localhost $blat_port | wc -l`;
 
-    if [ "$status" -eq 0 ]
-    then
+    while [ "$status" -eq 0 ]
+    do
         blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
         range=20000
         let blat_port+=$RANDOM%range
@@ -68,28 +70,38 @@ else
             $blat/gfServer start localhost $blat_port -log=$out/$group.somatic.variants.raw.vcf.blat.log $blat_ref  &
             sleep 2m
         fi
-    fi
+		 status=`$blat/gfServer status localhost $blat_port | wc -l`;
+    done
     
         
 ########################################################	
 
     inputargs=""
+	inputargs_multi=""
     for i in $chrs
     do
         inputfile=$input/$group/MergeAllSamples.chr$i.raw.vcf 
+		multi=$input/$group/MergeAllSamples.chr$i.raw.multi.vcf 
         if [ ! -s $inputfile ]
         then		
             $script_path/errorlog.sh $inputfile merge_variant_greoup.sh ERROR "does not exist"
             exit 1
         else
             inputargs="-V $inputfile "$inputargs
+			inputargs_multi="-V $multi "$inputargs_multi
         fi
     done
 
     $script_path/combinevcf.sh "$inputargs" $out/$group.somatic.variants.raw.vcf $run_info no
-    perl $script_path/vcf_blat_verify.pl -i $out/$group.somatic.variants.raw.vcf -o $out/$group.somatic.variants.raw.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
+	$script_path/combinevcf.sh "$inputargs_multi" $out/$group.somatic.variants.raw.multi.vcf $run_info no
+    
+	## blat column 
+	perl $script_path/vcf_blat_verify.pl -i $out/$group.somatic.variants.raw.vcf -o $out/$group.somatic.variants.raw.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port -sam $samtools -th $threads
     mv $out/$group.somatic.variants.raw.vcf.tmp $out/$group.somatic.variants.raw.vcf
-
+	
+	perl $script_path/vcf_blat_verify.pl -i $out/$group.somatic.variants.raw.multi.vcf -o $out/$group.somatic.variants.raw.multi.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port -sam $samtools -th $threads
+    mv $out/$group.somatic.variants.raw.multi.vcf.tmp $out/$group.somatic.variants.raw.multi.vcf
+	
     if [ $filter_variants == "YES" ]
     then
         $script_path/filter_variant_vqsr.sh $out/$group.somatic.variants.raw.vcf $out/$group.somatic.variants.filter.vcf BOTH $run_info somatic
@@ -108,18 +120,10 @@ else
 	done
     fi
 			
-    range=20000
-    let blat_port+=$RANDOM%range
-    status=`$blat/gfServer status localhost $blat_port | wc -l`;
-    if [ "$status" -le 1 ]
-    then
-	$blat/gfServer start localhost $blat_port -log=$out/$group.variants.raw.vcf.blat.log $blat_ref  &
-	sleep 2m
-    fi
     status=`$blat/gfServer status localhost $blat_port | wc -l`;
 
-    if [ "$status" -eq 0 ]
-    then
+    while [ "$status" -eq 0 ]
+    do
         blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
         range=20000
         let blat_port+=$RANDOM%range
@@ -130,25 +134,35 @@ else
             $blat/gfServer start localhost $blat_port -log=$out/$group.variants.raw.vcf.blat.log $blat_ref  &
             sleep 2m
         fi
-    fi
+		status=`$blat/gfServer status localhost $blat_port | wc -l`;	
+    done
     
     
     inputargs=""
+	inputargs_multi=""
     for i in $chrs
     do
         inputfile=$input/$group/variants.chr$i.raw.vcf 
+		multi=$input/$group/variants.chr$i.raw.vcf.multi.vcf 
         if [ ! -s $inputfile ]
         then		
             $script_path/errorlog.sh $inputfile merge_variant_greoup.sh ERROR "does not exist"
             exit 1
         else
             inputargs="-V $inputfile "$inputargs
+			inputargs_multi="-V $multi "$inputargs_multi
         fi
     done
 
     $script_path/combinevcf.sh "$inputargs" $out/$group.variants.raw.vcf $run_info no
-    perl $script_path/vcf_blat_verify.pl -i $out/$group.variants.raw.vcf -o $out/$group.variants.raw.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
+	$script_path/combinevcf.sh "$inputargs" $out/$group.variants.raw.multi.vcf $run_info yes
+    
+	## blat column 
+	perl $script_path/vcf_blat_verify.pl -i $out/$group.variants.raw.vcf -o $out/$group.variants.raw.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port -sam $samtools -th $threads
     mv $out/$group.variants.raw.vcf.tmp $out/$group.variants.raw.vcf
+	
+	perl $script_path/vcf_blat_verify.pl -i $out/$group.variants.raw.multi.vcf -o $out/$group.variants.raw.multi.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port -sam $samtools -th $threads
+    mv $out/$group.variants.raw.multi.vcf.tmp $out/$group.variants.raw.multi.vcf
 	
     if [ $filter_variants == "YES" ]
     then
@@ -163,9 +177,9 @@ else
         exit 1
     else
 	for chr in $chrs
-        do
-            cat $out/$group.variants.filter.vcf | awk -v num=chr${chr} '$0 ~ /^#/ || $1 == num' > $input/$group/$group.variants.chr$chr.filter.vcf 
-        done
+	do
+		cat $out/$group.variants.filter.vcf | awk -v num=chr${chr} '$0 ~ /^#/ || $1 == num' > $input/$group/$group.variants.chr$chr.filter.vcf 
+	done
     fi
     echo `date`
 fi

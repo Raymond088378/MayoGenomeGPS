@@ -31,8 +31,8 @@ else
 		cat $TargetKit | grep -w chr$chr > $output/$sample.$chr.target.bed
     fi
 	
-    export PYTHONPATH=$PYTHONPATH:$pythonpath
-    export PATH=$PATH:$PYTHONPATH
+    export PYTHONPATH=$pythonpath:$PYTHONPATH
+    export PATH=$PYTHONPATH:$PATH
     
     if [ ! -s $normal_bam ]
     then
@@ -58,6 +58,10 @@ else
 	
 	### script to convert text output to vcf output
 	perl $script_path/jsm2vcf.pl -i $output/$output_file.txt -o $output/$output_file -ns $normal_sample -ts $tumor_sample
+	cat $output/$output_file | awk '$0 ~ /^#/ || $5 ~ /,/' > $output/$output_file.multi.vcf
+	cat $output/$output_file | awk '$0 ~ /^#/ || $5 !~ /,/' > $output/$output_file.tmp
+	mv $output/$output_file.tmp $output/$output_file
+	
 	rm $output/$output_file.txt
     echo `date`
 fi

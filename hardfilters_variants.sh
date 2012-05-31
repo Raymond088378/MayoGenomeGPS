@@ -45,7 +45,7 @@ else
 			filter_snvs=`cat $outputvcf | awk '$0 !~ /^#/' | wc -l`
 			if [[ -s $outputvcf.idx && $num_snvs == $filter_snvs ]]
 			then
-				rm $inputvcf.idx
+				rm $inputvcf $inputvcf.idx
 			else
 				$script_path/errorlog.sh $outputvcf.idx hardfilters_variants.sh ERROR "failed to create"
 				exit 1;
@@ -72,7 +72,7 @@ else
 			filter_indels=`cat $outputvcf | awk '$0 !~ /^#/' | wc -l`
 			if [[ -s $outputvcf.idx && $num_indels == $filter_indels ]]
 			then
-				rm $outputvcf.idx 
+				rm $inputvcf $inputvcf.idx 
 			else
 				$script_path/errorlog.sh $outputvcf.idx hardfilters_variants.sh ERROR "failed to create"
 				exit 1;

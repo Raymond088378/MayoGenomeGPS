@@ -230,33 +230,37 @@ else
     then
         ### INDEL
         input_var=""
-        input_files=""
+		multi_var=""
         for i in $(seq 2 ${#sampleArray[@]})
         do
             sample=${sampleArray[$i]}
             indel=$sample.chr$chr.indel.vcf
+			multi=$sample.chr$chr.indel.vcf.multi.vcf
             input_var="${input_var} -V $output/$indel"
-            input_files="${input_files} $output/$indel"
-            input_indexes="${input_indexes} $output/$indel.idx"
+			multi_var="${multi_var} -V $output/$multi"
         done
         $script_path/combinevcf.sh "$input_var" $output/MergeAllSamples.chr$chr.Indels.raw.vcf $run_info yes
+		$script_path/combinevcf.sh "$multi_var" $output/MergeAllSamples.chr$chr.Indels.raw.multi.vcf $run_info yes
 
         ##Merge SNVs
         input_var=""
-        input_files=""
+		multi_var=""
         for i in $(seq 2 ${#sampleArray[@]})
         do
             sample=${sampleArray[$i]}
             snv=$sample.chr$chr.snv.vcf
+			multi=$sample.chr$chr.snv.vcf.multi.vcf
             input_var="${input_var} -V $output/$snv"
-            input_files="${input_files} $output/$snv"
-            input_indexes="${input_indexes} $output/$snv.idx"
+			multi_var="${multi_var} -V $output/$multi"
         done
         $script_path/combinevcf.sh "$input_var" $output/MergeAllSamples.chr$chr.snvs.raw.vcf $run_info yes
+		$script_path/combinevcf.sh "$multi_var" $output/MergeAllSamples.chr$chr.snvs.raw.multi.vcf $run_info yes
 
         ## combine both snv and indel
         in="-V $output/MergeAllSamples.chr$chr.snvs.raw.vcf -V $output/MergeAllSamples.chr$chr.Indels.raw.vcf"
         $script_path/combinevcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.vcf $run_info yes
+		in="-V $output/MergeAllSamples.chr$chr.snvs.raw.multi.vcf -V $output/MergeAllSamples.chr$chr.Indels.raw.multi.vcf"
+		$script_path/combinevcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.multi.vcf $run_info yes
     fi
 
     ## remove files

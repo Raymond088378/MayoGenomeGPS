@@ -49,7 +49,13 @@ else
 	pos=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Position") {print i} } }' $file`
 	ref=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Ref") {print i} } }' $file`
 	alt=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Alt") {print i} } }' $file`
-	perl $script_path/parse_siftPredictions.pl -i $file -s $sift/${sample}_chr${which_chr}_predictions.tsv -c $chr -p $pos -r $ref -a $alt -o $file.sift
+	if [ -s $sift/${sample}_chr${which_chr}_predictions.tsv ]
+	then
+		perl $script_path/parse_siftPredictions.pl -i $file -s $sift/${sample}_chr${which_chr}_predictions.tsv -c $chr -p $pos -r $ref -a $alt -o $file.sift
+	else
+		$script_path/errorlog.sh $sift/${sample}_chr${which_chr}_predictions.tsv merge.snv.sh ERROR "not exist"
+		exit 1;
+	fi
 	
 	### sort the erport using the start and position
 	perl $script_path/sort.variantReport.pl -i $file.sift -o $file.sift.sort -f Position

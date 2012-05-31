@@ -72,7 +72,11 @@ else
         fi    
 		let count=count+1
     done
-
+	
+	cat $vcf | awk '$0 ~ /^#/ || $5 ~ /,/' > $vcf.multi.vcf
+	cat $vcf | awk '$0 ~ /^#/ || $5 !~ /,/' > $vcf.temp
+	mv $vcf.temp $vcf
+	
     if [ ! -s $vcf ]
     then
         $script_path/errorlog.sh $vcf unifiedgenotyper.sh ERROR empty

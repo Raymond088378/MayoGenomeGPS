@@ -50,12 +50,12 @@ else
 			mkdir $output_dir/fastqc
 		fi
 		mkdir $output_dir/alignment
+		mkdir $output_dir/IGV_BAM
 		if [ $analysis != "alignment" ]
         then
             if [[ $analysis != "annotation" && $analysis != "ontarget"  ]]
             then
-                mkdir $output_dir/realign
-                mkdir $output_dir/IGV_BAM
+                mkdir $output_dir/realign      
             fi
             if [ $analysis != "annotation" ]
             then

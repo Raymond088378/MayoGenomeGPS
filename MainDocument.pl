@@ -32,6 +32,8 @@ else    {
 	my $paired=$line[$#line];chomp $paired;
 	@line=split(/=/,`perl -ne "/^GENOMEBUILD/ && print" $run_info`);
 	my $GenomeBuild=$line[$#line];chomp $GenomeBuild;
+	@line=split(/=/,`perl -ne "/^TOOL_INFO/ && print" $run_info`);
+	my $tool_info=$line[$#line];chomp $tool_info;
 	@line=split(/=/,`perl -ne "/^TYPE/ && print" $run_info`);
 	my $tool=$line[$#line];chomp $tool;
 	$tool=lc($tool);
@@ -41,12 +43,11 @@ else    {
 	my $sampleinfo=$line[$#line];chomp $sampleinfo;
 	@line=split(/=/,`perl -ne "/^OUTPUT_FOLDER/ && print" $run_info`);
 	my $run_num=$line[$#line];chomp $run_num;
-	@line=split(/=/,`perl -ne "/^TABLEBROWSER_PORT/ && print" $run_info`);
+	@line=split(/=/,`perl -ne "/^TB_PORT/ && print" $tool_info`);
 	my $port=$line[$#line];chomp $port;
-	@line=split(/=/,`perl -ne "/^TABLEBROWSER_HOST/ && print" $run_info`);
+	@line=split(/=/,`perl -ne "/^TB_HOST/ && print" $tool_info`);
 	my $host=$line[$#line];chomp $host;
-	@line=split(/=/,`perl -ne "/^TOOL_INFO/ && print" $run_info`);
-	my $tool_info=$line[$#line];chomp $tool_info;
+	
 	@line=split(/=/,`perl -ne "/^SAMPLE_INFO/ && print" $run_info`);
 	my $sample_info=$line[$#line];chomp $sample_info;
 	@line=split(/=/,`perl -ne "/^LABINDEXES/ && print" $run_info`);
@@ -2195,7 +2196,7 @@ else    {
 	if ($tool eq 'whole_genome' && $analysis ne 'alignment' && $analysis ne 'annotation')	{
 		if ($multi eq 'NO')	{
 			print OUT "<ul> <li>Per sample Circos plots are displayed (and linked) below. Copy Number Variants and Sructural Variants are plotted for each sample. <br>
-			<u> <a href= \"circos\"target=\"_blank\">Per sample CIRCOS plots</a></u></ul></ul>";
+			<u> <a href= \"circos\"target=\"_blank\">Per sample CIRCOS plots</a></u></ul>";
 			for(my $k = 0; $k < $num_samples;$k++)	
 			{
 				print OUT "<a href= \"circos/${sampleArray[$k]}.sv_cnv.png\"target=\"_blank\"><P ALIGN=\"CENTER\"><img border=\"0\" src=\"circos/${sampleArray[$k]}.sv_cnv.png\" width=\"50\" height=\"50\"><u><caption align=\"bottom\">${sampleArray[$k]}</caption></u></p>";
@@ -2203,7 +2204,7 @@ else    {
 		}
 		else	{
 			print OUT "<ul> <li>Per tumor Circos plots are displayed (and linked) below. Copy Number Variants and Sructural Variants are plotted for each sample. <br>
-			<u> <a href= \"circos\"target=\"_blank\">Per sample CIRCOS plots</a></u></ul></ul>";
+			<u> <a href= \"circos\"target=\"_blank\">Per sample CIRCOS plots</a></u></ul>";
 			for(my $k = 0; $k < $num_groups;$k++)	{
 				my $sams=`cat $sample_info | grep -w "$groupArray[$k]" | cut -d '=' -f2`;
 				my @sam=split('\s+',$sams);
@@ -2213,8 +2214,9 @@ else    {
 			}	
 		}
 	}	
+	print OUT "<br><br>";
 	if ($upload_tb eq 'YES')	{
-		print OUT "<ul>
+		print OUT "
 		<li>Variant calls can be visualized and filtered using TableBrowser<br>
 		<u> <a href= \"http://${host}:${port}/TREATTableBrowser/\"target=\"_blank\">TableBrowser</a></u></ul>";
 	}

@@ -43,6 +43,8 @@ else
     blat_server=$( cat $tool_info | grep -w '^BLAT_SERVER' | cut -d '=' -f2 )
     window_blat=$( cat $tool_info | grep -w '^WINDOW_BLAT' | cut -d '=' -f2 )
 	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
+	threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2 )
+	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	
 	export JAVA_HOME=$javahome
 	export PATH=$JAVA_HOME/bin:$PATH
@@ -57,8 +59,8 @@ else
     fi
     status=`$blat/gfServer status localhost $blat_port | wc -l`;
 
-    if [ "$status" -eq 0 ]
-    then
+    while [ "$status" -eq 0 ]
+    do
         blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
         range=20000
         let blat_port+=$RANDOM%range
@@ -69,24 +71,33 @@ else
             $blat/gfServer start localhost $blat_port -log=$out/$sample.variants.raw.vcf.blat.log $blat_ref  &
             sleep 2m
         fi
-    fi
+		status=`$blat/gfServer status localhost $blat_port | wc -l`;
+    done
     
     inputargs=""
+	inputargs_multi=""
     for i in $chrs
     do
 		inputfile=$input/$sample/$sample.variants.chr$i.raw.vcf 
+		multi=$input/$sample/$sample.variants.chr$i.raw.vcf.multi.vcf 
 		if [ ! -s $inputfile ]
 		then	
 			$script_path/errorlog.sh $inputfile merge_variant_single.sh ERROR "not exist"
 			exit 1;
 		else
 			inputargs="-V $inputfile "$inputargs
+			inputargs_multi="-V $multi "$inputargs_multi
 		fi
     done
 
     $script_path/combinevcf.sh "$inputargs" $out/$sample.variants.raw.vcf $run_info no
-    perl $script_path/vcf_blat_verify.pl -i $out/$sample.variants.raw.vcf -o $out/$sample.variants.raw.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port
+	$script_path/combinevcf.sh "$inputargs_multi" $out/$sample.variants.raw.multi.vcf $run_info yes
+	
+    perl $script_path/vcf_blat_verify.pl -i $out/$sample.variants.raw.vcf -o $out/$sample.variants.raw.vcf.tmp -w $window_blat -b $blat -r $ref -sam $samtools -br $blat_ref -bs $blat_server -bp $blat_port -th $threads
     mv $out/$sample.variants.raw.vcf.tmp $out/$sample.variants.raw.vcf
+	
+	perl $script_path/vcf_blat_verify.pl -i $out/$sample.variants.raw.multi.vcf -o $out/$sample.variants.raw.multi.vcf.tmp -w $window_blat -b $blat -r $ref -sam $samtools -br $blat_ref -bs $blat_server -bp $blat_port -th $threads
+    mv $out/$sample.variants.raw.multi.vcf.tmp $out/$sample.variants.raw.multi.vcf
     
     ### filter the variant calls
     if [ $filter_variants == "YES" ]

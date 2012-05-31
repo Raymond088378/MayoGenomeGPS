@@ -26,8 +26,11 @@ else {
 	my $server=$line[$#line];chomp $server;
 	@line=split(/=/,`perl -ne "/^OUTPUT_FOLDER/ && print" $run_info`);
 	my $folder=$line[$#line];chomp $folder;
+	@line=split(/=/,`perl -ne "/^DELIVERY_FOLDER/ && print" $run_info`);
+	my $delivery_folder=$line[$#line];chomp $delivery_folder;
 	my $dest = $output . "/igv_session.xml";
 	@line=split(/=/,`perl -ne "/^ANALYSIS/ && print" $run_info`);
+	
 	my $analysis=$line[$#line];chomp $analysis;
 	
 	$tracks=$tracks."/ucsc_tracks.bed"; 
@@ -39,7 +42,8 @@ else {
 	my @trackNames=split(/:/,$tracks);
 	for(my $i = 0 ; $i <= $#sampleNames; $i++)	{
 			if ($analysis eq "mayo" || $analysis eq "realign-mayo"){
-				print FH "\n<Resource name=\"$sampleNames[$i].igv-sorted.bam\" path=\"ftp://rcfisinl1-212/delivery/$PI/$folder/IGV_BAM/$sampleNames[$i].igv-sorted.bam\" />";
+				$delivery_folder =~ s/\/data2/ftp:\/\/rcfisinl1-212/g;
+				print FH "\n<Resource name=\"$sampleNames[$i].igv-sorted.bam\" path=\"$delivery_folder/IGV_BAM/$sampleNames[$i].igv-sorted.bam\" />";
 			}
 			else	{
 				print FH "\n<Resource name=\"$sampleNames[$i].igv-sorted.bam\" path=\"http://$server/secondary/$PI/$folder/IGV_BAM/$sampleNames[$i].igv-sorted.bam\" />";

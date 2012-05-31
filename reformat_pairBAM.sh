@@ -72,7 +72,7 @@ else
 	
     if [ $reorder == "YES" ]
     then
-        $script_path/reoderBam.sh $input/$group.sorted.bam $input/$group.sorted.tmp.bam $input $run_info  
+        $script_path/reorderBam.sh $input/$group.sorted.bam $input/$group.sorted.tmp.bam $input $run_info  
     fi
 	
     echo `date`

@@ -46,6 +46,9 @@ else
     
 	perl $script_path/mutect2vcf.pl -i $output/$output_file -o $output/$output_file.temp -ns $normal_sample -ts $tumor_sample
 	mv $output/$output_file.temp  $output/$output_file
+	cat $output/$output_file | awk '$0 ~ /^#/ || $5 ~ /,/' > $output/$output_file.multi.vcf
+	cat $output/$output_file | awk '$0 ~ /^#/ || $5 !~ /,/' > $output/$output_file.tmp
+	mv $output/$output_file.tmp  $output/$output_file
 	
 	if [ ! -s  $output/$output_file ]
 	then

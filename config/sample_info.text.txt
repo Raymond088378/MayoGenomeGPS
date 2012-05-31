@@ -1,0 +1,2 @@
+SNV:s_normal=snv.txt
+INDEL:s_normal=indel.txt
