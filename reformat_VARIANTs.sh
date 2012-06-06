@@ -26,6 +26,41 @@ else
     chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" " " )
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     distance=$( cat $tool_info | grep -w '^SNP_DISTANCE_INDEL' | cut -d '=' -f2 )
+	blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
+    blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
+    blat_ref=$( cat $tool_info | grep -w '^BLAT_REF' | cut -d '=' -f2 )
+    blat_server=$( cat $tool_info | grep -w '^BLAT_SERVER' | cut -d '=' -f2 )
+    window_blat=$( cat $tool_info | grep -w '^WINDOW_BLAT' | cut -d '=' -f2 )
+	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
+	threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2 )
+	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
+	ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
+	
+	range=20000
+    let blat_port+=$RANDOM%range
+    status=`$blat/gfServer status localhost $blat_port | wc -l`;
+    if [ "$status" -le 1 ]
+    then
+		$blat/gfServer start localhost $blat_port -log=$output/$sample.blat.log $blat_ref  &
+		sleep 2m
+    fi
+    status=`$blat/gfServer status localhost $blat_port | wc -l`;
+
+    while [ "$status" -eq 0 ]
+    do
+        blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
+        range=20000
+        let blat_port+=$RANDOM%range
+        status=`$blat/gfServer status localhost $blat_port | wc -l`;
+        if [ "$status" -le 1 ]
+        then
+            rm $output/$sample.blat.log
+            $blat/gfServer start localhost $blat_port -log=$output/$sample.blat.log $blat_ref  &
+            sleep 2m
+        fi
+		status=`$blat/gfServer status localhost $blat_port | wc -l`;
+    done
+	
 	
     if [ $marker -eq 2 ]
     then
@@ -42,7 +77,14 @@ else
             ln -s $input/$snv_file $output/$sample.SNV.vcf
             ln -s $input/$indel_file $output/$sample.INDEL.vcf 
         fi
-        for chr in $chrs
+        $script_path/vcf_blat_verify.pl -i $output/$sample.SNV.vcf -o $output/$sample.SNV.vcf.tmp -w $window_blat -b $blat -r $ref -sam $samtools -br $blat_ref -bs $blat_server -bp $blat_port -th $threads
+		perl $script_path/vcfsort.pl $ref.fai $output/$sample.SNV.vcf.tmp > $output/$sample.SNV.vcf
+		rm $output/$sample.SNV.vcf.tmp
+		$script_path/vcf_blat_verify.pl -i $output/$sample.INDEL.vcf -o $output/$sample.INDEL.vcf.tmp -w $window_blat -b $blat -r $ref -sam $samtools -br $blat_ref -bs $blat_server -bp $blat_port -th $threads
+		perl $script_path/vcfsort.pl $ref.fai $output/$sample.INDEL.vcf.tmp > $output/$sample.INDEL.vcf
+		rm $output/$sample.INDEL.vcf.tmp 
+	
+		for chr in $chrs
         do
             perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.SNV.vcf -v $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -l $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -c chr$chr -s $sample
             rm $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
@@ -67,7 +109,10 @@ else
                 perl $script_path/convert_txt_vcf.pl $input/$snv_file $sample > $output/$sample.SNV.vcf
             else
                 ln -s $input/$snv_file $output/$sample.SNV.vcf
-            fi    
+            fi 
+			$script_path/vcf_blat_verify.pl -i $output/$sample.SNV.vcf -o $output/$sample.SNV.vcf.tmp -w $window_blat -b $blat -r $ref -sam $samtools -br $blat_ref -bs $blat_server -bp $blat_port -th $threads
+			perl $script_path/vcfsort.pl $ref.fai $output/$sample.SNV.vcf.tmp > $output/$sample.SNV.vcf
+			rm $output/$sample.SNV.vcf.tmp
             for chr in $chrs	
             do
                 perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.SNV.vcf -v $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -l $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -c chr$chr -s $sample
@@ -87,7 +132,10 @@ else
             else
                 ln -s $input/$indel_file $output/$sample.INDEL.vcf 
             fi    
-            for chr in $chrs		
+            $script_path/vcf_blat_verify.pl -i $output/$sample.INDEL.vcf -o $output/$sample.INDEL.vcf.tmp -w $window_blat -b $blat -r $ref -sam $samtools -br $blat_ref -bs $blat_server -bp $blat_port -th $threads
+			perl $script_path/vcfsort.pl $ref.fai $output/$sample.INDEL.vcf.tmp > $output/$sample.INDEL.vcf
+			rm $output/$sample.INDEL.vcf.tmp
+			for chr in $chrs		
             do
                 perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.INDEL.vcf -v $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -l $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -c chr$chr -s $sample
                 rm $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf
@@ -98,6 +146,7 @@ else
             rm $output/$sample.INDEL.vcf 
         fi		
     fi
+    rm $output/$sample.blat.log
     echo `date`	
 fi	
 	

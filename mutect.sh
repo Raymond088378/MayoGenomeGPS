@@ -21,12 +21,12 @@ else
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
     threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2)
     TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
-	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
-	#only_ontarget=$( cat $tool_info | grep -w '^TARGETTED' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
+    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    only_ontarget=$( cat $tool_info | grep -w '^TARGETTED' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
     
     if [ $only_ontarget == "YES" ]
     then
-		cat $TargetKit | grep -w chr$chr > $output/$tumor_sample.chr$chr.target.bed
+	cat $TargetKit | grep -w chr$chr > $output/$tumor_sample.chr$chr.target.bed
         param="-L $output/$tumor_sample.chr$chr.target.bed"
     else
         param="-L chr$chr"
@@ -53,6 +53,10 @@ else
 	if [ ! -s  $output/$output_file ]
 	then
 		echo "ERROR: failed to run mutect for $tumor_samples and $normal_sample for $chr"
-	fi	
+	fi
+        if [ $only_ontarget == "YES" ]
+        then
+            rm $output/$tumor_sample.chr$chr.target.bed
+        fi
 	echo `date`
 fi    

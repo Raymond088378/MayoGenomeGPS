@@ -162,8 +162,8 @@ else
 		touch $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.i 
 		touch $file.sift.codons.map.repeat.base.ChrPos.bed.scs.i
 	fi	
-	perl $script_path/match.pl -b $file.sift.codons.map.repeat.base.ChrPos.bed -i $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.i -o $file.sift.codons.map.repeat.base.ChrPos.bed.ssr
-	perl $script_path/match.pl -b $file.sift.codons.map.repeat.base.ChrPos.bed -i $file.sift.codons.map.repeat.base.ChrPos.bed.scs.i -o $file.sift.codons.map.repeat.base.ChrPos.bed.scs
+	perl $script_path/match.pl -b $file.sift.codons.map.repeat.base.ChrPos.bed -i $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.i -o $file.sift.codons.map.repeat.base.ChrPos.bed.ssr -t ssr
+	perl $script_path/match.pl -b $file.sift.codons.map.repeat.base.ChrPos.bed -i $file.sift.codons.map.repeat.base.ChrPos.bed.scs.i -o $file.sift.codons.map.repeat.base.ChrPos.bed.scs -t scs
 	echo -e "\nSNP_SuspectRegion" >> $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.tmp
 	echo -e "\nSNP_ClinicalSig" >> $file.sift.codons.map.repeat.base.ChrPos.bed.scs.tmp
 	cat $file.sift.codons.map.repeat.base.ChrPos.bed.ssr >> $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.tmp

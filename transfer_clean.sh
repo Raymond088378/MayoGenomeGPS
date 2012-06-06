@@ -62,18 +62,23 @@ else
 	mkdir $delivery/Reports_per_Sample/ANNOT
 	if [ $type == "whole_genome" ]
 	then
+		mkdir $delivery/circos
+		mv $secondary/circos/* $delivery/circos
 		mkdir $delivery/Reports_per_Sample/SV
 		mv $secondary/Reports_per_Sample/SV/*.vcf $delivery/Reports_per_Sample/SV/
 		mv $secondary/Reports_per_Sample/SV/*.vcf.idx $delivery/Reports_per_Sample/SV/
+		rm -R $secondary/struct
+		rm -R $secondary/cnv
 	fi
+	
 	
 	mv $secondary/Reports_per_Sample/*.xls $delivery/Reports_per_Sample
 	mv $secondary/Reports_per_Sample/ANNOT/*.txt $delivery/Reports_per_Sample/ANNOT/
 	mv $secondary/Reports_per_Sample/*.filter.vcf $delivery/Reports_per_Sample/
 	mv $secondary/Reports_per_Sample/*.filter.vcf.idx $delivery/Reports_per_Sample/
-	mkdir $tertiary/Reports_per_Sample/
-	mv $secondary/Reports_per_Sample/*.raw.vcf $tertiary/Reports_per_Sample/
-	mv $secondary/Reports_per_Sample/*.raw.vcf.idx $tertiary/Reports_per_Sample/	
+	mv $secondary/Reports_per_Sample/*.multi.vcf $delivery/
+	mv $secondary/Reports_per_Sample/*.multi.vcf.idx $delivery/
+	
 	
 	rm -R $secondary/Reports_per_Sample/
 	
@@ -112,7 +117,12 @@ else
 	rm -R $secondary/OnTarget
 	rm -R $secondary/realign
 	rm -R $secondary/TempReports
-	rm -R $secondary/IGV_BAM
+	
+	if [ $delivery != "NA" ]
+	then
+		rm -R $secondary/IGV_BAM
+	fi
+	
 	echo "data is transfered and intermediate files are deleted"	
 	echo `date`
 fi	

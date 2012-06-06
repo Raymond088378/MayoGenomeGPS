@@ -34,7 +34,8 @@ while (<>) {
    my @names_format = split (/:/, $fields{'FORMAT'});
    my (%sample_values, %freq);
    my @bases=qw /A C G T/;
-
+   
+   
    foreach my $sample (@samples) {
        my @s_values = split (/:/, $fields{$sample});
        foreach my $i (@names_format) {

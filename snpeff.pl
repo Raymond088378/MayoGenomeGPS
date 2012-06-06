@@ -11,7 +11,7 @@ while(my $l = <FH>)	{
 	my @a = split(/\t/,$l)  ;
 	next if (( $. ==2) || ($. == 1));
 	if ($. == 3)    {
-		print "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tfunctionGVS\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList\n";
+		print "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tEffect\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList\n";
 		$cols=$#a;
 	}
 	else	{

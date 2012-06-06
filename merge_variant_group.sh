@@ -95,23 +95,23 @@ else
     $script_path/combinevcf.sh "$inputargs" $out/$group.somatic.variants.raw.vcf $run_info no
 	$script_path/combinevcf.sh "$inputargs_multi" $out/$group.somatic.variants.raw.multi.vcf $run_info no
     
-	## blat column 
-	perl $script_path/vcf_blat_verify.pl -i $out/$group.somatic.variants.raw.vcf -o $out/$group.somatic.variants.raw.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port -sam $samtools -th $threads
-    mv $out/$group.somatic.variants.raw.vcf.tmp $out/$group.somatic.variants.raw.vcf
-	
-	perl $script_path/vcf_blat_verify.pl -i $out/$group.somatic.variants.raw.multi.vcf -o $out/$group.somatic.variants.raw.multi.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port -sam $samtools -th $threads
-    mv $out/$group.somatic.variants.raw.multi.vcf.tmp $out/$group.somatic.variants.raw.multi.vcf
-	
-    if [ $filter_variants == "YES" ]
+	if [ $filter_variants == "YES" ]
     then
         $script_path/filter_variant_vqsr.sh $out/$group.somatic.variants.raw.vcf $out/$group.somatic.variants.filter.vcf BOTH $run_info somatic
     else
         cp $out/$group.somatic.variants.raw.vcf $out/$group.somatic.variants.filter.vcf
     fi
     
-    if [ ! -s $out/$group.somatic.variants.filter.vcf ]
+    ## blat column 
+	$script_path/vcf_blat_verify.pl -i $out/$group.somatic.variants.filter.vcf -o $out/$group.somatic.variants.filter.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port -sam $samtools -th $threads
+    mv $out/$group.somatic.variants.filter.vcf.tmp $out/$group.somatic.variants.filter.vcf
+	
+	$script_path/vcf_blat_verify.pl -i $out/$group.somatic.variants.raw.multi.vcf -o $out/$group.somatic.variants.raw.multi.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port -sam $samtools -th $threads
+    mv $out/$group.somatic.variants.raw.multi.vcf.tmp $out/$group.somatic.variants.raw.multi.vcf
+	
+	if [ ! -s $out/$group.somatic.variants.filter.vcf ]
     then
-	$script_path/errorlog.sh $out/$group.somatic.variants.filter.vcf merge_variant_greoup.sh ERROR "does not exist"
+		$script_path/errorlog.sh $out/$group.somatic.variants.filter.vcf merge_variant_greoup.sh ERROR "does not exist"
         exit 1;
     else
 	for chr in $chrs
@@ -155,14 +155,7 @@ else
     done
 
     $script_path/combinevcf.sh "$inputargs" $out/$group.variants.raw.vcf $run_info no
-	$script_path/combinevcf.sh "$inputargs" $out/$group.variants.raw.multi.vcf $run_info yes
-    
-	## blat column 
-	perl $script_path/vcf_blat_verify.pl -i $out/$group.variants.raw.vcf -o $out/$group.variants.raw.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port -sam $samtools -th $threads
-    mv $out/$group.variants.raw.vcf.tmp $out/$group.variants.raw.vcf
-	
-	perl $script_path/vcf_blat_verify.pl -i $out/$group.variants.raw.multi.vcf -o $out/$group.variants.raw.multi.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port -sam $samtools -th $threads
-    mv $out/$group.variants.raw.multi.vcf.tmp $out/$group.variants.raw.multi.vcf
+	$script_path/combinevcf.sh "$inputargs_multi" $out/$group.variants.raw.multi.vcf $run_info yes
 	
     if [ $filter_variants == "YES" ]
     then
@@ -170,16 +163,41 @@ else
     else
         cp $out/$group.variants.raw.vcf $out/$group.variants.filter.vcf
     fi    
-    
+	
+	## blat column 
+	$script_path/vcf_blat_verify.pl -i $out/$group.variants.filter.vcf -o $out/$group.variants.filter.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port -sam $samtools -th $threads
+    mv $out/$group.variants.filter.vcf.tmp $out/$group.variants.filter.vcf
+	
+	$script_path/vcf_blat_verify.pl -i $out/$group.variants.raw.multi.vcf -o $out/$group.variants.raw.multi.vcf.tmp -w $window_blat -b $blat -r $ref -br $blat_ref -bs $blat_server -bp $blat_port -sam $samtools -th $threads
+    mv $out/$group.variants.raw.multi.vcf.tmp $out/$group.variants.raw.multi.vcf
+	
+	### Filter the variants using total depth 
+	### use GATK variant filter to filter using DP
+	if [ $tool == "exome" ]
+	then
+		$java/java -Xmx1g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+		-R $ref \
+		-et NO_ET \
+		-K $gatk/Hossain.Asif_mayo.edu.key \
+		-l INFO \
+		-T VariantFiltration \
+		-V $out/$group.variants.filter.vcf \
+		-o $out/$group.variants.filter.vcf.tmp \
+		--filterExpression "DP < $depth" --filterName DPFilter 
+		mv $out/$group.variants.filter.vcf.tmp $out/$group.variants.filter.vcf
+		mv $out/$group.variants.filter.vcf.tmp.idx $out/$group.variants.filter.vcf.idx
+	fi
+	
     if [ ! -s $out/$group.variants.filter.vcf ]
     then
         $script_path/errorlog.sh $out/$group.variants.filter.vcf merge_variant_greoup.sh ERROR "does not exist"
         exit 1
     else
-	for chr in $chrs
-	do
-		cat $out/$group.variants.filter.vcf | awk -v num=chr${chr} '$0 ~ /^#/ || $1 == num' > $input/$group/$group.variants.chr$chr.filter.vcf 
-	done
+		for chr in $chrs
+		do
+			cat $out/$group.variants.filter.vcf | awk -v num=chr${chr} '$0 ~ /^#/ || $1 == num' > $input/$group/$group.variants.chr$chr.filter.vcf 
+		done
     fi
-    echo `date`
+    rm $out/$group.somatic.variants.raw.vcf.blat.log
+	echo `date`
 fi

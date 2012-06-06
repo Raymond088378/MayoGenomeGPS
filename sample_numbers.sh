@@ -16,8 +16,6 @@ else
 ##############################################################		
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
-    #sample=$(cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
-    #group=$(cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     aligner=$( cat $run_info | grep -w '^ALIGNER' | cut -d '=' -f2)
     variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2)
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
@@ -110,8 +108,8 @@ else
                 raw_snvs=0
                 raw_indels=0
                 col=`cat $variants/$sample.variants.raw.vcf | awk '$0 ~ /#/' | tail -1 | awk -v s=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
-                a=`cat $variants/$sample.variants.raw.vcf | awk '$0 !~ /#/' | awk -v num=$col '$num !~ /^\./' | awk 'length($4) == 1 && length($5) == 1' | wc -l`
-                b=`cat $variants/$sample.variants.raw.vcf | awk '$0 !~ /#/' | awk -v num=$col '$num !~ /^\./' | awk 'length($4) > 1 || length($5) > 1' | wc -l`
+                a=`cat $variants/$sample.variants.raw.vcf | awk '$0 !~ /#/' | awk -v num=$col '$num !~ /^\.\/\./' | awk 'length($4) == 1 && length($5) == 1' | wc -l`
+                b=`cat $variants/$sample.variants.raw.vcf | awk '$0 !~ /#/' | awk -v num=$col '$num !~ /^\.\/\./' | awk 'length($4) > 1 || length($5) > 1' | wc -l`
                 raw_indels=`expr $raw_indels "+" $b`
                 raw_snvs=`expr $raw_snvs "+" $a`
 					
@@ -119,8 +117,8 @@ else
                 filtered_snvs=0
                 filtered_indels=0
                 col=`cat $variants/$sample.variants.filter.vcf | awk '$0 ~ /#/' | tail -1 | awk -v s=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
-                a=`cat $variants/$sample.variants.filter.vcf | awk '$0 !~ /#/' | awk -v num=$col '$num !~ /^\./' | awk 'length($4) == 1 && length($5) == 1' | grep -c PASS`
-                b=`cat $variants/$sample.variants.filter.vcf | awk '$0 !~ /#/' | awk -v num=$col '$num !~ /^\./' | awk 'length($4) > 1 || length($5) > 1' | grep -c PASS`
+                a=`cat $variants/$sample.variants.filter.vcf | awk '$0 !~ /#/' | awk -v num=$col '$num !~ /^\.\/\./' | awk 'length($4) == 1 && length($5) == 1' | grep -c PASS`
+                b=`cat $variants/$sample.variants.filter.vcf | awk '$0 !~ /#/' | awk -v num=$col '$num !~ /^\.\/\./' | awk 'length($4) > 1 || length($5) > 1' | grep -c PASS`
                 filtered_indels=`expr $filtered_indels "+" $b`
                 filtered_snvs=`expr $filtered_snvs "+" $a`
 			fi
@@ -174,7 +172,7 @@ else
 				dbsnp=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /dbSNP/) {print i} } }'| head -1`
 				ref=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Ref") {print i} } }'`
 				alt=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Alt") {print i} } }'`
-				class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "functionGVS") {print i} } }'`
+				class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }'`
 				
 				echo -e "Total Known SNVs" >> $numbers/$sample.out
 				cat $file | awk -v num=$dbsnp '$num ~ /^rs/' | wc -l >> $numbers/$sample.out
@@ -237,7 +235,7 @@ else
 				fi
 				## Annotated INDELs
 				file=$variants/$sample.INDEL.filtered.xls
-				class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /functionGVS/) {print i} } }'`
+				class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /Effect/) {print i} } }'`
 				for indel in EXON_DELETED FRAME_SHIFT CODON_CHANGE UTR_5_DELETED UTR_3_DELETED CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR UTR_5_PRIME UTR_3_PRIME		
 				do
 					echo -e "$indel" >> $numbers/$sample.out 
@@ -374,8 +372,8 @@ else
             raw_snvs=0
             raw_indels=0
             col=`cat $variants/$group.variants.raw.vcf | awk '$0 ~ /^#/' | tail -1 | awk -v s=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
-            a=`cat $variants/$group.variants.raw.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\./ && $num !~ /^0\/0/' | awk 'length($4) == 1 && length($5) == 1' | wc -l`
-            b=`cat $variants/$group.variants.raw.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\./ && $num !~ /^0\/0/' | awk 'length($4) > 1 || length($5) > 1' | wc -l`
+            a=`cat $variants/$group.variants.raw.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\.\/\./ && $num !~ /^0\/0/' | awk 'length($4) == 1 && length($5) == 1' | wc -l`
+            b=`cat $variants/$group.variants.raw.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\.\/\./ && $num !~ /^0\/0/' | awk 'length($4) > 1 || length($5) > 1' | wc -l`
             raw_indels=`expr $raw_indels "+" $b`
             raw_snvs=`expr $raw_snvs "+" $a`
 
@@ -384,8 +382,8 @@ else
             filtered_snvs=0
             filtered_indels=0
             col=`cat $variants/$group.variants.filter.vcf | awk '$0 ~ /^#/' | tail -1 | awk -v s=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
-            a=`cat $variants/$group.variants.filter.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\./ && $num !~ /^0\/0/' | awk 'length($4) == 1 && length($5) == 1' | grep -c PASS`
-            b=`cat $variants/$group.variants.filter.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\./ && $num !~ /^0\/0/' | awk 'length($4) > 1 || length($5) > 1' | grep -c PASS`
+            a=`cat $variants/$group.variants.filter.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\.\/\./ && $num !~ /^0\/0/' | awk 'length($4) == 1 && length($5) == 1' | grep -c PASS`
+            b=`cat $variants/$group.variants.filter.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\.\/\./ && $num !~ /^0\/0/' | awk 'length($4) > 1 || length($5) > 1' | grep -c PASS`
             filtered_indels=`expr $filtered_indels "+" $b`
             filtered_snvs=`expr $filtered_snvs "+" $a`
 
@@ -425,7 +423,7 @@ else
 			dbsnp=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /dbSNP/) {print i} } }'| head -1`
 			ref=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Ref") {print i} } }'`
 			alt=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Alt") {print i} } }'`
-			class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "functionGVS") {print i} } }'`
+			class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }'`
 			
 			echo -e "Total Known SNVs" >> $numbers/$sample.out
 			cat $file | awk -v num=$dbsnp '$num ~ /^rs/' | wc -l >> $numbers/$sample.out
@@ -478,7 +476,7 @@ else
 			fi
 			## Annotated INDELs
 			file=$variants/$sample.INDEL.filtered.xls
-			class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /functionGVS/) {print i} } }'`
+			class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /Effect/) {print i} } }'`
 			for indel in EXON_DELETED FRAME_SHIFT CODON_CHANGE UTR_5_DELETED UTR_3_DELETED CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR UTR_5_PRIME UTR_3_PRIME		
 			do
 				echo -e "$indel" >> $numbers/$sample.out 
@@ -518,8 +516,8 @@ else
             raw_snvs=0
             raw_indels=0
             col=`cat $variants/$group.somatic.variants.raw.vcf | awk '$0 ~ /^#/' | tail -1 | awk -v s=$tumor -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
-            a=`cat $variants/$group.somatic.variants.raw.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\./' | awk 'length($4) == 1 && length($5) == 1' | wc -l `
-            b=`cat $variants/$group.somatic.variants.raw.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\./' | awk 'length($4) > 1 || length($5) > 1' | wc -l`
+            a=`cat $variants/$group.somatic.variants.raw.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\.\/\./' | awk 'length($4) == 1 && length($5) == 1' | wc -l `
+            b=`cat $variants/$group.somatic.variants.raw.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\.\/\./' | awk 'length($4) > 1 || length($5) > 1' | wc -l`
             raw_indels=`expr $raw_indels "+" $b`
             raw_snvs=`expr $raw_snvs "+" $a`
 
@@ -528,8 +526,8 @@ else
             filtered_snvs=0
             filtered_indels=0
             col=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 ~ /^#/' | tail -1 | awk -v s=$tumor -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
-            a=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\./' | awk 'length($4) == 1 && length($5) == 1' | grep -c PASS`
-            b=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\./' | awk 'length($4) > 1 || length($5) > 1' | grep -c PASS `
+            a=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\.\/\./' | awk 'length($4) == 1 && length($5) == 1' | grep -c PASS`
+            b=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\.\/\./' | awk 'length($4) > 1 || length($5) > 1' | grep -c PASS `
             filtered_indels=`expr $filtered_indels "+" $b`
             filtered_snvs=`expr $filtered_snvs "+" $a`
 
@@ -569,7 +567,7 @@ else
 			dbsnp=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /dbSNP/) {print i} } }'| head -1`
 			ref=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Ref") {print i} } }'`
 			alt=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Alt") {print i} } }'`
-			class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "functionGVS") {print i} } }'`
+			class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }'`
 			
 			echo -e "Total Known SNVs" >> $numbers/$group.$tumor.out
 			cat $file | awk -v num=$dbsnp '$num ~ /^rs/' | wc -l >> $numbers/$group.$tumor.out
@@ -622,7 +620,7 @@ else
 			fi
 			## Annotated INDELs
 			file=$variants/$group.$tumor.INDEL.filtered.xls
-			class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /functionGVS/) {print i} } }'`
+			class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /Effect/) {print i} } }'`
 			for indel in EXON_DELETED FRAME_SHIFT CODON_CHANGE UTR_5_DELETED UTR_3_DELETED CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR UTR_5_PRIME UTR_3_PRIME	
 			do
 				echo -e "$indel" >> $numbers/$group.$tumor.out 

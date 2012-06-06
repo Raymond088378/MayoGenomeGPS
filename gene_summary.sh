@@ -62,7 +62,7 @@ else
 			echo "Exome Analysis"
 			### summarizing SNV files
 			file=$SNV_dir/$sample.SNV.filtered.xls
-			function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "functionGVS") {print i} } }' $file`
+			function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 			gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
 			
 			cat $file | awk 'NR>2' | cut -f "$function","$gene" > $SNV_dir/$sample.SNV.tmp	
@@ -102,7 +102,7 @@ else
 			#################################################################################################	
 			### summarizing INDEL files
 			file=$INDEL_dir/$sample.INDEL.filtered.xls
-			function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "functionGVS") {print i} } }' $file`
+			function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 			gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
 			cat $file | awk 'NR>2' | cut -f "$function","$gene" > $INDEL_dir/$sample.INDEL.tmp
 
@@ -161,7 +161,7 @@ else
 			
 			### summarizing SNV files
 			file=$SNV_dir/$sample.SNV.filtered.xls
-			function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "functionGVS") {print i} } }' $file`
+			function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 			gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
 			cat $file | awk 'NR>2' | cut -f "$function","$gene" > $SNV_dir/$sample.SNV.tmp	
 			for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
@@ -201,7 +201,7 @@ else
 			#################################################################################################	
 				### summarizing INDEL files
 			file=$INDEL_dir/$sample.INDEL.filtered.xls
-			function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "functionGVS") {print i} } }' $file`
+			function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 			gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
 			cat $file | awk 'NR>2' | cut -f "$function","$gene" > $INDEL_dir/$sample.INDEL.tmp
 
@@ -240,7 +240,7 @@ else
 				#################################################################################################	
 				### summarizing CNV files
 			file=$INDEL_dir/$sample.INDEL.filtered.xls
-			function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "functionGVS") {print i} } }' $file`
+			function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 			gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
 			cat $file | awk 'NR>2' | cut -f "$function","$gene" > $SNV_dir/$sample.SNV.tmp	
 
@@ -344,7 +344,7 @@ else
 			do
 				cat $master_gene_file | cut -f4 > $report_dir/$group.$sample.gene.temp
 				file=$SNV_dir/$group.$sample.SNV.filtered.xls
-				function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "functionGVS") {print i} } }' $file`
+				function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 				gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
 				
 				cat $file | awk 'NR>2' | cut -f "$function","$gene" > $SNV_dir/$group.$sample.SNV.tmp
@@ -385,7 +385,7 @@ else
 				#################################################################################################	
 				### summarizing INDEL files           
 				file=$INDEL_dir/$group.$sample.INDEL.filtered.xls
-				function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "functionGVS") {print i} } }' $file`
+				function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 				gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
 				cat $file | awk 'NR>2' | cut -f "$function","$gene" > $INDEL_dir/$group.$sample.INDEL.tmp
 
@@ -449,7 +449,7 @@ else
 			do
 				cat $master_gene_file | cut -f4 > $report_dir/$group.$sample.gene.temp
 				file=$SNV_dir/$group.$sample.SNV.filtered.xls
-				function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "functionGVS") {print i} } }' $file`
+				function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 				gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
 				cat $file | awk 'NR>2' | cut -f "$function","$gene" > $SNV_dir/$group.$sample.SNV.tmp
 				
@@ -490,7 +490,7 @@ else
 				#################################################################################################	
 				### summarizing INDEL files           
 				file=$INDEL_dir/$group.$sample.INDEL.filtered.xls
-				function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "functionGVS") {print i} } }' $file`
+				function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 				gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
 				cat $file | awk 'NR>2' | cut -f "$function","$gene" > $INDEL_dir/$group.$sample.INDEL.tmp
 

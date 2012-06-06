@@ -51,8 +51,8 @@ if ($runinfomsg ne "") {
 }
 my $analysis=$runinfovars->{ANALYSIS};
 
-if ( ($analysis ne 'mayo') && ($analysis ne 'external') && ($analysis ne 'variant') && ($analysis ne 'alignment') && ($analysis ne 'realignment') && ($analysis ne 'realign-mayo') && ($analysis ne 'ontarget') ) {
-    print "$runinfo: TYPE=$analysis should be mayo, external, variant , realignment , realign-mayo ontarget or alignment\n";
+if ( ($analysis ne 'mayo') && ($analysis ne 'external') && ($analysis ne 'variant') && ($analysis ne 'alignment') && ($analysis ne 'realignment') && ($analysis ne 'realign-mayo') && ($analysis ne 'ontarget') && ($analysis ne 'annotation') ) {
+    print "$runinfo: TYPE=$analysis should be mayo, external, variant , realignment , realign-mayo, ontarget, annotation or alignment\n";
     exit 1;
 }
 
@@ -184,7 +184,7 @@ sub check_files	{
 		}	
 	}
 	return $errmsg;		
-	#exit 1;
+	exit 1;
 }		
 
 

@@ -79,7 +79,7 @@ else
         #mkdir $output_annot/SSEQ
         mkdir $output_annot/SNPEFF
         mkdir $output_annot/POLYPHEN
-        mkdir $output_annot/MISC
+        #mkdir $output_annot/MISC
         mkdir $output_dir/TempReports
         mkdir $output_dir/Reports_per_Sample
         mkdir $output_dir/Reports

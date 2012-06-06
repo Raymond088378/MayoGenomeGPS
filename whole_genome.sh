@@ -4,7 +4,7 @@
 ###### 	MASTER SCRIPT FOR WHOLE GENOME ANALYSIS PIPELINE
 
 ######		Program:			whole_genome_pipeline.sh
-######		Date:				07/25/2011
+######		Date:				06/05/2012
 ######		Summary:			Master script encompassing subscripts for alignment, remove duplicates, realignment, 
 ######                          	recalibration, fastqc, variant calling and final filtering of variants.
 ######		Input files:		$1	=	/path/to/run_info.txt
@@ -16,11 +16,26 @@ if [ $# != 1 ]
 then	
     echo "Usage: <Please specify path to run_info.txt file> ";
 else
-    set -x
-    echo `date`	
+    echo `date`
     run_info=$1
     dos2unix $run_info
 
+    perl_path=`which perl`
+    if [ $perl_path != "/usr/local/biotools/perl/5.10.0/bin/perl" ]
+    then
+        echo -e "\nperl path is not correct in your enviornment"
+        echo "Perl path should point to /usr/local/biotools/perl/5.10.0/bin/perl if the user use the command which perl, user can change this using mayobiotools"
+        exit 1;
+    fi
+    
+    python_path=`which python`
+    if [ $python_path != "/usr/local/biotools/python/2.7/bin/python" ]
+    then
+        echo -e "\n python path is not correct in your enviorment"
+        echo " Python path should point to /usr/local/biotools/python/2.7/bin/python if the user use the command which python, user can change this using mayobiotools"
+        exit 1;
+    fi    
+    
     dir_info=`dirname $run_info`
     if [ "$dir_info" = "." ]
     then
@@ -84,17 +99,11 @@ else
         sift=$output_annot/SIFT
         snpeff=$output_annot/SNPEFF
         polyphen=$output_annot/POLYPHEN
-        misc=$output_annot/MISC
     fi
     ##########################################################
     if [ $tool == "whole_genome" ]
     then
-        if [ $analysis != "alignment" ]
-        then
-            cat $master_gene_file | sort -n -k 1,12n -k 2,12n > $output_dir/bed_file.bed.temp
-            $bed/mergeBed -i $output_dir/bed_file.bed.temp | awk '$1 !~ /random/ && $1 !~ /hap/ && $1 !~ /chrUn/' >  $output_dir/bed_file.bed
-            rm $output_dir/bed_file.bed.temp	
-        fi
+        cat $master_gene_file | awk '$1 !~ /random/ && $1 !~ /hap/ && $1 !~ /chrUn/' | cut -f 1,2,3 | $bed/sort.bed -i stdin | $bed/mergeBed -i stdin >  $output_dir/bed_file.bed	
     fi
 
     echo -e "${tool} analysis for ${run_num} for ${PI} " >> $output_dir/log.txt
@@ -165,7 +174,7 @@ else
 				fi
 			elif [ $analysis == "realignment" -o $analysis == "realign-mayo" ]
             then
-                infile=`cat $sample_info | grep -w BAM:${sample} | cut -d '=' -f2`
+                infile=`cat $sample_info | grep -w ^BAM:${sample} | cut -d '=' -f2`
                 num_bams=`echo $infile | tr " " "\n" | wc -l`
                 for ((i=1; i <=$num_bams; i++));
                 do
@@ -182,7 +191,7 @@ else
                 mkdir -p $realign_dir $variant_dir
                 if [ $analysis == "variant" ]
                 then
-                    infile=`cat $sample_info | grep -w BAM:${sample} | cut -d '=' -f2`
+                    infile=`cat $sample_info | grep -w ^BAM:${sample} | cut -d '=' -f2`
                     num_bams=`echo $infile | tr " " "\n" | wc -l`
                     for ((i=1; i <=$num_bams; i++));
                     do
@@ -355,7 +364,55 @@ else
     else
         echo "Multi-sample"
         numgroups=$(cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2 | tr ":" "\n" | wc -l)
-        for group in `echo $groups | tr ":" "\n"`
+				
+		for sample in `echo $samples | tr ":" "\n"`
+		do
+			bamfile=$sample.sorted.bam
+			align_dir=$output_dir/alignment/$sample;
+			mkdir -p $align_dir
+			if [[ $analysis == "mayo" || $analysis == "external" || $analysis == "alignment" ]]
+			then
+				if [ $paired == 1 ]
+				then
+					let numfiles=(`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`)/2
+				else
+					let numfiles=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`
+				fi
+				if [ $aligner == "novoalign" ]
+				then
+					echo "novoalign is used as aligner"
+					qsub $args -N $type.$version.align_novo.$sample.$run_num -l h_vmem=8G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_novo.sh $sample $output_dir $run_info
+				elif [ $aligner == "bwa" ]
+				then
+					echo "bwa is used as aligner"
+					qsub $args -N $type.$version.align_read_bwa.R1.$sample.$run_num -l h_vmem=8G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_read_bwa.sh $sample $output_dir 1 $run_info
+					if [ $paired == 1 ]
+					then
+						qsub $args -N $type.$version.align_read_bwa.R2.$sample.$run_num -l h_vmem=8G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_read_bwa.sh $sample $output_dir 2 $run_info	
+						hold="-hold_jid $type.$version.align_read_bwa.R2.$sample.$run_num,$type.$version.align_read_bwa.R1.$sample.$run_num"
+					else
+						hold="-hold_jid $type.$version.align_read_bwa.R1.$sample.$run_num"
+					fi	
+					qsub $args -N $type.$version.align_bwa.$sample.$run_num -l h_vmem=8G -pe threaded $threads $hold -t 1-$numfiles:1 $script_path/align_bwa.sh $sample $output_dir $run_info
+				fi	    
+				job_id_align=`echo $ALIGNMENT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
+				qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=8G -hold_jid $job_id_align $script_path/processBAM.sh $align_dir $sample $run_info   
+				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $output_dir/IGV_BAM		
+			elif [[ $analysis == "realignment" || $analysis == "realign-mayo" ]]
+			then
+				infile=`cat $sample_info | grep -w ^BAM:${sample} | cut -d '=' -f2 `
+				num_bams=`echo $infile | tr " " "\n" | wc -l`
+				for ((i=1; i <=$num_bams; i++));
+				do
+					bam=`echo $infile | awk -v num=$i '{print $num}'`
+					ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
+				done
+				qsub $args -pe threaded $threads -N $type.$version.processBAM.$sample.$run_num -l h_vmem=8G $script_path/processBAM.sh $align_dir $sample $run_info
+				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $output_dir/IGV_BAM
+			fi
+		done	
+		
+		for group in `echo $groups | tr ":" "\n"`
         do
             samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" "\n")
             bam_samples=""
@@ -364,51 +421,7 @@ else
             for sample in $samples
             do
                 bamfile=$sample.sorted.bam
-				align_dir=$output_dir/alignment/$sample;
-                mkdir -p $align_dir
-                if [[ $analysis == "mayo" || $analysis == "external" || $analysis == "alignment" ]]
-				then
-					if [ $paired == 1 ]
-					then
-						let numfiles=(`cat $sample_info | grep -w FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`)/2
-					else
-						let numfiles=`cat $sample_info | grep -w FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`
-					fi
-					if [ $aligner == "novoalign" ]
-					then
-						echo "novoalign is used as aligner"
-						qsub $args -N $type.$version.align_novo.$sample.$run_num -l h_vmem=8G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_novo.sh $sample $output_dir $run_info
-					elif [ $aligner == "bwa" ]
-					then
-						echo "bwa is used as aligner"
-						qsub $args -N $type.$version.align_read_bwa.R1.$sample.$run_num -l h_vmem=8G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_read_bwa.sh $sample $output_dir 1 $run_info
-						if [ $paired == 1 ]
-						then
-							qsub $args -N $type.$version.align_read_bwa.R2.$sample.$run_num -l h_vmem=8G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_read_bwa.sh $sample $output_dir 2 $run_info	
-							hold="-hold_jid $type.$version.align_read_bwa.R2.$sample.$run_num,$type.$version.align_read_bwa.R1.$sample.$run_num"
-						else
-							hold="-hold_jid $type.$version.align_read_bwa.R1.$sample.$run_num"
-						fi	
-						qsub $args -N $type.$version.align_bwa.$sample.$run_num -l h_vmem=8G -pe threaded $threads $hold -t 1-$numfiles:1 $script_path/align_bwa.sh $sample $output_dir $run_info
-					else
-						echo "ERROR : Doesn't support the aligner"
-						exit 1
-					fi	    
-					job_id_align=`echo $ALIGNMENT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
-					qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=8G -hold_jid $job_id_align $script_path/processBAM.sh $align_dir $sample $run_info   
-					qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $output_dir/IGV_BAM		
-				elif [[ $analysis == "realignment" || $analysis == "realign-mayo" ]]
-				then
-					infile=`cat $sample_info | grep -w BAM:${sample} | cut -d '=' -f2 `
-					num_bams=`echo $infile | tr " " "\n" | wc -l`
-					for ((i=1; i <=$num_bams; i++));
-					do
-						bam=`echo $infile | awk -v num=$i '{print $num}'`
-						ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
-					done
-					qsub $args -pe threaded $threads -N $type.$version.processBAM.$sample.$run_num -l h_vmem=8G $script_path/processBAM.sh $align_dir $sample $run_info
-					qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $output_dir/IGV_BAM
-				fi
+				align_dir=$output_dir/alignment/$sample;	
 				### setting the bams and its path for multiple sample anaylysis
 				names_samples=$names_samples"$sample:"
 				bam_samples=$bam_samples"$sample.sorted.bam:"
@@ -419,7 +432,7 @@ else
 			mkdir -p $realign_dir $variant_dir
 			if [ $analysis == "variant" ]
 			then
-				infile=`cat $sample_info | grep -w BAM:${group} | cut -d '=' -f2`
+				infile=`cat $sample_info | grep -w ^BAM:${group} | cut -d '=' -f2`
 				num_bams=`echo $infile | tr " " "\n" | wc -l`
 				for ((i=1; i <=$num_bams; i++));
 				do
@@ -495,7 +508,7 @@ else
 				do
 					qsub $args -N $type.$version.run_breakdancer.$group.$sam.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=8G -t 1-$numchrs:1 $script_path/run_breakdancer.sh $sam $output_dir/IGV_BAM $break/$group $run_info $group
 					qsub $args -N $type.$version.run_breakdancer_in.$group.$sam.$run_num -hold_jid $type.$version.igv_bam.$group.$run_num -l h_vmem=8G -t $nump-$nump:$nump $script_path/run_breakdancer.sh $sam $output_dir/IGV_BAM $break/$group $run_info
-					id="$type.$version.run_breakdancer.$group.$sam.$run_num,$type.$version.run_breakdancer_in.$group.$sam.$run_num,$id,"
+					id=$id"$type.$version.run_breakdancer.$group.$sam.$run_num,$type.$version.run_breakdancer_in.$group.$sam.$run_num,"
 				done
 				hhold="$id,$type.$version.run_segseq.$group.$run_num,$type.$version.run_crest_multi.$group.$run_num"
 				qsub $args -N $type.$version.summaryze_struct_group.$group.$run_num -l h_vmem=8G -hold_jid $hhold $script_path/summaryze_struct_group.sh $group $output_dir $run_info
@@ -559,7 +572,7 @@ else
         then
             for group in `echo $groups | tr ":" "\n"`
             do
-                id=$id"$type.$version.summaryze_struct_group.$group.$run_num,$type.$version.annotation_CNV.$group.$run_num,$type.$version.annotation_SV.$group.$run_num"
+                id=$id"$type.$version.summaryze_struct_group.$group.$run_num,$type.$version.annotation_CNV.$group.$run_num,$type.$version.annotation_SV.$group.$run_num,"
             done
         fi    
         qsub $args -N $type.$version.annotate_sample.$run_num -hold_jid $id -l h_vmem=8G $script_path/annotate_sample.sh $output_dir $run_info

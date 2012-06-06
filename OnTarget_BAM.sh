@@ -52,7 +52,7 @@ else
     
     if [ $multi == "YES" ]
     then
-        pair=$( cat $sample_info | grep -w "$sample" | cut -d '=' -f2)
+        pair=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2)
         for i in $pair
         do
             $bed/intersectBed -abam $input/$sample.$i.chr$chr.bam -b $kit | $samtools/samtools view -  | wc -l > $output/$i.chr$chr.bam.i.out  

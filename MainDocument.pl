@@ -1757,8 +1757,9 @@ else    {
 				}	
 				close SAMPLE;
 			}
-			$tot=$tot+$#sam-1;
+			$tot=$tot+$#sam;
 		}
+		$tot=$tot-1;
 		print OUT "</tr>";
 		@align=("Combined Total Reads"," Combined Mapped Reads");
 		@align_h=("Total number of combined reads of the pair after realignment and recalibration","Number of reads mapped of the pair after realignment and recalibration");
@@ -2224,7 +2225,7 @@ else    {
 	print OUT "<a name=\"Useful Links\" id=\"Useful Links\"></a><p align='left'><b><u> VIII. Useful Links</p></b></u>
 	<ul>
 	<li><a href= \"http://sift.jcvi.org/www/SIFT_help.html\"target=\"_blank\">SIFT</a>
-	<li><a href= \"http://http://snpeff.sourceforge.net\"target=\"_blank\">snpEff</a>
+	<li><a href= \"http://snpeff.sourceforge.net\"target=\"_blank\">snpEff</a>
 	<li><a href= \"http://genetics.bwh.harvard.edu/pph2/\"target=\"_blank\">PolyPhen-2</a>
 	<li><a href= \"http://circos.ca/\"target=\"_blank\">Circos </a>
 	<li><a href= \"http://www.broadinstitute.org/software/igv/\"target=\"_blank\">Integrative Genomics Viewer</a>

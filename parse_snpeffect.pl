@@ -8,7 +8,7 @@ open FH, "$info" or die " can not open $info : $!\n";
 #SNPEFF_FUNCTIONAL_CLASS SNPEFF_GENE_BIOTYPE   SNPEFF_GENE_NAME        SNPEFF_IMPACT   SNPEFF_TRANSCRIPT_ID
 #chr1    877831  T       C       W343R   NON_SYNONYMOUS_CODING   NM_152486.ex.10 MISSENSE        mRNA    SAMD11  MODERATE        NM_152486
 
-print "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tfunctionGVS\tFunctionalClass\tFunctionalImpact\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList\n";
+print "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tEffect\tFunctionalClass\tFunctionalImpact\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList\n";
 
 while(my $l = <FH>)	{
 	chomp $l;

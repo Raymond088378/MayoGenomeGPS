@@ -56,7 +56,7 @@ else
 
 	$script_path/MergeBam.sh "$input" $output/$bam.extra.bam $output yes $run_info
 	
-	if [ $4 ]
+	if [ $5 ]
 	then
 		sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
 		samples=$(cat $sample_info | grep -w "^$group" | cut -d '=' -f2 | tr "\t" " ")	

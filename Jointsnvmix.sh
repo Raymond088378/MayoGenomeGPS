@@ -25,6 +25,7 @@ else
 	only_ontarget=$( cat $tool_info | grep -w '^TARGETTED' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 	mqual=$( cat $tool_info | grep -w 'MAPPING_QUALITY' | cut -d '=' -f2)
 	bqual=$( cat $tool_info | grep -w 'BASE_QUALITY' | cut -d '=' -f2)
+	cutoff=$( cat $tool_info | grep -w 'SOMATIC_THRESHOLD' | cut -d '=' -f2)
 	
 	if [ $only_ontarget == "YES" ]
 	then
@@ -32,7 +33,7 @@ else
     fi
 	
     export PYTHONPATH=$pythonpath:$PYTHONPATH
-    export PATH=$PYTHONPATH:$PATH
+    export PATH=$python:$PYTHONPATH:$PATH
     
     if [ ! -s $normal_bam ]
     then
@@ -54,7 +55,7 @@ else
 		
     ### run joint snvmix classify to call teh somatic mutation
     
-	$python $jointsnvmix/build/scripts-2.7/jsm.py classify --model snvmix2 --post_process --min_base_qual $bqual --min_map_qual $mqual --chromosome chr$chr --out_file $output/$output_file.txt --parameters_file $jointsnvmix/config/params.cfg $ref $normal_bam $tumor_bam
+	$python/python $jointsnvmix/build/scripts-2.7/jsm.py classify --model snvmix2 --somatic_threshold $cutoff --post_process --min_base_qual $bqual --min_map_qual $mqual --chromosome chr$chr --out_file $output/$output_file.txt --parameters_file $jointsnvmix/config/params.cfg $ref $normal_bam $tumor_bam
 	
 	### script to convert text output to vcf output
 	perl $script_path/jsm2vcf.pl -i $output/$output_file.txt -o $output/$output_file -ns $normal_sample -ts $tumor_sample
@@ -63,5 +64,10 @@ else
 	mv $output/$output_file.tmp $output/$output_file
 	
 	rm $output/$output_file.txt
+        
+	if [ $only_ontarget == "YES" ]
+	then
+		rm $output/$sample.$chr.target.bed
+	fi
     echo `date`
 fi

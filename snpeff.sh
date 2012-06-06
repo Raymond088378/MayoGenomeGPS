@@ -44,10 +44,8 @@ else
                 -c $snpeff_path/snpEff.config $genome_version $input/$snv_file > $snpeff/$sample.chr${chr}.snv.eff
             $java/java -Xmx2g -Xms512m -jar $snpeff_path/snpEff.jar eff -onlyCoding true -o vcf -chr chr -noStats -noLog \
                 -c $snpeff_path/snpEff.config $genome_version $input/$snv_file > $snpeff/$sample.chr${chr}.snv.eff.vcf
-	    cat $snpeff/$sample.chr${chr}.snv.eff.vcf | \
-                awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"2.0.5 (build 2012-01-19), by Pablo Cingolani\""; else print $0;}' \
-                    > $snpeff/$sample.chr${chr}.snv.eff.vcf.tmp
-	    mv $snpeff/$sample.chr${chr}.snv.eff.vcf.tmp $snpeff/$sample.chr${chr}.snv.eff.vcf	
+			cat $snpeff/$sample.chr${chr}.snv.eff.vcf | awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"2.0.5 (build 2012-01-19), by Pablo Cingolani\""; else print $0;}' > $snpeff/$sample.chr${chr}.snv.eff.vcf.tmp
+			mv $snpeff/$sample.chr${chr}.snv.eff.vcf.tmp $snpeff/$sample.chr${chr}.snv.eff.vcf	
             perl $script_path/snpeff.pl $snpeff/$sample.chr${chr}.snv.eff > $snpeff/$sample.chr${chr}.snv.eff.fill
             mv $snpeff/$sample.chr${chr}.snv.eff.fill $snpeff/$sample.chr${chr}.snv.eff
 			
@@ -82,9 +80,9 @@ else
             rm $snpeff/$snv_file.annotate.vcf.vcfidx
             rm $snpeff/$snv_file.annotate.vcf.idx
         else
-            echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tfunctionGVS\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList" > $snpeff/$sample.chr${chr}.snv.eff
+            echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tEffect\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList" > $snpeff/$sample.chr${chr}.snv.eff
             cp $input/$snv_file $snpeff/$snv_file.annotate.vcf
-	    echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tfunctionGVS\tFunctionalClass\tFunctionalImpact\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList\n" > $snpeff/$sample.chr${chr}.snv.filtered.eff
+			echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tEffect\tFunctionalClass\tFunctionalImpact\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList\n" > $snpeff/$sample.chr${chr}.snv.filtered.eff
         fi    
     fi
 
@@ -101,9 +99,7 @@ else
             perl $script_path/snpeff.pl $snpeff/$sample.chr${chr}.indel.eff > $snpeff/$sample.chr${chr}.indel.eff.fill
             mv $snpeff/$sample.chr${chr}.indel.eff.fill $snpeff/$sample.chr${chr}.indel.eff
 			
-            cat $snpeff/$sample.chr${chr}.indel.eff.vcf | \
-                awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"2.0.5 (build 2012-01-19), by Pablo Cingolani\""; else print $0;}' \
-                    > $snpeff/$sample.chr${chr}.indel.eff.vcf.tmp
+            cat $snpeff/$sample.chr${chr}.indel.eff.vcf | awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"2.0.5 (build 2012-01-19), by Pablo Cingolani\""; else print $0;}' > $snpeff/$sample.chr${chr}.indel.eff.vcf.tmp
             mv $snpeff/$sample.chr${chr}.indel.eff.vcf.tmp $snpeff/$sample.chr${chr}.indel.eff.vcf
             
             ### use GATK to filter the multiple transcript
@@ -136,10 +132,10 @@ else
             rm $snpeff/$sample.chr${chr}.indel.eff.vcf.idx
             rm $snpeff/$indel_file.annotate.vcf.vcfidx
             rm $snpeff/$indel_file.annotate.vcf.idx
-	else
-            echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tfunctionGVS\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList" > $snpeff/$sample.chr${chr}.indel.eff
-            cp $input/$indel_file $snpeff/$indel_file.annotate.vcf
-	    echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tfunctionGVS\tFunctionalClass\tFunctionalImpact\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList\n" >  $snpeff/$sample.chr${chr}.indel.filtered.eff
+		else
+			echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tEffect\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList" > $snpeff/$sample.chr${chr}.indel.eff
+			cp $input/$indel_file $snpeff/$indel_file.annotate.vcf
+			echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tEffect\tFunctionalClass\tFunctionalImpact\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList\n" >  $snpeff/$sample.chr${chr}.indel.filtered.eff
         fi
     fi    
     echo `date`

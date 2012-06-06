@@ -1,0 +1,8 @@
+
+which perl
+/usr/local/biotools/perl/5.10.0/bin/perl
+
+which python
+/usr/local/biotools/python/2.7/bin/python
+
+

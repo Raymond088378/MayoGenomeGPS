@@ -46,10 +46,19 @@ else
     tool=`echo "$tool" | tr "[A-Z]" "[a-z]"`
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     distance=$( cat $tool_info | grep -w '^SNP_DISTANCE_INDEL' | cut -d '=' -f2 )
+    out=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
+    PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
+    run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
+    out_dir=$out/$PI/$tool/$run_num
 ##############################################################		
     
-    intersect_file=$TargetKit
-    if [ $multi_sample != "YES" ]
+    if [ $tool == "exome" ]
+	then
+		intersect_file=$TargetKit
+    else
+		intersect_file=$out_dir/bed_file.bed
+	fi	
+	if [ $multi_sample != "YES" ]
     then
         echo "Single sample"
         input=$variants/$sample
@@ -107,7 +116,12 @@ else
         group=$sample
         samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2)    
         input=$variants/$group
-        intersect_file=$TargetKit
+        if [ $tool == "exome" ]
+        then
+            intersect_file=$TargetKit
+        else
+            intersect_file=$out_dir/bed_file.bed
+        fi    
 		for sample in $samples
         do  
             perl $script_path/vcf_to_variant_vcf.pl -i $input/$group.variants.chr$chr.filter.vcf -v $input/$sample.variants.chr$chr.SNV.filter.vcf -l $input/$sample.variants.chr$chr.INDEL.filter.vcf -s $sample -f

@@ -22,8 +22,9 @@ else
     threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2)
 	alt_alleles=$( cat $tool_info | grep -w '^MAX_ALT_ALLELES' | cut -d '=' -f2)
 	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
-	
+	qual=$( cat $tool_info | grep -w '^BASE_QUALITY' | cut -d '=' -f2 )
     javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
+	depth=$( cat $tool_info | grep -w '^DEPTH_FILTER' | cut -d '=' -f2 )
 	
 	export JAVA_HOME=$javahome
 	export PATH=$JAVA_HOME/bin:$PATH
@@ -46,7 +47,7 @@ else
 			--output_mode $mode \
 			-nt $threads \
 			--max_alternate_alleles $alt_alleles \
-			-glm $type \
+			--min_base_quality_score $qual -glm $type \
 			$range \
 			$bam \
 			--ped $ped \
@@ -58,7 +59,7 @@ else
 			-K $gatk/Hossain.Asif_mayo.edu.key \
 			-T UnifiedGenotyper \
 			--output_mode $mode \
-			-nt $threads \
+			--min_base_quality_score $qual -nt $threads \
 			--max_alternate_alleles $alt_alleles \
 			-glm $type \
 			$range \
@@ -71,7 +72,7 @@ else
             rm core.*
         fi    
 		let count=count+1
-    done
+    done 
 	
 	cat $vcf | awk '$0 ~ /^#/ || $5 ~ /,/' > $vcf.multi.vcf
 	cat $vcf | awk '$0 ~ /^#/ || $5 !~ /,/' > $vcf.temp

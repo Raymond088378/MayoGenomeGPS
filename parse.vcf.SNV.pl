@@ -106,7 +106,7 @@ else	{
 		$multi=$2 if ($reg =~ /(\w*)ED=(\d*)/); 
 
 		if ($sample_data[$GenoType] eq '.' )  {
-			print OUT "$call[$chr_col]\t$call[$pos_col]\t$capture_flag\t$multi\t$call[$ref_col]\t$call[$alt_col]\t-\t-\t-\t-\t-\t$close2indel_flag\n";
+			print OUT "$call[$chr_col]\t$call[$pos_col]\t$capture_flag\t$multi\t$call[$ref_col]\t$call[$alt_col]\t-\t$alt_reads[$#alt_reads]\t$alt_reads[0]\t$ReadDepth\t$quality\t$close2indel_flag\n";
 		}	
 		if ($sample_data[$GenoType] eq '0/0' )  {
 		        print OUT "$call[$chr_col]\t$call[$pos_col]\t$capture_flag\t$multi\t$call[$ref_col]\t$call[$alt_col]\t$call[$ref_col]$call[$ref_col]\t$alt_reads[$#alt_reads]\t$alt_reads[0]\t$ReadDepth\t$quality\t$close2indel_flag\n";

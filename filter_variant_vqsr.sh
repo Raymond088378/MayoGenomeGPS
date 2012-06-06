@@ -180,7 +180,7 @@ else
 		fi
 	else
 		cp $inputvcf.SNV.vcf $outfile.SNV.vcf
-                rm $inputvcf.SNV.vcf
+        rm $inputvcf.SNV.vcf
 	fi
     
 	### applt vqsr for indels

@@ -26,12 +26,11 @@ else
 ######		Reading run_info.txt and assigning to variables
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 ) 
-    java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" )
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
-
+    java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     output=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
     PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
@@ -45,7 +44,7 @@ else
 	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
 	threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2 )
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
-	
+	depth=$( cat $tool_info | grep -w '^T_DEPTH_FILTER' | cut -d '=' -f2 )
 	export JAVA_HOME=$javahome
 	export PATH=$JAVA_HOME/bin:$PATH
 	
@@ -93,11 +92,6 @@ else
     $script_path/combinevcf.sh "$inputargs" $out/$sample.variants.raw.vcf $run_info no
 	$script_path/combinevcf.sh "$inputargs_multi" $out/$sample.variants.raw.multi.vcf $run_info yes
 	
-    perl $script_path/vcf_blat_verify.pl -i $out/$sample.variants.raw.vcf -o $out/$sample.variants.raw.vcf.tmp -w $window_blat -b $blat -r $ref -sam $samtools -br $blat_ref -bs $blat_server -bp $blat_port -th $threads
-    mv $out/$sample.variants.raw.vcf.tmp $out/$sample.variants.raw.vcf
-	
-	perl $script_path/vcf_blat_verify.pl -i $out/$sample.variants.raw.multi.vcf -o $out/$sample.variants.raw.multi.vcf.tmp -w $window_blat -b $blat -r $ref -sam $samtools -br $blat_ref -bs $blat_server -bp $blat_port -th $threads
-    mv $out/$sample.variants.raw.multi.vcf.tmp $out/$sample.variants.raw.multi.vcf
     
     ### filter the variant calls
     if [ $filter_variants == "YES" ]
@@ -107,6 +101,29 @@ else
         cp $out/$sample.variants.raw.vcf $out/$sample.variants.filter.vcf
     fi
     
+	$script_path/vcf_blat_verify.pl -i $out/$sample.variants.filter.vcf -o $out/$sample.variants.filter.vcf.tmp -w $window_blat -b $blat -r $ref -sam $samtools -br $blat_ref -bs $blat_server -bp $blat_port -th $threads
+    mv $out/$sample.variants.filter.vcf.tmp $out/$sample.variants.filter.vcf
+	
+	$script_path/vcf_blat_verify.pl -i $out/$sample.variants.raw.multi.vcf -o $out/$sample.variants.raw.multi.vcf.tmp -w $window_blat -b $blat -r $ref -sam $samtools -br $blat_ref -bs $blat_server -bp $blat_port -th $threads
+    mv $out/$sample.variants.raw.multi.vcf.tmp $out/$sample.variants.raw.multi.vcf
+	
+	### Filter the variants using total depth 
+	### use GATK variant filter to filter using DP
+	if [[ $tool == "exome" && $filter_variants == "YES" ]]
+	then
+		$java/java -Xmx1g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+		-R $ref \
+		-et NO_ET \
+		-K $gatk/Hossain.Asif_mayo.edu.key \
+		-l INFO \
+		-T VariantFiltration \
+		-V $out/$sample.variants.filter.vcf \
+		-o $out/$sample.variants.filter.vcf.tmp \
+		--filterExpression "DP < $depth" --filterName DPFilter 
+		mv $out/$sample.variants.filter.vcf.tmp $out/$sample.variants.filter.vcf
+		mv $out/$sample.variants.filter.vcf.tmp.idx $out/$sample.variants.filter.vcf.idx
+	fi
+	
     if [ ! -s $out/$sample.variants.filter.vcf ]
     then
         $script_path/errorlog.sh $out/$sample.variants.filter.vcf merge_variant_single.sh ERROR "failed to create"
@@ -117,5 +134,6 @@ else
             cat $out/$sample.variants.filter.vcf | awk -v num=chr${i} '$0 ~ /^#/ || $1 == num' > $input/$sample/$sample.variants.chr$i.filter.vcf 
         done
     fi  
+	rm $out/$sample.variants.raw.vcf.blat.log
 	echo `date`	
 fi  

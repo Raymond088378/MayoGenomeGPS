@@ -21,8 +21,17 @@ else
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
     flowcell=`echo $run_num | awk -F'_' '{print $NF}' | sed 's/.\(.*\)/\1/'`
     version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
+	
     
-    
+	##tool is hard coded
+	type=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
+	if [ $type == "exome" ]
+	then
+		tool=Exome
+	else
+		tool=WholeGenome
+    fi
+	
     if [ $analysis == "mayo" -o $analysis == "realign-mayo" ]
     then
         if [ $5 ]
@@ -34,16 +43,16 @@ else
             then
                 if [ $status == "complete" ]
                 then
-                    $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -r $run_num -s $stage -a WholeGenome -v $version
+                    $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -r $run_num -s $stage -a $tool
                 else
-                    $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -r $run_num -s $stage -a WholeGenome -v $version
+                    $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -r $run_num -s $stage -a $tool
                 fi
             else
                 if [ $status == "complete" ]
                 then
-                    $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -i $index -r $run_num -s $stage -a WholeGenome -v $version
+                    $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
                 else
-                    $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -i $index -r $run_num -s $stage -a WholeGenome -v $version
+                    $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
                 fi		
             fi
         else
@@ -60,16 +69,16 @@ else
                     then
                         if [ $status == "complete" ]
                         then
-                            $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -r $run_num -s $stage -a WholeGenome -v $version
+                            $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -r $run_num -s $stage -a $tool
                         else
-                            $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -r $run_num -s $stage -a WholeGenome -v $version
+                            $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -r $run_num -s $stage -a $tool
                         fi		
                     else
                         if [ $status == "complete" ]
                         then
-                            $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -i $index -r $run_num -s $stage -a WholeGenome -v $version
+                            $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
                         else
-                            $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -i $index -r $run_num -s $stage -a WholeGenome -v $version
+                            $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
                         fi		
                     fi
                     let i=i+1
