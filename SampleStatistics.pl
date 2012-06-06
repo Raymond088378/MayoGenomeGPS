@@ -365,8 +365,9 @@
 				}	
 				close SAMPLE;
 			}
-			$tot=$tot+$#sam-1;
+			$tot=$tot+$#sam;
 		}
+		$tot=$tot-1;
 		print OUT "\n";
 		@align=("Combined Total Reads","Combined Mapped Reads");
 		if ($tool eq 'exome')	{
@@ -384,7 +385,7 @@
 		}	
 		foreach my $key (sort {$a <=> $b} keys %group_numbers)	{
 			print OUT "$names[$key]";
-			for ( my $c=0; $c < $num_groups; $c++ )	{
+			for ( my $c=0; $c <= $tot; $c++ )	{
 				my $print=CommaFormatted(${$group_numbers{$key}}[$c]);
 				print OUT "\t$print";
 			}
