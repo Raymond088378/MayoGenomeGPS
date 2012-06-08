@@ -14,6 +14,8 @@ else {
 	my $run_info = $opt_r;	
 	my @line=split(/=/,`perl -ne "/^TOOL_INFO/ && print" $run_info`);
 	my $tool_info=$line[$#line];chomp $tool_info;
+	@line=split(/=/,`perl -ne "/^SAMPLE_INFO/ && print" $run_info`);
+	my $sample_info=$line[$#line];chomp $sample_info;
 	@line=split(/=/,`perl -ne "/^SAMPLENAMES/ && print" $run_info`);
 	my $samples=$line[$#line];chomp $samples;
 	@line=split(/=/,`perl -ne "/^PI/ && print" $run_info`);
@@ -30,8 +32,11 @@ else {
 	my $delivery_folder=$line[$#line];chomp $delivery_folder;
 	my $dest = $output . "/igv_session.xml";
 	@line=split(/=/,`perl -ne "/^ANALYSIS/ && print" $run_info`);
-	
 	my $analysis=$line[$#line];chomp $analysis;
+	@line=split(/=/,`perl -ne "/^MULTISAMPLE/ && print" $run_info`);
+	my $multi=$line[$#line];chomp $multi;
+	@line=split(/=/,`perl -ne "/^GROUPNAMES/ && print" $run_info`);
+	my $groups=$line[$#line];chomp $groups;
 	
 	$tracks=$tracks."/ucsc_tracks.bed"; 
 	open FH , ">$dest" or die "can not open $dest : $! \n";
@@ -40,7 +45,26 @@ else {
 	    	<Resources> ";
 	my @sampleNames=split(/:/,$samples);
 	my @trackNames=split(/:/,$tracks);
-	for(my $i = 0 ; $i <= $#sampleNames; $i++)	{
+	my @groupNames=split(/:/,$groups);
+	
+	if ($multi eq 'YES')	{
+		for(my $i = 0 ; $i <= $#groupNames; $i++)	{
+			@line=split(/=/,`perl -ne "/^$i/ && print" $sample_info`);
+			my $sam=$line[$#line];chomp $sam;
+			my @sam1=split(/\t/,$sam);
+			for (my $j =0; $j <= $#sam1; $j++)	{
+				if ($analysis eq "mayo" || $analysis eq "realign-mayo"){
+					$delivery_folder =~ s/\/data2/ftp:\/\/rcfisinl1-212/g;
+					print FH "\n<Resource name=\"$sam1[$j].igv-sorted.bam\" path=\"$delivery_folder/IGV_BAM/$groupNames[$i]/$sampleNames[$j].igv-sorted.bam\" />";
+				}
+				else	{
+					print FH "\n<Resource name=\"$sam1[$j].igv-sorted.bam\" path=\"http://$server/secondary/$PI/$folder/IGV_BAM/$groupNames[$i]/$sampleNames[$j].igv-sorted.bam\" />";
+				}
+			}
+		}	
+	}
+	else	{
+		for(my $i = 0 ; $i <= $#sampleNames; $i++)	{
 			if ($analysis eq "mayo" || $analysis eq "realign-mayo"){
 				$delivery_folder =~ s/\/data2/ftp:\/\/rcfisinl1-212/g;
 				print FH "\n<Resource name=\"$sampleNames[$i].igv-sorted.bam\" path=\"$delivery_folder/IGV_BAM/$sampleNames[$i].igv-sorted.bam\" />";
@@ -49,6 +73,7 @@ else {
 				print FH "\n<Resource name=\"$sampleNames[$i].igv-sorted.bam\" path=\"http://$server/secondary/$PI/$folder/IGV_BAM/$sampleNames[$i].igv-sorted.bam\" />";
 			}	
 	}
+	}	
 	for (my $i = 0 ; $i <= $#trackNames ; $i++ )	{
 		$tracks =~ s/\/data2\/bsi/http:\/\/$server/g;
 		print FH "\n<Resource path=\"$tracks\" />";

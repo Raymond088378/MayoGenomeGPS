@@ -39,7 +39,6 @@ else
 		output_dir=$output/$PI/$tool/$run_num
 	fi
 	
-	mkdir $output_dir/job_ids
 	mkdir $output_dir/logs
 
 	if [[ $analysis != "annotation"  && $analysis != "ontarget" ]]
@@ -75,11 +74,9 @@ else
         mkdir $output_dir/OnTarget
         mkdir $output_dir/annotation
         output_annot=$output_dir/annotation
-		mkdir $output_annot/SIFT
-        #mkdir $output_annot/SSEQ
+	mkdir $output_annot/SIFT
         mkdir $output_annot/SNPEFF
         mkdir $output_annot/POLYPHEN
-        #mkdir $output_annot/MISC
         mkdir $output_dir/TempReports
         mkdir $output_dir/Reports_per_Sample
         mkdir $output_dir/Reports

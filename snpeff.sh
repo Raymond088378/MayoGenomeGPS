@@ -9,7 +9,7 @@
 #	$4		=		run_innfo
 ################################# 
 
-if [ $# != 4 ];
+if [ $# -le 3 ];
 then
     echo "Usage:<snpeff dir> <input dir><sample><run_info> ";
 else
@@ -19,7 +19,10 @@ else
     input=$2
     sample=$3
     run_info=$4
-    #SGE_TASK_ID=1
+    if [ $5 ]
+	then
+		SGE_TASK_ID=$5
+	fi	
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)

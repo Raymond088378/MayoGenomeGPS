@@ -34,7 +34,7 @@ else{
 			$strand = $strand19;
 		}
 		if ( $coord =~ m/(\d+)\:(\d+)\-/){
-			my $key = $1.'|'.$2;
+			my $key = "chr". $1.'|'.$2;
 			$db_hash{$key}=$id.';'.$cds.';'.$prot.';'.$strand;	
 		}
 	}

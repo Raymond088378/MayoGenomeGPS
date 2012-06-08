@@ -2,7 +2,7 @@
 #	INFO
 #	wrapper for 2A and 2B
 
-if [ $# != 6 ]
+if [ $# -le 5 ]
 then
     echo -e "Usage: wrapper script to do realignment and variant calling \nMulti-Samples\n<input ':' sep> <bam ':' sep[normal:tumor1:tumor2:tumorN]> <samples ':' sep[normal:tumor1:tumor2:tumorN]> <outputdir bams> <run_info><1 for realign-recal or 0 for recal-realign>\nelse\n<input> <bam > <samples> <outputdir bams><run_info><1 for realign-recal or 0 for recal-realign>\n"
 else
@@ -14,7 +14,10 @@ else
     output_bam=$4
     run_info=$5
     flag=$6
-   
+	if [ $7 ]
+	then
+		SGE_TASK_ID=$7
+	fi	
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)

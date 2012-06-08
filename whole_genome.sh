@@ -16,7 +16,8 @@ if [ $# != 1 ]
 then	
     echo "Usage: <Please specify path to run_info.txt file> ";
 else
-    echo `date`
+    set -x
+	echo `date`
     run_info=$1
     dos2unix $run_info
 
@@ -48,7 +49,9 @@ else
         echo "ERROR : run_info=$run_info does not exist \n";
         exit 1;
     fi
-
+	## removing trailing and leading spaces
+	cat $run_info | sed -e "s/ *$//" | sed -e "s/^ *//" > $run_info.tmp
+	mv $run_info.tmp $run_info
     input=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
     output=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
     PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
@@ -57,6 +60,11 @@ else
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     dos2unix $sample_info
     dos2unix $tool_info
+	## removing trailing and leading spaces
+	cat $sample_info | sed -e "s/ *$//" | sed -e "s/^ *//" > $sample_info.tmp
+	mv $sample_info.tmp $sample_info
+	cat $tool_info | sed -e "s/ *$//" | sed -e "s/^ *//" > $tool_info.tmp
+	mv $tool_info.tmp $tool_info
     samples=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2)
     groups=$( cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2)
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
@@ -78,7 +86,15 @@ else
     
     #################################################
     ### validate the config file
-    perl $script_path/check_config.pl $run_info
+    perl $script_path/check_config.pl $run_info > $run_info.configuration_errors.log
+	if [ `cat $run_info.configuration_errors.log | wc -l` -gt 0 ]
+	then
+		echo "Configuration files are malformed: look at the erros in $run_info.configuration_errors.log "
+		exit 1;
+	else
+		rm $run_info.configuration_errors.log
+	fi	
+	
     ### create folders
     $script_path/create_folder.sh $run_info
     output_dir=$output/$PI/$tool/$run_num
@@ -103,7 +119,7 @@ else
     ##########################################################
     if [ $tool == "whole_genome" ]
     then
-        cat $master_gene_file | awk '$1 !~ /random/ && $1 !~ /hap/ && $1 !~ /chrUn/' | cut -f 1,2,3 | $bed/sort.bed -i stdin | $bed/mergeBed -i stdin >  $output_dir/bed_file.bed	
+        cat $master_gene_file | awk '$1 !~ /random/ && $1 !~ /hap/ && $1 !~ /chrUn/' | cut -f 1,2,3 | $bed/sortBed -i stdin | $bed/mergeBed -i stdin >  $output_dir/bed_file.bed	
     fi
 
     echo -e "${tool} analysis for ${run_num} for ${PI} " >> $output_dir/log.txt
@@ -113,7 +129,7 @@ else
 
     if [[ $analysis != "mayo" && $analysis != "external"  && $analysis != "realignment"  &&  $analysis != "variant" && $analysis != "alignment" && $analysis != "annotation" && $analysis != "realign-mayo" && $analysis != "ontarget" ]]
     then
-        echo -e "\nERROR: Please Specify the correct Analysis type(alignment,realignment,variant,external,mayo,realign-mayo,annotation)\n"
+        echo -e "\nERROR: Please Specify the correct Analysis type(alignment,realignment,variant,external,mayo,realign-mayo,annotation,ontarget)\n"
         echo `date`
         exit 1;
     fi
@@ -259,7 +275,7 @@ else
 				else
 					hold="-hold_jid $type.$version.snpeff.$sample.$run_num"
 				fi	
-				qsub $args -N $type.$version.sample_reports.$sample.$run_num $hold -t 1-$numchrs:1 -l h_vmem=12G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir
+				qsub $args -N $type.$version.sample_reports.$sample.$run_num $hold -t 1-$numchrs:1 -l h_vmem=8G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir
 				qsub $args -N $type.$version.sample_report.$sample.$run_num -hold_jid $type.$version.sample_reports.$sample.$run_num $script_path/sample_report.sh $output_dir $TempReports $sample $run_info
 				if [[ $tool == "whole_genome"  && $analysis != "annotation" ]]
 				then
@@ -467,7 +483,7 @@ else
 				qsub $args -N $type.$version.snpeff.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info
 				qsub $args -N $type.$version.polyphen.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info  
 				hold="$type.$version.sift.$group.$sample.$run_num,$type.$version.snpeff.$group.$sample.$run_num,$type.$version.polyphen.$group.$sample.$run_num"
-				qsub $args -N $type.$version.sample_reports.$group.$sample.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=12G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir
+				qsub $args -N $type.$version.sample_reports.$group.$sample.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=8G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir
 				qsub $args -N $type.$version.sample_report.$sample.$run_num -hold_jid $type.$version.sample_reports.$group.$sample.$run_num $script_path/sample_report.sh $output_dir $TempReports $sample $run_info
 			done
 			sampleNames=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" "\n")
@@ -484,7 +500,7 @@ else
 				qsub $args -N $type.$version.snpeff.$group.$tumor.$i.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $group.$tumor $run_info
 				qsub $args -N $type.$version.polyphen.$group.$tumor.$i.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $group.$tumor $run_info
 				hold="$type.$version.sift.${group}.${tumor}.$i.$run_num,$type.$version.snpeff.$group.$tumor.$i.$run_num,$type.$version.polyphen.$group.$tumor.$i.$run_num"
-				qsub $args -N $type.$version.sample_reports.$group.$tumor.$i.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=12G $script_path/sample_reports.sh $run_info $tumor $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir $group
+				qsub $args -N $type.$version.sample_reports.$group.$tumor.$i.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=8G $script_path/sample_reports.sh $run_info $tumor $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir $group
 				qsub $args -N $type.$version.sample_report.$group.$tumor.$i.$run_num -hold_jid $type.$version.sample_reports.$group.$tumor.$i.$run_num $script_path/sample_report.sh $output_dir $TempReports $group.$tumor $run_info
 			done                    		
 			if [ $tool == "whole_genome" ]
@@ -507,7 +523,7 @@ else
 				for sam in `cat $sample_info| grep -w "^$group" | cut -d '=' -f2`
 				do
 					qsub $args -N $type.$version.run_breakdancer.$group.$sam.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=8G -t 1-$numchrs:1 $script_path/run_breakdancer.sh $sam $output_dir/IGV_BAM $break/$group $run_info $group
-					qsub $args -N $type.$version.run_breakdancer_in.$group.$sam.$run_num -hold_jid $type.$version.igv_bam.$group.$run_num -l h_vmem=8G -t $nump-$nump:$nump $script_path/run_breakdancer.sh $sam $output_dir/IGV_BAM $break/$group $run_info
+					qsub $args -N $type.$version.run_breakdancer_in.$group.$sam.$run_num -hold_jid $type.$version.igv_bam.$group.$run_num -l h_vmem=8G -t $nump-$nump:$nump $script_path/run_breakdancer.sh $sam $output_dir/IGV_BAM $break/$group $run_info $group
 					id=$id"$type.$version.run_breakdancer.$group.$sam.$run_num,$type.$version.run_breakdancer_in.$group.$sam.$run_num,"
 				done
 				hhold="$id,$type.$version.run_segseq.$group.$run_num,$type.$version.run_crest_multi.$group.$run_num"

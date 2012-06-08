@@ -183,8 +183,7 @@ sub check_files	{
 			}		
 		}	
 	}
-	return $errmsg;		
-	exit 1;
+	return $errmsg;	
 }		
 
 

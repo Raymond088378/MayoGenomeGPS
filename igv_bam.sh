@@ -41,10 +41,11 @@ else
     if [ $multi == "YES" ]
     then
         cd $input/$sample
+		mkdir -p $output/$sample
         pair=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2)
         for i in *.cleaned.bam
         do
-            $samtools/samtools view -H $i > $output/$sample.header.sam
+            $samtools/samtools view -H $i > $output/$sample/$sample.header.sam
         done
 
         for i in $pair
@@ -57,7 +58,7 @@ else
                 gr="$gr $a"
             done
             gr=`echo $gr |  sed "s/|$//"`
-            cat $output/$sample.header.sam |grep -E -v "$gr" > $output/$sample.$i.header.sam
+            cat $output/$sample/$sample.header.sam |grep -E -v "$gr" > $output/$sample/$sample.$i.header.sam
             
             if [ ${#chrArray[@]} -gt 1 ]
             then
@@ -70,14 +71,15 @@ else
 						input_bam="$input_bam $output/$sample.$i.chr$chr.bam"
 					fi
 				done
-                $samtools/samtools merge -h $output/$sample.$i.header.sam $output/$i.igv-sorted.bam $input_bam 
+                $samtools/samtools merge -h $output/$sample/$sample.$i.header.sam $output/$sample/$i.igv-sorted.bam $input_bam 
             else
-                mv $output/$i.igv-sorted.re.bam $output/$i.igv-sorted.bam
+                chr=${chrArray[1]}
+				cp $output/$sample.$i.chr$chr.bam $output/$sample/$i.igv-sorted.bam
             fi
-            if [ -s $output/$i.igv-sorted.bam ]
+            if [ -s $output/$sample/$i.igv-sorted.bam ]
             then
-                $samtools/samtools index $output/$i.igv-sorted.bam
-                rm $output/$sample.$i.header.sam
+                $samtools/samtools index $output/$sample/$i.igv-sorted.bam
+                rm $output/$sample/$sample.$i.header.sam
 				if [ $analysis != "variant" ]
 				then
 					if [ $remove_bam == "YES" ]
@@ -90,7 +92,7 @@ else
                 exit 1;
             fi
         done
-		rm $output/$sample.header.sam
+		rm $output/$sample/$sample.header.sam
     else
         cd $input/$sample/
         for i in *.cleaned.bam
@@ -143,13 +145,14 @@ else
             fi
             if [ $multi == "YES" ]
             then
-                pair=$( cat $sample_info | grep -w "$sample" | cut -d '=' -f2)
+                mkdir -p $out/$sample
+				pair=$( cat $sample_info | grep -w "$sample" | cut -d '=' -f2)
                 for i in $pair
                 do
-                    mv $output/$i.igv-sorted.bam $out/
-                    ln -s $out/$i.igv-sorted.bam $output/$i.igv-sorted.bam
-                    mv $output/$i.igv-sorted.bam.bai $out/
-                    ln -s $out/$i.igv-sorted.bam.bai $output/$i.igv-sorted.bam.bai
+                    mv $output/$sample/$i.igv-sorted.bam $out/$sample/
+                    ln -s $out/$sample/$i.igv-sorted.bam $output/$sample/$i.igv-sorted.bam
+                    mv $output/$sample/$i.igv-sorted.bam.bai $out/$sample/
+                    ln -s $out/$sample/$i.igv-sorted.bam.bai $output/$sample/$i.igv-sorted.bam.bai
                 done
             else
                 mv $output/$sample.igv-sorted.bam $out/

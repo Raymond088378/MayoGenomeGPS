@@ -39,6 +39,8 @@ else
 	miRbase=$( cat $tool_info | grep -w '^miRbase' | cut -d '=' -f2 )
 	ssr=$( cat $tool_info | grep -w '^SNP_SR' | cut -d '=' -f2 )
 	scs=$( cat $tool_info | grep -w '^SNP_CS' | cut -d '=' -f2 )
+	sao=$( cat $tool_info | grep -w '^SNP_SAO' | cut -d '=' -f2 )
+	build=$( cat $tool_info | grep -w '^SNP_BUILD' | cut -d '=' -f2 )
 	typeset -i codon
 	typeset -i SNP_Type
 	
@@ -154,25 +156,30 @@ else
 	## SSR=SNP Suspect Reason
 	## SCS=SNP Clinical Significance
 	cat $file.sift.codons.map.repeat.base | awk 'NR>2' | awk '{print $1"\t"($2-1)"\t"$2}' > $file.sift.codons.map.repeat.base.ChrPos.bed
-	if [ -s $file.sift.codons.map.repeat.base.ChrPos.bed ]
-	then
-		$bed/intersectBed -a $file.sift.codons.map.repeat.base.ChrPos.bed -b $ssr -wb | awk '{print $(NF-3)"\t"$(NF-2)"\t"$(NF-1)"\t"$NF}' > $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.i
-		$bed/intersectBed -a $file.sift.codons.map.repeat.base.ChrPos.bed -b $scs -wb | awk '{print $(NF-3)"\t"$(NF-2)"\t"$(NF-1)"\t"$NF}' > $file.sift.codons.map.repeat.base.ChrPos.bed.scs.i
-	else
-		touch $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.i 
-		touch $file.sift.codons.map.repeat.base.ChrPos.bed.scs.i
-	fi	
-	perl $script_path/match.pl -b $file.sift.codons.map.repeat.base.ChrPos.bed -i $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.i -o $file.sift.codons.map.repeat.base.ChrPos.bed.ssr -t ssr
-	perl $script_path/match.pl -b $file.sift.codons.map.repeat.base.ChrPos.bed -i $file.sift.codons.map.repeat.base.ChrPos.bed.scs.i -o $file.sift.codons.map.repeat.base.ChrPos.bed.scs -t scs
-	echo -e "\nSNP_SuspectRegion" >> $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.tmp
-	echo -e "\nSNP_ClinicalSig" >> $file.sift.codons.map.repeat.base.ChrPos.bed.scs.tmp
-	cat $file.sift.codons.map.repeat.base.ChrPos.bed.ssr >> $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.tmp
-	cat $file.sift.codons.map.repeat.base.ChrPos.bed.scs >> $file.sift.codons.map.repeat.base.ChrPos.bed.scs.tmp
-	paste $file.sift.codons.map.repeat.base $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.tmp $file.sift.codons.map.repeat.base.ChrPos.bed.scs.tmp > $file.sift.codons.map.repeat.base.snp
-	rm $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.tmp $file.sift.codons.map.repeat.base.ChrPos.bed.scs.tmp
-	rm $file.sift.codons.map.repeat.base.ChrPos.bed.ssr $file.sift.codons.map.repeat.base.ChrPos.bed.scs
+	cat $ssr | awk -v num=chr$which_chr '$1 == num' > $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.i
+	cat $scs | awk -v num=chr$which_chr '$1 == num' > $file.sift.codons.map.repeat.base.ChrPos.bed.scs.i
+	cat $sao | awk -v num=chr$which_chr '$1 == num' > $file.sift.codons.map.repeat.base.ChrPos.bed.sao.i
+	cat $build | awk -v num=chr$which_chr '$1 == num' > $file.sift.codons.map.repeat.base.ChrPos.bed.build.i
+	for type in ssr scs sao build
+	do
+		perl $script_path/match.pl -b $file.sift.codons.map.repeat.base.ChrPos.bed -i $file.sift.codons.map.repeat.base.ChrPos.bed.$type.i -o $file.sift.codons.map.repeat.base.ChrPos.bed.$type -t $type
+	done
+	
+	echo -e "\nSNP_SuspectRegion" > $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.tmp
+	echo -e "\nSNP_ClinicalSig" > $file.sift.codons.map.repeat.base.ChrPos.bed.scs.tmp
+	echo -e "\nVariant_AlleleOrigin" > $file.sift.codons.map.repeat.base.ChrPos.bed.sao.tmp
+	echo -e "\nFirst_dbSNP_Build" > $file.sift.codons.map.repeat.base.ChrPos.bed.build.tmp
+	
+	for type in ssr scs sao build
+	do
+		cat $file.sift.codons.map.repeat.base.ChrPos.bed.$type >> $file.sift.codons.map.repeat.base.ChrPos.bed.$type.tmp
+	done
+	
+	paste $file.sift.codons.map.repeat.base $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.tmp $file.sift.codons.map.repeat.base.ChrPos.bed.scs.tmp $file.sift.codons.map.repeat.base.ChrPos.bed.sao.tmp $file.sift.codons.map.repeat.base.ChrPos.bed.build.tmp > $file.sift.codons.map.repeat.base.snp
+	rm $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.tmp $file.sift.codons.map.repeat.base.ChrPos.bed.scs.tmp $file.sift.codons.map.repeat.base.ChrPos.bed.sao.tmp $file.sift.codons.map.repeat.base.ChrPos.bed.build.tmp
+	rm $file.sift.codons.map.repeat.base.ChrPos.bed.ssr $file.sift.codons.map.repeat.base.ChrPos.bed.scs $file.sift.codons.map.repeat.base.ChrPos.bed.sao $file.sift.codons.map.repeat.base.ChrPos.bed.build
 	rm $file.sift.codons.map.repeat.base.ChrPos.bed
-	rm $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.i $file.sift.codons.map.repeat.base.ChrPos.bed.scs.i
+	rm $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.i $file.sift.codons.map.repeat.base.ChrPos.bed.scs.i $file.sift.codons.map.repeat.base.ChrPos.bed.sao.i $file.sift.codons.map.repeat.base.ChrPos.bed.build.i 
 	num=`cat $file.sift.codons.map.repeat.base.snp | wc -l`
 	if [ $num == $num_a ]
 	then

@@ -54,7 +54,9 @@ else
 	min_id=$( cat $tool_info | grep -w '^STRUCT_MIN_IDENTITY' | cut -d '=' -f2)
 	blacklist_sv=$( cat $tool_info | grep -w '^BLACKLIST_SV' | cut -d '=' -f2 )
 	bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
-
+	len=$( cat $tool_info | grep -w '^MIN_SCIP_LEN' | cut -d '=' -f2 )
+	reads=$( cat $tool_info | grep -w '^MIN_SCIP_READS' | cut -d '=' -f2 )
+	
 ########################################################	
 ######		
 	input_bam=$input/chr${chr}.cleaned.bam
@@ -66,7 +68,7 @@ else
 	SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input_bam -s $samtools`
 	if [ $SORT_FLAG == 0 ]
 	then
-		echo "ERROR : run_crest_multi $file should be sorted"
+		echo "ERROR : run_crest_multi $input_bam should be sorted"
 		exit 1;
 	fi
 
@@ -89,29 +91,26 @@ else
 	if [ "$status" -le 1 ]
 	then
 		$blat/gfServer start localhost $blat_port -log=$output_dir/$sample/log/blat.$sample.$chr.txt $blat_ref  &
-		sleep 2m
+		sleep 3m
 	fi
 
 	$crest/extractSClip.pl -i $input_bam -r chr$chr --ref_genome $ref_genome -o $output_dir/$sample -p $sample
 
 	status=`$blat/gfServer status localhost $blat_port | wc -l`;
 
-	if [ "$status" -eq 0 ]
-	then
-            echo "WARNING : Crest_single: Blat server not available at port: $blat_port. Sample:$sample Chr:$chr "
-            blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
-            range=20000
-            let blat_port+=$RANDOM%range
-            status=`$blat/gfServer status localhost $blat_port | wc -l`;
-            if [ "$status" -le 1 ]
-            then
-                rm $output_dir/$sample/log/blat.$sample.$chr.txt
-		$blat/gfServer start localhost $blat_port -log=$output_dir/$sample/log/blat.$sample.$chr.txt $blat_ref  &
-                sleep 2m
-                echo "WARNING : Crest_single: Blat server available at port: $blat_port. Sample:$sample Chr:$chr "
-            fi
-        fi
-	
+	while [ "$status" -le 1 ]
+	do
+		blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
+		range=20000
+		let blat_port+=$RANDOM%range
+		status=`$blat/gfServer status localhost $blat_port | wc -l`;
+		if [ "$status" -le 1 ]
+		then
+			rm $output_dir/$sample/log/blat.$sample.$chr.txt
+			$blat/gfServer start localhost $blat_port -log=$output_dir/$sample/log/blat.$sample.$chr.txt $blat_ref  &
+			sleep 3m
+		fi
+    done 	
 	cd $crest    
 	if [ -f $output_dir/$sample/$sample.chr$chr.cover ]
 	then
@@ -119,7 +118,7 @@ else
 		--ref_genome $ref_genome -t $blat_ref \
 		--blatport $blat_port -blatserver localhost \
 		--cap3 $cap3/cap3 \
-		--min_sclip_len 12 \
+		--min_sclip_len $len --min_sclip_reads $reads \
 		-o $output_dir/$sample -p $sample.$chr
 		
         rm $input_bam
@@ -147,10 +146,10 @@ else
 		then
 			rm $output_dir/$sample/$sample.chr$chr.cover $output_dir/$sample/$sample.chr$chr.sclip.txt 
 		else
-			echo "ERROR: $output_dir/$sample/$sample.$chr.predSV.txt not created"
+			$script_path/errorlog.sh $output_dir/$sample/$sample.$chr.predSV.txt run_single_crest.sh ERROR "failed to create"
 		fi			
 	else
-		echo "ERROR : Crest_single: extractSClip.pl, $output_dir/$sample/$sample.chr$chr.cover not created "
+		$script_path/errorlog.sh $output_dir/$sample/$sample.chr$chr.cover run_single_crest.sh ERROR "failed to create"
 		touch $output_dir/$sample/$sample.$chr.predSV.txt
 		perl $script_path/CREST2VCF.pl -i $output_dir/$sample/$sample.$chr.predSV.txt -f $ref_genome -o $output_dir/$sample/$sample.$chr.raw.vcf -s $sample -t $samtools
 		rm $output_dir/$sample/$sample.$chr.raw.vcf.fail

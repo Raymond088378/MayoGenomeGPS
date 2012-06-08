@@ -24,9 +24,12 @@ while(defined $in_l || defined $an_l)	{
 	chomp $in_l if defined $in_l;
 	chomp $an_l if defined $an_l;
 	if(!defined $an_l){
-        print OUT "$in_l\t-\tnone\n";
+		print OUT "$in_l\t-\tnone\n";
 		$in_l=<FH>;	
-	}	
+	}
+	elsif (!defined $in_l)	{
+		last;	
+	}
 	else    {
 		my @input=split(/\t/,$in_l);
 		my @annotation=split(/\t/,$an_l);

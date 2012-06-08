@@ -74,6 +74,9 @@ else
 		let count=count+1
     done 
 	
+	perl $script_path/convertvcf.pl $vcf > $vcf.tmp
+	mv $vcf.tmp $vcf
+	
 	cat $vcf | awk '$0 ~ /^#/ || $5 ~ /,/' > $vcf.multi.vcf
 	cat $vcf | awk '$0 ~ /^#/ || $5 !~ /,/' > $vcf.temp
 	mv $vcf.temp $vcf

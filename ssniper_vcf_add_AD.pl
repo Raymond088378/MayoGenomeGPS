@@ -49,9 +49,20 @@ while (<>) {
 	   $freq{$sample}->{$base}=$cfreq;
        }
        #Calculate alternate allele
-       my $ad = $freq{$sample}->{$fields{'ALT'}};
+       my $ad;
+	   if (grep (/,/,$fields{'ALT'}))	{
+			my @alter=split(/,/,$fields{'ALT'});
+			foreach my $a (@alter)	{
+			$ad .= "," . $freq{$sample}->{$a} ;
+			}
+			
+		}
+		else	{
+			$ad = "," . $freq{$sample}->{$fields{'ALT'}};
+		}		
+	    
        my $ad1 = $freq{$sample}->{$fields{'REF'}};
-       $sample_values{$sample}->{AD}="$ad1,$ad";
+       $sample_values{$sample}->{AD}="${ad1}${ad}";
    }
    #Change fields to reflect change
    push (@names_format, "AD");

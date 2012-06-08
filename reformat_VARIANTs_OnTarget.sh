@@ -30,31 +30,38 @@ else
     window_blat=$( cat $tool_info | grep -w '^WINDOW_BLAT' | cut -d '=' -f2 )
     threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2 )
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
-    mkdir -p $output/$sample/
+    perllib=$( cat $tool_info | grep -w '^PERLLIB' | cut -d '=' -f2)
+	export PERL5LIB=$perllib:$PERL5LIB
+	export PATH=$PERL5LIB:$PATH
+	
+	mkdir -p $output/$sample/
     
     range=20000
     let blat_port+=$RANDOM%range
     status=`$blat/gfServer status localhost $blat_port | wc -l`;
     if [ "$status" -le 1 ]
     then
-		$blat/gfServer start localhost $blat_port -log=$output/$sample/$sample.blat.log $blat_ref  &
-		sleep 2m
+		$blat/gfServer start $blat_server $blat_port -log=$output/$sample/$sample.blat.log $blat_ref  &
+		sleep 3m
     fi
-    status=`$blat/gfServer status localhost $blat_port | wc -l`;
+    status=`$blat/gfServer status $blat_server $blat_port | wc -l`;
 
-    while [ "$status" -eq 0 ]
+    while [ "$status" -le 1 ]
     do
         blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
         range=20000
         let blat_port+=$RANDOM%range
-        status=`$blat/gfServer status localhost $blat_port | wc -l`;
+        status=`$blat/gfServer status $blat_server $blat_port | wc -l`;
         if [ "$status" -le 1 ]
         then
-            rm $output/$sample.blat.log
-            $blat/gfServer start localhost $blat_port -log=$output/$sample/$sample.blat.log $blat_ref  &
-            sleep 2m
+            if [ -s $output/$sample/$sample.blat.log ]
+			then
+				rm $output/$sample/$sample.blat.log
+            fi
+			$blat/gfServer start $blat_server $blat_port -log=$output/$sample/$sample.blat.log $blat_ref  &
+            sleep 3m
         fi
-		status=`$blat/gfServer status localhost $blat_port | wc -l`;
+		status=`$blat/gfServer status $blat_server $blat_port | wc -l`;
     done
     
     

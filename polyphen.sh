@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ $# != 4 ]
+if [ $# -le 3 ]
 then
     echo "Usage: wrapper to run polyphen \n <polphen dir> <input directory><sample><run info>"
 else
@@ -10,7 +10,10 @@ else
     input=$2
     sample=$3
     run_info=$4
-    #SGE_TASK_ID=1
+    if [ $5 ]
+	then
+		SGE_TASK_ID=$5
+	fi	
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     tool_info=$(cat $run_info | grep -w '^TOOL_INFO' |  cut -d '=' -f2)
     pph=$(cat $tool_info | grep -w '^POLYPHEN' |  cut -d '=' -f2)

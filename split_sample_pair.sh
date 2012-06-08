@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ $# != 5 ]
+if [ $# -le 4 ]
 then
 	echo -e "Usage: SCRIPT to create IGV BAM \n</path/to/realign dir> </path/to/output folder> <sample> </path/to/alignment folder><run ifno>";
 else
@@ -11,7 +11,10 @@ else
     sample=$3
     alignment=$4
     run_info=$5
-    #SGE_TASK_ID=1
+    if [ $6 ]
+	then
+		SGE_TASK_ID=$6
+	fi	
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)

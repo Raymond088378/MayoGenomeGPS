@@ -45,6 +45,9 @@ else
 	threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2 )
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	depth=$( cat $tool_info | grep -w '^T_DEPTH_FILTER' | cut -d '=' -f2 )
+	perllib=$( cat $tool_info | grep -w '^PERLLIB' | cut -d '=' -f2)
+	export PERL5LIB=$perllib:$PERL5LIB
+	export PATH=$PERL5LIB:$PATH
 	export JAVA_HOME=$javahome
 	export PATH=$JAVA_HOME/bin:$PATH
 	
@@ -53,24 +56,24 @@ else
     status=`$blat/gfServer status localhost $blat_port | wc -l`;
     if [ "$status" -le 1 ]
     then
-		$blat/gfServer start localhost $blat_port -log=$out/$sample.variants.raw.vcf.blat.log $blat_ref  &
-		sleep 2m
+		$blat/gfServer start $blat_server $blat_port -log=$out/$sample.variants.raw.vcf.blat.log $blat_ref  &
+		sleep 3m
     fi
-    status=`$blat/gfServer status localhost $blat_port | wc -l`;
+    status=`$blat/gfServer status $blat_server $blat_port | wc -l`;
 
-    while [ "$status" -eq 0 ]
+    while [ "$status" -le 1 ]
     do
         blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
         range=20000
         let blat_port+=$RANDOM%range
-        status=`$blat/gfServer status localhost $blat_port | wc -l`;
+        status=`$blat/gfServer status $blat_server $blat_port | wc -l`;
         if [ "$status" -le 1 ]
         then
             rm $out/$sample.variants.raw.vcf.blat.log
-            $blat/gfServer start localhost $blat_port -log=$out/$sample.variants.raw.vcf.blat.log $blat_ref  &
-            sleep 2m
+            $blat/gfServer start $blat_server $blat_port -log=$out/$sample.variants.raw.vcf.blat.log $blat_ref  &
+            sleep 3m
         fi
-		status=`$blat/gfServer status localhost $blat_port | wc -l`;
+		status=`$blat/gfServer status $blat_server $blat_port | wc -l`;
     done
     
     inputargs=""
@@ -84,15 +87,15 @@ else
 			$script_path/errorlog.sh $inputfile merge_variant_single.sh ERROR "not exist"
 			exit 1;
 		else
-			inputargs="-V $inputfile "$inputargs
-			inputargs_multi="-V $multi "$inputargs_multi
+			inputargs=$inputargs"$inputfile "
+			inputargs_multi=$inputargs_multi"$multi "
 		fi
     done
-
-    $script_path/combinevcf.sh "$inputargs" $out/$sample.variants.raw.vcf $run_info no
-	$script_path/combinevcf.sh "$inputargs_multi" $out/$sample.variants.raw.multi.vcf $run_info yes
 	
-    
+    $script_path/concatvcf.sh "$inputargs" $out/$sample.variants.raw.vcf $run_info no
+	$script_path/concatvcf.sh "$inputargs_multi" $out/$sample.variants.raw.multi.vcf $run_info yes
+	
+	
     ### filter the variant calls
     if [ $filter_variants == "YES" ]
     then

@@ -12,7 +12,7 @@
 #	$6		=		run_info file
 #################################
 
-if [ $# != 4 ];
+if [ $# -le 3 ];
 then
     echo "Usage:<sift dir> <input dir><sample><run info>";
 else
@@ -22,7 +22,10 @@ else
     input=$2
     sample=$3
     run_info=$4
-    #SGE_TASK_ID=1
+	if [ $5 ]
+	then
+		SGE_TASK_ID=$5
+	fi	
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
     sift_ref=$( cat $tool_info | grep -w '^SIFT_REF' | cut -d '=' -f2) 
@@ -68,7 +71,8 @@ else
     fi
     if [ ! -s $sift/${sample}_chr${chr}_predictions.tsv ]
     then
-        echo " ERROR : sift failed for $sample $chr "
-    fi
+        $script_path/errorlog.sh $sift/${sample}_chr${chr}_predictions.tsv sift.sh ERROR "failed to create" 
+		exit 1;
+	fi
     echo `date`
 fi	

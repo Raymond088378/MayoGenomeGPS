@@ -17,8 +17,8 @@ my $START_INFO=20;
 my $STOP_INFO=25;
 my $num_col_samples=$STOP_INFO -$START_INFO +1;
 my $SIFT_START=26;
-my $SIFT_STOP=54;
-my $SNPEFF_START=55;
+my $SIFT_STOP=56;
+my $SNPEFF_START=57;
 my %chrvalue = ("chrX"=>23,"chrY"=>24,"chrM"=>25);
 for (my $i=1; $i<23; $i++) {
 	$chrvalue{"chr".$i} = $i;

@@ -48,20 +48,7 @@ else
 
     blacklist_sv=$( cat $tool_info | grep -w '^BLACKLIST_SV' | cut -d '=' -f2 )
     bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
-	PATH=$bedtools:$PATH
-#filter_sv_break ()
-#{
-    # Removes SV from file ($1) that intersect $blacklist_sv and puts the result in
-    # outfile ($2)
-#    file=$1
-#    outfile=$2
-
-#    cat $file | awk '{ print $1"\t"$2"\t"$2+1"\t"$4"\t"$5"\t"$5+1}' |\ 
-#    $bedtools/pairToBed -a stdin -b $blacklist_sv -type neither |\ 
-#    $script_path/report_original.pl $file > $outfile
-#}
-
-
+	
 ########################################################	
 ######		
 
@@ -196,7 +183,7 @@ else
             fi
 	    else	
             out=$output_dir/$sample/
-            input_bam=$input/${sample}.igv-sorted.bam
+            input_bam=$input/$group/${sample}.igv-sorted.bam
             $samtools/samtools view -h $input_bam | head -n 10000 | cut -f 1-11 | $samtools/samtools view -bS - > $out/$sample.tmp.bam
 
             if [ -s $out/$sample.tmp.bam ]

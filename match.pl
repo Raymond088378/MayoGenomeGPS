@@ -35,6 +35,13 @@ else    {
 		  "255","other"
 		    );
     }
+	elsif ($type eq 'sao')	{
+		%feature=("0","unspecified",
+				"1","Germline",
+				"2","Somatic",
+				"3","Both"
+		);
+	}		
     
     open BED, "$bed" or die "can not open $bed : $! \n";
     open IN, "$intersect" or die "can not open $intersect : $! \n";
@@ -50,18 +57,25 @@ else    {
         chomp $in_l if defined $in_l;
         if(!defined $in_l){
             print OUT "-\n";
-		$bed_l=<BED>;	
+			$bed_l=<BED>;	
         }
+		elsif (!defined $bed_l)	{
+			last;
+		}	
         else    {
             my @bed_array=split(/\t/,$bed_l);
             my @in_array=split(/\t/,$in_l);
             if ($bed_array[1] == $in_array[1])  {
-                print OUT "$feature{$in_array[$#in_array]}\n";
-                $in_l=<IN>;
+                if ($type ne 'build')	{
+					print OUT "$feature{$in_array[$#in_array]}\n";
+                }
+				else	{
+					print OUT "$in_array[$#in_array]\n";
+				}
+				$in_l=<IN>;
                 $bed_l=<BED>;  
             }
             elsif ($bed_array[1] > $in_array[1])    {
-                print OUT "-\n";
                 $in_l=<IN>;
             }
             elsif ($bed_array[1] < $in_array[1]){

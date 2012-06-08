@@ -28,7 +28,9 @@ exist or not
 24. Added Flag in the Tool info file whether to remove aligned bam or not default is YES
 25. Added a paramter in the run info file for somatic caller SOMATIC_CALLER=SOMATICSNIPER/JOINTSNVMIX/MUTECT
 26. Addded paramter for unified Genotyper to call max of 4 alternate allele at the given position, There are possibility of 5 alternate alllele at the given position. If we find multiple alternate allele then we just parse that vcf into a newer vcf and discard those for annotation purpose. We output a seperate vcf for multi-alleleic calls
-27.  
+27. Sample info configuration files formats are changed, so please reveiw those before running the workflow.
+28. Combine variant module for GATK is buggy so replacing that to vcf-concat from vcftools.
+29.  
 
 ### Version 1.0
 
