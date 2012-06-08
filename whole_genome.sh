@@ -49,7 +49,7 @@ else
         echo "ERROR : run_info=$run_info does not exist \n";
         exit 1;
     fi
-	## removing trailing and leading spaces
+	## removing trailing and leading spaces from run ifno file
 	cat $run_info | sed -e "s/ *$//" | sed -e "s/^ *//" > $run_info.tmp
 	mv $run_info.tmp $run_info
     input=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
