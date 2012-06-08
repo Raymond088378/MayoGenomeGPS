@@ -173,6 +173,8 @@ else
                 ### merge snvs and indels to give on vcf
                 in="-V $output/$sample.variants.chr${chr}.raw.snv.all.vcf -V $output/$sample.variants.chr${chr}.raw.indel.all.vcf "
                 $script_path/combinevcf.sh "$in" $output/$sample.variants.chr${chr}.raw.all.vcf $run_info yes
+				in="-V $output/$sample.variants.chr${chr}.raw.snv.vcf.multi.vcf -V $output/$sample.variants.chr${chr}.raw.indel.vcf.multi.vcf"
+                $script_path/combinevcf.sh "$in" $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info yes
                 cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "." || $0 ~ /^#/' | grep -v "\./\." > $output/$sample.variants.chr${chr}.raw.vcf
                 rm $output/$sample.variants.chr${chr}.raw.all.vcf.idx
                 $tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
@@ -189,6 +191,8 @@ else
                 ### merge snvs and indels to give on vcf
                 in="-V $output/$sample.variants.chr${chr}.raw.snv.vcf -V $output/$sample.variants.chr${chr}.raw.indel.vcf"
                 $script_path/combinevcf.sh "$in" $output/$sample.variants.chr${chr}.raw.vcf $run_info yes
+				in="-V $output/$sample.variants.chr${chr}.raw.snv.vcf.multi.vcf -V $output/$sample.variants.chr${chr}.raw.indel.vcf.multi.vcf"
+                $script_path/combinevcf.sh "$in" $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info yes
 			fi
 		fi
 	else
