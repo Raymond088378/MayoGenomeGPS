@@ -49,7 +49,7 @@ else
 	export PERL5LIB=$perllib:$PERL5LIB
 	export PATH=$PERL5LIB:$PATH
 	export JAVA_HOME=$javahome
-	export PATH=$JAVA_HOME/bin:$PATH
+	export PATH=$javahome/bin:$PATH
 	
     range=20000
     let blat_port+=$RANDOM%range

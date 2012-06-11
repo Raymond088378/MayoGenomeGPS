@@ -25,7 +25,7 @@ else
 	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
 	
 	export JAVA_HOME=$javahome
-	export PATH=$JAVA_HOME/bin:$PATH
+	export PATH=$javahome/bin:$PATH
 	
     ## Somatic Indel detector
     if [ $expression == "NA" ]
@@ -42,7 +42,8 @@ else
     -et NO_ET \
     -K $gatk/Hossain.Asif_mayo.edu.key \
     -T SomaticIndelDetector \
-	--filter_expressions $filter \
+    -L chr$chr \
+    --filter_expressions $filter \
     --window_size $window \
     -o $output/$output_file \
     -verbose $output/$indel_v \
@@ -54,6 +55,11 @@ else
         echo "ERROR : variants.sh SomaticIndelDetector failed, file $output/$output_file not generated "
         exit 1;
     else
+        if [ `cat $output/$output_file | awk '$0 ~ /^##FORMAT=<ID=GT/' | wc -l` eq 0 ]
+        then
+            perl $script_path/add.gt.to.vcf.pl $output/$output_file > $output/$output_file.temp
+            mv $output/$output_file.temp $output/$output_file
+        fi    
         rm $output/$indel_v
 		cat $output/$output_file | awk '$0 ~ /^#/ || $8 ~ /SOMATIC/' > $output/$output_file.tmp
 		cat $output/$output_file.tmp | awk '$0 ~ /^#/ || $5 ~ /,/' > $output/$output_file.multi.vcf

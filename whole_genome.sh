@@ -60,11 +60,11 @@ else
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     dos2unix $sample_info
     dos2unix $tool_info
-	## removing trailing and leading spaces
-	cat $sample_info | sed -e "s/ *$//" | sed -e "s/^ *//" > $sample_info.tmp
-	mv $sample_info.tmp $sample_info
-	cat $tool_info | sed -e "s/ *$//" | sed -e "s/^ *//" > $tool_info.tmp
-	mv $tool_info.tmp $tool_info
+    ## removing trailing and leading spaces
+    cat $sample_info | sed -e "s/ *$//" | sed -e "s/^ *//" > $sample_info.tmp
+    mv $sample_info.tmp $sample_info
+    cat $tool_info | sed -e "s/ *$//" | sed -e "s/^ *//" > $tool_info.tmp
+    mv $tool_info.tmp $tool_info
     samples=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2)
     groups=$( cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2)
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
@@ -87,13 +87,13 @@ else
     #################################################
     ### validate the config file
     perl $script_path/check_config.pl $run_info > $run_info.configuration_errors.log
-	if [ `cat $run_info.configuration_errors.log | wc -l` -gt 0 ]
-	then
-		echo "Configuration files are malformed: look at the erros in $run_info.configuration_errors.log "
-		exit 1;
-	else
-		rm $run_info.configuration_errors.log
-	fi	
+    if [ `cat $run_info.configuration_errors.log | wc -l` -gt 0 ]
+    then
+            echo "Configuration files are malformed: look at the erros in $run_info.configuration_errors.log "
+            exit 1;
+    else
+            rm $run_info.configuration_errors.log
+    fi	
 	
     ### create folders
     $script_path/create_folder.sh $run_info

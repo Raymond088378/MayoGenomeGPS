@@ -20,9 +20,9 @@ else
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
     javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
 	
-	export JAVA_HOME=$javahome
-	export PATH=$JAVA_HOME/bin:$PATH
-    # ## annotate SNVs
+    export JAVA_HOME=$javahome
+    export PATH=$JAVA_HOME/bin:$PATH
+    # ## annotate SNVs or INDELs
     $java/java -Xmx6g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
     -R $ref \
     -et NO_ET \
@@ -35,20 +35,14 @@ else
     -A QualByDepth -A MappingQualityRankSumTest -A ReadPosRankSumTest -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A RMSMappingQuality -A FisherStrand \
     --out $vcf.temp	
     
-    if [ -s $vcf.temp ]
-    then
-        mv $vcf.temp $vcf
-    else		
-        $script_path/errorlog.sh $vcf.temp annotate_vcf.sh ERROR "failed to create"
-        exit 1
-    fi
 
     if [ -s $vcf.temp.idx ]
     then
         mv $vcf.temp.idx $vcf.idx
+        mv $vcf.temp $vcf
     else	
-        $script_path/errorlog.sh $vcf.temp.idx annotate_vcf.sh ERROR "failed to create"
-        exit 1
+        $script_path/errorlog.sh $vcf.temp.idx annotate_vcf.sh WARNING "failed to annotate"
+        rm $vcf.temp $vcf.temp.idx
     fi
     echo `date`
 fi	

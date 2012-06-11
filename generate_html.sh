@@ -66,9 +66,9 @@ else
 		PI_LANID=$( echo $PI | cut -d '_' -f 3 )
 		if [ $GenomeBuild == "hg19" ]
 		then
-			$java/java -Xmx7g -Xms512m -jar $script_path/TREATUploader.jar -n $PI_LANID -u $run_num -i $output_dir/Reports/INDEL.cleaned_annot.xls -s $output_dir/Reports/SNV.cleaned_annot.xls -r $run_num -f $script_path/format.SNV.txt
+			$java/java -Xmx7g -Xms512m -jar $script_path/TREATUploader.jar -n $PI_LANID -u $run_num -i $output_dir/Reports/INDEL.xls -s $output_dir/Reports/SNV.xls -r $run_num
 			else
-			$java/java -Xmx7g -Xms512m -jar $script_path/TREATUploader.jar -n $PI_LANID -u $run_num -i $output_dir/Reports/INDEL.cleaned_annot.xls -s $output_dir/Reports/SNV.cleaned_annot.xls -r $run_num
+			$java/java -Xmx7g -Xms512m -jar $script_path/TREATUploader.jar -n $PI_LANID -u $run_num -i $output_dir/Reports/INDEL.xls -s $output_dir/Reports/SNV.xls -r $run_num
 		fi		
 		echo -e "Variants uploaded to TableBrowser" >> $output_dir/log.txt
 	else

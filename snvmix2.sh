@@ -46,6 +46,11 @@ else
     else
         perl $script_path/snvmix_to_vcf.pl -i $temp -o $output -s $sample
     fi
+    if [ $mode != "all" ]
+    then
+        cat $output | grep -v "0\/0" > $output.temp
+        mv $output.temp $output
+    fi    
 	
 	cat $output | awk '$0 ~ /^#/ || $5 ~ /,/' > $output.multi.vcf
 	cat $output | awk '$0 ~ /^#/ || $5 !~ /,/' > $output.temp

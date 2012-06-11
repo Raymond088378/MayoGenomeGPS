@@ -27,7 +27,7 @@ else
 	depth=$( cat $tool_info | grep -w '^DEPTH_FILTER' | cut -d '=' -f2 )
 	
 	export JAVA_HOME=$javahome
-	export PATH=$JAVA_HOME/bin:$PATH
+	export PATH=$javahome/bin:$PATH
     if [ ${#ped} -eq 0 ]
     then
         ped="NA"

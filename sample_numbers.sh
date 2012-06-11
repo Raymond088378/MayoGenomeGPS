@@ -175,9 +175,9 @@ else
 				class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }'`
 				
 				echo -e "Total Known SNVs" >> $numbers/$sample.out
-				cat $file | awk -v num=$dbsnp '$num ~ /^rs/' | wc -l >> $numbers/$sample.out
+				cat $file | awk 'NR>2' | awk -v num=$dbsnp '$num ~ /^rs/' | wc -l >> $numbers/$sample.out
 				echo -e "KNOWN Transition To Transversion Ratio" >> $numbers/$sample.out
-				cat $file | awk -v num=$dbsnp '$num ~ /^rs/' > $file.known
+				cat $file | awk 'NR>2' | awk -v num=$dbsnp '$num ~ /^rs/' > $file.known
 				tt=`perl $script_path/transition.transversion.persample.pl $file.known $ref $alt`
                                 if [ ${#tt} -gt 0 ]
                                 then
@@ -194,9 +194,9 @@ else
 				rm $file.known
 				
 				echo -e "Total Novel SNVs" >> $numbers/$sample.out
-				cat $file | awk -v num=$dbsnp '$num !~ /^rs/' | wc -l >> $numbers/$sample.out
+				cat $file | awk 'NR>2' | awk -v num=$dbsnp '$num !~ /^rs/' | wc -l >> $numbers/$sample.out
 				echo -e "NOVEL Transition To Transversion Ratio" >> $numbers/$sample.out
-				cat $file | awk -v num=$dbsnp '$num !~ /^rs/' > $file.novel
+				cat $file | awk 'NR>2' | awk -v num=$dbsnp '$num !~ /^rs/' > $file.novel
 				tt=`perl $script_path/transition.transversion.persample.pl $file.novel $ref $alt`
 				if [ ${#tt} -gt 0 ]
 				then
@@ -426,9 +426,9 @@ else
 			class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }'`
 			
 			echo -e "Total Known SNVs" >> $numbers/$sample.out
-			cat $file | awk -v num=$dbsnp '$num ~ /^rs/' | wc -l >> $numbers/$sample.out
+			cat $file | awk 'NR>2' | awk -v num=$dbsnp '$num ~ /^rs/' | wc -l >> $numbers/$sample.out
 			echo -e "KNOWN Transition To Transversion Ratio" >> $numbers/$sample.out
-			cat $file | awk -v num=$dbsnp '$num ~ /^rs/' > $file.known
+			cat $file | awk 'NR>2' | awk -v num=$dbsnp '$num ~ /^rs/' > $file.known
 			tt=`perl $script_path/transition.transversion.persample.pl $file.known $ref $alt`
 			if [ ${#tt} -gt 0 ]
 			then
@@ -445,9 +445,9 @@ else
 			rm $file.known
 			
 			echo -e "Total Novel SNVs" >> $numbers/$sample.out
-			cat $file | awk -v num=$dbsnp '$num !~ /^rs/' | wc -l >> $numbers/$sample.out
+			cat $file | awk 'NR>2' | awk -v num=$dbsnp '$num !~ /^rs/' | wc -l >> $numbers/$sample.out
 			echo -e "KNOWN Transition To Transversion Ratio" >> $numbers/$sample.out
-			cat $file | awk -v num=$dbsnp '$num !~ /^rs/' > $file.novel
+			cat $file | awk 'NR>2' | awk -v num=$dbsnp '$num !~ /^rs/' > $file.novel
 			tt=`perl $script_path/transition.transversion.persample.pl $file.novel $ref $alt`
 			if [ ${#tt} -gt 0 ]
 			then
@@ -570,7 +570,7 @@ else
 			class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }'`
 			
 			echo -e "Total Known SNVs" >> $numbers/$group.$tumor.out
-			cat $file | awk -v num=$dbsnp '$num ~ /^rs/' | wc -l >> $numbers/$group.$tumor.out
+			cat $file | awk 'NR>2' | awk -v num=$dbsnp '$num ~ /^rs/' | wc -l >> $numbers/$group.$tumor.out
 			echo -e "KNOWN Transition To Transversion Ratio" >>$numbers/$group.$tumor.out
 			cat $file | awk -v num=$dbsnp '$num ~ /^rs/' > $file.known
 			tt=`perl $script_path/transition.transversion.persample.pl $file.known $ref $alt`
@@ -589,9 +589,9 @@ else
 			rm $file.known
 			
 			echo -e "Total Novel SNVs" >> $numbers/$group.$tumor.out
-			cat $file | awk -v num=$dbsnp '$num !~ /^rs/' | wc -l >> $numbers/$group.$tumor.out
+			cat $file | awk 'NR>2' | awk -v num=$dbsnp '$num !~ /^rs/' | wc -l >> $numbers/$group.$tumor.out
 			echo -e "KNOWN Transition To Transversion Ratio" >> $numbers/$group.$tumor.out
-			cat $file | awk -v num=$dbsnp '$num !~ /^rs/' > $file.novel
+			cat $file | awk 'NR>2' | awk -v num=$dbsnp '$num !~ /^rs/' > $file.novel
 			tt=`perl $script_path/transition.transversion.persample.pl $file.novel $ref $alt`
 			if [ ${#tt} -gt 0 ]
 			then

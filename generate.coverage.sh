@@ -18,7 +18,7 @@ else
 	samples=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" " " )
 	if [ $tool == "whole_genome" ]
     then
-        kit=$master_gene_file
+        kit=$output/bed_file.bed
     else
         kit=$CaptureKit
     fi    
@@ -28,5 +28,9 @@ else
 	
 	Rscript $script_path/coverage_plot.r $region $samples
 	mv $input/coverage.jpeg $output/Coverage.JPG
+        if [ $tool == "whole_genome" ]
+        then
+            rm $kit
+        fi    
 	echo `date`
 fi	

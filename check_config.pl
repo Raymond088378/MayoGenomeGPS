@@ -22,6 +22,7 @@ my %runinfofmt = (
    EMAIL => 'string',
    ANALYSIS => 'string',
    SAMPLENAMES => 'csep',
+   GROUPNAMES => 'csep',
    CHRINDEX => 'csep',
    LANEINDEX => 'csep',
    LABINDEXES => 'csep',
@@ -67,7 +68,6 @@ my @samples = split(/:/,$runinfovars->{SAMPLENAMES});
 
 if ( ($runinfovars->{MULTISAMPLE}) && (@samples < 2)) {
     print "$runinfo: MULTISAMPLE=YES and SAMPLENAMES has only one element\n";
-    exit 1;
 }
 my $toolinfo=$runinfovars->{TOOL_INFO};
 my $sampleinfo=$runinfovars->{SAMPLE_INFO};

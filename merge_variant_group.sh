@@ -45,10 +45,11 @@ else
 	threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2 )
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	perllib=$( cat $tool_info | grep -w '^PERLLIB' | cut -d '=' -f2)
+	depth=$( cat $tool_info | grep -w '^T_DEPTH_FILTER' | cut -d '=' -f2 )
 	export PERL5LIB=$perllib:$PERL5LIB
 	export PATH=$PERL5LIB:$PATH
 	export JAVA_HOME=$javahome
-	export PATH=$JAVA_HOME/bin:$PATH
+	export PATH=$javahome/bin:$PATH
 	
     range=20000
     let blat_port+=$RANDOM%range

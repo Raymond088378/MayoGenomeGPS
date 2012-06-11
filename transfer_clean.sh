@@ -13,6 +13,7 @@ else
     type=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 |tr "[A-Z]" "[a-z]")
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     sites=$( cat $tool_info | grep -w '^EMIT_ALL_SITES' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
+	multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2)
     if [ ! -s $run_info ]
     then
             echo "Runinfo file doesn't exist"
@@ -84,7 +85,7 @@ else
     rm -R $secondary/Reports_per_Sample/
     
     mkdir $delivery/Reports/
-    mv $secondary/Reports/* $delivery/Reports/
+    mv $secondary/Reports/*.xls $delivery/Reports/
     rm -R $secondary/Reports/
     mv $secondary/Coverage.JPG $delivery/	
     if [ $type == "exome" ]
@@ -96,6 +97,10 @@ else
     mv $secondary/igv_session.xml $delivery/
     mv $secondary/IGV_Setup.doc $delivery/
     mv $secondary/SampleStatistics.tsv $delivery/
+	if [ $multi == "YES" ]
+	then
+		mv $secondary/SampleStatistics.pair.tsv $delivery/
+	fi	
     mv $secondary/ColumnDescription_Reports.xls $delivery/
     ### make tar balls
     cd $secondary

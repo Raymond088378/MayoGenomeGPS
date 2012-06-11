@@ -56,7 +56,7 @@ else
     javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
 	
 	export JAVA_HOME=$javahome
-	export PATH=$JAVA_HOME/bin:$PATH
+	export PATH=$javahome/bin:$PATH
 	
     ### split the vcf file for indels and snvs to appy the vqsr seperately
     perl $script_path/vcf_to_variant_vcf.pl -i $inputvcf -v $inputvcf.SNV.vcf -l $inputvcf.INDEL.vcf   
@@ -162,9 +162,10 @@ else
 				$script_path/errorlog.sh $outfile.SNV.vcf filter_variant_vqsr.sh WARNING "failed to appy VQSR"
 				### V3 best practice from GATK
 				$script_path/hardfilters_variants.sh $inputvcf.SNV.vcf $outfile.SNV.vcf $run_info SNP
+			else
+				rm $inputvcf.SNV.vcf $inputvcf.SNV.vcf.idx        
 			fi
-			rm $inputvcf.SNV.vcf $inputvcf.SNV.vcf.idx        
-					
+			
 			## remove the file
 			if [ -s $output/temp/$input_name.recal ]
 			then

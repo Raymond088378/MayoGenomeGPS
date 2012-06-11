@@ -2193,7 +2193,7 @@ else    {
 		"<br><u> <a href= \"SampleStatistics.pair.tsv\"target=\"_blank\">paired SampleStatistics</a></u>";
 	}	
 	print OUT "<\ul>";
-	
+	print OUT "</ul>";
 	if ($tool eq 'whole_genome' && $analysis ne 'alignment' && $analysis ne 'annotation')	{
 		if ($multi eq 'NO')	{
 			print OUT "<ul> <li>Per sample Circos plots are displayed (and linked) below. Copy Number Variants and Sructural Variants are plotted for each sample. <br>
@@ -2221,6 +2221,7 @@ else    {
 		<li>Variant calls can be visualized and filtered using TableBrowser<br>
 		<u> <a href= \"http://${host}:${port}/TREATTableBrowser/\"target=\"_blank\">TableBrowser</a></u></ul>";
 	}
+	
 	print OUT "<p align='right'><a href=\"#top\">-top-</a></p>";
 	print OUT "<a name=\"Useful Links\" id=\"Useful Links\"></a><p align='left'><b><u> VIII. Useful Links</p></b></u>
 	<ul>

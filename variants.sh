@@ -127,7 +127,7 @@ else
 				fi
 
                 ### filter this file to keep only the variants calls
-                cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "." || $0 ~ /^#/' | grep -v "\./\." > $output/$sample.variants.chr${chr}.raw.vcf
+                cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "." || $0 ~ /^#/' | grep -v "\./\."  | grep -v "0\/0" > $output/$sample.variants.chr${chr}.raw.vcf
                 sed '/^$/d' $output/$sample.variants.chr${chr}.raw.vcf > $output/$sample.variants.chr${chr}.raw.vcf.temp
                 mv $output/$sample.variants.chr${chr}.raw.vcf.temp $output/$sample.variants.chr${chr}.raw.vcf
 
@@ -175,7 +175,7 @@ else
                 $script_path/combinevcf.sh "$in" $output/$sample.variants.chr${chr}.raw.all.vcf $run_info yes
 				in="-V $output/$sample.variants.chr${chr}.raw.snv.vcf.multi.vcf -V $output/$sample.variants.chr${chr}.raw.indel.vcf.multi.vcf"
                 $script_path/combinevcf.sh "$in" $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info yes
-                cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "." || $0 ~ /^#/' | grep -v "\./\." > $output/$sample.variants.chr${chr}.raw.vcf
+                cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "." || $0 ~ /^#/' | grep -v "\./\."  | grep -v "0\/0" > $output/$sample.variants.chr${chr}.raw.vcf
                 rm $output/$sample.variants.chr${chr}.raw.all.vcf.idx
                 $tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
 				rm $output/$sample.$chr.target.bed

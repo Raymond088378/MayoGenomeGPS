@@ -21,7 +21,7 @@ else
     javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
 	
 	export JAVA_HOME=$javahome
-	export PATH=$JAVA_HOME/bin:$PATH
+	export PATH=$javahome/bin:$PATH
     
     $java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
     -R $ref \
