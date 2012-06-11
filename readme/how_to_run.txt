@@ -35,6 +35,6 @@ $ <path/to/workflow scripts/>/whole_genome.sh
 
 example :
 
-/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/trunk/whole_genome.sh 
+/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/tags/1.1/whole_genome.sh 
 Usage: <Please specify path to run_info.txt file> 
 

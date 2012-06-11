@@ -1,9 +1,8 @@
 ### Version 1.1
 
-1. Extract reads from the aligned BAM which are not used in calling variants, Workflow outputs a bam file with those reads.
-(this way we don't have to store the original  aligned bam)
+1. Extract reads from the aligned BAM which are not used in calling variants, Workflow outputs a bam file with those reads.(this way we don't have to store the original  aligned bam)
 2. Replacing SSEQ (Seattle Seq annotation ) to SNPEFF and POLYPHEN2
-3. Added 2 more somtic caller ; JOINT SNVMIX and MUTECT
+3. Added 2 more somtic caller ; JOINT SNVMIX or MUTECT
 4. Added scripts to merge single sample reports to get one big merge report for all the samples. (INDELs and SNVs)
 5. Ontarget calls are now in VCF format which can be used by users
 6. Blat Column is added to the vcf and annoatated report. # of Alternate hits
@@ -19,18 +18,20 @@
 16. Added paired analysis for exomes too
 17. Added one more module to start with vcf varint files to just annotate ontarget variant calls (exome ) : module is called as "ontarget"
 18. Added variant module to paired analysis, user can start with realigned bam for pair.
-19. Implemented Threading in perl for blat script to cut down the time. default is 1 thread and max 10 threads it supports.
-20. Fixed SIFT software scripts when it creates a random folder to check whether folder
-exist or not
-21. VQSR is not applied on somatic calls, filter applied is hard filters from GATK recommendations
+19. Implemented Threading in perl for blat script to cut down the time. default is 1 thread and max 8 threads it supports.
+20. Fixed SIFT software scripts when it creates a random folder to check whether folder exist or not
+21. VQSR is not applied on somatic calls, filter applied is hard filters from GATK V3 recommendations
 22. Flag to help workflow to do filtering on variant calls (YES/NO)
-23. Two More columns are added to teh filtered column which comes from GATK output for Functional Class and Functional Impact. These two columns are not avaibale to raw file as this is multiple transcripts per column and GATH picks one of them to give that impact and class column.
+23. Two More columns are added to the filtered column which comes from GATK output for Functional Class and Functional Impact. These two columns are not avaibale to raw file as this is multiple transcripts per column and GATK picks one of them to give that impact and class column.
 24. Added Flag in the Tool info file whether to remove aligned bam or not default is YES
 25. Added a paramter in the run info file for somatic caller SOMATIC_CALLER=SOMATICSNIPER/JOINTSNVMIX/MUTECT
-26. Addded paramter for unified Genotyper to call max of 4 alternate allele at the given position, There are possibility of 5 alternate alllele at the given position. If we find multiple alternate allele then we just parse that vcf into a newer vcf and discard those for annotation purpose. We output a seperate vcf for multi-alleleic calls
+26. Addded paramter for unified Genotyper to call max of 4 alternate allele at the given position, There are possibility of 5 alternate alllele at the given position. If we find multiple alternate allele then we just parse that vcf into a newer vcf and discard those for annotation purpose. We output a seperate vcf for multi-alleleic calls in Reports_per_sample folder.
 27. Sample info configuration files formats are changed, so please reveiw those before running the workflow.
 28. Combine variant module for GATK is buggy so replacing that to vcf-concat from vcftools.
-29.  
+29. Somatic indel caller from GATK has bug, vcf file lacks the header GT, script will add that column to the vcf file.
+30. Somatic snipper vcf doesn't provide AD field but it provides BCOUNT which can be used to calculate the AD values, added a script to do the same.
+31. Added new script to update the secondary dashboard information on the PI portal, if user is running mayo samples then use mayo or realign-mayo as analysis 
+32.  
 
 ### Version 1.0
 

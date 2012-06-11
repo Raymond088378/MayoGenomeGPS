@@ -69,7 +69,7 @@ while(my $row = <IN>){
 		$n_gt_put=".";
 	}	
 		
-	print OUT "$chr\t$pos\t.\t$ref\t$alt\t.\tPASS\t" . "NS=2:DP=$total_dp:POW=$power:IMPAIR=$improper:MQ0=$mq0:MUTX_LOD=$mutlod:SOMATIC=$somatic" . "\tGT:AD:DP:INSC:DELC\t" . "$n_gt_put:$normal_depth_ref,$normal_depth_alt:$normal_depth:.:.\t" . ".:$tumor_depth_ref,$tumor_depth_alt:$tumor_depth:$insc:$delc\n";	    
+	print OUT "$chr\t$pos\t.\t$ref\t$alt\t.\tPASS\t" . "NS=2:DP=$total_dp:POW=$power:IMPAIR=$improper:MQ0=$mq0:MUTX_LOD=$mutlod:SOMATIC=$somatic" . "\tGT:AD:DP:INSC:DELC\t" . "$n_gt_put:$normal_depth_ref,$normal_depth_alt:$normal_depth:.:.\t" . "0/1:$tumor_depth_ref,$tumor_depth_alt:$tumor_depth:$insc:$delc\n";	    
 }
 close IN;
 close OUT;
