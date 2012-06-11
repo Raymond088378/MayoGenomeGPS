@@ -89,10 +89,10 @@ else
     perl $script_path/check_config.pl $run_info > $run_info.configuration_errors.log
     if [ `cat $run_info.configuration_errors.log | wc -l` -gt 0 ]
     then
-            echo "Configuration files are malformed: look at the erros in $run_info.configuration_errors.log "
-            exit 1;
+		echo "Configuration files are malformed: look at the erros in $run_info.configuration_errors.log "
+		exit 1;
     else
-            rm $run_info.configuration_errors.log
+		rm $run_info.configuration_errors.log
     fi	
 	
     ### create folders
@@ -134,7 +134,7 @@ else
         exit 1;
     fi
     #### sge paramters
-    args="-V -wd $output_dir/logs -q $queue -m a -M $email -l h_stack=10M"
+    args="-V -wd $output_dir/logs -q $queue -m ae -M $email -l h_stack=10M"
 	
     if [ $multi_sample != "YES" ]
     then
