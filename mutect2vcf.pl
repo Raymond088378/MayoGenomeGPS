@@ -2,14 +2,12 @@ use strict;
 use warnings;
 use Getopt::Long;
 
-my($input, $output, $gzipped, $nsample, $tsample, $filter_depth, $filter_prob, $help);
+my($input, $output, $gzipped, $nsample, $tsample, $help);
 GetOptions("in|i=s"	=> \$input,
 	"out|o:s"	=> \$output,
 	"gzipped|z"	=> \$gzipped,
 	"normalsample|ns:s"	=> \$nsample,
     "tumorsample|ts:s"	=> \$tsample,
-	"depth|d:i"	=> \$filter_depth,
-	"prob|p:f"	=> \$filter_prob,
 	"help|h|?|"	=> \&help);
 
 if(not $input){
@@ -69,7 +67,7 @@ while(my $row = <IN>){
 		$n_gt_put=".";
 	}	
 		
-	print OUT "$chr\t$pos\t.\t$ref\t$alt\t.\tPASS\t" . "NS=2:DP=$total_dp:POW=$power:IMPAIR=$improper:MQ0=$mq0:MUTX_LOD=$mutlod:SOMATIC=$somatic" . "\tGT:AD:DP:INSC:DELC\t" . "$n_gt_put:$normal_depth_ref,$normal_depth_alt:$normal_depth:.:.\t" . "0/1:$tumor_depth_ref,$tumor_depth_alt:$tumor_depth:$insc:$delc\n";	    
+	print OUT "$chr\t$pos\t.\t$ref\t$alt\t.\tPASS\t" . "NS=2;DP=$total_dp;POW=$power;IMPAIR=$improper;MQ0=$mq0;MUTX_LOD=$mutlod;SOMATIC=$somatic" . "\tGT:AD:DP:INSC:DELC\t" . "$n_gt_put:$normal_depth_ref,$normal_depth_alt:$normal_depth:.:.\t" . "0/1:$tumor_depth_ref,$tumor_depth_alt:$tumor_depth:$insc:$delc\n";	    
 }
 close IN;
 close OUT;
@@ -86,10 +84,10 @@ sub header{
 ##FORMAT=<ID=AD,Number=.,Type=Integer,Description="Allelic depths for the ref and alt alleles in the order listed">
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth for This Sample">
-##FORMAT=<ID=POW,Number=1,Type=Integer,Description="given the tumor sequencing depth, what is the power to detect a mutation at 0.3 allelic fraction * given the normal sequencing depth, what power did we have to detect (and reject) this as a germline variant">
+##FORMAT=<ID=POW,Number=1,Type=Float,Description="given the tumor sequencing depth, what is the power to detect a mutation at 0.3 allelic fraction * given the normal sequencing depth, what power did we have to detect (and reject) this as a germline variant">
 ##FORMAT=<ID=IMPAIR,Number=1,Type=Integer,Description="number of reads which have abnormal pairing (orientation and distance)">
 ##FORMAT=<ID=MQ0,Number=1,Type=Integer,Description="total number of mapping quality zero reads in the tumor and normal at this locus">
-##FORMAT=<ID=MUTX_LOD,Number=1,Type=Integer,Description="log likelihood of ( normal being reference / normal being altered )">
+##FORMAT=<ID=MUTX_LOD,Number=1,Type=Float,Description="log likelihood of ( normal being reference / normal being altered )">
 ##FORMAT=<ID=SOMATIC,Number=1,Type=Integer,Description="keep/Reject (confident call)">
 ##FORMAT=<ID=INSC,Number=1,Type=Integer,Description="count of insertion events at this locus in tumor">
 ##FORMAT=<ID=DELC,Number=1,Type=Integer,Description="count of deletion events at this locus in tumor">
@@ -107,10 +105,10 @@ sub spGetCurDateTime {
 sub help{
 
 	print "DESCRIPTION:
-	mutect2vcf.pl converts raw joint snvmix output to VCF format.
+	mutect2vcf.pl converts raw mutect output to VCF format.
 
 USAGE:
-	jsm2vcf.pl -i input.gz -o sample.vcf -z
+	mutect2vcf.pl -i input.gz -o sample.vcf -z
 
 OPTIONS:
 	--in,-i		Path to Mutect file. Required parameter. Input can be gzipped as long 

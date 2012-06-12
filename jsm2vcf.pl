@@ -77,12 +77,12 @@ sub header{
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 ##FORMAT=<ID=GQ,Number=1,Type=Float,Description="Genotype Quality">
 ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth for This Sample">
-##FORMAT=<ID=PGERM,Number=1,Type=Integer,Description="probability of germ line call">
-##FORMAT=<ID=PLOH,Number=1,Type=Integer,Description="probability of Loss of heterozygosity">
-##FORMAT=<ID=PHETMUT,Number=1,Type=Integer,Description="probability of Hetero zygous mutation">
-##FORMAT=<ID=PHOMMUT,Number=1,Type=Integer,Description="probability of Homo zygous mutation">
-##FORMAT=<ID=PSOM,Number=1,Type=Integer,Description="probability of somatic mutation">
-##FORMAT=<ID=PPS,Number=1,Type=Integer,Description="post processed probability of somatic call ">
+##FORMAT=<ID=PGERM,Number=1,Type=Float,Description="probability of germ line call">
+##FORMAT=<ID=PLOH,Number=1,Type=Float,Description="probability of Loss of heterozygosity">
+##FORMAT=<ID=PHETMUT,Number=1,Type=Float,Description="probability of Hetero zygous mutation">
+##FORMAT=<ID=PHOMMUT,Number=1,Type=Float,Description="probability of Homo zygous mutation">
+##FORMAT=<ID=PSOM,Number=1,Type=Float,Description="probability of somatic mutation">
+##FORMAT=<ID=PPS,Number=1,Type=Float,Description="post processed probability of somatic call ">
 #CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t${nsm}\t${tsm}\n};
 print OUT $header;
 }

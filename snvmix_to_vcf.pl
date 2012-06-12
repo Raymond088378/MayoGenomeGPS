@@ -83,10 +83,10 @@ while(<IN>){
 	}	
 	
 	if(defined $output){
-		print OUT join("\t",$locus[0],$locus[1],".",$line[1],$line[2],".",".");
+		print OUT join("\t",$locus[0],$locus[1],".",$line[1],$line[2],".","PASS");
 		print OUT "\tAN=2;DP=".$total_depth.";NS=1\tGT:AD:DP:GQ\t".$genotype.":".$ref[1].",".$alt[1].":".$total_depth.":".phred(1-$prob)."\n";
 	}else{
-		print join("\t",$locus[0],$locus[1],".",$line[1],$line[2],".",".");
+		print join("\t",$locus[0],$locus[1],".",$line[1],$line[2],".","PASS");
 		print "\tAN=2;DP=".$total_depth.";NS=1\tGT:AD:DP:GQ\t".$genotype.":".$ref[1].",".$alt[1].":".$total_depth.":".phred(1-$prob)."\n";
 	}
 }

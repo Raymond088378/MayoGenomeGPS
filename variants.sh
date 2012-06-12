@@ -171,10 +171,10 @@ else
                 ### annoatte vcf
                 $script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.snv.all.vcf $chr $run_info "$bam"
                 ### merge snvs and indels to give on vcf
-                in="-V $output/$sample.variants.chr${chr}.raw.snv.all.vcf -V $output/$sample.variants.chr${chr}.raw.indel.all.vcf "
-                $script_path/combinevcf.sh "$in" $output/$sample.variants.chr${chr}.raw.all.vcf $run_info yes
-				in="-V $output/$sample.variants.chr${chr}.raw.snv.vcf.multi.vcf -V $output/$sample.variants.chr${chr}.raw.indel.vcf.multi.vcf"
-                $script_path/combinevcf.sh "$in" $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info yes
+                in="$output/$sample.variants.chr${chr}.raw.snv.all.vcf $output/$sample.variants.chr${chr}.raw.indel.all.vcf "
+                $script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.all.vcf $run_info yes
+				in="$output/$sample.variants.chr${chr}.raw.snv.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.indel.vcf.multi.vcf"
+                $script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.vcf.multi.vcf $run_info yes
                 cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "." || $0 ~ /^#/' | grep -v "\./\."  | grep -v "0\/0" > $output/$sample.variants.chr${chr}.raw.vcf
                 rm $output/$sample.variants.chr${chr}.raw.all.vcf.idx
                 $tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
@@ -189,10 +189,10 @@ else
                 ## annotaet vcf
                 $script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.snv.vcf $chr $run_info "$bam"
                 ### merge snvs and indels to give on vcf
-                in="-V $output/$sample.variants.chr${chr}.raw.snv.vcf -V $output/$sample.variants.chr${chr}.raw.indel.vcf"
-                $script_path/combinevcf.sh "$in" $output/$sample.variants.chr${chr}.raw.vcf $run_info yes
-				in="-V $output/$sample.variants.chr${chr}.raw.snv.vcf.multi.vcf -V $output/$sample.variants.chr${chr}.raw.indel.vcf.multi.vcf"
-                $script_path/combinevcf.sh "$in" $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info yes
+                in="$output/$sample.variants.chr${chr}.raw.snv.vcf $output/$sample.variants.chr${chr}.raw.indel.vcf"
+                $script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.vcf $run_info yes
+				in="$output/$sample.variants.chr${chr}.raw.snv.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.indel.vcf.multi.vcf"
+                $script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.vcf.multi.vcf $run_info yes
 			fi
 		fi
 	else
@@ -261,10 +261,10 @@ else
 		$script_path/combinevcf.sh "$multi_var" $output/MergeAllSamples.chr$chr.snvs.raw.multi.vcf $run_info yes
 
         ## combine both snv and indel
-        in="-V $output/MergeAllSamples.chr$chr.snvs.raw.vcf -V $output/MergeAllSamples.chr$chr.Indels.raw.vcf"
-        $script_path/combinevcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.vcf $run_info yes
-		in="-V $output/MergeAllSamples.chr$chr.snvs.raw.multi.vcf -V $output/MergeAllSamples.chr$chr.Indels.raw.multi.vcf"
-		$script_path/combinevcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.multi.vcf $run_info yes
+        in="$output/MergeAllSamples.chr$chr.snvs.raw.vcf $output/MergeAllSamples.chr$chr.Indels.raw.vcf"
+        $script_path/concatvcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.vcf $run_info yes
+		in="$output/MergeAllSamples.chr$chr.snvs.raw.multi.vcf $output/MergeAllSamples.chr$chr.Indels.raw.multi.vcf"
+		$script_path/concatvcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.multi.vcf $run_info yes
     fi
 
     ## remove files

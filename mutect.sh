@@ -27,7 +27,13 @@ else
     if [ $only_ontarget == "YES" ]
     then
 	cat $TargetKit | grep -w chr$chr > $output/$tumor_sample.chr$chr.target.bed
-        param="-L $output/$tumor_sample.chr$chr.target.bed"
+        len=`cat $output/$tumor_sample.chr$chr.target.bed |wc -l`
+        if [ $len -gt 0 ]
+        then
+            param="-L $output/$tumor_sample.chr$chr.target.bed"
+        else
+            param="-L chr$chr"
+        fi    
     else
         param="-L chr$chr"
     fi

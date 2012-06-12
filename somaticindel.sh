@@ -56,13 +56,15 @@ else
         exit 1;
     else
         rm $output/$indel_v
-	#Fix to add the header for GT to SomaticIndelDetector, the following three lines should be deleted with next version of GATK
-	awk '$0 ~ /^#/'  $output/$output_file > $output/$output_file.tmp
-	echo '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">' >> $output/$output_file.tmp
-	cat $output/$output_file | awk '$8 ~ /SOMATIC/' >> $output/$output_file.tmp
-
-#	cat $output/$output_file | awk '$0 ~ /^#/ || $8 ~ /SOMATIC/' > $output/$output_file.tmp
-	cat $output/$output_file.tmp | awk '$0 ~ /^#/ || $5 ~ /,/' > $output/$output_file.multi.vcf
+        if [ `cat $output/$output_file | ]
+        n=`cat $output/$output_file |  awk '$0 ~ /^##FORMAT=<ID=GT/' | wc -l`
+	if [ $n == 0 ]
+        then
+            perl $script_path/add.gt.to.vcf.pl $output/$output_file | awk '$0 ~ /^#/ || $8 ~ /SOMATIC/' > $output/$output_file.tmp
+        else
+            cat $output/$output_file | awk '$0 ~ /^#/ || $8 ~ /SOMATIC/' > $output/$output_file.tmp
+	fi
+        cat $output/$output_file.tmp | awk '$0 ~ /^#/ || $5 ~ /,/' > $output/$output_file.multi.vcf
 	cat $output/$output_file.tmp | awk '$0 ~ /^#/ || $5 !~ /,/' > $output/$output_file
 	rm $output/$output_file.tmp
     fi

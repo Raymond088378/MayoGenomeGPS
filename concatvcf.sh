@@ -17,7 +17,7 @@ else
     vcftools=$( cat $tool_info | grep -w '^VCFTOOLS' | cut -d '=' -f2)
 	perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
 	tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2)
-
+        ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
 	export PERL5LIB=$PERL5LIB:$perllib
 	export PATH=$tabix/:$PATH
 	
@@ -38,6 +38,8 @@ else
     then
         $script_path/errorlog.sh $output concatvcf.sh ERROR "failed to create"
     else
+        perl $script_path/vcfsort.pl $ref.fai $output > $output.temp
+        mv $output.temp $output
 		for file in $input
 		do
 			$tabix/bgzip -d $file.gz

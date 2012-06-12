@@ -31,7 +31,7 @@ else
     $input \
     -o $output
     
-    if [ ! -s $output ]
+    if [ ! -s $output.idx ]
     then
         $script_path/errorlog.sh $output combinevcf.sh ERROR "failed to create"
     else
