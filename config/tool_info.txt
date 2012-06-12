@@ -50,8 +50,7 @@ SNP_BUILD=/data2/bsi/reference/annotation/dbSNP/hg19/dbSNPbuild.bed
 
 
 ## tools
-WHOLEGENOME_PATH=/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/tags/1.1
-NOVOALIGN=/projects/bsi/bictools/apps/alignment/novoalign/2.07.13/novoalign
+WHOLEGENOME_PATH=/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/trunk/
 BWA=/projects/bsi/bictools/apps/alignment/bwa/0.5.9/
 BOWTIE=/projects/bsi/bictools/apps/alignment/bowtie/2.0.0-beta5/
 JAVA=/usr/java/latest/bin

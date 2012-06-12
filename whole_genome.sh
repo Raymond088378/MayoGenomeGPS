@@ -28,14 +28,7 @@ else
         echo "Perl path should point to /usr/local/biotools/perl/5.10.0/bin/perl if the user use the command which perl, user can change this using mayobiotools"
         exit 1;
     fi
-    
-    python_path=`which python`
-    if [ $python_path != "/usr/local/biotools/python/2.7/bin/python" ]
-    then
-        echo -e "\n python path is not correct in your enviorment"
-        echo " Python path should point to /usr/local/biotools/python/2.7/bin/python if the user use the command which python, user can change this using mayobiotools"
-        exit 1;
-    fi    
+     
     
     dir_info=`dirname $run_info`
     if [ "$dir_info" = "." ]
@@ -83,7 +76,17 @@ else
     variant_type=$(cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")   
     bed=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
     master_gene_file=$( cat $tool_info | grep -w '^MASTER_GENE_FILE' | cut -d '=' -f2 )
-    
+    somatic_caller=$(cat $run_info | grep -w '^SOMATIC_CALLER' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")  
+    if [ $somatic_caller == "JOINTSNVMIX" ]
+    then
+        python_path=`which python`
+        if [ $python_path != "/usr/local/biotools/python/2.7/bin/python" ]
+        then
+            echo -e "\n python path is not correct in your enviorment"
+            echo " Python path should point to /usr/local/biotools/python/2.7/bin/python if the user use the command which python, user can change this using mayobiotools"
+            exit 1;
+        fi    
+    fi
     #################################################
     ### validate the config file
     perl $script_path/check_config.pl $run_info > $run_info.configuration_errors.log
