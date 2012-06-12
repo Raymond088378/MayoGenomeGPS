@@ -31,7 +31,8 @@
 29. Somatic indel caller from GATK has bug, vcf file lacks the header GT, script will add that column to the vcf file.
 30. Somatic snipper vcf doesn't provide AD field but it provides BCOUNT which can be used to calculate the AD values, added a script to do the same.
 31. Added new script to update the secondary dashboard information on the PI portal, if user is running mayo samples then use mayo or realign-mayo as analysis 
-32.  
+32. Added a script to fix somatic indel detector vcf script to correct the AD values from SC values.
+33. 
 
 ### Version 1.0
 

@@ -66,8 +66,11 @@ if ( ($tool ne 'whole_genome') && ($tool ne 'exome'))	{
 my $input=$runinfovars->{INPUT_DIR};
 my @samples = split(/:/,$runinfovars->{SAMPLENAMES});
 
-if ( ($runinfovars->{MULTISAMPLE}) && (@samples < 2)) {
-    print "$runinfo: MULTISAMPLE=YES and SAMPLENAMES has only one element\n";
+
+if ($runinfovars->{MULTISAMPLE} eq 'YES')	{
+    if (@samples < 2) {
+        print "$runinfo: MULTISAMPLE=YES and SAMPLENAMES has only one element\n";
+    }
 }
 my $toolinfo=$runinfovars->{TOOL_INFO};
 my $sampleinfo=$runinfovars->{SAMPLE_INFO};

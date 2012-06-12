@@ -52,6 +52,7 @@ while (my $l = <FH>)	{
 	}
 	else	{
 		my @a = split(/\t/,$l);
+		
 		my @cols=(0,1,2,3,4,5,6,7,8,$s);
 		if (defined $chr)	{
 			if ($a[0] eq "$chr")	{
@@ -66,10 +67,12 @@ while (my $l = <FH>)	{
 					if (defined $sample)	{
 						if (defined $filter)	{
 							if ($a[6] eq 'PASS')	{
+								next if ($a[$s] eq "\.");
 								print OUT join ("\t",@a[@cols]) . "\n";
 							}
 						}
 						else	{
+							next if ($a[$s] eq "\.");
 							print OUT join ("\t",@a[@cols]) . "\n";
 						}	
 					}
@@ -88,10 +91,12 @@ while (my $l = <FH>)	{
 					if (defined $sample)    {
 						if (defined $filter)	{
 							if ($a[6] eq 'PASS')	{
+								next if ($a[$s] eq "\.");
 								print OUT1 join ("\t",@a[@cols]) . "\n";
 							}
 						}
 						else	{
+							next if ($a[$s] eq "\.");
 							print OUT1 join ("\t",@a[@cols]) . "\n";	
 						}
 					}
@@ -120,10 +125,12 @@ while (my $l = <FH>)	{
 				if (defined $sample)    {
                                         if (defined $filter)	{
 						if ($a[6] eq 'PASS')	{
+							next if ($a[$s] eq "\.");
 							print OUT join ("\t",@a[@cols]) . "\n";
 						}
 					}
 					else	{
+						next if ($a[$s] eq "\.");
 						print OUT join ("\t",@a[@cols]) . "\n";
 					}
 				}
@@ -142,10 +149,12 @@ while (my $l = <FH>)	{
                                 if (defined $sample)    {
                                         if (defined $filter)	{
 						if ($a[6] eq 'PASS')	{
+							next if ($a[$s] eq "\.");
 							print OUT1 join ("\t",@a[@cols]) . "\n";
 						}
 					}
 					else	{
+						next if ($a[$s] eq "\.");
 						print OUT1 join ("\t",@a[@cols]) . "\n";
 					}
 				}
@@ -173,13 +182,13 @@ sub help{
 	vcf_to_variant_vcf.pl splits vcf into snvs and indels
 
 USAGE:
-	vcf_to_variant_vcf.pl -i input.vcf -s snv.vcf -i indel.vcf
+	vcf_to_variant_vcf.pl -i input.vcf -v snv.vcf -i indel.vcf
 
 OPTIONS:
 	--in,-i		Path to snvmix file. Required parameter. Input can be gzipped as long 
 			as the -z flag is also used. Input files should not have a header line.
 
-	--snv,-s 	path to the output SNV VCF output file.
+	--snv,-v 	path to the output SNV VCF output file.
 
 	--indel,-l	path to the output INDEL VCF output file.
 

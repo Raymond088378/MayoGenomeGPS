@@ -55,8 +55,9 @@ else
         echo "ERROR : variants.sh SomaticIndelDetector failed, file $output/$output_file not generated "
         exit 1;
     else
+        perl $script_path/fixindelAD.pl $output/$output_file $output/$output_file.temp
+        mv $output/$output_file.temp $output/$output_file
         rm $output/$indel_v
-        if [ `cat $output/$output_file | ]
         n=`cat $output/$output_file |  awk '$0 ~ /^##FORMAT=<ID=GT/' | wc -l`
 	if [ $n == 0 ]
         then
@@ -69,5 +70,4 @@ else
 	rm $output/$output_file.tmp
     fi
     echo `date`
-fi	
-	
+fi
