@@ -43,7 +43,12 @@ else
     fi
     if [ ! -s $output.idx ]
     then
-        $script_path/errorlog.sh $output combinevcf.sh ERROR "failed to create"
+        if [ $num_times == 1 ]
+        then
+            echo -e "\njust copied the files as there was only one file.\n"
+        else
+            $script_path/errorlog.sh $output combinevcf.sh ERROR "failed to create"
+        fi
     else
         if [ $flag == "YES" ]
         then
