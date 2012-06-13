@@ -4,7 +4,7 @@ if [ $# != 1 ]
 then
 	echo "Usage: wrapper to create folder structure\n <run info file>"
 else
-	#set -x
+	set -x
 	echo `date`
 	run_info=$1
 	

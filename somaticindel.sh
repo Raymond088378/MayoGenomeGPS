@@ -55,19 +55,21 @@ else
         echo "ERROR : variants.sh SomaticIndelDetector failed, file $output/$output_file not generated "
         exit 1;
     else
-        perl $script_path/fixindelAD.pl $output/$output_file $output/$output_file.temp
+        perl $script_path/convertvcf.pl $output/$output_file > $output/$output_file.tmp
+		mv $output/$output_file.tmp $output/$output_file
+		perl $script_path/fixindelAD.pl $output/$output_file $output/$output_file.temp
         mv $output/$output_file.temp $output/$output_file
         rm $output/$indel_v
         n=`cat $output/$output_file |  awk '$0 ~ /^##FORMAT=<ID=GT/' | wc -l`
-	if [ $n == 0 ]
+		if [ $n == 0 ]
         then
             perl $script_path/add.gt.to.vcf.pl $output/$output_file | awk '$0 ~ /^#/ || $8 ~ /SOMATIC/' > $output/$output_file.tmp
         else
             cat $output/$output_file | awk '$0 ~ /^#/ || $8 ~ /SOMATIC/' > $output/$output_file.tmp
-	fi
+		fi
         cat $output/$output_file.tmp | awk '$0 ~ /^#/ || $5 ~ /,/' > $output/$output_file.multi.vcf
-	cat $output/$output_file.tmp | awk '$0 ~ /^#/ || $5 !~ /,/' > $output/$output_file
-	rm $output/$output_file.tmp
+		cat $output/$output_file.tmp | awk '$0 ~ /^#/ || $5 !~ /,/' > $output/$output_file
+		rm $output/$output_file.tmp
         rm $output/$output_file.idx
     fi
     echo `date`

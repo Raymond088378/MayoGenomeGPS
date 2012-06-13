@@ -16,46 +16,46 @@ else
 	multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2)
     if [ ! -s $run_info ]
     then
-            echo "Runinfo file doesn't exist"
-            exit 1;
+		echo "Runinfo file doesn't exist"
+		exit 1;
     fi
     
     if [ $tertiary == "NA" ]
     then
-            echo "Runinfo file doesn't have tertiary path defined"
-            exit 1;
+		echo "Runinfo file doesn't have tertiary path defined"
+		exit 1;
     fi
     
     if [ $delivery == "NA" ]
     then
-            echo "Runinfo file doesn't have delivery path defined"
-            exit 1;
+		echo "Runinfo file doesn't have delivery path defined"
+		exit 1;
     fi	
     
     if [ ! -d $secondary ]
     then
-            echo " $secondary secondary folder doesn't exist"
-            exit 1;
+		echo " $secondary secondary folder doesn't exist"
+		exit 1;
     fi
     
     if [ ! -d $delivery ]
     then
-            echo " $delivery delivery folder doesn't exist"
-            exit 1;
+		echo " $delivery delivery folder doesn't exist"
+		exit 1;
     fi
 
     if [ ! -d $tertiary ]
     then
-            mkdir -p $tertiary
-            echo "$tertiary tertiary folder created"
+		mkdir -p $tertiary
+		echo "$tertiary tertiary folder created"
     fi
             
     ### transfer the data to delivery folder
     mv $secondary/*.html $delivery/
     if [ ! -s $delivery/Main_Document.html ]
     then
-            echo "User doesn't have access to the $delivery delivery folder "
-            exit 1;
+		echo "User doesn't have access to the $delivery delivery folder "
+		exit 1;
     fi 
     
     rm -R $secondary/Reports_per_Sample/temp
@@ -64,13 +64,13 @@ else
     mkdir $delivery/Reports_per_Sample/ANNOT
     if [ $type == "whole_genome" ]
     then
-            mkdir $delivery/circos
-            mv $secondary/circos/* $delivery/circos
-            mkdir $delivery/Reports_per_Sample/SV
-            mv $secondary/Reports_per_Sample/SV/*.vcf $delivery/Reports_per_Sample/SV/
-            mv $secondary/Reports_per_Sample/SV/*.vcf.idx $delivery/Reports_per_Sample/SV/
-            rm -R $secondary/struct
-            rm -R $secondary/cnv
+		mkdir $delivery/circos
+		mv $secondary/circos/* $delivery/circos
+		mkdir $delivery/Reports_per_Sample/SV
+		mv $secondary/Reports_per_Sample/SV/*.vcf $delivery/Reports_per_Sample/SV/
+		mv $secondary/Reports_per_Sample/SV/*.vcf.idx $delivery/Reports_per_Sample/SV/
+		rm -R $secondary/struct
+		rm -R $secondary/cnv
     fi
     
     
@@ -90,9 +90,9 @@ else
     mv $secondary/Coverage.JPG $delivery/	
     if [ $type == "exome" ]
     then
-            mv $secondary/exome_workflow.png $delivery/
+		mv $secondary/exome_workflow.png $delivery/
     else
-            mv $secondary/whole_genome.png $delivery/
+		mv $secondary/whole_genome.png $delivery/
     fi
     mv $secondary/igv_session.xml $delivery/
     mv $secondary/IGV_Setup.doc $delivery/

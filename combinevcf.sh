@@ -46,6 +46,7 @@ else
         if [ $num_times == 1 ]
         then
             echo -e "\njust copied the files as there was only one file.\n"
+            rm `echo $input | sed -e '/-V/s///g'`
         else
             $script_path/errorlog.sh $output combinevcf.sh ERROR "failed to create"
         fi
@@ -58,8 +59,11 @@ else
 			do
 				if [ $i != ".idx" ]
 				then
-					rm $i
-				fi
+					if [ -s $i ]
+                                        then
+                                            rm $i
+                                        fi
+                                fi
 			done	
         fi
     fi
