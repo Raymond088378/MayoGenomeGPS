@@ -1,5 +1,5 @@
 TOOL=GENOME_GPS
-VERSION=1.0
+VERSION=1.1
 TYPE=whole_genome
 DISEASE=cancer
 DATE=1/1/1
@@ -10,7 +10,7 @@ PI=sb
 MULTISAMPLE=YES
 INPUT_DIR=/data2/bsi/RandD/sampleData/Genome_GPS/aligned_bam/
 BASE_OUTPUT_DIR=/data2/bsi/RandD/sampleData/Genome_GPS/
-EMAIL=nair.asha@mayo.edu
+EMAIL=rstngsworkflow@mayo.edu
 SAMPLENAMES=s_normal:s_tumor
 GROUPNAMES=pair1
 LABINDEXES=-:-

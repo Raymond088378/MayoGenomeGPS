@@ -110,6 +110,8 @@ else
 	$script_path/vcf_blat_verify.pl -i $out/$sample.variants.raw.multi.vcf -o $out/$sample.variants.raw.multi.vcf.tmp -w $window_blat -b $blat -r $ref -sam $samtools -br $blat_ref -bs $blat_server -bp $blat_port -th $threads
     mv $out/$sample.variants.raw.multi.vcf.tmp $out/$sample.variants.raw.multi.vcf
 	
+	`ps aux  | grep "\-log=$out/$sample.variants.raw.vcf.blat.log" | awk '{print $2}' | xargs -t kill -9` 
+	
 	### Filter the variants using total depth 
 	### use GATK variant filter to filter using DP
 	if [[ $tool == "exome" && $filter_variants == "YES" ]]

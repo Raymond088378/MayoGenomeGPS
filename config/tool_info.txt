@@ -53,7 +53,7 @@ WHOLEGENOME_PATH=/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/tags/1.1/
 BWA=/projects/bsi/bictools/apps/alignment/bwa/0.5.9/
 BOWTIE=/projects/bsi/bictools/apps/alignment/bowtie/2.0.0-beta5/
 JAVA=/usr/java/latest/bin
-SAMTOOLS= /projects/bsi/bictools/apps/alignment/samtools/samtools-0.1.18/
+SAMTOOLS=/projects/bsi/bictools/apps/alignment/samtools/samtools-0.1.18/
 GATK=/projects/bsi/bictools/apps/alignment/GenomeAnalysisTK/1.6-7-g2be5704/
 SOMATIC_SNIPER=/projects/bsi/bictools/apps/variant_detection/somatic_sniper/1.0.0.1-19/bin/
 BEDTOOLS=/projects/bsi/bictools/apps/misc/BEDTools/2.16.2/bin/
@@ -110,7 +110,7 @@ SOMATIC_THRESHOLD=0.1
 
 MIN_SCIP_LEN=12
 MIN_SCIP_READS=14
-MAX_ALT_ALLELES=4
+MAX_ALT_ALLELES=5
 MAX_READS_REALIGN=50000
 MAX_READS_MEM_REALIGN=100000 
 CNVNATOR_BINSIZE=1000

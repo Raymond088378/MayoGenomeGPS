@@ -23,6 +23,10 @@ else
     TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     only_ontarget=$( cat $tool_info | grep -w '^TARGETTED' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
+	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
+	
+	export JAVA_HOME=$javahome
+	export PATH=$javahome/bin:$PATH
     
     if [ $only_ontarget == "YES" ]
     then
@@ -59,11 +63,11 @@ else
 	if [ ! -s  $output/$output_file ]
 	then
 		$script_path/errorlog.sh $output/$output_file mutect.sh ERROR "failed to create"
-                exit 1;
+		exit 1;
 	fi
-        if [ $only_ontarget == "YES" ]
-        then
-            rm $output/$tumor_sample.chr$chr.target.bed
-        fi
+	if [ $only_ontarget == "YES" ]
+	then
+		rm $output/$tumor_sample.chr$chr.target.bed
+	fi
 	echo `date`
 fi    

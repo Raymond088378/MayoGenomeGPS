@@ -137,7 +137,7 @@ else
         exit 1;
     fi
     #### sge paramters
-    args="-V -wd $output_dir/logs -q $queue -m a -M $email -l h_stack=10M"
+    args="-V -wd $output_dir/logs -q $queue -m ae -M $email -l h_stack=10M"
 	
     if [ $multi_sample != "YES" ]
     then

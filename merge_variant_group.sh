@@ -186,5 +186,6 @@ else
 		done
     fi
     rm $out/$group.somatic.variants.raw.vcf.blat.log
+	`ps aux  | grep "\-log=$out/$group.somatic.variants.raw.vcf.blat.log" | awk '{print $2}' | xargs -t kill -9` 
 	echo `date`
 fi
