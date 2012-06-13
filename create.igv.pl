@@ -37,7 +37,6 @@ else {
 	my $multi=$line[$#line];chomp $multi;
 	@line=split(/=/,`perl -ne "/^GROUPNAMES/ && print" $run_info`);
 	my $groups=$line[$#line];chomp $groups;
-	
 	$tracks=$tracks."/ucsc_tracks.bed"; 
 	open FH , ">$dest" or die "can not open $dest : $! \n";
 	print FH "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>
@@ -49,7 +48,7 @@ else {
 	
 	if ($multi eq 'YES')	{
 		for(my $i = 0 ; $i <= $#groupNames; $i++)	{
-			@line=split(/=/,`perl -ne "/^$i/ && print" $sample_info`);
+			@line=split(/=/,`cat $sample_info | grep "^$groupNames[$i]"`);
 			my $sam=$line[$#line];chomp $sam;
 			my @sam1=split(/\t/,$sam);
 			for (my $j =0; $j <= $#sam1; $j++)	{

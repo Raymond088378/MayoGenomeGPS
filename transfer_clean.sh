@@ -58,9 +58,17 @@ else
 		exit 1;
     fi 
     
-    rm -R $secondary/Reports_per_Sample/temp
-    rm -R $secondary/Reports_per_Sample/plot
-    mkdir $delivery/Reports_per_Sample
+    if [ -d $secondary/Reports_per_Sample/temp ]
+	then
+		rm -R $secondary/Reports_per_Sample/temp
+    fi
+	
+	if [ -d $secondary/Reports_per_Sample/plot ]
+	then
+		rm -R $secondary/Reports_per_Sample/plot
+    fi
+	
+	mkdir $delivery/Reports_per_Sample
     mkdir $delivery/Reports_per_Sample/ANNOT
     if [ $type == "whole_genome" ]
     then
@@ -74,12 +82,12 @@ else
     fi
     
     
-    mv $secondary/Reports_per_Sample/*.xls $delivery/Reports_per_Sample
+    mv $secondary/Reports_per_Sample/*.xls $delivery/Reports_per_Sample/
     mv $secondary/Reports_per_Sample/ANNOT/*.txt $delivery/Reports_per_Sample/ANNOT/
     mv $secondary/Reports_per_Sample/*.filter.vcf $delivery/Reports_per_Sample/
-    mv $secondary/Reports_per_Sample/*.filter.vcf.idx $delivery/Reports_per_Sample/
-    mv $secondary/Reports_per_Sample/*.multi.vcf $delivery/
-    mv $secondary/Reports_per_Sample/*.multi.vcf.idx $delivery/
+    #mv $secondary/Reports_per_Sample/*.filter.vcf.idx $delivery/Reports_per_Sample/
+    mv $secondary/Reports_per_Sample/*.multi.vcf $delivery/Reports_per_Sample/
+    #mv $secondary/Reports_per_Sample/*.multi.vcf.idx $delivery/Reports_per_Sample/
     
     
     rm -R $secondary/Reports_per_Sample/
@@ -88,19 +96,23 @@ else
     mv $secondary/Reports/*.xls $delivery/Reports/
     rm -R $secondary/Reports/
     mv $secondary/Coverage.JPG $delivery/	
+	
     if [ $type == "exome" ]
     then
 		mv $secondary/exome_workflow.png $delivery/
     else
 		mv $secondary/whole_genome.png $delivery/
     fi
+	
     mv $secondary/igv_session.xml $delivery/
     mv $secondary/IGV_Setup.doc $delivery/
     mv $secondary/SampleStatistics.tsv $delivery/
+	
 	if [ $multi == "YES" ]
 	then
 		mv $secondary/SampleStatistics.pair.tsv $delivery/
 	fi	
+	
     mv $secondary/ColumnDescription_Reports.xls $delivery/
     ### make tar balls
     cd $secondary
