@@ -2215,10 +2215,10 @@ else    {
 			}	
 		}
 	}	
-	print OUT "<br><br>";
+	print OUT "<br><br></ul>";
 	if ($upload_tb eq 'YES')	{
 		print OUT "
-		<li>Variant calls can be visualized and filtered using TableBrowser<br>
+		<ul><li>Variant calls can be visualized and filtered using TableBrowser<br>
 		<u> <a href= \"http://${host}:${port}/TREATTableBrowser/\"target=\"_blank\">TableBrowser</a></u></ul>";
 	}
 	
