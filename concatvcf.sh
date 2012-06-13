@@ -53,8 +53,11 @@ else
 			do
 				if [ $i != ".idx" ]
 				then
-					rm $i
-				fi
+					if [ -s $i ]
+                                        then
+                                            rm $i
+                                        fi
+                                fi
 			done	
         fi
     fi

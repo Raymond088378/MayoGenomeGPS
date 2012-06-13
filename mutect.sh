@@ -58,7 +58,8 @@ else
 	
 	if [ ! -s  $output/$output_file ]
 	then
-		echo "ERROR: failed to run mutect for $tumor_samples and $normal_sample for $chr"
+		$script_path/errorlog.sh $output/$output_file mutect.sh ERROR "failed to create"
+                exit 1;
 	fi
         if [ $only_ontarget == "YES" ]
         then

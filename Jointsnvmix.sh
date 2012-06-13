@@ -26,10 +26,11 @@ else
 	mqual=$( cat $tool_info | grep -w 'MAPPING_QUALITY' | cut -d '=' -f2)
 	bqual=$( cat $tool_info | grep -w 'BASE_QUALITY' | cut -d '=' -f2)
 	cutoff=$( cat $tool_info | grep -w 'SOMATIC_THRESHOLD' | cut -d '=' -f2)
-	
-	if [ $only_ontarget == "YES" ]
-	then
-		cat $TargetKit | grep -w chr$chr > $output/$sample.$chr.target.bed
+	bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
+        
+    if [ $only_ontarget == "YES" ]
+    then
+	cat $TargetKit | grep -w chr$chr > $output/$sample.$chr.target.bed
     fi
 	
     export PYTHONPATH=$pythonpath:$PYTHONPATH
@@ -67,7 +68,13 @@ else
         
 	if [ $only_ontarget == "YES" ]
 	then
-		rm $output/$sample.$chr.target.bed
-	fi
+		len=`cat $output/$sample.$chr.target.bed | wc -l`
+                if [ $len -gt 0 ]
+                then
+                    $bedtools/intersectBed -a $output/$output_file -b output/$sample.$chr.target.bed -wa -header > $output/$output_file.i
+                    mv $output/$output_file.i $output/$output_file   
+                fi
+                rm $output/$sample.$chr.target.bed
+        fi
     echo `date`
 fi

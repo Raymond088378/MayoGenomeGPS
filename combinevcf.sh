@@ -7,7 +7,7 @@ else
     set -x
     echo `date`
     
-    input=$1
+    input=`echo $1 | sed -e "s/ *$//" | sed -e "s/^ *//"`
     output=$2
     run_info=$3
     flag=`echo $4 | tr "[a-z]" "[A-Z]"`
@@ -20,17 +20,27 @@ else
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
     javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
 	
-	export JAVA_HOME=$javahome
-	export PATH=$javahome/bin:$PATH
+    export JAVA_HOME=$javahome
+    export PATH=$javahome/bin:$PATH
     
-    $java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-    -R $ref \
-    -et NO_ET \
-    -K $gatk/Hossain.Asif_mayo.edu.key \
-    -T CombineVariants \
-    $input \
-    -o $output
-    
+    num_times=`echo $input | tr " " "\n" | grep -c -w "\-V"`
+    if [ $num_times == 1 ]
+    then
+        file=`echo $input | sed -e '/-V/s///g' | sed -e "s/ *$//" | sed -e "s/^ *//"`
+        cp $file $output
+        if [ -s $file.idx ]
+        then
+            cp $file.idx $output.idx
+        fi
+    else    
+        $java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+        -R $ref \
+        -et NO_ET \
+        -K $gatk/Hossain.Asif_mayo.edu.key \
+        -T CombineVariants \
+        $input \
+        -o $output
+    fi
     if [ ! -s $output.idx ]
     then
         $script_path/errorlog.sh $output combinevcf.sh ERROR "failed to create"

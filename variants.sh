@@ -133,7 +133,7 @@ else
 
                 ### prepare the file for backfilling
                 cat $output/$sample.variants.chr${chr}.raw.all.vcf | grep -v "\./\." > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
-                rm $output/$sample.variants.chr${chr}.raw.all.vcf.idx
+                
                 mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
                 sed '/^$/d' $output/$sample.variants.chr${chr}.raw.all.vcf > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
                 mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
@@ -176,7 +176,7 @@ else
 				in="$output/$sample.variants.chr${chr}.raw.snv.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.indel.vcf.multi.vcf"
                 $script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.vcf.multi.vcf $run_info yes
                 cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "." || $0 ~ /^#/' | grep -v "\./\."  | grep -v "0\/0" > $output/$sample.variants.chr${chr}.raw.vcf
-                rm $output/$sample.variants.chr${chr}.raw.all.vcf.idx
+        
                 $tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
 				rm $output/$sample.$chr.target.bed
 			else
