@@ -5,12 +5,12 @@ shopt -s nocasematch
 
 echo -e "\nPlease answer all the question in (yes/no) else directed {case insensitive}\n"
 
-echo -e "Options: \n 1) Things to remember before running the workflow  \n 2)  Do the QC \n 3) Questions"
+echo -e "Options: \n 1) Things to remember before running the workflow \n 2) Example config files \n 3) Do the QC \n 4) Questions ?"
 
-read -p "Enter your option(1 , 2 or 3) : " workflow
-while [[ $workflow != "1" && $workflow != "2"  && $workflow != "3" ]]
+read -p "Enter your option(1 , 2, 3 or 4) : " workflow
+while [[ $workflow != "1" && $workflow != "2"  && $workflow != "3"  && $workflow != "4" ]]
 do
-	read -p "Enter your option(1 , 2 or 3) : " workflow
+	read -p "Enter your option(1 , 2 , 3 or 4 ) : " workflow
 done
 
 ### switch case starts
@@ -28,21 +28,9 @@ then
 	
 	if [[ $type == "exome" ]]
 	then
-		echo -e "\n Available MOdules are :"
-		echo -e "\n1. alignment"
-		echo -e "\n2. external or mayo"
-		echo -e "\n3. realignment or realign_mayo"
-		echo -e "\n4. variant"
-		echo -e "\n5. ontarget"
-		echo -e "\n6. annotation"
-		echo -e "\nMake sure you have correct capture kit and Ontarget file in the tool info file\n"
+		echo -e "\n Available MOdules are :\n1. alignment\n2. external or mayo\n3. realignment or realign_mayo\n4. variant\n5. ontarget\n6. annotation\nMake sure you have correct capture kit and Ontarget file in the tool info file\n"
 	else
-		echo -e "\n Available Modules are :"
-		echo -e "\n1. alignment"
-		echo -e "\n2. external or mayo"
-		echo -e "\n3. realignment or realign_mayo"
-		echo -e "\n4. variant"
-		echo -e "\n5. ontarget"
+		echo -e "\n Available Modules are :\n1. alignment\n2. external or mayo\n3. realignment or realign_mayo\n4. variant\n5. ontarget"
 	fi
 	
 	read -p "Are these single samples or paired samples (single/paired) : " kind
@@ -52,10 +40,7 @@ then
 	done	
 	if [[ $kind == "paired" ]]
 	then
-		echo -e "\n Available Modules are :"
-		echo -e "\n2. external or mayo"
-		echo -e "\n3. realignment or realign_mayo"
-		echo -e "\n4. variant"
+		echo -e "\n Available Modules are :\n2. external or mayo\n3. realignment or realign_mayo\n4. variant"
 	else 
 		echo -e "\nAll the modules mentioned above are available"
 	fi		
@@ -93,8 +78,111 @@ then
 	else
 		echo -e "\nContact: \n Baheti, Saurabh <baheti.saurabh@mayo.edu> \n Davila, Jaime I., Ph.D. <Davila.Jaime@mayo.edu>"
 	fi
-	
 elif [[ $workflow == "2" ]]
+then
+	## sample info file
+	read -p "Do you want to know how to create sample info file ? : " sample_info
+	while [[ $sample_info != "yes" && $sample_info != "no" ]]
+	do
+		read -p "Do you want to know how to create sample info file ? : " sample_info
+	done
+	if [[ $sample_info == "YES" ]]
+	then
+		echo -e "\nAll the example sample info files are located in the config folder of the workflow\n"
+		read -p "what type of input files you have (FASTQ, BAM, VCF, TXT) : " file
+		while [[ $file != "FASTQ" && $file != "BAM"  && $file != "VCF" && $file != "TXT" ]]
+		do
+			read -p "what type of input files you have (FASTQ, BAM, VCF, TXT)" file
+		done
+		if [[ $file == "FASTQ" ]]
+		then
+			echo -e "Important points: \n1. "FASTQ:" followed by Sample name follows '=' sign and then read1 and read2 are tab separated (specify the name of the FASTQ files after ‘=’. The name before ‘=’ is the short name for the sample) \n2. If you have multiple fastq for the sample then each group should tab seperated too. \n3. If you are running paired analysis then pair informaation should also come into this file. \n4. pair name follows '=' sign and then normal sample followed by as many tumor samples user has (all tab sepearted)\n"
+		elif [[ $file == "BAM" ]]
+		then
+			echo -e "Important points: \n1. "BAM:" followed by sample name follows '=' sign and name of the bam file for that samples. \n2. If you have multiple bam file for a sample then all the bam files should be tab seperated on the same line. \n3.If you are running paired analysis then pair informaation should also come into this file. \n4. pair name follows '=' sign and then normal sample followed by as many tumor samples user has (all tab sepearted)\n"
+		elif [[ $file == "VCF" ]]
+		then
+			read -p "what type of variants you have to annotate ? (BOTH,SNV, INDEL) : " variant
+			while [[ $variant != "BOTH" && $variant != "SNV" && $variant != "INDEL" ]]
+			do
+				read -p "what type of variants you have to annotate ? (BOTH,SNV, INDEL) : " variant
+			done
+			echo -e "\nWe follow VCF 4.1 format, so make sure your VCF file follows the same\n"
+			if [[ $varaint == "BOTH" ]]
+			then
+				echo -e "Important points: \n 1. User has both the snvs and indels in the vcf file. \n2. User can use same vcf file to point to get indels and snvs but need to specify the same file mulitple times. \n3.User should make sure that the vcf file has same sample name as they have in teh vcf header field. \n4. For snv calls "SNV:" followed by sample name folloes '=' sign and name of the vcf file. \n5. For indels calls "INDEL:" followed by sample name folloes '=' sign and name of the vcf file.\n"
+			elif [[ $variant == "SNV" ]]
+			then
+				echo -e "Important points: \n 1. User has both the snvs and indels in the vcf file. \n2. User can use same vcf file to point to get indels and snvs but need to specify the same file mulitple times. \n3.User should make sure that the vcf file has same sample name as they have in teh vcf header field. \n4. For snv calls "SNV:" followed by sample name folloes '=' sign and name of the vcf file.\n"
+			else
+				echo -e "Important points: \n 1. User has both the snvs and indels in the vcf file. \n2. User can use same vcf file to point to get indels and snvs but need to specify the same file mulitple times. \n3.User should make sure that the vcf file has same sample name as they have in teh vcf header field. \n4. For indels calls "INDEL:" followed by sample name folloes '=' sign and name of the vcf file.\n"
+			fi
+		elif [[ $file == "TXT" ]]
+		then
+			read -p "what type of variants you have to annotate ? (BOTH,SNV, INDEL) : " variant
+			while [[ $variant != "BOTH" && $variant != "SNV" && $variant != "INDEL" ]]
+			do
+				read -p "what type of variants you have to annotate ? (BOTH,SNV, INDEL) : " variant
+			done
+			echo -e "\nWe follow VCF 4.1 format coordinate system, so make sure your TXT file follows the same\n"
+			if [[ $varaint == "BOTH" ]]
+			then
+				echo -e "Important points: \n 1. User has both the snvs and indels in the vcf file. \n2. For snv calls "SNV:" followed by sample name folloes '=' sign and name of the txt file. \n3. For indels calls "INDEL:" followed by sample name folloes '=' sign and name of the txt file. \n4. Both the files should have four columns namely Chromosome, position, Reference Allele, Alternate Allel. \n5. For Indels teh position is for the reference\n"
+			elif [[ $variant == "SNV" ]]
+			then
+				echo -e "Important points: \n 1. User has both the snvs and indels in the vcf file. \n2. For snv calls "SNV:" followed by sample name folloes '=' sign and name of the txt file.\n3.the files should have four columns namely Chromosome, position, Reference Allele, Alternate Allel.\n"
+				
+			else
+				echo -e "Important points: \n 1. User has both the snvs and indels in the vcf file. \n2. For indels calls "INDEL:" followed by sample name folloes '=' sign and name of the txt file.\n4. the files should have four columns namely Chromosome, position, Reference Allele, Alternate Allel. \n5. For Indels teh position is for the reference\n"
+			fi
+		fi		
+ 	else
+		echo -e "\nOk, fine"
+	fi		
+	## runinfo file
+	read -p "Do you want to know how to create run info file ? : " run_info
+	while [[ $run_info != "yes" && $run_info != "no" ]]
+	do
+		read -p "Do you want to know how to create run info file ? : " run_info
+	done
+	if [[ $run_info == "YES" ]]
+	then
+		echo -e "\nAll the example run info files are located in the config folder of the workflow\n"
+		echo -e "Important Paramters: \nANALYSIS\nFor Runs from upstairs lab you should specify realign-mayo if you are starting with bams  or mayo if you are starting with fastq's as we want to populate seconday dashboard data base \nFor Single sample exome/whole_genome: alignment,mayo,realign-mayo,external,realignment,ontarget,variant,annotation\nFor Paired Sample exome/whole_genome: alignment, mayo, external,realign-mayo,realignment,variant \nMULTISAMPLE\nYES if paired analsyis\nNO if single sample analsyis\nLABINDEXES\nIf its  multiplexing run then user should provide the index (index is always a 6 letter code for illumina data (don't include I in the index name)\nSNV_CALLER\nThere are two callers which user can use GATK or SNVMIX\nSOMATIC_CALLER\nIf you are doing Paired anlysis then user needs to specify the the caller from one of SOMATICSNIPER, JOINTSNVMIX or MUTECT\nUPLOAD_TABLEBROWSER\nthis should always be YES for all the mayo runs\nALIGNER\nIf you are starting with FASTQ then user has an option to align the data uisng BWA or NOVOALIGN.\n"
+	else
+		echo -e "\nOk, fine"
+	fi	
+	## tool info file
+	read -p "Do you want to know how to create tool info file ? : " tool_info
+	while [[ $tool_info != "yes" && $tool_info != "no" ]]
+	do
+		read -p "Do you want to know how to create tool info file ? : " tool_info
+	done
+	if [[ $tool_info == "YES" ]]
+	then
+		echo -e "\nAn example of tool info files is located in the config folder with all the default options for the workflow\n"
+		echo -e "Important Paramters:"
+		echo -e "\nSOMATIC_THRESHOLD				used for joint snvmix to have a cutoff at min 0.1 as somatic probability (0.1)
+				\nT_DEPTH_FILTER					min number of supported reads for multi sample calling (6)
+				\nSOMATIC_QUALITY					min somatic qaulity required for somatic snipper to call variants (40)
+				\nMAPPING_QUALITY					min mapping quality required to call variants (20)
+				\nBASE_QUALITY						min base quality required to call the variants (20)
+				\nEMIT_ALL_SITES					Boolean (YES/NO) Yes if user needs to call variant at all the postiions, NO otherwise (NO)
+				\nVARIANT_FILTER					If user wants to filter the variant using our recommentations (YES)
+				\nDEPTH_FILTER						If user wants to filter the variant using a depth filtering (0)
+				\nTARGETTED							If user wants to call variant only in the target region, normal practice is to call teh variant on whole gonome and then do the subset (NO)
+				\nREMOVE_DUP						If user want to flag or remove the duplicate reads (FALSE)
+				\nPROB_FILTER						filter the variant using probability threshold for snvmix (0.8)
+				\nSOMATIC_INDEL_FILTER_EXPRESSION	somatic indel calling filter expression (NA)
+				\nMIN_SCIP_LEN						minmum length of soft clipped reads required to call SV using CREST(12)
+				\nMIN_SCIP_READS					min. number of soft clipped reads required to call SV uising CREST (14)
+				\nMAX_ALT_ALLELES					Max alternate allele to report during genotyping (5)
+				\nSNP_DISTANCE_INDEL				window size to look for a indel close to snp (10)
+				\nWINDOW_BLAT						window size to blat a position to teh refernce genome (50)
+				\n
+				"
+	fi	
+elif [[ $workflow == "3" ]]
 then 
 	## FASTQC
 	read -p "Did you looked at the FASTQC results : " fastqc

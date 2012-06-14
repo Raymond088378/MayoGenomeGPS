@@ -55,6 +55,7 @@ MULTISAMPLE=NO (NO for single sample ; YES for paired analysis)
 INPUT_DIR=/data2/bsi/RandD/WG_test/random/ (/path/to/input directory)
 BASE_OUTPUT_DIR=/data2/bsi/RandD/WG_test/random/ (/path/to/output dirrectory) 
 EMAIL=rstngsworkflow@mayo.edu (you should use only this email as we want to track the compute power and make html page using Asif's script )
+USER_EMAIL=your email
 SAMPLENAMES=s_normal:s_tumor (sample names ':' seperated)
 GROUPNAMES=NA (if it is a paired analysis then provide the group names ':' seperated
 LABINDEXES=-:- (index ':' seperated if user doesn't have index information then just put '-')
@@ -75,6 +76,7 @@ UPLOAD_TABLEBROWSER=NO/YES
 REORDERSAM=NO/YES
 VARIANT_TYPE=BOTH/SNV/INDEL
 SNV_CALLER=GATK/SNVMIX
+SOAMTIC_CALLER=SOMATICSNIPER/JOINTSNVMIX/MUTECT
 SAMPLEINFORMATION=test run (free text )
 DELIVERY_FOLDER=NA or /path/to/delivery folder to transfer realigned bams 
 TERTIARY_FOLDER=NA or /path/to/tertiary folder for Biostats
@@ -95,13 +97,15 @@ THREADS=4(deafult)
 STRUCT_DIST_GENE=1000(deafult)
 STRUCT_MIN_SUPPORT=10(default)
 STRUCT_MIN_INDENTITY=0.9
+T_DEPTH_FILTER=6
+SOMATIC_THRESHOLD=0.1
+
 
 EMIT_ALL_SITES=NO/YES YES if you want to output all the positions in the pileup 
 if above paramerter is YES then specify these paramters
 DEPTH_FILTER=4
 TARGETTED=YES
 PROB_FILTER=0.8
-
 
 
 ###########################################

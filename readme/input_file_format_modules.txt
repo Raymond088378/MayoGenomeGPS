@@ -28,6 +28,7 @@ SNV (four columns chromosome, position, Ref Allel, Alt Allele )
 *** no header
 *** chr should be chr1 etc.
 
+coordinate system we are following is the VCF format 4.1
 example
 
 chr1	100	A	T

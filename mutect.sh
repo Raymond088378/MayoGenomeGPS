@@ -24,13 +24,14 @@ else
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     only_ontarget=$( cat $tool_info | grep -w '^TARGETTED' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
-	
+	ld=$( cat $tool_info | grep -w '^LD_LIBRARY_PATH' | cut -d '=' -f2 )
 	export JAVA_HOME=$javahome
 	export PATH=$javahome/bin:$PATH
-    
+	#export LD_LIBRARY_PATH=$ld:$LD_LIBRARY_PATH
+        
     if [ $only_ontarget == "YES" ]
     then
-	cat $TargetKit | grep -w chr$chr > $output/$tumor_sample.chr$chr.target.bed
+		cat $TargetKit | grep -w chr$chr > $output/$tumor_sample.chr$chr.target.bed
         len=`cat $output/$tumor_sample.chr$chr.target.bed |wc -l`
         if [ $len -gt 0 ]
         then
@@ -42,7 +43,8 @@ else
         param="-L chr$chr"
     fi
     
-    $java/java -Xmx3g -Xms512m -jar $mutect/muTect-1.0.27783.jar \
+    java=/usr/java/jre1.6.0_18/bin/
+    $java/java -XX:MaxPermSize=128M -Xmx6g -Xms512m -jar $mutect/muTect-1.0.27783.jar \
     -T MuTect \
     --reference_sequence $ref \
     $param \
@@ -51,8 +53,7 @@ else
     -B:dbsnp,VCF $dbSNP \
     -et NO_ET \
     -nt $threads \
-    --out $output/$output_file \
-    --coverage_file $output/$tumor_sample.chr$chr.coverage.wig.txt
+    --out $output/$output_file 
     
 	perl $script_path/mutect2vcf.pl -i $output/$output_file -o $output/$output_file.temp -ns $normal_sample -ts $tumor_sample
 	mv $output/$output_file.temp  $output/$output_file

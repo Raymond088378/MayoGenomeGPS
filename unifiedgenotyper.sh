@@ -35,7 +35,7 @@ else
     
     check=`[ -s $vcf.idx ] && echo "1" || echo "0"`
     count=0
-	while [[ $check -eq 0 && $count -le 5 ]]
+	while [[ $check -eq 0 && $count -le 10 ]]
     do
 		if [ $ped != "NA" ]
 		then
@@ -83,7 +83,7 @@ else
 	
     if [ ! -s $vcf ]
     then
-        $script_path/errorlog.sh $vcf unifiedgenotyper.sh ERROR empty
+        $script_path/errorlog.sh $vcf unifiedgenotyper.sh ERROR "empty"
         exit 1;
     fi
     echo `date`

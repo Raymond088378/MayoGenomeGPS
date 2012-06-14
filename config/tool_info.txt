@@ -44,12 +44,14 @@ SNP_CS=/data2/bsi/reference/annotation/dbSNP/hg19/scs.bed
 BLACKLIST_SV=/data2/bsi/reference/misc/hg19.STRUCTURAL_BALCKLIST.bed
 ESP=/data2/bsi/reference/genetics/ESP5400/ESP5400.snps.txt
 MILLS_REF=/data2/bsi/reference/misc/ALL.wgs.indels_mills_devine_hg19_leftAligned_collapsed.sites.vcf
+PEDIGREE=NA
 SNP_SAO=/data2/bsi/reference/annotation/dbSNP/hg19/sao.bed
 SNP_BUILD=/data2/bsi/reference/annotation/dbSNP/hg19/dbSNPbuild.bed
-PEDIGREE=NA
+
 
 ## tools
 WHOLEGENOME_PATH=/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/tags/1.1/
+NOVOALIGN=/projects/bsi/bictools/apps/alignment/novoalign/2.07.13/novoalign
 BWA=/projects/bsi/bictools/apps/alignment/bwa/0.5.9/
 BOWTIE=/projects/bsi/bictools/apps/alignment/bowtie/2.0.0-beta5/
 JAVA=/usr/java/latest/bin
@@ -65,9 +67,9 @@ CNVNATOR=/projects/bsi/bictools/apps/cnv/cnvnator/0.2.2/src/
 MUTECT=/projects/bsi/bictools/apps/variant_detection/muTect/1.0.27783/
 CREST=/projects/bsi/bictools/apps/sv/crest/1.0.1/bin/
 CAP3=/projects/bsi/bictools/apps/sv/crest/1.0.1/bin/
-BLAT=/projects/bsi/bictools/apps/alignment/blat/34/
+BLAT=/projects/bsi/bictools/apps/alignment/blat/34
 BREAKDANCER=/projects/bsi/bictools/apps/sv/breakdancer/breakdancer-1.1_2011_02_21/
-MATLAB=/usr/local/biotools/matlab/r2011a/bin/
+MATLAB=/usr/local/biotools/matlab/r2011a/bin
 SEGSEQ=/projects/bsi/bictools/apps/sv/SegSeq/1.0.0/bin/
 CIRCOS=/projects/bsi/bictools/apps/visualizers/circos/circos-0.54/
 SIFT=/projects/bsi/bictools/apps/variant_detection/sift/4.0.3/bin/
@@ -91,12 +93,13 @@ PYTHONLIB=/data2/bsi/RandD/pacbio/smrtanalysis-1.2.1/analysis/lib/python2.5/:/pr
 ### customized paramters
 
 JAVA_HOME=/usr/java/latest
+LD_LIBRARY_PATH=/usr/java/latest/lib/
 HTTP_SERVER=bmidev2
 THREADS=4
 EMIT_ALL_SITES=NO
 VARIANT_FILTER=YES
 DEPTH_FILTER=0
-TARGETTED=NO
+TARGETTED=YES
 REMOVE_DUP=FALSE
 PROB_FILTER=0.8
 REMOVE_ALIGNED_BAM=YES
