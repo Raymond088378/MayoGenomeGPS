@@ -93,7 +93,6 @@ PYTHONLIB=/data2/bsi/RandD/pacbio/smrtanalysis-1.2.1/analysis/lib/python2.5/:/pr
 ### customized paramters
 
 JAVA_HOME=/usr/java/latest
-LD_LIBRARY_PATH=/usr/java/latest/lib/
 HTTP_SERVER=bmidev2
 THREADS=4
 EMIT_ALL_SITES=NO

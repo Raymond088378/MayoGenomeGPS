@@ -25,9 +25,10 @@ else
     only_ontarget=$( cat $tool_info | grep -w '^TARGETTED' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
 	ld=$( cat $tool_info | grep -w '^LD_LIBRARY_PATH' | cut -d '=' -f2 )
+	javahome=/usr/java/jre1.6.0_18/
 	export JAVA_HOME=$javahome
 	export PATH=$javahome/bin:$PATH
-	#export LD_LIBRARY_PATH=$ld:$LD_LIBRARY_PATH
+	
         
     if [ $only_ontarget == "YES" ]
     then
@@ -43,17 +44,30 @@ else
         param="-L chr$chr"
     fi
     
-    java=/usr/java/jre1.6.0_18/bin/
-    $java/java -XX:MaxPermSize=128M -Xmx6g -Xms512m -jar $mutect/muTect-1.0.27783.jar \
-    -T MuTect \
-    --reference_sequence $ref \
-    $param \
-    --input_file:tumor $tumor_bam \
-    --input_file:normal $normal_bam \
-    -B:dbsnp,VCF $dbSNP \
-    -et NO_ET \
-    -nt $threads \
-    --out $output/$output_file 
+    check=0
+    while [[ $check -eq 0 ]]
+    do
+        if [ `grep -l $output/$output_file *.log` ]
+        then
+            rm `grep -l $output/$output_file *.log` 
+        fi
+        $java/java -XX:MaxPermSize=128M -Xmx6g -Xms512m -jar $mutect/muTect-1.0.27783.jar \
+        -T MuTect \
+        --reference_sequence $ref \
+        $param \
+        --input_file:tumor $tumor_bam \
+        --input_file:normal $normal_bam \
+        -B:dbsnp,VCF $dbSNP \
+        -et NO_ET \
+        -nt $threads \
+        --out $output/$output_file
+        len=`cat *.log | grep $output/$output_file | wc -l`
+        check=` [ $len -gt 0 ] && echo "0" || echo "1"`
+        if [ $check -eq 0 ]
+        then
+            rm core.*
+        fi
+    done    
     
 	perl $script_path/mutect2vcf.pl -i $output/$output_file -o $output/$output_file.temp -ns $normal_sample -ts $tumor_sample
 	mv $output/$output_file.temp  $output/$output_file

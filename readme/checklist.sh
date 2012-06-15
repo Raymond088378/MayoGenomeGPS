@@ -182,6 +182,17 @@ then
 				\n
 				"
 	fi	
+	read -p "Do you have any other questions ? : " ques
+	while [[ $ques != "yes" && $ques != "no" ]]
+	do
+		read -p "Do you have any other questions ? : " ques
+	done
+	if [[ $ques == "YES" ]]
+	then
+		echo -e "\nContact: \n Baheti, Saurabh <baheti.saurabh@mayo.edu> \n Davila, Jaime I., Ph.D. <Davila.Jaime@mayo.edu>"
+	else
+		echo -e "\nok. you should be good to run the workflow"
+	fi	
 elif [[ $workflow == "3" ]]
 then 
 	## FASTQC

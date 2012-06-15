@@ -15,8 +15,14 @@ else
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     ped=$( cat $tool_info | grep -w '^PEDIGREE' | cut -d '=' -f2)
-
-    check=`[ -s $vcf.idx ] && echo "1" || echo "0"`
+	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
+	
+	export JAVA_HOME=$javahome
+	export PATH=$javahome/bin:$PATH
+	
+	
+    check=`[ -s $output_vcf.idx ] && echo "1" || echo "0"`
     while [ $check -eq 0 ]
     do
 		$java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
@@ -25,11 +31,12 @@ else
 		-v $input_vcf \
 		--ped $ped \
 		--out $output_vcf
+		check=`[ -s $output_vcf.idx ] && echo "1" || echo "0"`
     done
 
     if [ ! -s $output_vcf ]
     then
-        echo "ERROR : [`date`] phaseByTransmission.sh failed to create $ouput_vcf"
+		$script_path/errorlog.sh $output_vcf phaseByTransmission.sh ERROR "failed to create"
         exit 1;
 	else
 		echo "Replacing PhaseByTransmisson vcf with the one from UnifiedGenoType"
