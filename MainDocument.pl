@@ -78,6 +78,9 @@ else    {
 	my $tertiary=$line[$#line];chomp $tertiary;
 	@line=split(/=/,`perl -ne "/^SNV_CALLER/ && print" $run_info`);
 	$SNV_caller=$line[$#line];chomp $SNV_caller;
+	@line=split(/=/,`perl -ne "/^VERSION/ && print" $run_info`);
+	my $version=$line[$#line];chomp $version;
+	
 		if ( ( $analysis eq 'external' ) || ( $analysis eq 'variant' ) || ($analysis eq 'mayo') || ($analysis eq 'realignment') || ($analysis eq 'realign-mayo') )	{
 		if ($tool eq 'exome')	{
 			@line=split(/=/,`perl -ne "/^CAPTUREKIT/ && print" $tool_info`);
@@ -268,7 +271,7 @@ else    {
 	print OUT "<p align='right'><a href=\"#top\">-top-</a></p>";
 	print OUT "<a name=\"Analysis Plan\" id=\"Analysis Plan\"></a><p align='left'><b><u> III. Analysis Plan</p></b></u><br>\n";
 	print OUT "<b><P ALIGN=\"CENTER\">What's new: New features and updates </b> <a href= \"http://bioinformatics.mayo.edu/BMI/bin/view/Main/BioinformaticsCore/Analytics/GENOME_GPS\"target=\"_blank\">Genome_GPS</a></P>";
-	print OUT "<a href= \"${tool}_workflow.png\"target=\"_blank\"><P ALIGN=\"CENTER\"><img border=\"0\" src=\"${tool}_workflow.png\" width=\"700\" height=\"478\"><b><u><caption align=\"bottom\">Genome_GPS_0.1</caption></b></u></p>";
+	print OUT "<a href= \"${tool}_workflow.png\"target=\"_blank\"><P ALIGN=\"CENTER\"><img border=\"0\" src=\"${tool}_workflow.png\" width=\"700\" height=\"478\"><b><u><caption align=\"bottom\">Genome_GPS_$version</caption></b></u></p>";
 	print OUT "<p align='right'><a href=\"#top\">-top-</a></p>";
 	print OUT "<a name=\"Received Data\" id=\"Received Data\"></a><p align='left'><b><u> IV. Received Data</p></b></u> 
 	<ul>
@@ -350,26 +353,52 @@ else    {
 	my %sample_numbers=();
 	my $uniq;
 	# storing all the numbers in a Hash per sample
-	for(my $k = 0; $k < $num_samples;$k++)	
-	{
-		print OUT "<td class=\"helpHed\"><p align='center'>$sampleArray[$k]</td>";
-		my $file="$path/numbers/$sampleArray[$k].out";
-		open SAMPLE, "<$file", or die "could not open $file : $!";
-		print"reading numbers from $sampleArray[$k]\n";
-		my $id=0;
-		while(my $l = <SAMPLE>)	
-		{			
-			chomp $l;
-			if ( $l !~ /^\d/)	{
-				$uniq = $id;
-				$id++;
+	if ($multi eq 'NO')	{
+		for(my $k = 0; $k < $num_samples;$k++)	
+		{
+			print OUT "<td class=\"helpHed\"><p align='center'>$sampleArray[$k]</td>";
+			my $file="$path/numbers/$sampleArray[$k].out";
+			open SAMPLE, "<$file", or die "could not open $file : $!";
+			print"reading numbers from $sampleArray[$k]\n";
+			my $id=0;
+			while(my $l = <SAMPLE>)	{			
+				chomp $l;
+				if ( $l !~ /^\d/)	{
+					$uniq = $id;
+					$id++;
+				}	
+				else	{
+					push (@{$sample_numbers{$uniq}},$l);
+				}
 			}	
-			else	{
-				push (@{$sample_numbers{$uniq}},$l);
+			close SAMPLE;
+		}
+	}
+	else	{
+		for (my $i = 0; $i < $num_groups; $i++)	{
+			my @sams=split(/\t/,`cat $sample_info | grep -w "^$groupArray[$i]" | cut -d '=' -f2`);
+			for (my $j = 0; $j <=$#sams; $j++)	{
+				chomp $sams[$j];
+				print OUT "<td class=\"helpHed\"><p align='center'>$groupArray[$i]-$sams[$j]</td>";
+				my $file="$path/numbers/$groupArray[$i].$sams[$j].out";
+				open SAMPLE, "<$file", or die "could not open $file : $!";
+				print"reading numbers from $groupArray[$i] - $sams[$j]\n";
+				my $id=0;
+				while(my $l = <SAMPLE>)	{			
+					chomp $l;
+					if ( $l !~ /^\d/)	{
+						$uniq = $id;
+						$id++;
+					}	
+					else	{
+						push (@{$sample_numbers{$uniq}},$l);
+					}
+				}	
+				close SAMPLE;
 			}
 		}	
-		close SAMPLE;
 	}
+	
 	
 	
 	print OUT "</tr>";
@@ -594,6 +623,15 @@ else    {
 		}	
 	}
 	
+	if ($multi eq "YES")	{
+		$num_samples=0;
+		for (my $i = 0; $i < $num_groups; $i++)	{
+			my @sams=split(/\t/,`cat $sample_info | grep -w "^$groupArray[$i]" | cut -d '=' -f2`);
+			for (my $j = 0; $j <=$#sams; $j++)	{
+				$num_samples++;
+			}
+		}
+	}		
 		
 	if ($analysis ne 'annotation' && $analysis ne 'ontarget' )	{
 		print OUT "<th class=\"helpBod\">Alignment </th>";
@@ -651,7 +689,6 @@ else    {
 		}
 		elsif ($key eq '2' && $analysis eq 'variant' && $multi eq 'NO')	{
 			for (my $c=0; $c < $num_samples;$c++)	{
-				#my $per_mapped=0;
 				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
 				my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 				print OUT "<td class=\"helpBod\">$print <br> <b>($per_mapped \%) <b></td>";	
@@ -667,7 +704,6 @@ else    {
 		}
 		if ($key eq '3' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' && $multi eq 'NO' )	{
 			for (my $c=0; $c < $num_samples;$c++)	{
-				#my $per_mapped=0;
 				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
 				my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 				print OUT "<td class=\"helpBod\">$print <br> <b>($per_mapped \%) <b></td>";	
@@ -676,7 +712,6 @@ else    {
 		}
 		if ($key eq '3' && ( $analysis eq 'realignment' || $analysis eq 'realign-mayo' || $analysis eq 'external' || $analysis eq 'mayo')	&& $multi eq 'YES')	{
 			for (my $c=0; $c < $num_samples;$c++)	{
-				#my $per_mapped=0;
 				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
 				my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 				print OUT "<td class=\"helpBod\">$print <br> <b>($per_mapped \%) <b></td>";	
@@ -685,7 +720,6 @@ else    {
 		}
 		if ($key eq '4' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' && $multi ne 'YES')	{
 			for (my $c=0; $c < $num_samples;$c++)	{
-				#my $per_mapped=0;
 				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
 				my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 				print OUT "<td class=\"helpBod\">$print <br> <b>($per_mapped \%) <b></td>";	
@@ -1739,8 +1773,9 @@ else    {
 			my $sams=`cat $sample_info | grep -w "^$groupArray[$k]" | cut -d '=' -f2`;
 			my @sam=split('\s+',$sams);
 			for (my $q=1;$q <=$#sam;$q++)	{
-				print OUT "<td class=\"helpHed\"><p align='center'>$groupArray[$k] - $sam[$q] </td>";
-				my $file="$path/numbers/$groupArray[$k].$sam[$q].out";
+				chomp $sam[$q];
+				print OUT "<td class=\"helpHed\"><p align='center'>SOMATIC:$groupArray[$k] - $sam[$q] </td>";
+				my $file="$path/numbers/TUMOR.$groupArray[$k].$sam[$q].out";
 				open SAMPLE, "<$file", or die "could not open $file : $!";
 				print"reading numbers from $groupArray[$k] - $sam[$q]\n";
 				my $id=0;
@@ -2152,13 +2187,27 @@ else    {
 	print OUT "<a name=\"Results Delivered\" id=\"Results Delivered\"></a><p align='left'><u><b> VII. Results Delivered</p></u></b>";
 	if ($analysis ne 'alignment')	{
 		print OUT "<ul>
-                <li>Merged ${SNV_caller} results along with SIFT and SeattleSeq SNP annotation and Indel Annotation from Seattle Seq for all samples(<u><a href=\"ColumnDescription_Reports.xls\"target=\"_blank\">Column Description for Reports</a></u>)<br>";
-				if ($variant_type eq 'BOTH' || $variant_type eq 'SNV')	{
-					print OUT "<u> <a href= \"Reports/SNV.xls\"target=\"_blank\">SNV Report</a></u> <br>";
-                }
-				if ($variant_type eq 'BOTH' || $variant_type eq 'INDEL')	{
-					print OUT "<u> <a href= \"Reports/INDEL.xls\"target=\"_blank\">INDEL Report</a></u> <br><br>";
+                <li>Merged ${SNV_caller} results along with SIFT and SNPEFF annotation and Indel Annotation for all samples(<u><a href=\"ColumnDescription_Reports.xls\"target=\"_blank\">Column Description for Reports</a></u>)<br>";
+				if ($multi eq "NO")	{
+					if ($variant_type eq 'BOTH' || $variant_type eq 'SNV')	{
+						print OUT "<u> <a href= \"Reports/SNV.xls\"target=\"_blank\">SNV Report</a></u> <br>";
+					}
+					if ($variant_type eq 'BOTH' || $variant_type eq 'INDEL')	{
+						print OUT "<u> <a href= \"Reports/INDEL.xls\"target=\"_blank\">INDEL Report</a></u> <br>";
+					}
+					print OUT "<br>";
 				}
+				else	{
+					for (my $i = 0; $i < $num_groups; $i++) {
+						if ($variant_type eq 'BOTH' || $variant_type eq 'SNV')	{
+							print OUT "<u> <a href= \"Reports/$groupArray[$i].SNV.xls\"target=\"_blank\">SNV Report  for $groupArray[$i]</a></u> <br>";
+						}
+						if ($variant_type eq 'BOTH' || $variant_type eq 'INDEL')	{
+							print OUT "<u> <a href= \"Reports/$groupArray[$i].INDEL.xls\"target=\"_blank\">INDEL Report  for $groupArray[$i]</a></u> <br>";
+						}	
+					}
+					print OUT "<br>";
+				}		
 				if ($multi eq "YES")	{
 					print OUT "<u> <a href= \"Reports/Paired.SNV.xls\"target=\"_blank\">Paired SNV Report</a></u> <br>";
 					print OUT "<u> <a href= \"Reports/Paired.INDEL.xls\"target=\"_blank\">Paired INDEL Report</a></u> <br><br>";
@@ -2210,6 +2259,7 @@ else    {
 				my $sams=`cat $sample_info | grep -w "$groupArray[$k]" | cut -d '=' -f2`;
 				my @sam=split('\s+',$sams);
 				for (my $q=1;$q <=$#sam;$q++)	{
+					chomp ${sam[$q]};
 					print OUT "<a href= \"circos/$groupArray[$k].${sam[$q]}.sv_cnv.png\"target=\"_blank\"><P ALIGN=\"CENTER\"><img border=\"0\" src=\"circos/$groupArray[$k].${sam[$q]}.sv_cnv.png\" width=\"50\" height=\"50\"><u><caption align=\"bottom\">$groupArray[$k].${sam[$q]}</caption></u></p>";	
 				}
 			}	

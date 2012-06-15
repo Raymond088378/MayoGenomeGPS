@@ -33,7 +33,7 @@ else
         ped="NA"
     fi
     
-    check=`[ -s $vcf.idx ] && echo "1" || echo "0"`
+    check=0
     count=0
 	while [[ $check -eq 0 && $count -le 10 ]]
     do
@@ -69,7 +69,8 @@ else
         check=`[ -s $vcf.idx ] && echo "1" || echo "0"`
         if [ $check -eq 0 ]
         then
-            rm core.*
+            rm `grep -l $vcf *.log`
+			rm core.*
         fi    
 		let count=count+1
     done 

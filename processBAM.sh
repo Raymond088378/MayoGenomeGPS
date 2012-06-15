@@ -61,6 +61,10 @@ else
 	then
 		bam=`echo $INPUTARGS | cut -d '=' -f2`
 		mv $bam $input/$sample.bam
+		if [ -s $bam.bai ]
+		then
+			rm $bam.bai
+		fi	
 		SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input/$sample.bam -s $samtools`
 		if [ $SORT_FLAG == 1 ]
 		then

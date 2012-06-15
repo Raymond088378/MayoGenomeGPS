@@ -27,35 +27,41 @@ else
 	then
 		group=$6
     fi
+	if [ $7 ]
+	then
+		prefix=$7
+	fi
+	
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
     multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
 	
+	if [[ $6 && $7 ]]
+	then
+		sam=$prefix.$group.$sample
+		samp=$prefix.$group.$sample
+	elif [ $6 ]
+	then
+		sam=$group.$sample
+		samp=$group.$sample
+	else
+		sam=$sample
+		samp=$sample
+	fi	
+	
    
     if [[ $variant_type == 'BOTH' || $variant_type == 'SNV' ]]
     then
         ## SNVs  parse the vcf file for on target
-        if [ $6 ]
-		then
-			var=$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf
-			perl $script_path/parse.vcf.SNV.pl -i $input_dir/$var -o $TempReports/$group.$sample.chr$chr.snv -s $sample -h 1
-		else
-			var=$sample.variants.chr$chr.SNV.filter.i.c.vcf	
-			perl $script_path/parse.vcf.SNV.pl -i $input_dir/$var -o $TempReports/${sample}.chr$chr.snv -s $sample -h 1
-		fi
+		var=$sam.variants.chr$chr.SNV.filter.i.c.vcf
+		perl $script_path/parse.vcf.SNV.pl -i $input_dir/$var -o $TempReports/$samp.chr$chr.snv -s $sample -h 1
 	fi
     if [[ $variant_type == 'BOTH' || $variant_type == 'INDEL' ]]
     then
         ## INDELs
-        if [ $6 ]
-		then
-			indel=$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf
-			perl $script_path/parse.vcf.INDEL.pl -i $input_dir/$indel -o $TempReports/$group.$sample.chr$chr.indel -s $sample -h 1
-		else
-			indel=$sample.variants.chr$chr.INDEL.filter.i.c.vcf
-			perl $script_path/parse.vcf.INDEL.pl -i $input_dir/$indel -o $TempReports/$sample.chr$chr.indel -s $sample -h 1
-		fi
+        indel=$sam.variants.chr$chr.INDEL.filter.i.c.vcf
+		perl $script_path/parse.vcf.INDEL.pl -i $input_dir/$indel -o $TempReports/$samp.chr$chr.indel -s $sample -h 1
 	fi
     echo `date`
 fi	

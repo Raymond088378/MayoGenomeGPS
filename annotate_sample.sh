@@ -23,33 +23,51 @@ else
     cd $output_dir/Reports_per_Sample/
     mkdir -p $output_dir/Reports/
     ## SNV
-    for sample in $samples
-    do
+    if [ $multi_sample == "NO" ]
+	then
+		for sample in $samples
+		do
+			if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
+			then
+				ls $sample.SNV.xls >> list.snv
+				ls $sample.SNV.filtered.xls >> list.filter.snv
+			fi
+			if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
+			then
+				ls $sample.INDEL.xls >> list.indel
+				ls $sample.INDEL.filtered.xls >> list.filter.indel
+			fi
+		done	
 		if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
 		then
-			ls $sample.SNV.xls >> list.snv
-			ls $sample.SNV.filtered.xls >> list.filter.snv
+			perl $script_path/union.snv.pl list.snv $output_dir/Reports/SNV.xls
+			perl $script_path/union.snv.pl list.filter.snv $output_dir/Reports/SNV.filtered.xls
+			rm list.snv list.filter.snv
 		fi
 		if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
 		then
-			ls $sample.INDEL.xls >> list.indel
-			ls $sample.INDEL.filtered.xls >> list.filter.indel
+			perl $script_path/union.indel.pl list.indel $output_dir/Reports/INDEL.xls
+			perl $script_path/union.indel.pl list.filter.indel $output_dir/Reports/INDEL.filtered.xls
+			rm list.indel list.filter.indel
 		fi
-	done	
-    if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
-	then
-		perl $script_path/union.snv.pl list.snv $output_dir/Reports/SNV.xls
-		perl $script_path/union.snv.pl list.filter.snv $output_dir/Reports/SNV.filtered.xls
-		rm list.snv list.filter.snv
+	else
+		for group in $groups
+		do
+			for sam in `cat $sample_info | grep "^$group" | cut -f2 -d '=' | tr "\t" " "`
+			do
+				ls $group.$sam.SNV.xls >> list.snv
+				ls $group.$sam.SNV.filtered.xls >> list.filter.snv
+				ls $group.$sam.INDEL.xls >> list.indel
+				ls $group.$sam.INDEL.filtered.xls >> list.filter.indel
+			done
+			perl $script_path/union.snv.pl list.snv $output_dir/Reports/$group.SNV.xls
+			perl $script_path/union.snv.pl list.filter.snv $output_dir/Reports/$group.SNV.filtered.xls
+			perl $script_path/union.indel.pl list.indel $output_dir/Reports/$group.INDEL.xls
+			perl $script_path/union.indel.pl list.filter.indel $output_dir/Reports/$group.INDEL.filtered.xls	
+			rm list.snv list.filter.snv list.indel list.filter.indel
+		done	
     fi
-	if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
-	then
-		perl $script_path/union.indel.pl list.indel $output_dir/Reports/INDEL.xls
-		perl $script_path/union.indel.pl list.filter.indel $output_dir/Reports/INDEL.filtered.xls
-		rm list.indel list.filter.indel
-	fi
 	
-    
     if [ $multi_sample == "YES" ]
     then
 		for i in $groups
@@ -66,13 +84,13 @@ else
 				tumor=${sampleArray[$j]}
 				if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
 				then
-					ls $i.$tumor.SNV.xls >> list.snv
-					ls $i.$tumor.SNV.filtered.xls >> list.filter.snv
+					ls TUMOR.$i.$tumor.SNV.xls >> list.snv
+					ls TUMOR.$i.$tumor.SNV.filtered.xls >> list.filter.snv
 				fi
 				if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
 				then
-					ls $i.$tumor.INDEL.xls >> list.indel
-					ls $i.$tumor.INDEL.filtered.xls >> list.filter.indel
+					ls TUMOR.$i.$tumor.INDEL.xls >> list.indel
+					ls TUMOR.$i.$tumor.INDEL.filtered.xls >> list.filter.indel
 				fi
 			done
 		done		

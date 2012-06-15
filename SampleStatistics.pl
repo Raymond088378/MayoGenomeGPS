@@ -237,39 +237,102 @@
 	# storing all the numbers in a Hash per sample (one hash)
 	# print OUT "samples";
 	print OUT "SampleNamesUsed/info";
-	for(my $k = 0; $k < $num_samples;$k++)	
-	{
-		print OUT "\t$sampleArray[$k]";
-		my $file="$path/numbers/$sampleArray[$k].out";
-		open SAMPLE, "<$file", or die "could not open $file : $!";
-		print "reading numbers from $sampleArray[$k]\n";
-		my $id=0;
+	if ($multi eq "NO")	{
+		for(my $k = 0; $k < $num_samples;$k++)	
+		{
+			print OUT "\t$sampleArray[$k]";
+			my $file="$path/numbers/$sampleArray[$k].out";
+			open SAMPLE, "<$file", or die "could not open $file : $!";
+			print "reading numbers from $sampleArray[$k]\n";
+			my $id=0;
 
-		while(my $l = <SAMPLE>)	
-		{			
-			chomp $l;
-			if ( $l !~ /^\d/)	{
-				$uniq = $id;
-				$id++;
+			while(my $l = <SAMPLE>)	
+			{			
+				chomp $l;
+				if ( $l !~ /^\d/)	{
+					$uniq = $id;
+					$id++;
+				}	
+				else	{
+					push (@{$sample_numbers{$uniq}},$l);
+				}
 			}	
-			else	{
-				push (@{$sample_numbers{$uniq}},$l);
+			close SAMPLE;
+		}
+	}
+	else	{
+		for (my $i = 0; $i < $num_groups; $i++)	{
+			my @sams=split(/\t/,`cat $sample_info | grep -w "^$groupArray[$i]" | cut -d '=' -f2`);
+			for (my $j = 0; $j <=$#sams; $j++)	{
+				chomp $sams[$j];
+				print OUT "\t$groupArray[$i]-$sams[$j]";
+				my $file="$path/numbers/$groupArray[$i].$sams[$j].out";
+				open SAMPLE, "<$file", or die "could not open $file : $!";
+				print"reading numbers from $groupArray[$i] - $sams[$j]\n";
+				my $id=0;
+				while(my $l = <SAMPLE>)	{			
+					chomp $l;
+					if ( $l !~ /^\d/)	{
+						$uniq = $id;
+						$id++;
+					}	
+					else	{
+						push (@{$sample_numbers{$uniq}},$l);
+					}
+				}	
+				close SAMPLE;
 			}
 		}	
-		close SAMPLE;
 	}
+	
+	
 	print OUT "\n";
 	print OUT "lanes";
-        for(my $k = 0; $k < $num_samples;$k++)  {
-            print OUT "\t$laneArray[$k]";
-        }
-        print OUT "\n";
-        print OUT "indexes";
-        for(my $k = 0; $k < $num_samples;$k++)  {
-            print OUT "\t$IndexArray[$k]";
-        }
-        print OUT "\n";
-        
+	if ($multi eq "NO")	{
+		for(my $k = 0; $k < $num_samples;$k++)  {
+			print OUT "\t$laneArray[$k]";
+		}
+		print OUT "\n";
+	}
+	else	{
+		for (my $i = 0; $i < $num_groups; $i++)	{
+			my @sams=split(/\t/,`cat $sample_info | grep -w "^$groupArray[$i]" | cut -d '=' -f2`);
+			for (my $j = 0; $j <=$#sams; $j++)	{
+				my $id_n=-1;
+				for(my $k = 0; $k < $num_samples;$k++)  {
+					if ($sams[$j] == $sampleArray[$k])	{
+						$id_n=$k;
+						last;
+					}
+				}
+				print OUT "\t$laneArray[$id_n]";	
+			}
+		}
+		print OUT "\n";
+	}
+	print OUT "indexes";
+	if ($multi eq "NO")	{
+		for(my $k = 0; $k < $num_samples;$k++)  {
+			print OUT "\t$IndexArray[$k]";
+		}
+		print OUT "\n";
+    }
+	else	{
+		for (my $i = 0; $i < $num_groups; $i++)	{
+			my @sams=split(/\t/,`cat $sample_info | grep -w "^$groupArray[$i]" | cut -d '=' -f2`);
+			for (my $j = 0; $j <=$#sams; $j++)	{
+				my $id_n=-1;
+				for(my $k = 0; $k < $num_samples;$k++)  {
+					if ($sams[$j] == $sampleArray[$k])	{
+						$id_n=$k;
+						last;
+					}
+				}
+				print OUT "\t$IndexArray[$id_n]";	
+			}
+		}
+		print OUT "\n";
+	}
 		
 		
 	#printing the statistics for each sample
@@ -282,7 +345,20 @@
 				print OUT "\t$print ($per_mapped \%)";
 			}
 		}
+		elsif ( $key eq '1' && $analysis ne 'annotation'  && $analysis ne 'ontarget' && $multi eq 'YES')	{
+			for (my $c=0; $c < $num_samples;$c++)	{
+				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
+				my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+				print OUT "\t$print ($per_mapped \%)";
+			}
+		}
 		if ($key eq '2' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' && $multi eq 'NO')	{
+			for (my $c=0; $c < $num_samples;$c++)	{
+				my $print=sprintf("%.2f",$sample_numbers{$key}[$c]);
+				print OUT "\t$print\%";
+			}		
+		}
+		elsif ($key eq '2' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' && $multi eq 'YES')	{
 			for (my $c=0; $c < $num_samples;$c++)	{
 				my $print=sprintf("%.2f",$sample_numbers{$key}[$c]);
 				print OUT "\t$print\%";
@@ -295,6 +371,7 @@
 				print OUT "\t$print ($per_mapped \%)";	
 			}
 		}
+		
 		if ($key eq '3' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' )	{
 			for (my $c=0; $c < $num_samples;$c++)	{
 				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
@@ -361,8 +438,9 @@
 			my $sams=`cat $sample_info | grep -w "^$groupArray[$k]" | cut -d '=' -f2`;
 			my @sam=split('\s+',$sams);
 			for (my $q=1;$q <=$#sam;$q++)	{
-				print OUT "\t$groupArray[$k] - $sam[$q]";
-				my $file="$path/numbers/$groupArray[$k].$sam[$q].out";
+				chomp $sam[$q];
+				print OUT "\tSOMATIC:$groupArray[$k] - $sam[$q]";
+				my $file="$path/numbers/TUMOR.$groupArray[$k].$sam[$q].out";
 				open SAMPLE, "<$file", or die "could not open $file : $!";
 				print"reading numbers from $groupArray[$k] - $sam[$q]\n";
 				my $id=0;

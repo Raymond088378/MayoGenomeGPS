@@ -93,7 +93,7 @@ else
         sample=${sampleArray[1]}
         if [ $SNV_caller == SNVMIX ]
         then
-            $samtools/samtools pileup -s -f $ref $input/$bam > $input/chr${chr}.pileup
+            $samtools/samtools mpileup -s -f $ref $input/$bam > $input/chr${chr}.pileup
         fi
         $script_path/samplecheckBAM.sh $input $bam $output $run_info $sample $chopped $chr
     fi

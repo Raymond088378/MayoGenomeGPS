@@ -10,6 +10,13 @@ else
 	TempReports=$2
 	sample=$3
 	run_info=$4
+	if [ $5 ]
+	then
+		prefix=$5
+		sam=$prefix.$sample
+	else
+		sam=$sample
+	fi	
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
 	chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2)
@@ -25,29 +32,29 @@ else
 	
 	if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
 	then
-		cat $TempReports/$sample.chr${chrArray[1]}.SNV.xls > $output_dir/Reports_per_Sample/$sample.SNV.xls
-		cat $TempReports/$sample.chr${chrArray[1]}.filtered.SNV.xls > $output_dir/Reports_per_Sample/$sample.SNV.filtered.xls
+		cat $TempReports/$sam.chr${chrArray[1]}.SNV.xls > $output_dir/Reports_per_Sample/$sam.SNV.xls
+		cat $TempReports/$sam.chr${chrArray[1]}.filtered.SNV.xls > $output_dir/Reports_per_Sample/$sam.SNV.filtered.xls
 		if [ ${#chrArray[@]} -gt 1 ]
 		then
 			for j in $(seq 2 ${#chrArray[@]})
 			do
-				cat $TempReports/$sample.chr${chrArray[$j]}.SNV.xls | awk 'NR>2' >> $output_dir/Reports_per_Sample/$sample.SNV.xls
-				cat $TempReports/$sample.chr${chrArray[$j]}.filtered.SNV.xls | awk 'NR>2' >> $output_dir/Reports_per_Sample/$sample.SNV.filtered.xls
+				cat $TempReports/$sam.chr${chrArray[$j]}.SNV.xls | awk 'NR>2' >> $output_dir/Reports_per_Sample/$sam.SNV.xls
+				cat $TempReports/$sam.chr${chrArray[$j]}.filtered.SNV.xls | awk 'NR>2' >> $output_dir/Reports_per_Sample/$sam.SNV.filtered.xls
 			done
 		fi
 	fi	
 	
 	if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
 	then
-		cat $TempReports/$sample.chr${chrArray[1]}.INDEL.xls > $output_dir/Reports_per_Sample/$sample.INDEL.xls
-		cat $TempReports/$sample.chr${chrArray[1]}.filtered.INDEL.xls > $output_dir/Reports_per_Sample/$sample.INDEL.filtered.xls
+		cat $TempReports/$sam.chr${chrArray[1]}.INDEL.xls > $output_dir/Reports_per_Sample/$sam.INDEL.xls
+		cat $TempReports/$sam.chr${chrArray[1]}.filtered.INDEL.xls > $output_dir/Reports_per_Sample/$sam.INDEL.filtered.xls
 
 		if [ ${#chrArray[@]} -gt 1 ]
 		then
 			for j in $(seq 2 ${#chrArray[@]})
 			do
-				cat $TempReports/$sample.chr${chrArray[$j]}.INDEL.xls | awk 'NR>2' >> $output_dir/Reports_per_Sample/$sample.INDEL.xls
-				cat $TempReports/$sample.chr${chrArray[$j]}.filtered.INDEL.xls | awk 'NR>2' >> $output_dir/Reports_per_Sample/$sample.INDEL.filtered.xls
+				cat $TempReports/$sam.chr${chrArray[$j]}.INDEL.xls | awk 'NR>2' >> $output_dir/Reports_per_Sample/$sam.INDEL.xls
+				cat $TempReports/$sam.chr${chrArray[$j]}.filtered.INDEL.xls | awk 'NR>2' >> $output_dir/Reports_per_Sample/$sam.INDEL.filtered.xls
 			done
 		fi
 	fi

@@ -99,9 +99,9 @@ else
 		## Variant Recalibrator SNP
 		if [ ! $5 ]
 		then
-			check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
+			check=0
 			count=0
-			while [[ $check -eq 0 && $count -le 5 ]]
+			while [[ $check -eq 0 && $count -le 10 ]]
 			do
                 $java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
 				-R $ref \
@@ -120,10 +120,11 @@ else
 				--maxGaussians 4 \
 				--percentBadVariants 0.05 \
 				-rscriptFile $output/plot/$input_name.plots.R
-				sleep 10
-                                check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
+				
+				check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
 				if [ $check -eq 0 ]
 				then
+					rm `grep -l $output/plot/$input_name.plots.R *.log`
 					rm core.*
 				fi
 				let count=count+1
@@ -189,10 +190,10 @@ else
 	if [ $raw_calls_indels -gt 0 ]
 	then
 		if [ ! $5 ]
-                then
-                count=0
-		check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
-		while [[ $check -eq 0 && $count -le 5 ]]
+		then
+		count=0
+		check=0
+		while [[ $check -eq 0 && $count -le 10 ]]
 		do
 			$java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
 			-R $ref \
@@ -209,10 +210,11 @@ else
 			--maxGaussians 4 \
 			--percentBadVariants 0.05 \
 			-rscriptFile $output/plot/$input_name.plots.R
-			sleep 10
-                        check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
+			
+			check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
 			if [ $check -eq 0 ]
 			then
+				rm `grep -l $output/plot/$input_name.plots.R *.log`
 				rm core.*
 			fi
 			let count=count+1

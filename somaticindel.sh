@@ -37,23 +37,36 @@ else
 	fi	
     indel_v=$tumor_sample.chr$chr.indel.txt
 	
-    $java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-    -R $ref \
-    -et NO_ET \
-    -K $gatk/Hossain.Asif_mayo.edu.key \
-    -T SomaticIndelDetector \
-    -L chr$chr \
-    --filter_expressions $filter \
-    --window_size $window \
-    -o $output/$output_file \
-    -verbose $output/$indel_v \
-    -I:normal $normal_bam \
-    -I:tumor $tumor_bam
+    check=0
+	count=0
+	while [[ $check -eq 0 && $count -le 10 ]]
+    do
+		$java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+		-R $ref \
+		-et NO_ET \
+		-K $gatk/Hossain.Asif_mayo.edu.key \
+		-T SomaticIndelDetector \
+		-L chr$chr \
+		--filter_expressions $filter \
+		--window_size $window \
+		-o $output/$output_file \
+		-verbose $output/$indel_v \
+		-I:normal $normal_bam \
+		-I:tumor $tumor_bam
+		
+		check=`[ -s $output/$output_file.idx ] && echo "1" || echo "0"`
+        if [ $check -eq 0 ]
+        then
+            rm `grep -l $output/$output_file *.log`
+			rm core.*
+        fi    
+		let count=count+1
+    done 
 	
-    if [ ! -s $output/$output_file ]
+    if [ ! -s $output/$output_file.idx ]
     then
-        echo "ERROR : variants.sh SomaticIndelDetector failed, file $output/$output_file not generated "
-        exit 1;
+        $script_path/errorlog.sh $output/$output_file somaticindel.sh ERROR "failed to create"
+		exit 1;
     else
         perl $script_path/convertvcf.pl $output/$output_file > $output/$output_file.tmp
 		mv $output/$output_file.tmp $output/$output_file

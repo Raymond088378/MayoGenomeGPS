@@ -56,23 +56,23 @@ else
     
     if [ $multi == "YES" ]
     then
-        pair=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2)
+        pair=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2 | tr "\t" " ")
         for i in $pair
         do
 			$samtools/samtools index $input/$sample.$i.chr$chr.bam
-			$samtools/samtools pileup -s -f $ref $input/$sample.$i.chr$chr.bam | awk '{if ($1 ~ /chr/) {print $1"\t"$2-1"\t"$2"\t"$4"\t"$3}}'  > $output/$i.chr$chr.pileup.bed
+			$samtools/samtools mpileup -s -f $ref $input/$sample.$i.chr$chr.bam | awk '{if ($1 ~ /chr/) {print $1"\t"$2-1"\t"$2"\t"$4"\t"$3}}'  > $output/$sample.$i.chr$chr.pileup.bed
             rm $input/$sample.$i.chr$chr.bam.bai
-			total=`cat $output/$i.chr$chr.pileup.bed | wc -l`
-            perl $script_path/split.a.file.into.n.parts.pl 25 $output/$i.chr$chr.pileup.bed $total
-            rm $output/$i.chr$chr.pileup.bed
+			total=`cat $output/$sample.$i.chr$chr.pileup.bed | wc -l`
+            perl $script_path/split.a.file.into.n.parts.pl 25 $output/$sample.$i.chr$chr.pileup.bed $total
+            rm $output/$sample.$i.chr$chr.pileup.bed
             cd $output
             # intersect the pileup with the intersect kit
             for ((j=1;j<=26; j++))
             do
-                if [ -f $output/$i.chr$chr.pileup.bed.$j.txt ]
+                if [ -f $output/$sample.$i.chr$chr.pileup.bed.$j.txt ]
 				then
-					$bed/intersectBed -a $kit -b $output/$i.chr$chr.pileup.bed.$j.txt -wa -wb > $output/$i.chr$chr.pileup.bed.$j.txt.i
-					rm $output/$i.chr$chr.pileup.bed.$j.txt	
+					$bed/intersectBed -a $kit -b $output/$sample.$i.chr$chr.pileup.bed.$j.txt -wa -wb > $output/$sample.$i.chr$chr.pileup.bed.$j.txt.i
+					rm $output/$sample.$i.chr$chr.pileup.bed.$j.txt	
 				fi
 			done
         
@@ -83,25 +83,25 @@ else
                 for((k=1; k<=26; k++))
 				do
                     a=0
-                    if [ -f $i.chr$chr.pileup.bed.$k.txt.i ]
+                    if [ -f $sample.$i.chr$chr.pileup.bed.$k.txt.i ]
 					then
-						a=`awk '$(NF-1)>'$j'' $i.chr$chr.pileup.bed.$k.txt.i | wc -l`
+						a=`awk '$(NF-1)>'$j'' $sample.$i.chr$chr.pileup.bed.$k.txt.i | wc -l`
 						total=`expr $total "+" $a`
 					fi	
                 done
-                echo $total >> $output/$i.chr$chr.pileup.i.out
+                echo $total >> $output/$sample.$i.chr$chr.pileup.i.out
             done    
             for((k=1; k<=26; k++))
 			do
-				if [ -f $output/$i.chr$chr.pileup.bed.$k.txt.i ]
+				if [ -f $output/$sample.$i.chr$chr.pileup.bed.$k.txt.i ]
 				then
-					rm $output/$i.chr$chr.pileup.bed.$k.txt.i
+					rm $output/$sample.$i.chr$chr.pileup.bed.$k.txt.i
 				fi
 			done	
         done    
     else	
 		bam=$input/chr$chr.cleaned.bam
-		$samtools/samtools pileup -s -f $ref $bam | awk '{if ($1 ~ /chr/) {print $1"\t"$2-1"\t"$2"\t"$4"\t"$3}}'  > $output/$sample.chr$chr.pileup.bed
+		$samtools/samtools mpileup -s -f $ref $bam | awk '{if ($1 ~ /chr/) {print $1"\t"$2-1"\t"$2"\t"$4"\t"$3}}'  > $output/$sample.chr$chr.pileup.bed
 		#split the file into 25 parts to use less memory
         total=`cat $output/$sample.chr$chr.pileup.bed | wc -l`
         perl $script_path/split.a.file.into.n.parts.pl 25 $output/$sample.chr$chr.pileup.bed $total

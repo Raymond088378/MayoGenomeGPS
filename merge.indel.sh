@@ -44,7 +44,7 @@ else
 	then
 	    rm $TempReports/$indel_file.rsIDs.frequencies
 	else
-	    echo "ERROR: failed to add snpeff results to indel file $indel_file"
+	    $script_path/errorlog.sh $TempReports/$sample.chr${which_chr}.filtered.INDEL.report merge.indel.sh ERROR "failed to create" 
 	fi	
 	for report in $TempReports/$sample.chr${which_chr}.INDEL.report $TempReports/$sample.chr${which_chr}.filtered.INDEL.report
 	do

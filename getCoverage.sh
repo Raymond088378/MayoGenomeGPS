@@ -26,10 +26,10 @@ else
         do
             for chr in $chrs
             do
-                num_rows=`cat $input/$i.chr$chr.pileup.i.out | wc -l`
+                num_rows=`cat $input/$sample.$i.chr$chr.pileup.i.out | wc -l`
                 if [ $num_rows != 40 ]
                 then
-                    $script_path/errorlog.sh $input/$i.chr$chr.pileup.i.out getCoverage.sh ERROR "malformed"
+                    $script_path/errorlog.sh $input/$sample.$i.chr$chr.pileup.i.out getCoverage.sh ERROR "malformed"
 					exit 1;
                 fi
             done	
@@ -39,10 +39,10 @@ else
                 total=0
                 for j in $chrs
                 do
-                    a=`sed -n "$k{p;q}" $input/$i.chr$j.pileup.i.out`
+                    a=`sed -n "$k{p;q}" $input/$sample.$i.chr$j.pileup.i.out`
                     total=`expr $total "+" $a`
                 done
-                echo $total >> $output/$i.coverage.out
+                echo $total >> $output/$sample.$i.coverage.out
             done
         done
     else

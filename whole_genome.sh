@@ -482,12 +482,12 @@ else
 			hold_args="-hold_jid $type.$version.OnTarget_variant.$group.$run_num"
             for sample in $samples
 			do      
-				qsub $args -N $type.$version.sift.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $sample $run_info
-				qsub $args -N $type.$version.snpeff.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info
-				qsub $args -N $type.$version.polyphen.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info  
+				qsub $args -N $type.$version.sift.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $sample $run_info $group 
+				qsub $args -N $type.$version.snpeff.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info $group
+				qsub $args -N $type.$version.polyphen.$group.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info $group  
 				hold="$type.$version.sift.$group.$sample.$run_num,$type.$version.snpeff.$group.$sample.$run_num,$type.$version.polyphen.$group.$sample.$run_num"
-				qsub $args -N $type.$version.sample_reports.$group.$sample.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=8G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir
-				qsub $args -N $type.$version.sample_report.$sample.$run_num -hold_jid $type.$version.sample_reports.$group.$sample.$run_num $script_path/sample_report.sh $output_dir $TempReports $sample $run_info
+				qsub $args -N $type.$version.sample_reports.$group.$sample.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=8G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir $group
+				qsub $args -N $type.$version.sample_report.$sample.$run_num -hold_jid $type.$version.sample_reports.$group.$sample.$run_num $script_path/sample_report.sh $output_dir $TempReports $sample $run_info $group
 			done
 			sampleNames=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" "\n")
 			i=1
@@ -499,12 +499,12 @@ else
 			for i in $(seq 2 ${#sampleArray[@]})
 			do  
 				tumor=${sampleArray[$i]}
-				qsub $args -N $type.$version.sift.${group}.${tumor}.$i.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $group.$tumor $run_info
-				qsub $args -N $type.$version.snpeff.$group.$tumor.$i.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $group.$tumor $run_info
-				qsub $args -N $type.$version.polyphen.$group.$tumor.$i.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $group.$tumor $run_info
+				qsub $args -N $type.$version.sift.${group}.${tumor}.$i.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $group.$tumor $run_info TUMOR
+				qsub $args -N $type.$version.snpeff.$group.$tumor.$i.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $group.$tumor $run_info TUMOR
+				qsub $args -N $type.$version.polyphen.$group.$tumor.$i.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $group.$tumor $run_info TUMOR
 				hold="$type.$version.sift.${group}.${tumor}.$i.$run_num,$type.$version.snpeff.$group.$tumor.$i.$run_num,$type.$version.polyphen.$group.$tumor.$i.$run_num"
-				qsub $args -N $type.$version.sample_reports.$group.$tumor.$i.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=8G $script_path/sample_reports.sh $run_info $tumor $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir $group
-				qsub $args -N $type.$version.sample_report.$group.$tumor.$i.$run_num -hold_jid $type.$version.sample_reports.$group.$tumor.$i.$run_num $script_path/sample_report.sh $output_dir $TempReports $group.$tumor $run_info
+				qsub $args -N $type.$version.sample_reports.$group.$tumor.$i.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=8G $script_path/sample_reports.sh $run_info $tumor $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir $group TUMOR
+				qsub $args -N $type.$version.sample_report.$group.$tumor.$i.$run_num -hold_jid $type.$version.sample_reports.$group.$tumor.$i.$run_num $script_path/sample_report.sh $output_dir $TempReports $tumor $run_info TUMOR.$group
 			done                    		
 			if [ $tool == "whole_genome" ]
 			then

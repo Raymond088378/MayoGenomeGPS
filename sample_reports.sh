@@ -19,7 +19,12 @@ else
 	then
 		group=$9
     fi
-	#SGE_TASK_ID=1
+	
+	if [ ${10} ]
+	then
+		prefix=${10}
+	fi	
+	
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2)
     analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2)
@@ -31,45 +36,37 @@ else
     
 	
     ## prepocessing the input file from variant module or user added 
-    $script_path/preprocess.persample.sh $sample $TempReports $run_info $output_OnTarget $which_chr $group
+    if [[ $9 && ${10} ]]
+	then
+		$script_path/preprocess.persample.sh $sample $TempReports $run_info $output_OnTarget $which_chr $group $prefix
+		sam=$prefix.$group.$sample
+	elif [ $9 ]
+	then
+		$script_path/preprocess.persample.sh $sample $TempReports $run_info $output_OnTarget $which_chr $group
+		sam=$group.$sample
+	else
+		$script_path/preprocess.persample.sh $sample $TempReports $run_info $output_OnTarget $which_chr
+		sam=$sample
+	fi	
     
+	
     if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
     then
-        if [ $9 ]
-		then
-			snv_var=$group.${sample}.chr${which_chr}.snv
-        else
-			snv_var=${sample}.chr${which_chr}.snv
-		fi
-		## add rsids
+		snv_var=$sam.chr${which_chr}.snv
+        ## add rsids
         $script_path/add.rsids_snvs.sh $TempReports $snv_var $which_chr $run_info
         ## add allele frequency
         $script_path/add.frequencies.sh $TempReports $snv_var $which_chr $run_info
         ## merge sift sseq codon UCSC tracks
-        if [ $9 ]
-		then
-			$script_path/merge.snv.sh $TempReports $group.$sample $which_chr $sift $snpeff $poly $snv_var $run_info
-		else
-			$script_path/merge.snv.sh $TempReports $sample $which_chr $sift $snpeff $poly $snv_var $run_info
-		fi
+		$script_path/merge.snv.sh $TempReports $sam $which_chr $sift $snpeff $poly $snv_var $run_info
 	fi
 	
     if [ $variant_type == "BOTH" -o $variant_type = "INDEL" ]
     then	
-		if [ $9 ]
-		then
-			indel_var=$group.${sample}.chr${which_chr}.indel
-		else
-			indel_var=${sample}.chr${which_chr}.indel
-        fi
-		## merge sseq to indel report
+		indel_var=$sam.chr${which_chr}.indel
+		## add rsIDs
 		$script_path/add.rsids_indels.sh $TempReports $indel_var $which_chr $run_info
-		if [ $9 ]
-		then
-			$script_path/merge.indel.sh $TempReports $group.$sample $which_chr $snpeff $indel_var $run_info
-		else
-			$script_path/merge.indel.sh $TempReports $sample $which_chr $snpeff $indel_var $run_info	
-		fi
+		$script_path/merge.indel.sh $TempReports $sam $which_chr $snpeff $indel_var $run_info
 	fi
     echo `date`
 fi	
