@@ -347,8 +347,8 @@ else
                 do
                     cat $i | awk '$0 !~ /#/' | cut -f8 | awk '$1 ~ /[^0-9]/' | tail -1 >> $numbers/$group.$sample.dup.out
                 done
-                percent_dup=`cat $numbers/$sample.dup.out | awk '{sum+=$1; print sum}' | tail -1` 
-                rm $numbers/$sample.dup.out 
+                percent_dup=`cat $numbers/$group.$sample.dup.out | awk '{sum+=$1; print sum}' | tail -1` 
+                rm $numbers/$group.$sample.dup.out 
                 echo $percent_dup >> $numbers/$group.$sample.out
             else
                 echo $percent_dup >> $numbers/$group.$sample.out	
