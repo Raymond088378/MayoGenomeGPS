@@ -82,10 +82,12 @@ else
 	cat $vcf | awk '$0 ~ /^#/ || $5 !~ /,/' > $vcf.temp
 	mv $vcf.temp $vcf
 	
-    if [ ! -s $vcf ]
+    if [ ! -s $vcf.idx ]
     then
         $script_path/errorlog.sh $vcf unifiedgenotyper.sh ERROR "empty"
         exit 1;
-    fi
+    else
+		rm $vcf.idx	
+	fi
     echo `date`
 fi
