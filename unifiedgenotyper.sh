@@ -34,11 +34,17 @@ else
     fi
     
     check=0
+	dir_info=`dirname $bam`
+	if [ ! -d $dir_info/temp ]
+	then
+		mkdir $dir_info/temp
+	fi
+	
 	while [[ $check -eq 0 ]]
     do
 		if [ $ped != "NA" ]
 		then
-			$java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+			$java/java -Xmx3g -Xms512m -Djava.io.tmpdir=$dir_info/temp/ -jar $gatk/GenomeAnalysisTK.jar \
 			-R $ref \
 			-et NO_ET \
 			-K $gatk/Hossain.Asif_mayo.edu.key \
@@ -52,7 +58,7 @@ else
 			--ped $ped \
 			--out $vcf
 		else
-			$java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+			$java/java -Xmx3g -Xms512m -Djava.io.tmpdir=$dir_info/temp/ -jar $gatk/GenomeAnalysisTK.jar \
 			-R $ref \
 			-et NO_ET \
 			-K $gatk/Hossain.Asif_mayo.edu.key \

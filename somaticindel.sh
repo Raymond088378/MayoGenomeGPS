@@ -39,9 +39,14 @@ else
 	
     check=0
 	count=0
-	while [[ $check -eq 0 && $count -le 10 ]]
+	if [ ! -d $output/temp ]
+	then
+		mkdir $output/temp
+	fi
+	
+	while [[ $check -eq 0 ]]
     do
-		$java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+		$java/java -Xmx3g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
 		-R $ref \
 		-et NO_ET \
 		-K $gatk/Hossain.Asif_mayo.edu.key \
@@ -60,7 +65,6 @@ else
             rm `grep -l $output/$output_file *.log`
 			rm core.*
         fi    
-		let count=count+1
     done 
 	
     if [ ! -s $output/$output_file.idx ]

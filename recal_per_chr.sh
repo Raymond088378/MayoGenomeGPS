@@ -85,8 +85,13 @@ else
         input_bam="-I $output/$samples.chr${chr}-sorted.bam"
     fi	
             
-    ## Recal metrics file creation
-    $java/java -Xmx6g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+    if [ ! -d $output/temp/ ]
+	then
+		mkdir $output/temp/
+	fi
+	
+	## Recal metrics file creation
+    $java/java -Xmx6g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
     -R $ref \
     -et NO_ET \
     -K $gatk/Hossain.Asif_mayo.edu.key \
@@ -116,7 +121,7 @@ else
         fi
     else	
         ## recailbartion
-        $java/java -Xmx6g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+        $java/java -Xmx6g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
         -R $ref \
         -et NO_ET \
         -K $gatk/Hossain.Asif_mayo.edu.key \

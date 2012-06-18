@@ -6,7 +6,6 @@ then
 else
     set -x
     echo `date`
-    
     input=`echo $1 | sed -e "s/ *$//" | sed -e "s/^ *//"`
     output=$2
     run_info=$3
@@ -60,10 +59,10 @@ else
 				if [ $i != ".idx" ]
 				then
 					if [ -s $i ]
-                                        then
-                                            rm $i
-                                        fi
-                                fi
+					then
+						rm $i
+					fi
+				fi
 			done	
         fi
     fi
