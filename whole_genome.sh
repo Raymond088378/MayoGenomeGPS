@@ -606,14 +606,14 @@ else
             id=""
             for group in `echo $groups | tr ":" "\n"`
             do
-                id=$id"$type.$version.sample_numbers.$group.$run_num,$type.$version.gene_summary.$group.$run_num,$type.$version.igv_bam.$group.$run_num,$type.$version.annotate_sample.$run_num,$type.$version.annotation_CNV.$run_num,$type.$version.annotation_SV.$run_num,"
+                id=$id"$type.$version.getCoverage.$group.$run_num,$type.$version.sample_numbers.$group.$run_num,$type.$version.gene_summary.$group.$run_num,$type.$version.igv_bam.$group.$run_num,$type.$version.annotate_sample.$run_num,$type.$version.annotation_CNV.$run_num,$type.$version.annotation_SV.$run_num,"
             done          
         elif [ $tool == "whole_genome" ]
         then
             id=""
             for group in `echo $groups | tr ":" "\n"`
             do
-                id=$id"$type.$version.sample_numbers.$group.$run_num,$type.$version.gene_summary.$group.$run_num,$type.$version.igv_bam.$group.$run_num,$type.$version.annotate_sample.$run_num,"
+                id=$id"$type.$version.getCoverage.$group.$run_num,$type.$version.sample_numbers.$group.$run_num,$type.$version.gene_summary.$group.$run_num,$type.$version.igv_bam.$group.$run_num,$type.$version.annotate_sample.$run_num,"
             done    
         fi
         qsub $args -N $type.$version.generate_html.$run_num -hold_jid $id $script_path/generate_html.sh $output_dir $run_info 	

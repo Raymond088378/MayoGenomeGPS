@@ -30,7 +30,7 @@ else
         
     if [ $only_ontarget == "YES" ]
     then
-	cat $TargetKit | grep -w chr$chr > $output/$sample.$chr.target.bed
+	cat $TargetKit | grep -w chr$chr > $output/$tumor_sample.$chr.target.bed
     fi
 	
     export PYTHONPATH=$pythonpath:$PYTHONPATH
@@ -48,17 +48,11 @@ else
         exit 1;
     fi
     
-    ### make sure both the bams are sorted
-	
-   # $python $jointsnvmix/build/scripts-2.7/jsm.py train --model snvmix2  --skip_size $X --min_base_qual 20 --min_map_qual 20 --chromosome chr$chr \
-	#	$ref $normal_bam $tumor_bam $output/$tumor_sample.$normal_sample.chr$chr.train.txt
-		
-		
     ### run joint snvmix classify to call teh somatic mutation
     
 	$python/python $jointsnvmix/build/scripts-2.7/jsm.py classify --model snvmix2 --somatic_threshold $cutoff --post_process --min_base_qual $bqual --min_map_qual $mqual --chromosome chr$chr --out_file $output/$output_file.txt --parameters_file $jointsnvmix/config/params.cfg $ref $normal_bam $tumor_bam
 	
-	### script to convert text output to vcf output
+	### script to convert text output to vcf output 
 	perl $script_path/jsm2vcf.pl -i $output/$output_file.txt -o $output/$output_file -ns $normal_sample -ts $tumor_sample
 	cat $output/$output_file | awk '$0 ~ /^#/ || $5 ~ /,/' > $output/$output_file.multi.vcf
 	cat $output/$output_file | awk '$0 ~ /^#/ || $5 !~ /,/' > $output/$output_file.tmp
@@ -68,13 +62,13 @@ else
         
 	if [ $only_ontarget == "YES" ]
 	then
-		len=`cat $output/$sample.$chr.target.bed | wc -l`
+		len=`cat $output/$tumor_sample.$chr.target.bed | wc -l`
                 if [ $len -gt 0 ]
                 then
-                    $bedtools/intersectBed -a $output/$output_file -b output/$sample.$chr.target.bed -wa -header > $output/$output_file.i
+                    $bedtools/intersectBed -a $output/$output_file -b $output/$tumor_sample.$chr.target.bed -wa -header > $output/$output_file.i
                     mv $output/$output_file.i $output/$output_file   
                 fi
-                rm $output/$sample.$chr.target.bed
+                rm $output/$tumor_sample.$chr.target.bed
         fi
     echo `date`
 fi

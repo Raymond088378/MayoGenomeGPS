@@ -769,995 +769,164 @@ else    {
 		
 		if ( ( $analysis eq 'external' ) || ($analysis eq 'realignment') || ($analysis eq 'mayo') || ($analysis eq 'realign-mayo')) {	
 			if ($tool eq 'whole_genome')	{
+				my @key_num;
+				my @subheader=("Single Nucleotide Variants (SNVs)","Known SNVs","HIGH Impact","Moderate Impact","Low Impact","Novel SNVs","HIGH Impact","Moderate Impact","Low Impact","INsertions DELetions (INDELs)","HIGH Impact","Moderate Impact");
 				if ($multi eq 'NO')	{
-					if ($key eq '4' )	{
-						print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '7' )	{
-						print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '9' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '15' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '16' )	{
-						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}				
-					if ($key eq '24' )	{
-						print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '26' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '32' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '33' )	{
-						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}				
-					if ($key eq '41' )	{
-						print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '44' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '46' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}		
-				}
-				else	{
-					if ($key eq '3' )	{
-						print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '6' )	{
-						print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '8' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '14' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '15' )	{
-						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}				
-					if ($key eq '23' )	{
-						print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '25' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '31' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '32' )	{
-						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}				
-					if ($key eq '40' )	{
-						print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '43' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '45' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}		
+					@key_num=("4","7","9","15","16","24","26","32","33","41","44","46","57","61");
+					@subheader=(@subheader,"Copy Number Variants (CNVs)","Structural Variants (SVs)");
+				} else	{
+					@key_num=("3","6","8","14","15","23","25","31","32","40","43","45");
 				}	
-				if ($tool eq 'whole_genome')	{
-					if ($key eq '57' )	{
-						print OUT "<th class=\"helpBod\">Copy Number Variants (CNVs)</th>";
+				for (my $h=0;$h<=$#key_num;$h++)	{
+					if ($key eq $key_num[$h] )	{
+						print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
 						}		
 						print OUT "</tr>\n";
-					}
-					if ($key eq '61' )	{
-						print OUT "<th class=\"helpBod\">Structural Variants (SVs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-				}
+					}	
+				}		
 			}
 			else	{
 				if ($multi eq 'NO')	{
-					if ($key eq '4' )	{
-						print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '8' )	{
-						print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '10' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '16' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '17' )	{
-						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}				
-					if ($key eq '25' )	{
-						print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '27' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '33' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '34' )	{
-						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}				
-					if ($key eq '42' )	{
-						print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '46' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '48' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
+					my @key_num=("4","8","10","16","17","25","27","33","34","42","46","48");
+					my @subheader=("Single Nucleotide Variants (SNVs)","Known SNVs","HIGH Impact","Moderate Impact","Low Impact","Novel SNVs","HIGH Impact","Moderate Impact","Low Impact","INsertions DELetions (INDELs)","HIGH Impact","Moderate Impact");
+					for (my $h=0;$h<=$#key_num;$h++)	{
+						if ($key eq $key_num[$h] )	{
+							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
+							for (my $c=0; $c < $num_samples;$c++)	{
+								print OUT "<td class=\"helpHed\"></td>";
+							}		
+							print OUT "</tr>\n";
+						}	
 					}		
 				}
 				elsif ($multi eq 'YES')	{
-					if ($key eq '3' )	{
-						print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '7' )	{
-						print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '9' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '15' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '16' )	{
-						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}				
-					if ($key eq '24' )	{
-						print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '26' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '32' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '33' )	{
-						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}				
-					if ($key eq '41' )	{
-						print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '45' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '47' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}		
+					my @key_num=("3","7","9","15","16","24","26","32","33","41","45","47");
+					my @subheader=("Single Nucleotide Variants (SNVs)","Known SNVs","HIGH Impact","Moderate Impact","Low Impact","Novel SNVs","HIGH Impact","Moderate Impact","Low Impact","INsertions DELetions (INDELs)","HIGH Impact","Moderate Impact");
+					for (my $h=0;$h<=$#key_num;$h++)	{
+						if ($key eq $key_num[$h] )	{
+							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
+							for (my $c=0; $c < $num_samples;$c++)	{
+								print OUT "<td class=\"helpHed\"></td>";
+							}		
+							print OUT "</tr>\n";
+						}	
+					}			
 				}
 			}	
 		}
 		elsif ($analysis eq 'annotation') {
 			if ($variant_type eq 'BOTH'  || $variant_type eq 'SNV')	{
-				if ($key eq '0' )	{
-					print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '2' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '8' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '9' )	{
-					print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}				
-				if ($key eq '17' )	{
-					print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}	
-				if ($key eq '19' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '25' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '26' )	{
-					print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
+				my @key_num=("0","2","8","9","17","19","25","26");
+				my @subheader=("Known SNVs","HIGH Impact","Moderate Impact","Low Impact","Novel SNVs","HIGH Impact","Moderate Impact","Low Impact",);
+				for (my $h=0;$h<=$#key_num;$h++)	{
+					if ($key eq $key_num[$h] )	{
+						print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
+						for (my $c=0; $c < $num_samples;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}	
 				}
 				if ($variant_type eq 'BOTH')	{
-					if ($key eq '34' )	{
-						print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '35' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '37' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}		
+					my @key_num=("34","35","37");
+					my @subheader=("INsertions DELetions (INDELs)","HIGH Impact","Moderate Impact");
+					for (my $h=0;$h<=$#key_num;$h++)	{
+						if ($key eq $key_num[$h] )	{
+							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
+							for (my $c=0; $c < $num_samples;$c++)	{
+								print OUT "<td class=\"helpHed\"></td>";
+							}		
+							print OUT "</tr>\n";
+						}	
+					}	
 				}
 			}
 			elsif ($variant_type eq 'INDEL')	{
-					if ($key eq '0' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
+				my @key_num=("0","2");
+				my @subheader=("HIGH Impact","Moderate Impact");
+				for (my $h=0;$h<=$#key_num;$h++)	{
+					if ($key eq $key_num[$h] )	{
+						print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
 						}		
 						print OUT "</tr>\n";
-					}
-					if ($key eq '2' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}		
+					}	
+				}	
 			}
 		}
 		elsif ($analysis eq 'ontarget')	{
-			if ($tool eq 'exome')	{
-				if ($key eq '3' )	{
-					print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
+			my @key_num=("3","5","11","12","20","22","28","29","37","41","43");
+			my @subheader=("Known SNVs","HIGH Impact","Moderate Impact","Low Impact","Novel SNVs","HIGH Impact","Moderate Impact","Low Impact","INsertions DELetions (INDELs)","HIGH Impact","Moderate Impact");
+			for (my $h=0;$h<=$#key_num;$h++)	{
+				if ($key eq $key_num[$h] )	{
+					print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 					for (my $c=0; $c < $num_samples;$c++)	{
 						print OUT "<td class=\"helpHed\"></td>";
 					}		
 					print OUT "</tr>\n";
 				}	
-				if ($key eq '5' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '11' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '12' )	{
-					print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}				
-				if ($key eq '20' )	{
-					print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}	
-				if ($key eq '22' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '28' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '29' )	{
-					print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}				
-				if ($key eq '37' )	{
-					print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '41' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '43' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}	
-			}
-			elsif ($tool eq 'whole_genome')	{
-				if ($key eq '3' )	{
-					print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}	
-				if ($key eq '5' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '11' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '12' )	{
-					print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}				
-				if ($key eq '20' )	{
-					print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}	
-				if ($key eq '22' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '28' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '29' )	{
-					print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}				
-				if ($key eq '37' )	{
-					print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '41' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				if ($key eq '43' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c < $num_samples;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
 			}	
 		}
-		
 		elsif ($analysis eq 'variant') {
 			if ($multi eq 'NO')	{
 				if ($tool eq 'exome')	{
-					if ($key eq '2' )	{
-						print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '6' )	{
-						print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '8' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '14' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '15' )	{
-						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}				
-					if ($key eq '23' )	{
-						print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '25' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '31' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '32' )	{
-						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}				
-					if ($key eq '40' )	{
-						print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '44' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '48' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}			
+					my @key_num=("2","6","8","14","15","23","25","31","32","40","44","46");
+					my @subheader=("Single Nucleotide Variants (SNVs)","Known SNVs","HIGH Impact","Moderate Impact","Low Impact","Novel SNVs","HIGH Impact","Moderate Impact","Low Impact","INsertions DELetions (INDELs)","HIGH Impact","Moderate Impact");
+					for (my $h=0;$h<=$#key_num;$h++)	{
+						if ($key eq $key_num[$h] )	{
+							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
+							for (my $c=0; $c < $num_samples;$c++)	{
+								print OUT "<td class=\"helpHed\"></td>";
+							}		
+							print OUT "</tr>\n";
+						}	
+					}		
 				}
 				elsif ($tool eq 'whole_genome')	{
-						if ($key eq '2' )	{
-						print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '5' )	{
-						print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '7' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '13' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '14' )	{
-						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}				
-					if ($key eq '22' )	{
-						print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '24' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '30' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '31' )	{
-						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}				
-					if ($key eq '39' )	{
-						print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '42' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '46' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}				
-					if ($key eq '55' )	{
-						print OUT "<th class=\"helpBod\">Copy Number Variants (CNVs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '59' )	{
-						print OUT "<th class=\"helpBod\">Structural Variants (SVs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
+					my @key_num=("2","5","7","13","14","22","24","30","31","39","42","44","55","59");
+					my @subheader=("Single Nucleotide Variants (SNVs)","Known SNVs","HIGH Impact","Moderate Impact","Low Impact","Novel SNVs","HIGH Impact","Moderate Impact","Low Impact","INsertions DELetions (INDELs)","HIGH Impact","Moderate Impact","Copy Number Variants (CNVs)","Structural Variants (SVs)");
+					for (my $h=0;$h<=$#key_num;$h++)	{
+						if ($key eq $key_num[$h] )	{
+							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
+							for (my $c=0; $c < $num_samples;$c++)	{
+								print OUT "<td class=\"helpHed\"></td>";
+							}		
+							print OUT "</tr>\n";
+						}	
 					}
 				}	
 			}
 			else	{
+				my @subheader=("Single Nucleotide Variants (SNVs)","Known SNVs","HIGH Impact","Moderate Impact","Low Impact","Novel SNVs","HIGH Impact","Moderate Impact","Low Impact","INsertions DELetions (INDELs)","HIGH Impact","Moderate Impact");
 				if ($tool eq 'exome')	{
-					if ($key eq '0' )	{
-						print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '4' )	{
-						print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '6' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '12' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '13' )	{
-						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}				
-					if ($key eq '21' )	{
-						print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '23' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '29' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '30' )	{
-						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}				
-					if ($key eq '38' )	{
-						print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '42' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '46' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
+					my @key_num=("0","4","6","12","13","21","23","29","30","38","42","44");
+					for (my $h=0;$h<=$#key_num;$h++)	{
+						if ($key eq $key_num[$h] )	{
+							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
+							for (my $c=0; $c < $num_samples;$c++)	{
+								print OUT "<td class=\"helpHed\"></td>";
+							}		
+							print OUT "</tr>\n";
+						}	
 					}			
 				}
 				elsif ($tool eq 'whole_genome')	{
-						if ($key eq '0' )	{
-						print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '3' )	{
-						print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '5' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '11' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '12' )	{
-						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}				
-					if ($key eq '20' )	{
-						print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}	
-					if ($key eq '22' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '28' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '29' )	{
-						print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}				
-					if ($key eq '37' )	{
-						print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '40' )	{
-						print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}
-					if ($key eq '44' )	{
-						print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-						for (my $c=0; $c < $num_samples;$c++)	{
-							print OUT "<td class=\"helpHed\"></td>";
-						}		
-						print OUT "</tr>\n";
-					}				
+					my @key_num=("0","3","5","11","12","20","22","28","29","37","40","44");
+					for (my $h=0;$h<=$#key_num;$h++)	{
+						if ($key eq $key_num[$h] )	{
+							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
+							for (my $c=0; $c < $num_samples;$c++)	{
+								print OUT "<td class=\"helpHed\"></td>";
+							}		
+							print OUT "</tr>\n";
+						}	
+					}			
 				}
 			}
 		}
-	# print OUT "</tr>";
 	}	
 	undef %sample_numbers;
 	print OUT "</table>";
@@ -1824,105 +993,38 @@ else    {
 				@sv_h=("Total number of CNVs","Number of CNVs observed in UCSC RefFlat coding regions","Number of deletions in UCSC RefFlat coding regions","Number of duplications in UCSC RefFlat coding regions","total number of SVs","Number of SVs observed in UCSC RefFlat coding regions","Number of ITX in UCSC RefFlat coding regions","Number of INV in UCSC RefFlat coding regions","Number of DEL in UCSC RefFlat coding regions","Number of INS in UCSC RefFlat coding regions","Number of CTX in UCSC RefFlat coding regions");
 				@names=(@align,@snv,@indel,@sv);
 				@values=(@align_h,@snv_h,@indel_h,@sv_h);
-		}	
-		
+		}
+		print OUT "<th class=\"helpBod\">Re-Alignment </th>";
+                for (my $c=0; $c <= $tot;$c++)   {
+                        print OUT "<td class=\"helpHed\"></td>";
+                }               
+                print OUT "</tr>\n";
+        
 		foreach my $key (sort {$a <=> $b} keys %group_numbers)	{	
 			
 			if ($tool eq 'exome')	{
-				if ($key eq '2' )	{
-					print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}	
-				elsif ($key eq '6' )	{
-					print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				elsif ($key eq '8' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				elsif ($key eq '14' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				elsif ($key eq '15' )	{
-					print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}				
-				elsif ($key eq '23' )	{
-					print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}	
-				elsif ($key eq '25' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				elsif ($key eq '31' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				elsif ($key eq '32' )	{
-					print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}				
-				elsif ($key eq '40' )	{
-					print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				elsif ($key eq '44' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				elsif ($key eq '46' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				else	{
-					print OUT "<td class=\"helpHed\"><p align='left'><a href=\"#$names[$key]\" title=\"$values[$key]\">$names[$key]</a></td>";
-					for(my $k = 0; $k <= $tot;$k++)	{
-						my $print=CommaFormatted(${$group_numbers{$key}}[$k]);
-						print OUT "<td class=\"helpBod\">$print</td>\n";
+				my @key_num=("2","6","8","14","15","23","25","31","32","40","44","46","64");
+				my @subheader=("Single Nucleotide Variants (SNVs)","Known SNVs","HIGH Impact","Moderate Impact","Low Impact","Novel SNVs","HIGH Impact","Moderate Impact","Low Impact","INsertions DELetions (INDELs)","HIGH Impact","Moderate Impact");
+				for (my $h=0;$h<=$#key_num;$h++)	{
+					if ($key eq $key_num[$h] )	{
+						print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
+						for (my $c=0; $c <= $tot;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
 					}
-					print OUT "</tr>\n";
 				}
-				if ( $key eq '2' || $key eq '6' || $key eq '8' || $key eq '14' || $key eq '15' || $key eq '23' || $key eq '25' || $key eq '31' || $key eq '32' || $key eq '40' || $key eq '44' || $key eq '46' )	{
-					print OUT "<td class=\"helpHed\"><p align='left'><a href=\"#$names[$key]\" title=\"$values[$key]\">$names[$key]</a></td>";
+				my $flag=1;
+				for (my $h=0;$h<=$#key_num;$h++)	{
+					if ($key ne $key_num[$h] )	{
+						$flag=1;
+					}
+					else	{
+						$flag=0;
+					}
+				}		
+				if ($flag == 1)	{
+						print OUT "<td class=\"helpHed\"><p align='left'><a href=\"#$names[$key]\" title=\"$values[$key]\">$names[$key]</a></td>";
 					for(my $k = 0; $k <= $tot;$k++)	{
 						my $print=CommaFormatted(${$group_numbers{$key}}[$k]);
 						print OUT "<td class=\"helpBod\">$print</td>\n";
@@ -1931,120 +1033,34 @@ else    {
 				}				
 			}
 			elsif ($tool eq 'whole_genome')	{
-				if ($key eq '2' )	{
-					print OUT "<th class=\"helpBod\">Single Nucleotide Variants (SNVs)</th>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}	
-				elsif ($key eq '5' )	{
-					print OUT "<th class=\"helpBod\"><b>Known SNVs<b></th>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
+				my @key_num=("2","5","7","13","14","22","24","30","31","39","42","44","55","59","66");
+				my @subheader=("Single Nucleotide Variants (SNVs)","Known SNVs","HIGH Impact","Moderate Impact","Low Impact","Novel SNVs","HIGH Impact","Moderate Impact","Low Impact","INsertions DELetions (INDELs)","HIGH Impact","Moderate Impact","Copy Number Variants (CNVs)","Structural Variants (SVs)");
+				for (my $h=0;$h<=$#key_num;$h++)	{
+					if ($key eq $key_num[$h] )	{
+						print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
+						for (my $c=0; $c <= $tot;$c++)	{
+							print OUT "<td class=\"helpHed\"></td>";
+						}		
+						print OUT "</tr>\n";
+					}
 				}
-				elsif ($key eq '7' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				elsif ($key eq '13' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				elsif ($key eq '14' )	{
-					print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}				
-				elsif ($key eq '22' )	{
-					print OUT "<th class=\"helpBod\"><b>Novel SNVs<b></th>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}	
-				elsif ($key eq '24' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				elsif ($key eq '30' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				elsif ($key eq '31' )	{
-					print OUT "<td class=\"helpBod\"><b>Low Impact<b></td>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}				
-				elsif ($key eq '39' )	{
-					print OUT "<th class=\"helpBod\">INsertions DELetions (INDELs)</th>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				elsif ($key eq '42' )	{
-					print OUT "<td class=\"helpBod\"><b>HIGH impact<b></td>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				elsif ($key eq '44' )	{
-					print OUT "<td class=\"helpBod\"><b>Moderate Impact<b></td>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}	
-				elsif ($key eq '55' )	{
-					print OUT "<th class=\"helpBod\">Copy Number Variants (CNVs)</th>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}
-				elsif ($key eq '59' )	{
-					print OUT "<th class=\"helpBod\">Structural Variants (SVs)</th>";
-					for (my $c=0; $c <= $tot;$c++)	{
-						print OUT "<td class=\"helpHed\"></td>";
-					}		
-					print OUT "</tr>\n";
-				}	
-				else	{
-					print OUT "<td class=\"helpHed\"><p align='left'><a href=\"#$names[$key]\" title=\"$values[$key]\">$names[$key]</a></td>";
+				my $flag=1;
+				for (my $h=0;$h<=$#key_num;$h++)	{
+					if ($key ne $key_num[$h] )	{
+						$flag=1;
+					}
+					else	{
+						$flag=0;
+					}
+				}		
+				if ($flag == 1)	{
+						print OUT "<td class=\"helpHed\"><p align='left'><a href=\"#$names[$key]\" title=\"$values[$key]\">$names[$key]</a></td>";
 					for(my $k = 0; $k <= $tot;$k++)	{
 						my $print=CommaFormatted(${$group_numbers{$key}}[$k]);
 						print OUT "<td class=\"helpBod\">$print</td>\n";
 					}
 					print OUT "</tr>\n";
-				}
-				if ( $key eq '2' || $key eq '5' || $key eq '7' || $key eq '13' || $key eq '14' || $key eq '22' || $key eq '24' || $key eq '30' || $key eq '31' || $key eq '39' || $key eq '42' || $key eq '44' || $key eq '55' || $key eq '59' )	{
-					print OUT "<td class=\"helpHed\"><p align='left'><a href=\"#$names[$key]\" title=\"$values[$key]\">$names[$key]</a></td>";
-					for(my $k = 0; $k <= $tot;$k++)	{
-						my $print=CommaFormatted(${$group_numbers{$key}}[$k]);
-						print OUT "<td class=\"helpBod\">$print</td>\n";
-					}
-					print OUT "</tr>\n";
-				}				
+				}			
 			}	
 		}
 	}
@@ -2265,7 +1281,7 @@ else    {
 			}	
 		}
 	}	
-	print OUT "<br><br></ul>";
+	print OUT "</ul>";
 	if ($upload_tb eq 'YES')	{
 		print OUT "
 		<ul><li>Variant calls can be visualized and filtered using TableBrowser<br>

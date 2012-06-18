@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ $# != 4 ];
+if [ $# -le 3 ];
 then
 	echo -e "Usage: script to merge the per chr report \n<output_dir> <TempReports> <run_info> ";
 else

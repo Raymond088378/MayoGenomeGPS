@@ -43,10 +43,6 @@ else
 	fi	
 	Rscript $script_path/coverage_plot.r $region $samples
 	
-	mv $input/coverage.jpeg $output/Coverage.JPG
-	if [ $tool == "whole_genome" ]
-	then
-		rm $kit
-	fi    
+	mv $input/coverage.jpeg $output/Coverage.JPG 
 	echo `date`
 fi	

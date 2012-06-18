@@ -299,8 +299,10 @@
 			my @sams=split(/\t/,`cat $sample_info | grep -w "^$groupArray[$i]" | cut -d '=' -f2`);
 			for (my $j = 0; $j <=$#sams; $j++)	{
 				my $id_n=-1;
+				chomp $sams[$j];
 				for(my $k = 0; $k < $num_samples;$k++)  {
-					if ($sams[$j] == $sampleArray[$k])	{
+					chomp $sampleArray[$k];
+					if ($sams[$j] eq $sampleArray[$k])	{
 						$id_n=$k;
 						last;
 					}
@@ -322,8 +324,10 @@
 			my @sams=split(/\t/,`cat $sample_info | grep -w "^$groupArray[$i]" | cut -d '=' -f2`);
 			for (my $j = 0; $j <=$#sams; $j++)	{
 				my $id_n=-1;
+				chomp $sams[$j];
 				for(my $k = 0; $k < $num_samples;$k++)  {
-					if ($sams[$j] == $sampleArray[$k])	{
+					chomp $sampleArray[$k];
+					if ($sams[$j] eq $sampleArray[$k])	{
 						$id_n=$k;
 						last;
 					}
@@ -345,6 +349,13 @@
 				print OUT "\t$print ($per_mapped \%)";
 			}
 		}
+		elsif ( $key eq '1' && $analysis eq 'variant'  && $multi eq 'YES')	{
+			for (my $c=0; $c < $num_samples;$c++)	{
+				my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+				print OUT "\t$print";
+			}
+		}
+		
 		elsif ( $key eq '1' && $analysis ne 'annotation'  && $analysis ne 'ontarget' && $multi eq 'YES')	{
 			for (my $c=0; $c < $num_samples;$c++)	{
 				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
@@ -352,6 +363,7 @@
 				print OUT "\t$print ($per_mapped \%)";
 			}
 		}
+		
 		if ($key eq '2' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' && $multi eq 'NO')	{
 			for (my $c=0; $c < $num_samples;$c++)	{
 				my $print=sprintf("%.2f",$sample_numbers{$key}[$c]);
@@ -369,6 +381,13 @@
 				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
 				my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 				print OUT "\t$print ($per_mapped \%)";	
+			}
+		}
+		elsif ($key eq '2' && $analysis eq 'variant' && $multi eq 'YES')	{
+			for (my $c=0; $c < $num_samples;$c++)	{
+				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
+				my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+				print OUT "\t$print";	
 			}
 		}
 		
@@ -410,8 +429,10 @@
 						}
 					}
 					elsif ($analysis eq 'variant')	{
-						my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
-						print OUT "\t$print";	
+						if ($key ne '1' && $key ne '2')	{
+							my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
+							print OUT "\t$print";	
+						}
 					}
 				}	
 			}
