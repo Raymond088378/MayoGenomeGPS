@@ -34,8 +34,7 @@ else
     fi
     
     check=0
-    count=0
-	while [[ $check -eq 0 && $count -le 10 ]]
+	while [[ $check -eq 0 ]]
     do
 		if [ $ped != "NA" ]
 		then
@@ -72,7 +71,6 @@ else
             rm `grep -l $vcf *.log`
 			rm core.*
         fi    
-		let count=count+1
     done 
 	
 	perl $script_path/convertvcf.pl $vcf > $vcf.tmp
