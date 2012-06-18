@@ -34,7 +34,7 @@ else
     fi
     
     check=0
-	dir_info=`dirname $bam`
+	dir_info=`dirname $vcf`
 	if [ ! -d $dir_info/temp ]
 	then
 		mkdir $dir_info/temp
