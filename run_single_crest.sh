@@ -61,7 +61,8 @@ else
 ######		
 	input_bam=$input/chr${chr}.cleaned.bam
 	
-	export PERL5LIB=$perllib:$crest
+	
+        export PERL5LIB=$perllib:$crest
 	PATH=$PATH:$blat:$crest:$perllib
 	mkdir -p $output_dir/$sample
 
@@ -79,7 +80,7 @@ else
 	fi
 
 	mkdir -p $output_dir/$sample/log
-
+        export TMPDIR=$output_dir/$sample/log
 	range=20000
 	let blat_port+=$RANDOM%range
 	status=`$blat/gfServer status localhost $blat_port | wc -l`;

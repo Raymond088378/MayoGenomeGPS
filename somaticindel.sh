@@ -58,7 +58,7 @@ else
 		-verbose $output/$indel_v \
 		-I:normal $normal_bam \
 		-I:tumor $tumor_bam
-		
+		sleep 30
 		check=`[ -s $output/$output_file.idx ] && echo "1" || echo "0"`
         if [ $check -eq 0 ]
         then

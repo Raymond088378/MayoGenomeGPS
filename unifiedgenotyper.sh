@@ -34,17 +34,18 @@ else
     fi
     
     check=0
-	dir_info=`dirname $vcf`
-	if [ ! -d $dir_info/temp ]
+    out=`dirname $vcf`
+    
+    if [ ! -d $out/temp ]
 	then
-		mkdir $dir_info/temp
+		mkdir $out/temp
 	fi
 	
 	while [[ $check -eq 0 ]]
     do
 		if [ $ped != "NA" ]
 		then
-			$java/java -Xmx3g -Xms512m -Djava.io.tmpdir=$dir_info/temp/ -jar $gatk/GenomeAnalysisTK.jar \
+			$java/java -Xmx6g -Xms512m -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
 			-R $ref \
 			-et NO_ET \
 			-K $gatk/Hossain.Asif_mayo.edu.key \
@@ -58,7 +59,7 @@ else
 			--ped $ped \
 			--out $vcf
 		else
-			$java/java -Xmx3g -Xms512m -Djava.io.tmpdir=$dir_info/temp/ -jar $gatk/GenomeAnalysisTK.jar \
+			$java/java -Xmx6g -Xms512m -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
 			-R $ref \
 			-et NO_ET \
 			-K $gatk/Hossain.Asif_mayo.edu.key \
@@ -71,6 +72,7 @@ else
 			$bam \
 			--out $vcf
 		fi
+                sleep 1m
         check=`[ -s $vcf.idx ] && echo "1" || echo "0"`
         if [ $check -eq 0 ]
         then

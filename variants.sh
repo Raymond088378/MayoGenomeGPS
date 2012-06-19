@@ -62,6 +62,7 @@ else
     done
     num_samples=`echo $samples | tr ":" " "`
 
+    mkdir -p $output/temp
     ## if multiple samples then split using read group and Validate BAM other wise just check and validate BAM
     if [ ${#sampleArray[@]} -gt 1 ]
     then
@@ -75,7 +76,7 @@ else
             for s in $sam
             do
                 a="ID:$s|";
-                gr="$gr $a"
+                gr="$gr$a"
             done
             gr=`echo $gr |  sed "s/|$//"`
             $samtools/samtools view -b -r $sample $input/$bam > $output/$sample.chr$chr.rg.bam

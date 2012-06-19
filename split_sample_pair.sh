@@ -32,7 +32,7 @@ else
             for s in $sam
             do
                 a="ID:$s|";
-                gr="$gr $a"
+                gr="$gr$a"
             done
             gr=`echo $gr |  sed "s/|$//"`
             cat $output/$sample.chr$chr.header.sam |grep -E -v "$gr" > $output/$sample.chr$chr.$i.header.sam

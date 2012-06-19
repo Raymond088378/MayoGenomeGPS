@@ -32,7 +32,7 @@ else
             cp $file.idx $output.idx
         fi
     else    
-        $java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+        $java/java -Xmx4g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
         -R $ref \
         -et NO_ET \
         -K $gatk/Hossain.Asif_mayo.edu.key \

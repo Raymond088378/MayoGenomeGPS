@@ -19,11 +19,17 @@ else
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
     javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
-	
+    
+    out=`dirname $vcf`
+    if [ ! -d $out/temp ]
+    then
+        mkdir $out/temp
+    fi
+    
     export JAVA_HOME=$javahome
     export PATH=$javahome/bin:$PATH
     # ## annotate SNVs or INDELs
-    $java/java -Xmx6g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+    $java/java -Xmx6g -Xms512m -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
     -R $ref \
     -et NO_ET \
     -K $gatk/Hossain.Asif_mayo.edu.key \
