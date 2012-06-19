@@ -72,7 +72,7 @@ else
 			$bam \
 			--out $vcf
 		fi
-                sleep 1m
+		sleep 1m
         check=`[ -s $vcf.idx ] && echo "1" || echo "0"`
         if [ $check -eq 0 ]
         then

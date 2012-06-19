@@ -120,7 +120,7 @@ else
 				--maxGaussians 4 \
 				--percentBadVariants 0.05 \
 				-rscriptFile $output/plot/$input_name.plots.R
-				
+				sleep 30
 				check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
 				if [ $check -eq 0 ]
 				then
@@ -154,6 +154,7 @@ else
 				-recalFile $output/temp/$input_name.recal \
 				-tranchesFile $output/temp/$input_name.tranches \
 				-o $outfile.SNV.vcf
+				sleep 30
 			fi
 			
 			filter_calls_snvs=`cat $outfile.SNV.vcf | awk '$0 !~ /#/' | wc -l`
@@ -210,7 +211,7 @@ else
 			--maxGaussians 4 \
 			--percentBadVariants 0.05 \
 			-rscriptFile $output/plot/$input_name.plots.R
-			
+			sleep 30 
 			check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
 			if [ $check -eq 0 ]
 			then
@@ -243,6 +244,7 @@ else
 			-recalFile $output/temp/$input_name.recal \
 			-tranchesFile $output/temp/$input_name.tranches \
 			-o $outfile.INDEL.vcf
+			sleep 30 
 		fi
 		
 		filter_calls_indels=`cat $outfile.INDEL.vcf | awk '$0 !~ /#/' | wc -l`
