@@ -27,6 +27,7 @@ my %chrvalue = ("chrX"=>23,"chrY"=>24,"chrM"=>25);
 for (my $i=1; $i<23; $i++) {
 	$chrvalue{"chr".$i} = $i;
 }
+my $a1;
 while(my $l = <FH>){
    	chomp $l;
 	open FILE, "$l" or die "";
@@ -36,21 +37,22 @@ while(my $l = <FH>){
 		chomp $k;
 		my @a = split("\t",$k);
 		my $last_col=$#a;
-		my @annot_sseq=($SNPEFF_START .. $last_col);
+		my @annot_snpeff=($SNPEFF_START .. $last_col);
+		$a1=$last_col-$SNPEFF_START;
 		if ( $. == 1){
 			$samples[$i]=$a[$START_INFO];
 			$i++;
 		}
 		elsif ( $. == 2){
 			$head1=join("\t",@a[@annot_ref]);
-			$head3=join("\t",@a[@annot_sseq]);
+			$head3=join("\t",@a[@annot_snpeff]);
 			$head4=join("\t",@a[@sample]);
 		}
 		else	{
 			my $id="$a[$CHR]\*$a[$START]\*$a[$STOP]\*$a[$ALT]\*$a[$BASE]";
 			my $id_a="$a[$STOP]\*$a[$ALT]\*$a[$BASE]";
 			##sseq values	
-			my $snpeff_value=join("\t",@a[@annot_sseq]);
+			my $snpeff_value=join("\t",@a[@annot_snpeff]);
 			push(@{$snpeff{$a[$CHR]}{$a[$START]}{$id_a}},$snpeff_value);
 			if ($id ne $prev)	{
 				my $value=$#{$sample_info{$a[$CHR]}{$a[$START]}{$id_a}};
@@ -85,6 +87,7 @@ print OUT "-\t";
 print OUT "\t" x $BASE;
 print OUT join ("\t\t",@samples);
 print OUT "\t\tSNPEFF Annotation";
+print OUT "\t" x $a1;
 print OUT "\n";
 print OUT "IGV Link\tChr\tStart\tStop\t$head1\tAlt\tBase-Length\t";
 for(my $i=0; $i <=$#samples; $i++)	{
@@ -114,7 +117,7 @@ foreach my $c (sort {$chrvalue{$a}<=>$chrvalue{$b}} keys %ref)	{
 					}
 					print OUT "\tn/a\tn/a";
 				}
-				print OUT "\t$snpeff{$c}{$p}{$a}[$rows]\t";	
+				print OUT "\t$snpeff{$c}{$p}{$a}[$rows]";	
 				print OUT "\n";
 			}
 		}

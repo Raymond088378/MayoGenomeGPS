@@ -31,6 +31,7 @@ my @sample=($START_INFO .. $STOP_INFO);
 my (%igv,%ref, %sift, %snpeff, %sample_info);
 my ($head1,$head2,$head3,$head4);
 my $count=1;
+my $a3;
 while(my $l = <FH>){
     chomp $l;
     open FILE, "$l" or die "can not open $l : $!\n";
@@ -41,6 +42,7 @@ while(my $l = <FH>){
 		my @a = split("\t",$k);
 		my $last_col=$#a;
 		my @annot_snpeff=($SNPEFF_START .. $last_col);
+		$a3=$last_col-$SNPEFF_START;
 		if ( $. == 1){
 			$samples[$i]=$a[$START_INFO];
 			$i++;
@@ -97,7 +99,7 @@ print OUT "\t\t\t\t\t\tSIFT Annotation";
 my $a2 = $SIFT_STOP - $SIFT_START +1;
 print OUT "\t" x $a2;
 print OUT "SNPEFF Annotation";
-
+print OUT "\t" x $a3;
 print OUT "\n";
 print OUT "IGV Link\tChr\tPosition\t$head1\tAlt\t";
 for(my $i=0; $i <=$#samples; $i++)	{
@@ -126,7 +128,7 @@ foreach my $c (sort {$chrvalue{$a}<=>$chrvalue{$b}} keys %ref)	{
 					}
 					print OUT "\tn/a\tn/a\tn/a\tn/a\tn/a\tn/a";
 				}
-				print OUT "\t$sift{$c}{$p}{$a}\t$snpeff{$c}{$p}{$a}[$rows]\t";	
+				print OUT "\t$sift{$c}{$p}{$a}\t$snpeff{$c}{$p}{$a}[$rows]";	
 				print OUT "\n";
 			}
 		}
