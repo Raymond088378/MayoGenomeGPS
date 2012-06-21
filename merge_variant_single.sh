@@ -41,7 +41,8 @@ else
     blat_ref=$( cat $tool_info | grep -w '^BLAT_REF' | cut -d '=' -f2 )
     blat_server=$( cat $tool_info | grep -w '^BLAT_SERVER' | cut -d '=' -f2 )
     window_blat=$( cat $tool_info | grep -w '^WINDOW_BLAT' | cut -d '=' -f2 )
-	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
+	all_sites=$( cat $tool_info | grep -w '^EMIT_ALL_SITES' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
+        javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
 	threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2 )
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	depth=$( cat $tool_info | grep -w '^T_DEPTH_FILTER' | cut -d '=' -f2 )
@@ -81,8 +82,13 @@ else
     for i in $chrs
     do
 		inputfile=$input/$sample/$sample.variants.chr$i.raw.vcf 
-		multi=$input/$sample/$sample.variants.chr$i.raw.vcf.multi.vcf 
-		if [ ! -s $inputfile ]
+		if [[ $all_sites == "YES"  && $tool == "exome" ]]
+                then
+                    multi=$input/$sample/$sample.variants.chr$i.raw.all.vcf.multi.vcf    
+                else
+                    multi=$input/$sample/$sample.variants.chr$i.raw.vcf.multi.vcf 
+		fi
+                if [ ! -s $inputfile ]
 		then	
 			$script_path/errorlog.sh $inputfile merge_variant_single.sh ERROR "not exist"
 			exit 1;

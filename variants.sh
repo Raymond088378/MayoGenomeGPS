@@ -122,7 +122,7 @@ else
                 rm $output/$sample.$chr.target.bed
 
 				## add phase by transmission if pedigree information provided.
-				if [$ped != "NA"]
+				if [ $ped != "NA" ]
 				then
 					$script_path/phaseByTransmission.sh $output/$sample.variants.chr${chr}.raw.all.vcf $output/$sample.variants.chr${chr}.raw.all.pbt.vcf $run_info
 				fi
