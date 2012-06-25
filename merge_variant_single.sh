@@ -83,12 +83,12 @@ else
     do
 		inputfile=$input/$sample/$sample.variants.chr$i.raw.vcf 
 		if [[ $all_sites == "YES"  && $tool == "exome" ]]
-                then
-                    multi=$input/$sample/$sample.variants.chr$i.raw.all.vcf.multi.vcf    
-                else
-                    multi=$input/$sample/$sample.variants.chr$i.raw.vcf.multi.vcf 
+		then
+			multi=$input/$sample/$sample.variants.chr$i.raw.all.vcf.multi.vcf    
+		else
+			multi=$input/$sample/$sample.variants.chr$i.raw.vcf.multi.vcf 
 		fi
-                if [ ! -s $inputfile ]
+		if [ ! -s $inputfile ]
 		then	
 			$script_path/errorlog.sh $inputfile merge_variant_single.sh ERROR "not exist"
 			exit 1;

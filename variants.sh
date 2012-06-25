@@ -38,7 +38,7 @@ else
     somatic_caller=$( cat $run_info | grep -w '^SOMATIC_CALLER' | cut -d '=' -f2)
 	ped=$( cat $tool_info | grep -w '^PEDIGREE' | cut -d '=' -f2 )
 	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
-	
+	bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
 	export PERL5LIB=$PERL5LIB:$perllib
     export PATH=$tabix/:$PATH
 
@@ -119,7 +119,7 @@ else
                 fi
                 bam="-I $output/$sample.chr${chr}-sorted.bam"
                 $script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.all.vcf BOTH "$param" EMIT_ALL_SITES $run_info
-                rm $output/$sample.$chr.target.bed
+                
 
 				## add phase by transmission if pedigree information provided.
 				if [ $ped != "NA" ]
@@ -131,14 +131,17 @@ else
                 cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "." || $0 ~ /^#/' | grep -v "\./\."  | grep -v "0\/0" > $output/$sample.variants.chr${chr}.raw.vcf
                 sed '/^$/d' $output/$sample.variants.chr${chr}.raw.vcf > $output/$sample.variants.chr${chr}.raw.vcf.temp
                 mv $output/$sample.variants.chr${chr}.raw.vcf.temp $output/$sample.variants.chr${chr}.raw.vcf
-
+    
                 ### prepare the file for backfilling
                 cat $output/$sample.variants.chr${chr}.raw.all.vcf | grep -v "\./\." > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
                 
                 mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
                 sed '/^$/d' $output/$sample.variants.chr${chr}.raw.all.vcf > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
                 mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
+                $bedtools/intersectBed -a $output/$sample.variants.chr${chr}.raw.all.vcf -b $output/$sample.$chr.target.bed -wa -header > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
+                mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
                 $tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
+                rm $output/$sample.$chr.target.bed
             else
                 param="-L chr${chr}"
                 bam="-I $output/$sample.chr${chr}-sorted.bam"
@@ -177,7 +180,8 @@ else
 				in="$output/$sample.variants.chr${chr}.raw.snv.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.indel.vcf.multi.vcf"
                 $script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.vcf.multi.vcf $run_info yes
                 cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "." || $0 ~ /^#/' | grep -v "\./\."  | grep -v "0\/0" > $output/$sample.variants.chr${chr}.raw.vcf
-        
+                $bedtools/intersectBed -a $output/$sample.variants.chr${chr}.raw.all.vcf -b $output/$sample.$chr.target.bed -wa -header > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
+                mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
                 $tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
 				rm $output/$sample.$chr.target.bed
 			else

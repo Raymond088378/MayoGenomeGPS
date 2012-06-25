@@ -35,7 +35,7 @@ chr1	100	A	T
 chr1	200	C	T
 .....
 
-INDEL (five columns : chromsome, pos, RefAllele, Alt Allele)
+INDEL (four columns : chromsome, pos, RefAllele, Alt Allele)
 *** no header
 *** chr should be chr1 etc.
 example
