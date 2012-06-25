@@ -64,18 +64,22 @@ if ( ($tool ne 'whole_genome') && ($tool ne 'exome'))	{
 }		
 
 my $input=$runinfovars->{INPUT_DIR};
-my @samples = split(/:/,$runinfovars->{SAMPLENAMES});
-
-
-if ($runinfovars->{MULTISAMPLE} eq 'YES')	{
-    if (@samples < 2) {
+my @samples= split(/:/,$runinfovars->{SAMPLENAMES});
+my @groups = split (/:/,$runinfovars->{GROUPNAMES});
+## min samples needed per group is 2
+if ($runinfovars->{MULTISAMPLE})	{
+    if (@samples < 2*@groups) {
         print "$runinfo: MULTISAMPLE=YES and SAMPLENAMES has only one element\n";
     }
+    
 }
+
 my $toolinfo=$runinfovars->{TOOL_INFO};
 my $sampleinfo=$runinfovars->{SAMPLE_INFO};
 my ($toolinfovars, $toolinfomsg) = read_file_var($toolinfo);
 my ($sampleinfovars, $sampleinfomsg) = read_files_var($sampleinfo);
+my ($samplenames, $samplenamesmsg)= read_sample_names($sampleinfo);
+my ($pairsamplenames) = read_sample_pair_names($sampleinfo);
 
 if ($sampleinfomsg ne "") {
     print $sampleinfomsg."\n";
@@ -163,6 +167,7 @@ $toolinfomsg = check_variables ($toolinfovars, \%toolinfofmt, $toolinfo);
 
 $sampleinfomsg = check_files ($sampleinfovars, $sampleinfo, $input );
 
+
 if ($toolinfomsg ne "") {
     print $toolinfomsg."\n";
     exit 1;
@@ -173,20 +178,59 @@ if ($sampleinfomsg ne "") {
     exit 1;
 }
 
+$sampleinfomsg = check_samples($samplenames , @samples,@groups);
+if ($sampleinfomsg ne "") {
+    print $sampleinfomsg."\n";
+    exit 1;
+}
+$sampleinfomsg = check_pairs($pairsamplenames,@samples);
+if ($sampleinfomsg ne "") {
+    print $sampleinfomsg."\n";
+    exit 1;
+}
+
+
+sub check_pairs{
+	my ($svars,@samples) = @_;   
+    my $errmsg="";
+	foreach my $key (keys %{$svars})	{
+	my @sam=split(/\t/,$svars->{$key}); 
+	foreach (@sam)	{	
+		if (grep /$_/,@samples) {
+			$errmsg .= "$_: does not match run_info\n";
+	    }
+    }
+	}
+    return $errmsg;	
+}
+sub check_samples{
+    my ($svars,@samples,@groups) = @_;   
+    my $errmsg="";
+	foreach my $key (keys %{$svars})	{
+	my @sam=split(/\t/,$svars->{$key}); 
+	foreach (@sam)	{	
+		if (grep /$_/,@samples && grep /$_/,@groups) {
+			$errmsg .= "$_: does not match run_info\n";
+	    }
+    }
+	}
+    return $errmsg;	
+}
+
 
 sub check_files	{
-	my ($rvars,$fname,$input) = @_;
-	my $errmsg="";
-	foreach my $key (keys %{$rvars})	{
-		my @files=split(/\t/,$rvars->{$key});
-		foreach (@files)	{
-			my $name="$input/$_";
-			if (! -e $name)	{
-				$errmsg .= "$name: does not exist\n";
-			}		
-		}	
-	}
-	return $errmsg;	
+    my ($rvars,$fname,$input) = @_;
+    my $errmsg="";
+    foreach my $key (keys %{$rvars})	{
+	my @files=split(/\t/,$rvars->{$key});
+	foreach (@files)	{
+	    my $name="$input/$_";
+	    if (! -e $name)	{
+		$errmsg .= "$name: does not exist\n";
+	    }		
+	}	
+    }
+    return $errmsg;	
 }		
 
 
@@ -227,6 +271,55 @@ sub check_variables {
     }
 }
 
+## check for sample names (misspled)
+
+sub read_sample_names{
+    my ($filename) = @_;
+    open INFILE, "<$filename" or die "$filename $!\n";
+    my %variables;
+    my %names;
+    my $errmsg="";
+ 
+    LINE:while (<INFILE>) {
+		next LINE if /^#|^\s/;
+		chomp;
+
+		my ($var, $value) = split (/=/,$_);
+		if ($var =~ /:/)	{
+			my ($type, $sam) = split(/:/,$var);	
+			if (exists $variables{$var}) {
+				$errmsg.="$var in $filename defined twice\n";
+			}
+			$variables{$var}=$value;
+			$names{$sam}=$sam;
+		}
+    }
+    return (\%names, $errmsg)	
+}
+
+sub read_sample_pair_names{
+    my ($filename) = @_;
+    open INFILE, "<$filename" or die "$filename $!\n";
+    my %variables;
+    my %names;
+    my $errmsg="";
+ 
+    LINE:while (<INFILE>) {
+		next LINE if /^#|^\s/;
+		chomp;
+
+		my ($var, $value) = split (/=/,$_);
+		if ($var !~ /:/)	{
+			my @sample= split(/\t/,$value);	
+			foreach (@sample)	{
+				$names{$_}=$_;
+			}
+		}
+    }
+	return (\%names, $errmsg)	
+}
+
+
 sub read_files_var{
     my ($filename) = @_;
     open INFILE, "<$filename" or die "$filename $!\n";
@@ -266,3 +359,5 @@ sub read_file_var {
     }
     return (\%variables, $errmsg)
 }
+
+
