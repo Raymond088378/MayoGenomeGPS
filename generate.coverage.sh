@@ -19,7 +19,8 @@ else
 	samples=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" " " )
 	groups=$( cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2 | tr ":" " " )
 	multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
-    
+    r_soft=$( cat $tool_info | grep -w '^R_SOFT' | cut -d '=' -f2)
+	
 	if [ $tool == "whole_genome" ]
     then
         kit=$output/bed_file.bed
@@ -41,7 +42,7 @@ else
 			done
 		done
 	fi	
-	Rscript $script_path/coverage_plot.r $region $samples
+	$r_soft/Rscript $script_path/coverage_plot.r $region $samples
 	
 	mv $input/coverage.jpeg $output/Coverage.JPG 
 	echo `date`

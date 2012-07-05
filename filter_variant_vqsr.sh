@@ -52,11 +52,11 @@ else
     PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
-    
+    r_soft=$( cat $tool_info | grep -w '^R_SOFT' | cut -d '=' -f2)
     javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
 	
 	export JAVA_HOME=$javahome
-	export PATH=$javahome/bin:$PATH
+	export PATH=$r_soft:$javahome/bin:$PATH
 	
     ### split the vcf file for indels and snvs to appy the vqsr seperately
     perl $script_path/vcf_to_variant_vcf.pl -i $inputvcf -v $inputvcf.SNV.vcf -l $inputvcf.INDEL.vcf   
@@ -120,7 +120,7 @@ else
 				--maxGaussians 4 \
 				--percentBadVariants 0.05 \
 				-rscriptFile $output/plot/$input_name.plots.R
-				sleep 30
+				sleep 1m
 				check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
 				if [ $check -eq 0 ]
 				then
@@ -154,7 +154,7 @@ else
 				-recalFile $output/temp/$input_name.recal \
 				-tranchesFile $output/temp/$input_name.tranches \
 				-o $outfile.SNV.vcf
-				sleep 30
+				sleep 1m
 			fi
 			
 			filter_calls_snvs=`cat $outfile.SNV.vcf | awk '$0 !~ /#/' | wc -l`
@@ -211,7 +211,7 @@ else
 			--maxGaussians 4 \
 			--percentBadVariants 0.05 \
 			-rscriptFile $output/plot/$input_name.plots.R
-			sleep 30 
+			sleep 1m 
 			check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
 			if [ $check -eq 0 ]
 			then
@@ -244,7 +244,7 @@ else
 			-recalFile $output/temp/$input_name.recal \
 			-tranchesFile $output/temp/$input_name.tranches \
 			-o $outfile.INDEL.vcf
-			sleep 30 
+			sleep 1m 
 		fi
 		
 		filter_calls_indels=`cat $outfile.INDEL.vcf | awk '$0 !~ /#/' | wc -l`

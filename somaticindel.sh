@@ -44,7 +44,7 @@ else
 		mkdir $output/temp
 	fi
 	
-	while [[ $check -eq 0 ]]
+	while [[ $check -eq 0 && $count -le 10 ]]
     do
 		$java/java -Xmx3g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
 		-R $ref \
@@ -58,13 +58,14 @@ else
 		-verbose $output/$indel_v \
 		-I:normal $normal_bam \
 		-I:tumor $tumor_bam
-		sleep 30
+		sleep 1m
 		check=`[ -s $output/$output_file.idx ] && echo "1" || echo "0"`
         if [ $check -eq 0 ]
         then
             rm `grep -l $output/$output_file *.log`
 			rm core.*
-        fi    
+        fi
+		let count=count+1	
     done 
 	
     if [ ! -s $output/$output_file.idx ]

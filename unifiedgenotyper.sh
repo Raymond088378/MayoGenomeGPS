@@ -40,8 +40,8 @@ else
 	then
 		mkdir $out/temp
 	fi
-	
-	while [[ $check -eq 0 ]]
+	count=0
+	while [[ $check -eq 0 && $count -le 10 ]]
     do
 		if [ $ped != "NA" ]
 		then
@@ -78,7 +78,8 @@ else
         then
             rm `grep -l $vcf *.log`
 			rm core.*
-        fi    
+        fi 
+		let count=count+1	
     done 
 	
 	perl $script_path/convertvcf.pl $vcf > $vcf.tmp

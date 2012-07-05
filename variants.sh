@@ -146,8 +146,7 @@ else
                 param="-L chr${chr}"
                 bam="-I $output/$sample.chr${chr}-sorted.bam"
                 $script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info
-                rm $output/$sample.variants.chr${chr}.raw.vcf.idx
-
+                
 				## add phase by transmission if pedigree information provided.
 				if [ $ped != "NA" ]
 				then

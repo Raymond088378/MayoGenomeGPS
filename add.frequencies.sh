@@ -44,6 +44,7 @@ else
 		touch $TempReports/$var.forFrequencies.allele.frequency.CEU
 		touch $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI
 		touch $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.txt
+		touch $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.BGI.txt
 		touch $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.BGI.Cosmic.txt
 		echo -e "HapMap_CEU_allele_freq\t1kgenome_CEU_allele_freq\tHapMap_YRI_allele_freq\t1kgenome_YRI_allele_freq\tHapMap_JPT+CHB_allele_freq\t1kgenome_JPT+CHB_allele_freq\tBGI200_Danish\tCOSMIC\tESP5400_EUR_maf\tESP5400_AFR_maf" > $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.BGI.Cosmic.ESP.txt
 		paste $TempReports/$var.forFrequencies.temp $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.BGI.Cosmic.ESP.txt > $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.BGI.Cosmic.ESP.txt.tmp

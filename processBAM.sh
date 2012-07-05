@@ -90,7 +90,12 @@ else
     
     if [ $dup == "YES" ]
     then
-		$script_path/rmdup.sh $input/$sample.sorted.bam $input/$sample.sorted.rmdup.bam $input/$sample.dup.metrics $input $max_files $dup_flag true true $run_info   
+		DUP_STATUS=`$samtools/samtools view -H $input/$sample.sorted.bam | grep "^@CO" | grep "MarkDuplicates" | wc -l`
+		if [ "$DUP_STATUS" -eq 0 ] 
+		then
+		    $script_path/rmdup.sh $input/$sample.sorted.bam $input/$sample.sorted.rmdup.bam $input/$sample.dup.metrics $input $max_files $dup_flag true true $run_info   
+		fi
+
     fi
     ## reorder if required
     if [ $reorder == "YES" ]

@@ -62,7 +62,7 @@ else
 	input_bam=$input/chr${chr}.cleaned.bam
 	
 	
-        export PERL5LIB=$perllib:$crest
+    export PERL5LIB=$perllib:$crest
 	PATH=$PATH:$blat:$crest:$perllib
 	mkdir -p $output_dir/$sample
 
@@ -80,7 +80,7 @@ else
 	fi
 
 	mkdir -p $output_dir/$sample/log
-        export TMPDIR=$output_dir/$sample/log
+    export TMPDIR=$output_dir/$sample/log
 	range=20000
 	let blat_port+=$RANDOM%range
 	status=`$blat/gfServer status localhost $blat_port | wc -l`;
@@ -124,7 +124,8 @@ else
 		
         rm $input_bam
         rm $input_bam.bai
-        perl $script_path/CREST2VCF.pl -i $output_dir/$sample/$sample.$chr.predSV.txt -f $ref_genome -o $output_dir/$sample/$sample.$chr.raw.vcf -s $sample -t $samtools
+        
+		perl $script_path/CREST2VCF.pl -i $output_dir/$sample/$sample.$chr.predSV.txt -f $ref_genome -o $output_dir/$sample/$sample.$chr.raw.vcf -s $sample -t $samtools
 		if [ ! -s $output_dir/$sample/$sample.$chr.raw.vcf.fail ]
         then
             rm $output_dir/$sample/$sample.$chr.raw.vcf.fail

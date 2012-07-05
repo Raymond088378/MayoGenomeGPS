@@ -37,7 +37,7 @@ else
 	master_gene_file=$( cat $tool_info | grep -w '^MASTER_GENE_FILE' | cut -d '=' -f2 )
 	samples=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" " " )
 	bed=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
-        user=$( cat $tool_info | grep -w '^USER_EMAIL' | cut -d '=' -f2 )
+        user=$( cat $run_info | grep -w '^USER_EMAIL' | cut -d '=' -f2 )
         
 	if [ $tool == "whole_genome" ]
 	then

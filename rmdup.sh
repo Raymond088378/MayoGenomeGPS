@@ -31,6 +31,7 @@ else
     REMOVE_DUPLICATES=$remove \
     MAX_FILE_HANDLES=$files \
     VALIDATION_STRINGENCY=SILENT \
+    CO=MarkDuplicates \
     TMP_DIR=$tmp_dir
     
     if [ -s $outbam ]

@@ -28,8 +28,8 @@ else
 	do
 		inputfile=$var_dir/raw.chr$chr.SNV.vcf.gz 
 		inputfile_i=$var_dir/raw.chr$chr.SNV.vcf.gz.tbi 
-		indexes="$inputfile_i "$indexes
-		inputargs="$inputfile "$inputargs
+		indexes=$indexes" $inputfile_i"
+		inputargs=$inputargs" $inputfile"
 	done
 	
 	$vcftools/bin/vcf-concat $inputargs | $tabix/bgzip > $var_dir/raw.SNV.vcf.gz
@@ -48,8 +48,8 @@ else
 	do
 		inputfile=$var_dir/raw.chr$chr.INDEL.vcf.gz 
 		inputfile_i=$var_dir/raw.chr$chr.INDEL.vcf.gz.tbi 
-		indexes="$inputfile_i "$indexes
-		inputargs="$inputfile "$inputargs
+		indexes=$indexes" $inputfile_i"
+		inputargs=$inputargs" $inputfile"
 	done
 	
 	$vcftools/bin/vcf-concat $inputargs | $tabix/bgzip > $var_dir/raw.INDEL.vcf.gz

@@ -353,6 +353,7 @@ else    {
 	my %sample_numbers=();
 	my $uniq;
 	# storing all the numbers in a Hash per sample
+	chomp $multi;
 	if ($multi eq 'NO')	{
 		for(my $k = 0; $k < $num_samples;$k++)	
 		{

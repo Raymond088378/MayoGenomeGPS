@@ -156,7 +156,7 @@ while($head =~ m/^##/)	{
 	$head=<IN>;
 	$skip++;
 };
-print OUT "##INFO=<ID=ED,Number=1,Type=Integer,Description=\"Number of blat hits to reference genome, not counting self-hit \">\n";
+print OUT "##INFO=<ID=ED,Number=1,Type=Integer,Description=\"Number of blat hits to reference genome, not counting self-hit\">\n";
 print OUT "$head";
 $skip++;
 my $len=`cat $input | awk '\$0 !~ /^#/' | wc -l`;

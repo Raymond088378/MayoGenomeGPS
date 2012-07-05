@@ -1,3 +1,10 @@
+### Version 1.1.1
+
+1. added path to R in the tool info file
+2. added count to unifiedgenotyper to make sure it won't go into infinited loop
+3. made changes to check_config.pl script to cath user errros
+
+
 ### Version 1.1
 
 1. Extract reads from the aligned BAM which are not used in calling variants, Workflow outputs a bam file with those reads.(this way we don't have to store the original  aligned bam)
