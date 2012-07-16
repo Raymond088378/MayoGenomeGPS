@@ -366,14 +366,16 @@
 		
 		if ($key eq '2' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' && $multi eq 'NO')	{
 			for (my $c=0; $c < $num_samples;$c++)	{
-				my $print=sprintf("%.2f",$sample_numbers{$key}[$c]);
-				print OUT "\t$print\%";
+				my $print=sprintf("%.4f",$sample_numbers{$key}[$c]);
+				my $duplicate=sprintf("%.1f",($print * 100));
+				print OUT "\t$duplicate\%";
 			}		
 		}
 		elsif ($key eq '2' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' && $multi eq 'YES')	{
 			for (my $c=0; $c < $num_samples;$c++)	{
-				my $print=sprintf("%.2f",$sample_numbers{$key}[$c]);
-				print OUT "\t$print\%";
+				my $print=sprintf("%.4f",$sample_numbers{$key}[$c]);
+				my $duplicate=sprintf("%.1f",($print * 100));
+				print OUT "\t$duplicate\%";
 			}		
 		}
 		elsif ($key eq '2' && $analysis eq 'variant' && $multi eq 'NO')	{

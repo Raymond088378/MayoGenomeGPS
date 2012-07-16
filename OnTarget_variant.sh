@@ -2,7 +2,6 @@
 	
 ########################################################
 ###### 	SNV ANNOTATION FOR TUMOR/NORMAL PAIR WHOLE GENOME ANALYSIS PIPELINE
-
 ######		Program:			annotation.SNV.sh
 ######		Date:				11/09/2011
 ######		Summary:			Annotates GATK SNV and INDEL outputs
@@ -79,11 +78,11 @@ else
         then
             $bedtools/intersectBed -header -a $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf -b $CaptureKit -c > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
             rm $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf
-            cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf |  awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE="$NF,$9,$10;}' > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf.temp
+            cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else if($NF>0) print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10; else  print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=0",$9,$10;}'  > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf.temp
             mv $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf.temp $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
             $bedtools/intersectBed -header -a $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf -b $CaptureKit -c > $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
             rm $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf
-            cat $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE="$NF,$9,$10;}' > $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.temp
+            cat $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else if($NF>0) print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10; else  print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=0",$9,$10;}'  > $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.temp
             mv $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.temp  $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
         elif [ $tool == "whole_genome" ]
         then
@@ -139,10 +138,10 @@ else
             then
                 ### SNV
                 $bedtools/intersectBed -header -a $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.vcf -b $CaptureKit -c > $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf
-                cat $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE="$NF,$9,$10;}' > $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf.temp
+                cat $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf |  awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else if($NF>0) print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10; else  print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=0",$9,$10;}'  > $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf.temp
                 mv $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf.temp $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf
                 $bedtools/intersectBed -header -a $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.vcf -b $CaptureKit -c > $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf
-                cat $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE="$NF,$9,$10;}' > $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf.temp
+                cat $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf |  awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else if($NF>0) print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10; else  print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=0",$9,$10;}'  > $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf.temp
                 mv $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf.temp $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf
             else    
             cat $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' > $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf
@@ -171,7 +170,8 @@ else
         done
         ### for somatic calls
         samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 )
-        i=1
+        sampleArray=()
+		i=1
         for sample in $samples
         do
             sampleArray[$i]=$sample
@@ -189,11 +189,11 @@ else
             then
                 ##SNV
                 $bedtools/intersectBed -header -a $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.vcf -b $CaptureKit -c > $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf
-                cat $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE="$NF,$9,$10;}' > $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf.temp
+                cat $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf |  awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else if($NF>0) print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10; else  print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=0",$9,$10;}'  > $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf.temp
                 mv $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf.temp $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf
                 ##INDEL
                 $bedtools/intersectBed -header -a $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.vcf -b $CaptureKit -c > $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf
-                cat $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE="$NF,$9,$10;}' > $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf.temp
+                cat $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf |  awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else if($NF>0) print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10; else  print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=0",$9,$10;}'  > $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf.temp
                 mv $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf.temp $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf 
             else    
                 cat $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' > $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf

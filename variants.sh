@@ -94,7 +94,7 @@ else
         sample=${sampleArray[1]}
         if [ $SNV_caller == SNVMIX ]
         then
-            $samtools/samtools mpileup -s -f $ref $input/$bam > $input/chr${chr}.pileup
+            $samtools/samtools pileup -s -f $ref $input/$bam > $input/chr${chr}.pileup
         fi
         $script_path/samplecheckBAM.sh $input $bam $output $run_info $sample $chopped $chr
     fi
@@ -138,9 +138,12 @@ else
                 mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
                 sed '/^$/d' $output/$sample.variants.chr${chr}.raw.all.vcf > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
                 mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
-                $bedtools/intersectBed -a $output/$sample.variants.chr${chr}.raw.all.vcf -b $output/$sample.$chr.target.bed -wa -header > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
-                mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
-                $tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
+                if [ $len -gt 0 ]
+				then
+					$bedtools/intersectBed -a $output/$sample.variants.chr${chr}.raw.all.vcf -b $output/$sample.$chr.target.bed -wa -header > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
+					mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
+                fi
+				$tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
                 rm $output/$sample.$chr.target.bed
             else
                 param="-L chr${chr}"
@@ -179,9 +182,12 @@ else
 				in="$output/$sample.variants.chr${chr}.raw.snv.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.indel.vcf.multi.vcf"
                 $script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.vcf.multi.vcf $run_info yes
                 cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "." || $0 ~ /^#/' | grep -v "\./\."  | grep -v "0\/0" > $output/$sample.variants.chr${chr}.raw.vcf
-                $bedtools/intersectBed -a $output/$sample.variants.chr${chr}.raw.all.vcf -b $output/$sample.$chr.target.bed -wa -header > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
-                mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
-                $tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
+                if [ $len -gt 0 ]
+				then
+					$bedtools/intersectBed -a $output/$sample.variants.chr${chr}.raw.all.vcf -b $output/$sample.$chr.target.bed -wa -header > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
+					mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
+                fi
+				$tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
 				rm $output/$sample.$chr.target.bed
 			else
                 ## call indeles using GATK
@@ -299,7 +305,10 @@ else
     ## update dash board
     if [ $SGE_TASK_ID == 1 ]
     then
-        $script_path/dashboard.sh $samples $run_info VariantCalling complete
-    fi
+        for i in `echo $samples | tr ":" " "`
+		do
+			$script_path/dashboard.sh $i $run_info VariantCalling complete
+		done
+	fi
     echo `date`
 fi

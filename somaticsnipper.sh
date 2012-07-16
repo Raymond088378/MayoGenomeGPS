@@ -33,7 +33,7 @@ else
     
     if [ $only_ontarget == "YES" ]
     then
-	cat $TargetKit | grep -w chr$chr > $output/$snv.target.bed
+		cat $TargetKit | grep -w chr$chr > $output/$snv.target.bed
         len=`cat $output/$snv.target.bed |wc -l`
         if [ $len -gt 0 ]
         then
@@ -45,7 +45,7 @@ else
     if [ ! -s $output/$output_file ]
     then
         $script_path/errorlog.sh $output/$output_file somaticsnipper.sh ERROR "failed to create"
-	exit 1;
+		exit 1;
     else
         rm $output/$snv   
     fi

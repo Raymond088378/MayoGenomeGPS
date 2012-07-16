@@ -683,8 +683,9 @@ else    {
 		
 		if ($key eq '2' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' && $multi eq 'NO'  )	{
 			for (my $c=0; $c < $num_samples;$c++)	{
-				my $print=sprintf("%.2f",$sample_numbers{$key}[$c]);
-				print OUT "<td class=\"helpBod\"> $print\%</td>";
+				my $print=sprintf("%.4f",$sample_numbers{$key}[$c]);
+				my $duplicate=sprintf("%.1f",($print * 100));
+				print OUT "<td class=\"helpBod\">$duplicate\%</td>";
 			}		
 			print OUT "</tr>\n";
 		}
@@ -698,8 +699,9 @@ else    {
 		}
 		elsif ($key eq '2' && ( $analysis eq 'realignment' || $analysis eq 'realign-mayo' || $analysis eq 'external' || $analysis eq 'mayo')	&& $multi eq 'YES')	{
 			for (my $c=0; $c < $num_samples;$c++)	{
-				my $print=sprintf("%.2f",$sample_numbers{$key}[$c]);
-				print OUT "<td class=\"helpBod\"> $print\%</td>";
+				my $print=sprintf("%.4f",$sample_numbers{$key}[$c]);
+				my $duplicate=sprintf("%.1f",($print * 100));
+				print OUT "<td class=\"helpBod\">$duplicate\%</td>";
 			}		
 			print OUT "</tr>\n";
 		}

@@ -145,7 +145,8 @@ else
         numsamples=$(cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | wc -l)
         for sample in `echo $samples | tr ":" "\n"`
         do            
-            if [ $analysis != "annotation" ]
+            sleep 30
+			if [ $analysis != "annotation" ]
             then
                 align_dir=$output_dir/alignment/$sample
                 bamfile=$sample.sorted.bam
@@ -386,6 +387,7 @@ else
 				
 		for sample in `echo $samples | tr ":" "\n"`
 		do
+			sleep 30
 			bamfile=$sample.sorted.bam
 			align_dir=$output_dir/alignment/$sample;
 			mkdir -p $align_dir
@@ -401,6 +403,7 @@ else
 				then
 					echo "novoalign is used as aligner"
 					qsub $args -N $type.$version.align_novo.$sample.$run_num -l h_vmem=8G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_novo.sh $sample $output_dir $run_info
+					hold="$type.$version.align_novo.$sample.$run_num"
 				elif [ $aligner == "bwa" ]
 				then
 					echo "bwa is used as aligner"
@@ -413,9 +416,9 @@ else
 						hold="-hold_jid $type.$version.align_read_bwa.R1.$sample.$run_num"
 					fi	
 					qsub $args -N $type.$version.align_bwa.$sample.$run_num -l h_vmem=8G -pe threaded $threads $hold -t 1-$numfiles:1 $script_path/align_bwa.sh $sample $output_dir $run_info
+					hold="$type.$version.align_bwa.$sample.$run_num"
 				fi	    
-				job_id_align=`echo $ALIGNMENT | cut -d ' ' -f3 | tr "\n" "," | sed -e "s/\..*,//g"`
-				qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=8G -hold_jid $job_id_align $script_path/processBAM.sh $align_dir $sample $run_info   
+				qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=8G -hold_jid $hold $script_path/processBAM.sh $align_dir $sample $run_info   
 				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $output_dir/IGV_BAM		
 			elif [[ $analysis == "realignment" || $analysis == "realign-mayo" ]]
 			then
@@ -433,7 +436,8 @@ else
 		
 		for group in `echo $groups | tr ":" "\n"`
         do
-            samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" "\n")
+            sleep 30
+			samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" "\n")
             bam_samples=""
             input_dirs=""
             names_samples=""
@@ -490,11 +494,12 @@ else
 				qsub $args -N $type.$version.sample_report.$sample.$run_num -hold_jid $type.$version.sample_reports.$group.$sample.$run_num $script_path/sample_report.sh $output_dir $TempReports $sample $run_info $group
 			done
 			sampleNames=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" "\n")
+			sampleArray=()
 			i=1
-				for sample in $sampleNames
+			for sample in $sampleNames
 			do
-			sampleArray[$i]=$sample
-			let i=i+1
+				sampleArray[$i]=$sample
+				let i=i+1
 			done
 			for i in $(seq 2 ${#sampleArray[@]})
 			do  
@@ -546,7 +551,8 @@ else
             for group in `echo $groups | tr ":" "\n"`
             do
                 samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" "\n")
-                i=1
+                sampleArray=()
+				i=1
                 for sample in $sampleNames
                 do
                     sampleArray[$i]=$sample
@@ -566,7 +572,8 @@ else
         for group in `echo $groups | tr ":" "\n"`
         do
             samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" "\n")
-            i=1
+            sampleArray=()
+			i=1
             for sample in $sampleNames
             do
                 sampleArray[$i]=$sample
