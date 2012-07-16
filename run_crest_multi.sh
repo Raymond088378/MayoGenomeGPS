@@ -115,9 +115,7 @@ else
         -d $output_dir/$group/${file}.chr$chr.bam -g $output_dir/$group/${normal_sample}.chr$chr.bam \
 		--ref_genome $ref_genome -t $blat_ref \
 		--blatport $blat_port -blatserver $blat_server \
-		--min_sclip_len $len \
-		--cap3 $cap3/cap3 --min_sclip_reads $reads \
-		-r chr$chr -o $output_dir/$group -p $sample.$chr
+		--cap3 $cap3/cap3 -r chr$chr -o $output_dir/$group -p $sample.$chr
 
         if [ -f $output_dir/$group/${file}.$chr.predSV.txt ] 
         then
