@@ -119,7 +119,6 @@ else
 		--ref_genome $ref_genome -t $blat_ref \
 		--blatport $blat_port -blatserver localhost \
 		--cap3 $cap3/cap3 \
-		--min_sclip_len $len --min_sclip_reads $reads \
 		-o $output_dir/$sample -p $sample.$chr
 		
         rm $input_bam
