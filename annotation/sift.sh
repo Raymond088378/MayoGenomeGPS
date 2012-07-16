@@ -14,4 +14,4 @@ thread=$7
         mv $output/$sample.predictions.tsv_mod $output/$sample.predictions.tsv
         rm $output/$ff.SNV.vcf.sift
         cd $a
-        echo "SIFT is done"
+        echo " SIFT is done "

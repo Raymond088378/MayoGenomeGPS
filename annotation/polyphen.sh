@@ -19,4 +19,4 @@ thread=$7
     perl $script_path/map.polyphen.pl $output/$sample.SNV.poly.uniprot $output/$sample.SNV.poly.uniprot.in.predict > $output/$sample.polyphen.txt 
     rm $output/$sample.SNV.poly.uniprot.in.predict
     rm $output/$sample.SNV.poly.uniprot
-    echo "POLYPHEN is done"
+    echo " POLYPHEN is done "

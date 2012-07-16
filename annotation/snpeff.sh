@@ -42,7 +42,7 @@ sample=${10}
 	rm $output/$ff.SNV.vcf.annot.vcf $output/$ff.SNV.vcf.annot.vcf.idx $output/$ff.SNV.vcf.annot.vcf.vcfidx
 	rm  $output/$ff.SNV.vcf.idx $output/$ff.SNV.vcf.eff.vcf $output/$ff.SNV.vcf.eff.vcf.idx 
 
-	echo "Filtering SNPEFF output from multiple transcript to most impacting transcript"
+	echo " Filtering SNPEFF output from multiple transcript to most impacting transcript "
 	## INDELs
 	$java/java -Xmx2g -Xms512m -jar $snpeff/snpEff.jar eff -onlyCoding true -chr chr -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.INDEL.vcf > $output/$sample.INDEL.eff
 	$java/java -Xmx2g -Xms512m -jar $snpeff/snpEff.jar eff -onlyCoding true -o vcf -chr chr -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.INDEL.vcf > $output/$ff.INDEL.vcf.eff.vcf
@@ -78,4 +78,4 @@ sample=${10}
 	rm $output/$ff.INDEL.vcf.annot.INFO $output/$ff.INDEL.vcf.annot.log
 	rm $output/$ff.INDEL.vcf.annot.vcf $output/$ff.INDEL.vcf.annot.vcf.idx $output/$ff.INDEL.vcf.annot.vcf.vcfidx
 	rm  $output/$ff.INDEL.vcf.idx $output/$ff.INDEL.vcf.eff.vcf $output/$ff.INDEL.vcf.eff.vcf.idx 
-	echo "SNPEFF is done"
+	echo " SNPEFF is done "
