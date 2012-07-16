@@ -50,7 +50,7 @@ SNP_BUILD=/data2/bsi/reference/annotation/dbSNP/hg19/dbSNPbuild.bed
 
 
 ## tools
-WHOLEGENOME_PATH=/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/tags/1.1/
+WHOLEGENOME_PATH=/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/tags/1.1.1/
 NOVOALIGN=/projects/bsi/bictools/apps/alignment/novoalign/2.07.13/novoalign
 BWA=/projects/bsi/bictools/apps/alignment/bwa/0.5.9/
 BOWTIE=/projects/bsi/bictools/apps/alignment/bowtie/2.0.0-beta5/
@@ -94,7 +94,7 @@ R_SOFT=/usr/local/biotools/r/R-2.13.0/bin/
 
 JAVA_HOME=/usr/java/latest
 HTTP_SERVER=bmidev2
-THREADS=12
+THREADS=4
 EMIT_ALL_SITES=NO
 VARIANT_FILTER=YES
 DEPTH_FILTER=0
