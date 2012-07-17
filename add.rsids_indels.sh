@@ -32,7 +32,7 @@ else
 		perl $script_path/add_dbsnp_indel.pl -i $TempReports/$indel.forrsIDs -b 1 -s $dbsnp_rsids_indel -c 1 -p 2 -x 3 -o $TempReports/$indel.forrsIDs.added -r $chr
 	else
 		value=`echo $dbsnp_rsids_indel | perl -wlne 'print $1 if /.+dbSNP(\d+)/'`
-		echo "dbsnp${value}\tdbsnp${value}Alleles" > $TempReports/$indel.forrsIDs.added
+		echo -e "dbsnp${value}\tdbsnp${value}Alleles" > $TempReports/$indel.forrsIDs.added
 		cat $TempReports/$indel.forrsIDs | sed 's/[ \t]*$//' > $TempReports/$indel.forrsIDs.tmp
 		mv $TempReports/$indel.forrsIDs.tmp $TempReports/$indel.forrsIDs
 		paste $TempReports/$indel.forrsIDs $TempReports/$indel.forrsIDs.added > $TempReports/$indel.forrsIDs.added.tmp

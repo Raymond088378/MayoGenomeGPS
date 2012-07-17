@@ -37,7 +37,7 @@ else
 		perl $script_path/add.dbsnp.disease.snv.pl -i $TempReports/$snv.forrsIDs.added -b 1 -s $dbsnp_rsids_disease -c 1 -p 2 -o $TempReports/$snv.forrsIDs.added.disease -r $chr
     else
 		value=`echo $dbsnp_rsids_snv | perl -wlne 'print $1 if /.+dbSNP(\d+)/'`
-		echo "dbsnp${value}\tdbsnp${value}Alleles" > $TempReports/$snv.forrsIDs.added
+		echo -e "dbsnp${value}\tdbsnp${value}Alleles" > $TempReports/$snv.forrsIDs.added
 		cat $TempReports/$snv.forrsIDs | sed 's/[ \t]*$//' > $TempReports/$snv.forrsIDs.tmp
 		mv $TempReports/$snv.forrsIDs.tmp $TempReports/$snv.forrsIDs
 		paste $TempReports/$snv.forrsIDs $TempReports/$snv.forrsIDs.added > $TempReports/$snv.forrsIDs.added.tmp

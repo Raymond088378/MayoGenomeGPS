@@ -67,7 +67,7 @@ else
 	then
 	    rm $file
 	else
-	    echo "ERROR: sift addition failed for $file"
+	    echo "ERROR : sift addition failed for $file"
 	fi    
 	##  add codon preference
 	codon=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ "Codons") {print i} } }' $file.sift`
@@ -82,7 +82,7 @@ else
 	    rm $file.sift.forCodons.2columns.added
 	    rm $file.sift.forCodons.2columns
 	else
-	    echo "ERROR: adding codon prefernce failed for $file"
+	    echo "ERROR : adding codon prefernce failed for $file"
 	fi    
 	### blacklisted, Alignablility or Uniqueness columns
 	cat $file.sift.codons | awk 'NR>2' | awk '{print $1"\t"($2-1)"\t"$2}' > $file.sift.codons.ChrPos.bed
@@ -111,7 +111,7 @@ else
 	then
 	    rm $file.sift.codons
 	else
-	    echo "ERROR: adding blacklisted, Alignablility or Uniqueness columns failed for $file"
+	    echo "ERROR : adding blacklisted, Alignablility or Uniqueness columns failed for $file"
 	fi    
 	## intersect with repeat region bed file
 	cat $file.sift.codons.map | awk 'NR>2' | awk '{print $1"\t"($2-1)"\t"$2}' > $file.sift.codons.map.ChrPos.bed
@@ -130,7 +130,7 @@ else
 	then
 	    rm $file.sift.codons.map
 	else
-	    echo "ERROR: adding repeat region failed for $file"
+	    echo "ERROR : adding repeat region failed for $file"
 	fi    
 	### intersect with miRbase bed file
 	cat $file.sift.codons.map.repeat | awk 'NR>2' | awk '{print $1"\t"($2-1)"\t"$2}' > $file.sift.codons.map.repeat.ChrPos.bed
@@ -150,7 +150,7 @@ else
 	then
 	    rm $file.sift.codons.map.repeat
 	else
-	    echo "ERROR: adding miRbase failed for $file"
+	    echo "ERROR : adding miRbase failed for $file"
 	fi    
 	### intersect with SSR SCS
 	## SSR=SNP Suspect Reason
@@ -185,7 +185,7 @@ else
 	then
 	    rm $file.sift.codons.map.repeat.base
 	else
-	    echo "ERROR: adding SSR and SCS failed for $file"
+	    echo "ERROR : adding SSR and SCS failed for $file"
 	fi    
         ### add ucsc tracks
 	cat $file.sift.codons.map.repeat.base.snp | awk 'NR>2' | awk '{print $1"\t"($2-1)"\t"$2}' > $file.sift.codons.map.repeat.base.snp.ChrPos.bed
@@ -211,7 +211,7 @@ else
 	then
 	    rm $file.sift.codons.map.repeat.base.snp
 	else
-	    echo "ERROR: addding UCSC tracks failed for $file"
+	    echo "ERROR : addding UCSC tracks failed for $file"
 	fi
 	
 	### add polyphen
