@@ -187,7 +187,7 @@ else
                 then
                     hold="-hold_jid $type.$version.align_novo.$sample.$run_num"
                 fi    
-                qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=5G $hold $script_path/processBAM.sh $align_dir $sample $run_info 	
+                qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=4G $hold $script_path/processBAM.sh $align_dir $sample $run_info 	
 				if [ $analysis != "alignment" ]
 				then
 					qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $output_dir/IGV_BAM
@@ -201,7 +201,7 @@ else
                     bam=`echo $infile | awk -v num=$i '{print $num}'`
                     ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
                 done  
-                qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=5G $script_path/processBAM.sh $align_dir $sample $run_info
+                qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=4G $script_path/processBAM.sh $align_dir $sample $run_info
 				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $output_dir/IGV_BAM
             fi    
             if [[ $analysis == "mayo" || $analysis == "external" || $analysis == "realignment" || $analysis == "variant" || $analysis == "realign-mayo" ]]
@@ -418,7 +418,7 @@ else
 					qsub $args -N $type.$version.align_bwa.$sample.$run_num -l h_vmem=3G -pe threaded $threads $hold -t 1-$numfiles:1 $script_path/align_bwa.sh $sample $output_dir $run_info
 					hold="$type.$version.align_bwa.$sample.$run_num"
 				fi	    
-				qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=5G -hold_jid $hold $script_path/processBAM.sh $align_dir $sample $run_info   
+				qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=4G -hold_jid $hold $script_path/processBAM.sh $align_dir $sample $run_info   
 				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $output_dir/IGV_BAM		
 			elif [[ $analysis == "realignment" || $analysis == "realign-mayo" ]]
 			then
@@ -429,7 +429,7 @@ else
 					bam=`echo $infile | awk -v num=$i '{print $num}'`
 					ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
 				done
-				qsub $args -pe threaded $threads -N $type.$version.processBAM.$sample.$run_num -l h_vmem=5G $script_path/processBAM.sh $align_dir $sample $run_info
+				qsub $args -pe threaded $threads -N $type.$version.processBAM.$sample.$run_num -l h_vmem=4G $script_path/processBAM.sh $align_dir $sample $run_info
 				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $output_dir/IGV_BAM
 			fi
 		done	
