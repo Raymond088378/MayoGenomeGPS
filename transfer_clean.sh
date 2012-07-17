@@ -51,7 +51,8 @@ else
     fi
             
     ### transfer the data to delivery folder
-    mv $secondary/*.html $delivery/
+    chmod -Rf 777 $delivery/
+	mv $secondary/*.html $delivery/
     if [ ! -s $delivery/Main_Document.html ]
     then
 		echo "User doesn't have access to the $delivery delivery folder "
@@ -69,12 +70,16 @@ else
     fi
 	
 	mkdir $delivery/Reports_per_Sample
-    mkdir $delivery/Reports_per_Sample/ANNOT
-    if [ $type == "whole_genome" ]
+    chmod -Rf 777 $delivery/Reports_per_Sample
+	mkdir $delivery/Reports_per_Sample/ANNOT
+    chmod -Rf 777 $delivery/Reports_per_Sample/ANNOT
+	if [ $type == "whole_genome" ]
     then
 		mkdir $delivery/circos
+		chmod -Rf 777 $delivery/circos
 		mv $secondary/circos/* $delivery/circos
 		mkdir $delivery/Reports_per_Sample/SV
+		chmod -Rf 777 $delivery/Reports_per_Sample/SV
 		mv $secondary/Reports_per_Sample/SV/*.vcf $delivery/Reports_per_Sample/SV/
 		mv $secondary/Reports_per_Sample/SV/*.vcf.idx $delivery/Reports_per_Sample/SV/
 		rm -R $secondary/struct
@@ -85,15 +90,14 @@ else
     mv $secondary/Reports_per_Sample/*.xls $delivery/Reports_per_Sample/
     mv $secondary/Reports_per_Sample/ANNOT/*.txt $delivery/Reports_per_Sample/ANNOT/
     mv $secondary/Reports_per_Sample/*.filter.vcf $delivery/Reports_per_Sample/
-    #mv $secondary/Reports_per_Sample/*.filter.vcf.idx $delivery/Reports_per_Sample/
     mv $secondary/Reports_per_Sample/*.multi.vcf $delivery/Reports_per_Sample/
-    #mv $secondary/Reports_per_Sample/*.multi.vcf.idx $delivery/Reports_per_Sample/
     
     
     rm -R $secondary/Reports_per_Sample/
     
     mkdir $delivery/Reports/
-    mv $secondary/Reports/*.xls $delivery/Reports/
+    chmod -Rf 777 $delivery/Reports/
+	mv $secondary/Reports/*.xls $delivery/Reports/
     rm -R $secondary/Reports/
     mv $secondary/Coverage.JPG $delivery/	
 	

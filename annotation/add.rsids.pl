@@ -40,7 +40,7 @@ else{
         chomp $snp if defined $snp;
         if (!defined $input_c)	{
             last;
-	}
+		}
         elsif (!defined $snp)  {
             print OUT "$input_c\t";
             print OUT "-\t-\n";
