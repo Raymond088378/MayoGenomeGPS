@@ -345,7 +345,13 @@ else
 		do
 			id=$id"$type.$version.sample_report.$s.$run_num,"
 		done
-		qsub $args -N $type.$version.annotate_sample.$run_num -hold_jid $id -l h_vmem=4G $script_path/annotate_sample.sh $output_dir $run_info    
+		if [ $tool == "exome" ]
+                then
+                    mem="-l h_vmem=5G"
+                else
+                    mem="-l h_vmem=16G"
+                fi    
+                qsub $args -N $type.$version.annotate_sample.$run_num -hold_jid $id $mem $script_path/annotate_sample.sh $output_dir $run_info    
 	fi
 	id_igv=""
 	id_numbers=""
@@ -601,7 +607,13 @@ else
                 id=$id"$type.$version.summaryze_struct_group.$group.$run_num,$type.$version.annotation_CNV.$group.$run_num,$type.$version.annotation_SV.$group.$run_num,"
             done
         fi    
-        qsub $args -N $type.$version.annotate_sample.$run_num -hold_jid $id -l h_vmem=5G $script_path/annotate_sample.sh $output_dir $run_info
+        if [ $tool == "exome" ]
+                then
+                    mem="-l h_vmem=5G"
+                else
+                    mem="-l h_vmem=16G"
+                fi
+                qsub $args -N $type.$version.annotate_sample.$run_num -hold_jid $id $mem $script_path/annotate_sample.sh $output_dir $run_info
 		for group in `echo $groups | tr ":" "\n"`
         do
             qsub $args -N $type.$version.sample_numbers.$group.$run_num -l h_vmem=2G -hold_jid $id $script_path/sample_numbers.sh $output_dir $group $run_info $output_dir/numbers
