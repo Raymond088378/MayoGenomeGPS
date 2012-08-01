@@ -4,7 +4,6 @@ if [ $# != 2 ]
 then
     echo -e "Usage: wrapper to clean intermediate files and tansfer the data to tertiary, delivery folder \n <secondary folder> < run_info >"
 else
-    set -x
     echo `date`
     secondary=$1
     run_info=$2

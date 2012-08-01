@@ -71,13 +71,16 @@ else
             do
                 if [ -f $output/$sample.$i.chr$chr.pileup.bed.$j.txt ]
 				then
-					$bed/intersectBed -a $kit -b $output/$sample.$i.chr$chr.pileup.bed.$j.txt -wa -wb > $output/$sample.$i.chr$chr.pileup.bed.$j.txt.i
+					if [ -s $output/$sample.$i.chr$chr.pileup.bed.$j.txt ]
+					then
+						$bed/intersectBed -a $kit -b $output/$sample.$i.chr$chr.pileup.bed.$j.txt -wa -wb > $output/$sample.$i.chr$chr.pileup.bed.$j.txt.i
+					fi
 					rm $output/$sample.$i.chr$chr.pileup.bed.$j.txt	
 				fi
 			done
         
             #merge all the interscted pileup
-            for((j=0; j<=39; j++))
+            for((j=0; j<=99; j++))
             do
                 total=0
                 for((k=1; k<=26; k++))
@@ -112,13 +115,16 @@ else
         do
 			if [ -f $output/$sample.chr$chr.pileup.bed.$i.txt ]
 			then
-				$bed/intersectBed -a $kit -b $output/$sample.chr$chr.pileup.bed.$i.txt -wa -wb > $output/$sample.chr$chr.pileup.bed.$i.txt.i
+				if [ -s $output/$sample.chr$chr.pileup.bed.$i.txt ]
+				then
+					$bed/intersectBed -a $kit -b $output/$sample.chr$chr.pileup.bed.$i.txt -wa -wb > $output/$sample.chr$chr.pileup.bed.$i.txt.i
+				fi
 				rm $output/$sample.chr$chr.pileup.bed.$i.txt	
 			fi	
         done
         
         #merge all the interscted pileup
-        for((j=0; j<=39; j++))
+        for((j=0; j<=99; j++))
         do
             total=0
             for ((i=1;i<=26; i++))

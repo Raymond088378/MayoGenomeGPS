@@ -14,7 +14,8 @@ else
 	then
 		prefix=$5
 	fi	
-    chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
+    #SGE_TASK_ID=12
+	chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     tool_info=$(cat $run_info | grep -w '^TOOL_INFO' |  cut -d '=' -f2)
     pph=$(cat $tool_info | grep -w '^POLYPHEN' |  cut -d '=' -f2)
     perl_lib=$(cat $tool_info | grep -w '^PERL_POLYPHEN_LIB' |  cut -d '=' -f2)
@@ -54,7 +55,7 @@ else
         aa1=`awk '{ for(i=1;i<=NF;i++){ if ($i == "aa1") {print i} } }' $polyphen/$snv_file.poly.uniprot`
         aa2=`awk '{ for(i=1;i<=NF;i++){ if ($i == "aa2") {print i} } }' $polyphen/$snv_file.poly.uniprot`
         aapos=`awk '{ for(i=1;i<=NF;i++){ if ($i == "cdnpos") {print i} } }' $polyphen/$snv_file.poly.uniprot`
-        cat $polyphen/$snv_file.poly.uniprot | awk 'NR>1' | awk -v a1=$aa1 -v a2=$aa2  -F '\t' '$a1 !~ $a2' |  awk -v uni=$uniprot 'length($uni)>1' | awk -v chr=$snp_pos -v uni=$uniprot -v a1=$aa1 -v a2=$aa2 -v pos=$aapos -F '\t' '{print $uni"\t"$pos"\t"$a1"\t"$a2}' > $polyphen/$snv_file.poly.uniprot.in
+        cat $polyphen/$snv_file.poly.uniprot | awk 'NR>1' | awk -v a1=$aa1 -v a2=$aa2  -F '\t' '$a1 !~ $a2' |  awk -v uni=$uniprot 'length($uni)>1' | awk -v chr=$snp_pos -v uni=$uniprot -v a1=$aa1 -v a2=$aa2 -v pos=$aapos -F '\t' '{if ($a1 !~ "*" && $a2 !~ "*") print $uni"\t"$pos"\t"$a1"\t"$a2};' > $polyphen/$snv_file.poly.uniprot.in
         $perl $pph/bin/run_pph.pl -A -g $genome_build -d $polyphen/$sam.$chr $polyphen/$snv_file.poly.uniprot.in > $polyphen/$snv_file.poly.uniprot.in.predict
         rm $polyphen/$snv_file.poly.uniprot.in
     else

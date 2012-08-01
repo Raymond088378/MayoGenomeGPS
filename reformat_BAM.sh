@@ -50,7 +50,7 @@ else
             $script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate $max_reads $run_info
         fi
     else	
-        $script_path/MergeBam.sh $INPUTARGS $input/$sample.sorted.bam $input true $run_info
+        $script_path/MergeBam.sh "$INPUTARGS" $input/$sample.sorted.bam $input true $run_info
     fi
 
     ### add read grouup information

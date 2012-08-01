@@ -138,7 +138,7 @@ else
                 mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
                 sed '/^$/d' $output/$sample.variants.chr${chr}.raw.all.vcf > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
                 mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
-                if [ $len -gt 0 ]
+                if [[ $len -gt 0 && $only_ontarget == "YES" ]]
 				then
 					$bedtools/intersectBed -a $output/$sample.variants.chr${chr}.raw.all.vcf -b $output/$sample.$chr.target.bed -wa -header > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
 					mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
@@ -182,7 +182,7 @@ else
 				in="$output/$sample.variants.chr${chr}.raw.snv.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.indel.vcf.multi.vcf"
                 $script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.vcf.multi.vcf $run_info yes
                 cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "." || $0 ~ /^#/' | grep -v "\./\."  | grep -v "0\/0" > $output/$sample.variants.chr${chr}.raw.vcf
-                if [ $len -gt 0 ]
+               if [[ $len -gt 0 && $only_ontarget == "YES" ]]
 				then
 					$bedtools/intersectBed -a $output/$sample.variants.chr${chr}.raw.all.vcf -b $output/$sample.$chr.target.bed -wa -header > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
 					mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
