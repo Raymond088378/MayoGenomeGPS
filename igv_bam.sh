@@ -50,7 +50,7 @@ else
 
         for i in $pair
         do
-            sam=`echo $pair | tr " " "\n" | grep -v $i | tr "\n" " "`
+            sam=`echo $pair | tr " " "\n" | grep -w -v $i | tr "\n" " "`
             gr=""
             for s in $sam
             do
@@ -58,7 +58,7 @@ else
                 gr="$gr$a"
             done
             gr=`echo $gr |  sed "s/|$//"`
-            cat $output/$sample/$sample.header.sam |grep -E -v "$gr" > $output/$sample/$sample.$i.header.sam
+            cat $output/$sample/$sample.header.sam |grep -w -E -v "$gr" > $output/$sample/$sample.$i.header.sam
             
             if [ ${#chrArray[@]} -gt 1 ]
             then

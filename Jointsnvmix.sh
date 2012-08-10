@@ -23,16 +23,11 @@ else
 	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
 	TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
 	only_ontarget=$( cat $tool_info | grep -w '^TARGETTED' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
-	mqual=$( cat $tool_info | grep -w 'MAPPING_QUALITY' | cut -d '=' -f2)
-	bqual=$( cat $tool_info | grep -w 'BASE_QUALITY' | cut -d '=' -f2)
-	cutoff=$( cat $tool_info | grep -w 'SOMATIC_THRESHOLD' | cut -d '=' -f2)
+	command_line_params=$( cat $tool_info | grep -w '^JOINTSNVMIX_params' | cut -d '=' -f2 )
 	bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
+	JSM_Filter=$( cat $tool_info|grep -w 'JSM_Filter'|cut -d  '=' -f2 )
         
-    if [ $only_ontarget == "YES" ]
-    then
-	cat $TargetKit | grep -w chr$chr > $output/$tumor_sample.$chr.target.bed
-    fi
-	
+
     export PYTHONPATH=$pythonpath:$PYTHONPATH
     export PATH=$python:$PYTHONPATH:$PATH
     
@@ -50,25 +45,23 @@ else
     
     ### run joint snvmix classify to call teh somatic mutation
     
-	$python/python $jointsnvmix/build/scripts-2.7/jsm.py classify --model snvmix2 --somatic_threshold $cutoff --post_process --min_base_qual $bqual --min_map_qual $mqual --chromosome chr$chr --out_file $output/$output_file.txt --parameters_file $jointsnvmix/config/params.cfg $ref $normal_bam $tumor_bam
+	$python/python $jointsnvmix/build/scripts-2.7/jsm.py classify --model snvmix2 $command_line_params --chromosome chr$chr --out_file $output/$output_file.txt --parameters_file $jointsnvmix/config/params.cfg $ref $normal_bam $tumor_bam
 	
 	### script to convert text output to vcf output 
-	perl $script_path/jsm2vcf.pl -i $output/$output_file.txt -o $output/$output_file -ns $normal_sample -ts $tumor_sample
+	perl $script_path/jsm2vcf.pl -i $output/$output_file.txt -o $output/$output_file -ns $normal_sample -ts $tumor_sample $JSM_Filter
 	cat $output/$output_file | awk '$0 ~ /^#/ || $5 ~ /,/' > $output/$output_file.multi.vcf
 	cat $output/$output_file | awk '$0 ~ /^#/ || $5 !~ /,/' > $output/$output_file.tmp
 	mv $output/$output_file.tmp $output/$output_file
-	
 	rm $output/$output_file.txt
         
 	if [ $only_ontarget == "YES" ]
 	then
-		len=`cat $output/$tumor_sample.$chr.target.bed | wc -l`
-                if [ $len -gt 0 ]
-                then
-                    $bedtools/intersectBed -a $output/$output_file -b $output/$tumor_sample.$chr.target.bed -wa -header > $output/$output_file.i
-                    mv $output/$output_file.i $output/$output_file   
-                fi
-                rm $output/$tumor_sample.$chr.target.bed
-        fi
+		len=`cat $output/chr$chr.target.bed | wc -l`
+		if [ $len -gt 0 ]
+		then
+			$bedtools/intersectBed -a $output/$output_file -b $output/chr$chr.target.bed -wa -header > $output/$output_file.i
+			mv $output/$output_file.i $output/$output_file   
+		fi
+	fi
     echo `date`
 fi

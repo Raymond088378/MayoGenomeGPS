@@ -67,7 +67,7 @@ while(my $row = <IN>){
 		$n_gt_put=".";
 	}	
 		
-	print OUT "$chr\t$pos\t.\t$ref\t$alt\t.\tPASS\t" . "NS=2;DP=$total_dp;POW=$power;IMPAIR=$improper;MQ0=$mq0;MUTX_LOD=$mutlod;SOMATIC=$somatic" . "\tGT:AD:DP:INSC:DELC\t" . "$n_gt_put:$normal_depth_ref,$normal_depth_alt:$normal_depth:.:.\t" . "0/1:$tumor_depth_ref,$tumor_depth_alt:$tumor_depth:$insc:$delc\n";	    
+	print OUT "$chr\t$pos\t.\t$ref\t$alt\t.\tPASS\t" . "NS=2;DP=$total_dp;POW=$power;IMPAIR=$improper;MQ0=$mq0;MUTX_LOD=$mutlod;SOMATIC=$somatic" . "\tGT:AD:DP:GQ:INSC:DELC\t" . "$n_gt_put:$normal_depth_ref,$normal_depth_alt:$normal_depth:99:0:0\t" . "0/1:$tumor_depth_ref,$tumor_depth_alt:$tumor_depth:99:$insc:$delc\n";	    
 }
 close IN;
 close OUT;
@@ -82,6 +82,7 @@ sub header{
 ##INFO=<ID=NS,Number=1,Type=Integer,Description="Number of Samples With Data">
 ##INFO=<ID=DP,Number=1,Type=Integer,Description="Total Depth">
 ##FORMAT=<ID=AD,Number=.,Type=Integer,Description="Allelic depths for the ref and alt alleles in the order listed">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth for This Sample">
 ##FORMAT=<ID=POW,Number=1,Type=Float,Description="given the tumor sequencing depth, what is the power to detect a mutation at 0.3 allelic fraction * given the normal sequencing depth, what power did we have to detect (and reject) this as a germline variant">

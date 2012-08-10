@@ -21,11 +21,11 @@ else
     sample=$3
     run_info=$4
     if [ $5 ]
-	then
-		SGE_TASK_ID=$5
-	fi
-	########################################################	
-	######		Reading run_info.txt and assigning to variables
+    then
+        SGE_TASK_ID=$5
+    fi
+    ########################################################	
+    ######		Reading run_info.txt and assigning to variables
 
     input=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
@@ -54,172 +54,125 @@ else
 ##############################################################		
     
     if [ $tool == "exome" ]
-	then
+    then
 		intersect_file=$TargetKit
     else
 		intersect_file=$out_dir/bed_file.bed
-	fi	
-	if [ $multi_sample != "YES" ]
+    fi	
+    
+    if [ $multi_sample != "YES" ]
     then
-        echo "Single sample"
-        input=$variants/$sample
-        if [ ! -s $input/$sample.variants.chr$chr.filter.vcf ]
-        then
-            $script_path/errorlog.sh $input/$sample.variants.chr$chr.filter.vcf OnTarget_variants.sh ERROR "not exist"
-            exit 1;
-        fi    
-        perl $script_path/vcf_to_variant_vcf.pl -i $input/$sample.variants.chr$chr.filter.vcf -v $input/$sample.variants.chr$chr.SNV.filter.vcf -l $input/$sample.variants.chr$chr.INDEL.filter.vcf -f 
-        $bedtools/intersectBed -header -a $input/$sample.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf
-        rm $input/$sample.variants.chr$chr.SNV.filter.vcf 
-        $bedtools/intersectBed -header -a $input/$sample.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf
-        rm $input/$sample.variants.chr$chr.INDEL.filter.vcf
-        ### interesect with capture kit to see if the vaariant is found in capture kit and annotate teh variant with 1 or 0 and for whole genome just 1
-        if [ $tool == "exome" ]
-        then
-            $bedtools/intersectBed -header -a $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf -b $CaptureKit -c > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
-            rm $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf
-            cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else if($NF>0) print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10; else  print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=0",$9,$10;}'  > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf.temp
-            mv $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf.temp $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
-            $bedtools/intersectBed -header -a $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf -b $CaptureKit -c > $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
-            rm $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf
-            cat $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else if($NF>0) print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10; else  print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=0",$9,$10;}'  > $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.temp
-            mv $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.temp  $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
-        elif [ $tool == "whole_genome" ]
-        then
-            cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
-            rm $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf
-            cat $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' > $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
-            rm $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf
-        fi
-        if [ `cat $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
-        then
-            $script_path/errorlog.sh $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+		echo "Single sample"
+		input=$variants/$sample
+		if [ ! -s $input/$sample.variants.chr$chr.filter.vcf ]
+		then
+			$script_path/errorlog.sh $input/$sample.variants.chr$chr.filter.vcf OnTarget_variants.sh ERROR "not exist"
+			exit 1;
+		fi    
+		perl $script_path/vcf_to_variant_vcf.pl -i $input/$sample.variants.chr$chr.filter.vcf -v $input/$sample.variants.chr$chr.SNV.filter.vcf -l $input/$sample.variants.chr$chr.INDEL.filter.vcf -f 
+		$bedtools/intersectBed -header -a $input/$sample.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf
+		rm $input/$sample.variants.chr$chr.SNV.filter.vcf 
+		$bedtools/intersectBed -header -a $input/$sample.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf
+		rm $input/$sample.variants.chr$chr.INDEL.filter.vcf
+		### interesect with capture kit to see if the vaariant is found in capture kit and annotate teh variant with 1 or 0 and for whole genome just 1
+		if [ $tool == "exome" ]
+		then
+			$bedtools/intersectBed -header -a $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf -b $CaptureKit -c |  $script_path/add.info.capture.vcf.pl  > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
+			rm $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf
+			$bedtools/intersectBed -header -a $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf -b $CaptureKit -c |  $script_path/add.info.capture.vcf.pl  > $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
+			rm $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf
+		elif [ $tool == "whole_genome" ]
+		then
+			cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf |  $script_path/add.info.capture.vcf.pl > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
+			cat $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf |  $script_path/add.info.capture.vcf.pl > $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
+			rm $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf
+			rm $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf
+		fi
+		if [ `cat $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
+		then
+			$script_path/errorlog.sh $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
 			cp $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
-			cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL=0",$9,$10;}' > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
-        else
+			cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
+		else
 			perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
-			cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL="$NF,$9,$10;}' > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
-        fi
+			cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
+		fi
 		rm $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
-        if [ `cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
-        then
-            $script_path/errorlog.sh $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
-        fi      
-        ### add format field tags to vcf
-		perl $script_path/add_format_field_vcf.pl $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf SNV > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf.tmp
-		mv $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf.tmp $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
-		perl $script_path/add_format_field_vcf.pl $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf INDEL > $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp
-        mv $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
+		if [ `cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
+		then
+			$script_path/errorlog.sh $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+		fi      
     else
-        echo "Multi sample"
-        #### we need to generate three files for a group for SNVs and INDELs
-        ### somatic tumor normal
-        group=$sample
-        samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2)    
-        input=$variants/$group
-        if [ $tool == "exome" ]
-        then
-            intersect_file=$TargetKit
-        else
-            intersect_file=$out_dir/bed_file.bed
-        fi    
-		for sample in $samples
-        do  
-            perl $script_path/vcf_to_variant_vcf.pl -i $input/$group.variants.chr$chr.filter.vcf -v $input/$group.$sample.variants.chr$chr.SNV.filter.vcf -l $input/$group.$sample.variants.chr$chr.INDEL.filter.vcf -s $sample -f
-            cat $input/$group.$sample.variants.chr$chr.SNV.filter.vcf | awk '$0 ~ /^#/ || ($10 !~ /^\./ && $10 !~ /^0\/0/)' > $input/$group.$sample.variants.chr$chr.SNV.filter.vcf.temp
-            mv $input/$group.$sample.variants.chr$chr.SNV.filter.vcf.temp $input/$group.$sample.variants.chr$chr.SNV.filter.vcf
-            cat $input/$group.$sample.variants.chr$chr.INDEL.filter.vcf | awk '$0 ~ /^#/ || ($10 !~ /^\./ && $10 !~ /^0\/0/)' > $input/$group.$sample.variants.chr$chr.INDEL.filter.vcf.temp
-            mv $input/$group.$sample.variants.chr$chr.INDEL.filter.vcf.temp $input/$group.$sample.variants.chr$chr.INDEL.filter.vcf
-            $bedtools/intersectBed -header -a $input/$group.$sample.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.vcf
-            rm $input/$group.$sample.variants.chr$chr.SNV.filter.vcf 
-            $bedtools/intersectBed -header -a $input/$group.$sample.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.vcf
-            rm $input/$group.$sample.variants.chr$chr.INDEL.filter.vcf
-            if [ $tool == "exome" ]
-            then
-                ### SNV
-                $bedtools/intersectBed -header -a $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.vcf -b $CaptureKit -c > $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf
-                cat $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf |  awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else if($NF>0) print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10; else  print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=0",$9,$10;}'  > $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf.temp
-                mv $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf.temp $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf
-                $bedtools/intersectBed -header -a $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.vcf -b $CaptureKit -c > $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf
-                cat $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf |  awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else if($NF>0) print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10; else  print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=0",$9,$10;}'  > $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf.temp
-                mv $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf.temp $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf
-            else    
-            cat $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' > $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf
-            cat $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' > $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf
-            fi
-            rm $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.vcf
-            rm $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.vcf
-            if [ `cat $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
-            then
-                $script_path/errorlog.sh $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
-				cp $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf 
-				cat $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL="$NF,$9,$10;}' > $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf
-			else
-				perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
-				cat $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL=0",$9,$10;}' > $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf
-			fi
-			rm $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
-            if [ `cat $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
-            then
-				$script_path/errorlog.sh $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
-            fi
-            perl $script_path/add_format_field_vcf.pl $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf SNV > $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf.tmp
-			mv $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf.tmp $OnTarget/$group.$sample.variants.chr$chr.SNV.filter.i.c.vcf
-			perl $script_path/add_format_field_vcf.pl $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf INDEL > $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp
-			mv $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp $OnTarget/$group.$sample.variants.chr$chr.INDEL.filter.i.c.vcf	
-        done
-        ### for somatic calls
-        samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 )
-        sampleArray=()
-		i=1
-        for sample in $samples
-        do
-            sampleArray[$i]=$sample
-            let i=i+1
-        done
-        for i in $(seq 2 ${#sampleArray[@]})
-        do  
-            tumor=${sampleArray[$i]}
-            perl $script_path/vcf_to_variant_vcf.pl -i $input/$group.somatic.variants.chr$chr.filter.vcf -v $input/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.vcf -l $input/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.vcf -s $tumor -f 
-            $bedtools/intersectBed -header -a $input/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.vcf
-            rm $input/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.vcf
-            $bedtools/intersectBed -header -a $input/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.vcf
-            rm $input/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.vcf
-            if [ $tool == "exome" ]
-            then
-                ##SNV
-                $bedtools/intersectBed -header -a $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.vcf -b $CaptureKit -c > $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf
-                cat $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf |  awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else if($NF>0) print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10; else  print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=0",$9,$10;}'  > $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf.temp
-                mv $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf.temp $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf
-                ##INDEL
-                $bedtools/intersectBed -header -a $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.vcf -b $CaptureKit -c > $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf
-                cat $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf |  awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else if($NF>0) print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10; else  print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=0",$9,$10;}'  > $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf.temp
-                mv $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf.temp $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf 
-            else    
-                cat $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' > $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf
-                cat $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.vcf| awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' > $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf
-            fi
-            rm $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.vcf
-            rm $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.vcf
-            if [ `cat $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
-            then
-                $script_path/errorlog.sh $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
-				cp $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.pos.vcf
-				cat $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL=0",$9,$10;}' > $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf
-			else   
-				perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.pos.vcf
-                cat $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CLOSE2INDEL="$NF,$9,$10;}' > $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf
-            fi
-			rm $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.pos.vcf
-            if [ `cat $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
-            then
-                $script_path/errorlog.sh $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
-            fi   
-			perl $script_path/add_format_field_vcf.pl $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf SNV > $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf.tmp
-			mv $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf.tmp $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.SNV.filter.i.c.vcf
-			perl $script_path/add_format_field_vcf.pl $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf INDEL > $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf.tmp
-			mv $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf.tmp $OnTarget/TUMOR.$group.$tumor.variants.chr$chr.INDEL.filter.i.c.vcf	
-        done
+		echo "Multi sample"
+		### multi sample calling
+		group=$sample 
+		input=$variants/$group
+		if [ $tool == "exome" ]
+		then
+			intersect_file=$TargetKit
+		else
+			intersect_file=$out_dir/bed_file.bed
+		fi    
+		perl $script_path/vcf_to_variant_vcf.pl -i $input/$group.variants.chr$chr.filter.vcf -v $input/$group.variants.chr$chr.SNV.filter.vcf -l $input/$group.variants.chr$chr.INDEL.filter.vcf -f
+		$bedtools/intersectBed -header -a $input/$group.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/$group.variants.chr$chr.SNV.filter.i.vcf
+		rm $input/$group.variants.chr$chr.SNV.filter.vcf 
+		$bedtools/intersectBed -header -a $input/$group.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/$group.variants.chr$chr.INDEL.filter.i.vcf
+		rm $input/$group.variants.chr$chr.INDEL.filter.vcf
+		if [ $tool == "exome" ]
+		then
+			$bedtools/intersectBed -header -a $OnTarget/$group.variants.chr$chr.SNV.filter.i.vcf -b $CaptureKit -c |  $script_path/add.info.capture.vcf.pl  > $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf
+			$bedtools/intersectBed -header -a $OnTarget/$group.variants.chr$chr.INDEL.filter.i.vcf -b $CaptureKit -c | $script_path/add.info.capture.vcf.pl  > $OnTarget/$group.variants.chr$chr.INDEL.filter.i.c.vcf
+		else    
+			cat $OnTarget/$group.variants.chr$chr.SNV.filter.i.vcf |  $script_path/add.info.capture.vcf.pl > $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf
+			cat $OnTarget/$group.variants.chr$chr.INDEL.filter.i.vcf |  $script_path/add.info.capture.vcf.pl> $OnTarget/$group.variants.chr$chr.INDEL.filter.i.c.vcf
+		fi
+		rm $OnTarget/$group.variants.chr$chr.SNV.filter.i.vcf
+		rm $OnTarget/$group.variants.chr$chr.INDEL.filter.i.vcf
+		if [ `cat $OnTarget/$group.variants.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
+		then
+			$script_path/errorlog.sh $OnTarget/$group.variants.chr$chr.INDEL.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+			cp $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.pos.vcf 
+			cat $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf
+		else
+			perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/$group.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
+			cat $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf
+		fi
+		rm $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
+		if [ `cat $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
+		then
+			$script_path/errorlog.sh $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+		fi	
+		
+		### for somatic calls
+		perl $script_path/vcf_to_variant_vcf.pl -i $input/$group.somatic.variants.chr$chr.filter.vcf -v $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf -l $input/TUMOR.$group.variants.chr$chr.INDEL.filter.vcf -f
+		$bedtools/intersectBed -header -a $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.vcf
+		rm $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf
+		$bedtools/intersectBed -header -a $input/TUMOR.$group.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.vcf
+		rm $input/TUMOR.$group.variants.chr$chr.INDEL.filter.vcf
+		if [ $tool == "exome" ]
+		then
+			$bedtools/intersectBed -header -a $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.vcf -b $CaptureKit -c |  $script_path/add.info.capture.vcf.pl  > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf
+			$bedtools/intersectBed -header -a $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.vcf -b $CaptureKit -c | $script_path/add.info.capture.vcf.pl  > $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf 
+		else    
+			cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.vcf | $script_path/add.info.capture.vcf.pl > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf
+			cat $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.vcf | $script_path/add.info.capture.vcf.pl > $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf
+		fi
+		rm $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.vcf
+		rm $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.vcf
+		if [ `cat $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
+		then
+			$script_path/errorlog.sh $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+			cp $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
+			cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf
+		else   
+			perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
+			cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf
+		fi
+		rm $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
+		if [ `cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
+		then
+			$script_path/errorlog.sh $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+		fi   
     fi
     echo `date`
 fi

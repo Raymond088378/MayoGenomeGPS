@@ -20,21 +20,13 @@ else
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
     window=$( cat $tool_info | grep -w '^INDEL_WINDOW_SIZE' | cut -d '=' -f2)
-    expression=$( cat $tool_info | grep -w '^SOMATIC_INDEL_FILTER_EXPRESSION'| cut -d '=' -f2)
 	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
 	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
-	
+	command_line_params=$( cat $tool_info | grep -w '^SOMATIC_INDEL_params' | cut -d '=' -f2 )
 	export JAVA_HOME=$javahome
 	export PATH=$javahome/bin:$PATH
 	
-    ## Somatic Indel detector
-    if [ $expression == "NA" ]
-	then
-		### default filter
-		filter="T_COV<6||N_COV<4||T_INDEL_F<0.3||T_INDEL_CF<0.7"
-	else
-		filter="$expression"
-	fi	
+
     indel_v=$tumor_sample.chr$chr.indel.txt
 	
     check=0
@@ -52,12 +44,11 @@ else
 		-K $gatk/Hossain.Asif_mayo.edu.key \
 		-T SomaticIndelDetector \
 		-L chr$chr \
-		--filter_expressions $filter \
 		--window_size $window \
 		-o $output/$output_file \
 		-verbose $output/$indel_v \
 		-I:normal $normal_bam \
-		-I:tumor $tumor_bam
+		-I:tumor $tumor_bam $command_line_params
 		sleep 1m
 		check=`[ -s $output/$output_file.idx ] && echo "1" || echo "0"`
         if [ $check -eq 0 ]

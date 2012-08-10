@@ -17,14 +17,14 @@ else
 	
 	if [ -d $output/$PI ]
 	then
-		echo "WARNING: $PI folder exists"
+		echo "WARNING : $PI folder exists"
 	else
 		mkdir $output/$PI
 	fi
 
 	if [ -d $output/$PI/$tool ]
 	then 	
-		echo "WARNING: $tool analysis folder exists"
+		echo "WARNING : $tool analysis folder exists"
 	else
 		mkdir $output/$PI/$tool
 	fi

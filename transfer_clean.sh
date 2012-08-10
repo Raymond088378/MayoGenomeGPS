@@ -5,6 +5,7 @@ then
     echo -e "Usage: wrapper to clean intermediate files and tansfer the data to tertiary, delivery folder \n <secondary folder> < run_info >"
 else
     echo `date`
+	echo "Started transferring the file"
     secondary=$1
     run_info=$2
     delivery=$( cat $run_info | grep -w '^DELIVERY_FOLDER' | cut -d '=' -f2)
@@ -146,8 +147,11 @@ else
     
     if [ $delivery != "NA" ]
     then
-        rm -R $secondary/IGV_BAM
-    fi
+        if [ -d $delivery/IGV_BAM ]
+		then
+			rm -R $secondary/IGV_BAM
+		fi
+	fi
     
     echo "data is transfered and intermediate files are deleted"
     echo "User needs to transfer the data to the windows share"

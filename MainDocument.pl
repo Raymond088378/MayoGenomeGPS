@@ -45,9 +45,10 @@ else    {
 	my $run_num=$line[$#line];chomp $run_num;
 	@line=split(/=/,`perl -ne "/^TB_PORT/ && print" $tool_info`);
 	my $port=$line[$#line];chomp $port;
+	$port="8886";
 	@line=split(/=/,`perl -ne "/^TB_HOST/ && print" $tool_info`);
 	my $host=$line[$#line];chomp $host;
-	
+	$host="charlotte";
 	@line=split(/=/,`perl -ne "/^SAMPLE_INFO/ && print" $run_info`);
 	my $sample_info=$line[$#line];chomp $sample_info;
 	@line=split(/=/,`perl -ne "/^LABINDEXES/ && print" $run_info`);

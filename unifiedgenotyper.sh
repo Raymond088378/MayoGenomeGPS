@@ -25,6 +25,7 @@ else
 	qual=$( cat $tool_info | grep -w '^BASE_QUALITY' | cut -d '=' -f2 )
     javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
 	depth=$( cat $tool_info | grep -w '^DEPTH_FILTER' | cut -d '=' -f2 )
+	command_line_params=$( cat $tool_info | grep -w '^UnifiedGenotyper_params' | cut -d '=' -f2 )
 	
 	export JAVA_HOME=$javahome
 	export PATH=$javahome/bin:$PATH
@@ -52,12 +53,11 @@ else
 			-T UnifiedGenotyper \
 			--output_mode $mode \
 			-nt $threads \
-			--max_alternate_alleles $alt_alleles \
-			--min_base_quality_score $qual -glm $type \
+			-glm $type \
 			$range \
 			$bam \
 			--ped $ped \
-			--out $vcf
+			--out $vcf $command_line_params
 		else
 			$java/java -Xmx6g -Xms512m -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
 			-R $ref \
@@ -65,12 +65,11 @@ else
 			-K $gatk/Hossain.Asif_mayo.edu.key \
 			-T UnifiedGenotyper \
 			--output_mode $mode \
-			--min_base_quality_score $qual -nt $threads \
-			--max_alternate_alleles $alt_alleles \
+			-nt $threads \
 			-glm $type \
 			$range \
 			$bam \
-			--out $vcf
+			--out $vcf $command_line_params
 		fi
 		sleep 1m
         check=`[ -s $vcf.idx ] && echo "1" || echo "0"`

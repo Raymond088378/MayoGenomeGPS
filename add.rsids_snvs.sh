@@ -32,7 +32,11 @@ else
 	len=`cat $TempReports/$snv.forrsIDs | wc -l`
 	if [ $len -gt 1 ]
 	then
-		perl $script_path/add_dbsnp_snv.pl -i $TempReports/$snv.forrsIDs -b 1 -s $dbsnp_rsids_snv -c 1 -p 2 -o $TempReports/$snv.forrsIDs.added -r $chr -h 1 
+		file=`basename $dbsnp_rsids_snv`
+		base=`basename $snv`
+		cat $dbsnp_rsids_snv | grep -w chr$chr | grep -v 'cDNA' | sort -n -k 3,12n -k 4,12n > $TempReports/$file.chr$chr.$snv
+		perl $script_path/add.rsids.pl -i $TempReports/$snv.forrsIDs -s $TempReports/$file.chr$chr.$snv -o $TempReports/$snv.forrsIDs.added
+		rm  $TempReports/$file.chr$chr.$snv 
 		## add column to add flag for disease variant
 		perl $script_path/add.dbsnp.disease.snv.pl -i $TempReports/$snv.forrsIDs.added -b 1 -s $dbsnp_rsids_disease -c 1 -p 2 -o $TempReports/$snv.forrsIDs.added.disease -r $chr
     else

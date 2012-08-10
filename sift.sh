@@ -26,7 +26,8 @@ else
     then
 		prefix=$5
     fi	
-    tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
+    #SGE_TASK_ID=22
+	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
     sift_ref=$( cat $tool_info | grep -w '^SIFT_REF' | cut -d '=' -f2) 
     sift_path=$( cat $tool_info | grep -w '^SIFT' | cut -d '=' -f2) 
@@ -36,23 +37,27 @@ else
     flowcell=`echo $run_num | awk -F'_' '{print $NF}' | sed 's/.\(.*\)/\1/'`
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2 )
-	
+    threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2) 
     ### update dashboard
     $script_path/dashboard.sh $sample $run_info Annotation started
     
-	if [ $5 ]
-	then
-		sam=$prefix.$sample
-	else
-		sam=$sample
-	fi	
+    if [ $5 ]
+    then
+        sam=$prefix.$sample
+    else
+        sam=$sample
+    fi	
     ### hard coded
     snv_file=$sam.variants.chr$chr.SNV.filter.i.c.vcf
-	
+    if [ ! -s $input/$snv_file ]
+    then
+        $script_path/errorlog.sh $input/$snv_file sift.sh ERROR "not found"
+    fi
+    
     num_snvs=`cat $input/$snv_file | awk '$0 !~ /^#/' | wc -l`
     #sift acceptable format 
     
-    if [ $num_snvs == 0 ]
+    if [[ $num_snvs == 0 || $chr -eq 'M' ]]
     then
         touch $sift/${sample}_chr${chr}_predictions.tsv
         echo -e "Coordinates\tCodons\tTranscript ID\tProtein ID\tSubstitution\tRegion\tdbSNP ID\tSNP Type\tPrediction\tScore\tMedian Info\t# Seqs at position\tGene ID\tGene Name\tOMIM Disease\tAverage Allele Freqs\tUser Comment" > $sift/${sam}_chr${chr}_predictions.tsv
@@ -61,15 +66,8 @@ else
         a=`pwd`
         #running SIFT for each sample
         cd $sift_path
-        perl $sift_path/SIFT_exome_nssnvs.pl -i $sift/$snv_file.sift -d $sift_ref -o $sift/ -A 1 -B 1 -J 1 -K 1 > $sift/$sam.chr${chr}.sift.run
-        id=`perl -n -e ' /Your job id is (\d+)/ && print "$1\n" ' $sift/$sam.chr${chr}.sift.run`
-        rm $sift/$sam.chr${chr}.sift.run
+        $script_path/parallel.sift.pl $threads $sift/$snv_file.sift $sift_ref $sift_path/ $sift/${sam}_chr${chr}_predictions.tsv $sift/
         # sift inconsistent results flips alt base by itself getting rid of wrong calls from sift output
-        mv $sift/$id/${id}_predictions.tsv $sift/${sam}_chr${chr}_predictions.tsv
-        if [ ${#id} -gt 1 ]
-		then
-			rm -R $sift/$id
-        fi
 		perl $script_path/sift.inconsistent.pl $sift/${sam}_chr${chr}_predictions.tsv $sift/$snv_file.sift
         mv $sift/${sam}_chr${chr}_predictions.tsv_mod $sift/${sam}_chr${chr}_predictions.tsv
         rm $sift/$snv_file.sift
@@ -79,6 +77,6 @@ else
     then
         $script_path/errorlog.sh $sift/${sam}_chr${chr}_predictions.tsv sift.sh ERROR "failed to create" 
 		exit 1;
-	fi
+    fi
     echo `date`
 fi	

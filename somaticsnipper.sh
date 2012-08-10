@@ -19,12 +19,11 @@ else
     somatic_sniper=$( cat $tool_info | grep -w '^SOMATIC_SNIPER' | cut -d '=' -f2 )
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
-    squal=$( cat $tool_info | grep -w 'SOMATIC_QUALITY' | cut -d '=' -f2)
-    mqual=$( cat $tool_info | grep -w 'MAPPING_QUALITY' | cut -d '=' -f2)
+	command_line_params=$( cat $tool_info | grep -w '^SOMATIC_SNIPER_params' | cut -d '=' -f2 )
     bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
     snv=$tumor_sample.chr$chr.snv.output
 	
-    $somatic_sniper/bam-somaticsniper -q $mqual -Q $squal -F vcf -f $ref $tumor_bam $normal_bam $output/$snv
+    $somatic_sniper/bam-somaticsniper $command_line_params -F vcf -f $ref $tumor_bam $normal_bam $output/$snv
     cat $output/$snv | awk 'BEGIN {OFS="\t"} {if($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,"PASS",$8,$9,$10,$11;}' | sed -e "/NORMAL/s//$normal_sample/g" | sed -e "/TUMOR/s//$tumor_sample/g"  | awk '$0 ~ /^#/ || $5 !~ /,/' | $script_path/ssniper_vcf_add_AD.pl > $output/$output_file
     cat $output/$snv | awk 'BEGIN {OFS="\t"} {if($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,"PASS",$8,$9,$10,$11;}' | sed -e "/NORMAL/s//$normal_sample/g" | sed -e "/TUMOR/s//$tumor_sample/g"  | awk '$0 ~ /^#/ || $5 ~ /,/' | $script_path/ssniper_vcf_add_AD.pl > $output/$output_file.multi.vcf    
     
@@ -33,11 +32,10 @@ else
     
     if [ $only_ontarget == "YES" ]
     then
-		cat $TargetKit | grep -w chr$chr > $output/$snv.target.bed
-        len=`cat $output/$snv.target.bed |wc -l`
+        len=`cat $output/chr$chr.target.bed |wc -l`
         if [ $len -gt 0 ]
         then
-            $bedtools/intersectBed -a $output/$output_file -b $output/$snv.target.bed -wa -header > $output/$output_file.i
+            $bedtools/intersectBed -a $output/$output_file -b $output/chr$chr.target.bed -wa -header > $output/$output_file.i
             mv $output/$output_file.i $output/$output_file
         fi    
     fi

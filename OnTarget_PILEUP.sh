@@ -10,7 +10,7 @@
 #		$5		=	run info file
 #########################################
 
-if [ $# != 4 ];
+if [ $# -le 3 ];
 then
     echo -e "Usage: SCRIPT to get Ontarget pileup \n<input dir> <pileup> <chromsome> <output Ontarget> <sample> <run ifno>";
 else	
@@ -20,7 +20,11 @@ else
     output=$2
     sample=$3
     run_info=$4
-    #SGE_TASK_ID=2
+    
+    if [ $5 ]
+    then
+	SGE_TASK_ID=$5
+    fi
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     bed=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
     CaptureKit=$( cat $tool_info | grep -w '^CAPTUREKIT' | cut -d '=' -f2 )
@@ -60,7 +64,7 @@ else
         for i in $pair
         do
 			$samtools/samtools index $input/$sample.$i.chr$chr.bam
-			$samtools/samtools mpileup -s -f $ref $input/$sample.$i.chr$chr.bam | awk '{if ($1 ~ /chr/) {print $1"\t"$2-1"\t"$2"\t"$4"\t"$3}}'  > $output/$sample.$i.chr$chr.pileup.bed
+			$samtools/samtools mpileup -A -s -f $ref $input/$sample.$i.chr$chr.bam | awk '{if ($1 ~ /chr/) {print $1"\t"$2-1"\t"$2"\t"$4"\t"$3}}'  > $output/$sample.$i.chr$chr.pileup.bed
             rm $input/$sample.$i.chr$chr.bam.bai
 			total=`cat $output/$sample.$i.chr$chr.pileup.bed | wc -l`
             perl $script_path/split.a.file.into.n.parts.pl 25 $output/$sample.$i.chr$chr.pileup.bed $total
@@ -104,7 +108,7 @@ else
         done    
     else	
 		bam=$input/chr$chr.cleaned.bam
-		$samtools/samtools mpileup -s -f $ref $bam | awk '{if ($1 ~ /chr/) {print $1"\t"$2-1"\t"$2"\t"$4"\t"$3}}'  > $output/$sample.chr$chr.pileup.bed
+		$samtools/samtools mpileup -A -s -f $ref $bam | awk '{if ($1 ~ /chr/) {print $1"\t"$2-1"\t"$2"\t"$4"\t"$3}}'  > $output/$sample.chr$chr.pileup.bed
 		#split the file into 25 parts to use less memory
         total=`cat $output/$sample.chr$chr.pileup.bed | wc -l`
         perl $script_path/split.a.file.into.n.parts.pl 25 $output/$sample.chr$chr.pileup.bed $total

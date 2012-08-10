@@ -10,7 +10,7 @@
 #		$5		=	run info file
 #########################################
 
-if [ $# != 4 ];
+if [ $# -le 3 ];
 then
     echo -e "Usage : SCRIPT to get Ontaget reads  \n<input sample realignment><chromsome><output Ontarget><sample><run info>";
 else	
@@ -20,7 +20,10 @@ else
     output=$2
     sample=$3
     run_info=$4
-   # SGE_TASK_ID=2
+	if [ $5 ]
+    then
+	SGE_TASK_ID=$5
+    fi
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     bed=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )

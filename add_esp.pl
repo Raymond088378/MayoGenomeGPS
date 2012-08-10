@@ -72,7 +72,7 @@ open IN, "<$infile" or die "can't open $infile\n";
 open OUT, ">$outfile" or die "can't open $outfile\n";
 
 my $header = <IN>;chomp $header;
-print OUT "$header\tESP5400_EUR_maf\tESP5400_AFR_maf\n";
+print OUT "$header\tESP6500_EUR_maf\tESP6500_AFR_maf\n";
 while (my $line2=<IN>){
 	chomp $line2;
 	my ($chr,$pos) = split(/\t/,$line2);

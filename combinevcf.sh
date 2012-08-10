@@ -32,7 +32,7 @@ else
             cp $file.idx $output.idx
         fi
     else    
-        $java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+        $java/java -Xmx4g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
         -R $ref \
         -et NO_ET \
         -K $gatk/Hossain.Asif_mayo.edu.key \
@@ -45,15 +45,27 @@ else
         if [ $num_times == 1 ]
         then
             echo -e "\njust copied the files as there was only one file.\n"
-            rm `echo $input | sed -e '/-V/s///g'`
+            for i in `echo $input | sed -e '/-V/s///g'`
+	    do
+		if [ -s $i ]
+		then
+			rm $i
+		fi
+	done			
         else
             $script_path/errorlog.sh $output combinevcf.sh ERROR "failed to create"
         fi
     else
         if [ $flag == "YES" ]
         then
-            rm `echo $input | sed -e '/-V/s///g'`
-            sample=`echo $input | sed -e '/-V/s///g' | tr " " "\n" | awk '{print $0".idx"}'`
+            for i in `echo $input | tr " " "\n" | awk '$0 !~ /-V/ && $0 !~ /-priority/' | tr "\n" " "`
+	    do
+		if [ -s $i ]
+		then
+			rm $i
+		fi
+	done		
+            sample=`echo $input | tr " " "\n" | awk '$0 !~ /-V/ && $0 !~ /-priority/' | awk '{print $0".idx"}'`
 			for i in $sample
 			do
 				if [ $i != ".idx" ]

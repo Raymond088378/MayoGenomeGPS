@@ -1,12 +1,10 @@
-use strict;
-use warnings;
+#!/usr/local/biotools/perl/5.10.0/bin/perl
 
-my $eff=shift @ARGV;
 ### Chromo        Position        Reference       Change  Change_type     Homozygous      Quality Coverage        Warnings        Gene_ID Gene_name       Bio_type        Trancript_ID    Exon_ID Exon_Rank       Effect  #old_AA/new_AA   Old_codon/New_codon     Codon_Num(CDS)  Codon_Degeneracy        CDS_size        Codons_around   AAs_around      Custom_interval_ID
 
-open FH, "$eff" or die "can not open $eff : $!\n";
 my $cols;
-while(my $l = <FH>)	{
+while(<>)	{
+	$l=$_;
 	chomp $l;	
 	my @a = split(/\t/,$l)  ;
 	next if (( $. ==2) || ($. == 1));
@@ -31,4 +29,3 @@ while(my $l = <FH>)	{
 		print "\n";
 	}
 }
-close FH;

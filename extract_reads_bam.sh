@@ -62,17 +62,17 @@ else
 		samples=$(cat $sample_info | grep -w "^$group" | cut -d '=' -f2 | tr "\t" " ")	
 		for sample in $samples
 		do	
-			sam=`echo $samples | tr ":" "\n"| grep -v "$sample" | tr "\n" " "`
-            gr=""
-            for s in $sam
-            do
-                a="ID:$s|";
-                gr="$gr $a"
-            done
-            gr=`echo $gr |  sed "s/|$//"`
+			sam=`echo $samples | tr " " "\n"| grep -w -v "$sample" | tr "\n" " "`
+			gr=""
+			for s in $sam
+			do
+				a="ID:$s|";
+				gr="$gr $a"
+			done
+			gr=`echo $gr |  sed "s/|$//"`
 			$samtools/samtools view -b -r $sample $output/$bam.extra.bam > $output/$sample.extra.bam
-			$samtools/samtools view -H $output/$sample.extra.bam | grep -E -v "$gr" | $samtools/samtools reheader - $output/$sample.extra.bam > $output/$sample.extra.re.bam
-            mv $output/$sample.extra.re.bam $output/$sample.extra.bam
+			$samtools/samtools view -H $output/$sample.extra.bam | grep -w -E -v "$gr" | $samtools/samtools reheader - $output/$sample.extra.bam > $output/$sample.extra.re.bam
+			mv $output/$sample.extra.re.bam $output/$sample.extra.bam
 			$samtools/samtools index $output/$sample.extra.bam
 			if [ $delivery_folder != "NA" ]
 			then

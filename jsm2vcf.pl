@@ -58,7 +58,7 @@ while(my $row = <IN>){
 			$prob=$line[$i];
 		}
 	}
-	print OUT "$chr\t$pos\t.\t$ref\t$alt\t.\tPASS\t" . "NS=2:DP=$total_dp:PGERM=$PGERM:PLOH=$PLOH:PHETMUT=$PHETMUT:PHOMMUT=$PHOMMUT:PSOM=$PSOM:PPS=$line[$#line]" . "\tGT:AD:DP\t" . "$ngeno[$id]:$normal_depth_ref,$normal_depth_alt:$normal_depth\t" . "$tgeno[$id]:$tumor_depth_ref,$tumor_depth_alt:$tumor_depth\n";	    
+	print OUT "$chr\t$pos\t.\t$ref\t$alt\t.\tPASS\t" . "NS=2:DP=$total_dp:PGERM=$PGERM:PLOH=$PLOH:PHETMUT=$PHETMUT:PHOMMUT=$PHOMMUT:PSOM=$PSOM:PPS=$line[$#line]" . "\tGT:AD:DP:GQ\t" . "$ngeno[$id]:$normal_depth_ref,$normal_depth_alt:$normal_depth:99\t" . "$tgeno[$id]:$tumor_depth_ref,$tumor_depth_alt:$tumor_depth:99\n";	    
 }
 close IN;
 close OUT;
