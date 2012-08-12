@@ -53,11 +53,14 @@ else
 	
 	while [[ $check -eq 0 ]]
     do
-        if [ `grep -l $output/$output_file *.log` ]
-        then
-            rm `grep -l $output/$output_file *.log` 
+        if [  `find . -name '*.log'` ]
+	then
+		if [ `grep -l $output/$output_file *.log` ]
+		then
+			rm `grep -l $output/$output_file *.log` 
+		fi
         fi
-        $java/java -XX:MaxPermSize=128M -Xmx6g -Xms512m -jar $mutect/muTect-1.0.27783.jar \
+	$java/java -XX:MaxPermSize=128M -Xmx6g -Xms512m -jar $mutect/muTect-1.0.27783.jar \
         -T MuTect \
         --reference_sequence $ref \
         $param -nt $threads \
@@ -66,12 +69,15 @@ else
         -B:dbsnp,VCF $dbSNP \
         -et NO_ET \
         --out $output/$output_file $command_line_params
-        len=`cat *.log | grep $output/$output_file | wc -l`
-        check=` [ $len -gt 0 ] && echo "0" || echo "1"`
-        if [ $check -eq 0 ]
-        then
-            rm core.*
-        fi
+        if [  `find . -name '*.log'` ]
+	then
+		len=`cat *.log | grep $output/$output_file | wc -l`
+		check=` [ $len -gt 0 ] && echo "0" || echo "1"`
+		if [ $check -eq 0 ]
+		then
+			rm core.*
+		fi
+	fi
     done    
     
 	perl $script_path/mutect2vcf.pl -i $output/$output_file -o $output/$output_file.temp -ns $normal_sample -ts $tumor_sample

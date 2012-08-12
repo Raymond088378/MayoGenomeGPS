@@ -53,9 +53,12 @@ else
 		check=`[ -s $output/$output_file.idx ] && echo "1" || echo "0"`
         if [ $check -eq 0 ]
         then
-            rm `grep -l $output/$output_file *.log`
+            if [  `find . -name '*.log'` ]
+		then
+			rm `grep -l $output/$output_file *.log`
 			rm core.*
-        fi
+		fi
+	fi
 		let count=count+1	
     done 
 	

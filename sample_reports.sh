@@ -19,7 +19,7 @@ else
 	then
 		gr=$9
 	fi	
-	SGE_TASK_ID=22
+	#SGE_TASK_ID=22
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 	variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2)
 	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2)
@@ -51,7 +51,7 @@ else
 		$script_path/add.rsids_snvs.sh $TempReports $snv_var $which_chr $run_info
 		## add allele frequency
 		$script_path/add.frequencies.sh $TempReports $snv_var $which_chr $run_info
-		## merge sift sseq codon UCSC tracks
+		## merge sift snpeff polyphen codon UCSC tracks and other tracks
 		$script_path/merge.snv.sh $TempReports $sam $which_chr $sift $snpeff $poly $snv_var $run_info
 	fi
 	

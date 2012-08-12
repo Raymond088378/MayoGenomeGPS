@@ -75,10 +75,13 @@ else
         check=`[ -s $vcf.idx ] && echo "1" || echo "0"`
         if [ $check -eq 0 ]
         then
-            rm `grep -l $vcf *.log`
+		if [  `find . -name '*.log'` ]
+		then
+			rm `grep -l $vcf *.log`
 			rm core.*
-        fi 
-		let count=count+1	
+		fi
+	fi 
+	let count=count+1	
     done 
 	
 	perl $script_path/convertvcf.pl $vcf > $vcf.tmp

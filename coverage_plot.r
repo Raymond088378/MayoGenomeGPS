@@ -5,7 +5,7 @@
 stdin <- commandArgs(TRUE) 
 
 linecolors <- c("blue","green","red","black","brown","violet","gray50","orange","olivedrab","cyan","royalblue","yellow","darkorchid4","wheat4","seagreen","gray25","darkslateblue","darkgoldenrod4","cadetblue","chartreuse3","violetred4","palegreen4","skyblue4","pink4")
-
+symbol = 1:50
 if(length(stdin) > 1){
 	target <- as.integer(stdin[1])
 	samplenames <- c()
@@ -26,7 +26,7 @@ if(length(stdin) > 1){
 			}
 		}
 	}
-	legend(x="bottomleft",samplenames,inset=0.02,cex=0.7,col=linecolors[1:length(samplenames)],pch=21,lty=1,lwd=2)
+	legend(x="bottomleft",samplenames,inset=0.02,cex=0.7,col=linecolors[1:length(samplenames)],pch=symbol[1:length(samplenames)],lty=1,lwd=2)
 	dev.off()
 	
 }else{

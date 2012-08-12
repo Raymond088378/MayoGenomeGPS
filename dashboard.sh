@@ -4,7 +4,6 @@ if [ $# -le 3 ]
 then
     echo "Usage : script to update secondary dashboard \n <sample ><runinfo ><stage of the workflow> <status of the stage> <id>"
 else
-    set -x
     echo `date`	
     sample=$1
     run_info=$2
