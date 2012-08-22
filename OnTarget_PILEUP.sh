@@ -23,7 +23,7 @@ else
     
     if [ $5 ]
     then
-	SGE_TASK_ID=$5
+		SGE_TASK_ID=$5
     fi
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     bed=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
@@ -35,18 +35,13 @@ else
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2 )
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
-    tool=`echo "$tool" | tr "[A-Z]" "[a-z]"`
-    out=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
-    PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
-    run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
-    out_dir=$out/$PI/$tool/$run_num
-    multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2)
-    multi=`echo $multi | tr "[a-z]" "[A-Z]"`
-    PATH=$bed/:$PATH
+    gene_body=$( cat $tool_info | grep -w '^MATER_GENE_BODY' | cut -d '=' -f2 )
+	multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
+    
     #cd $output
     if [ $tool == "whole_genome" ]
     then
-        kit=$out_dir/bed_file.bed
+        kit=$gene_body
     else
         kit=$CaptureKit
     fi

@@ -47,17 +47,15 @@ else
     tool=`echo "$tool" | tr "[A-Z]" "[a-z]"`
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     distance=$( cat $tool_info | grep -w '^SNP_DISTANCE_INDEL' | cut -d '=' -f2 )
-    out=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
-    PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
-    run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
-    out_dir=$out/$PI/$tool/$run_num
+	gene_body=$( cat $tool_info | grep -w '^MATER_GENE_BODY' | cut -d '=' -f2 )
+	
 ##############################################################		
     
     if [ $tool == "exome" ]
     then
 		intersect_file=$TargetKit
     else
-		intersect_file=$out_dir/bed_file.bed
+		intersect_file=$gene_body
     fi	
     
     if [ $multi_sample != "YES" ]
@@ -106,13 +104,7 @@ else
 		echo "Multi sample"
 		### multi sample calling
 		group=$sample 
-		input=$variants/$group
-		if [ $tool == "exome" ]
-		then
-			intersect_file=$TargetKit
-		else
-			intersect_file=$out_dir/bed_file.bed
-		fi    
+		input=$variants/$group 
 		perl $script_path/vcf_to_variant_vcf.pl -i $input/$group.variants.chr$chr.filter.vcf -v $input/$group.variants.chr$chr.SNV.filter.vcf -l $input/$group.variants.chr$chr.INDEL.filter.vcf -f
 		$bedtools/intersectBed -header -a $input/$group.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/$group.variants.chr$chr.SNV.filter.i.vcf
 		rm $input/$group.variants.chr$chr.SNV.filter.vcf 

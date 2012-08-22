@@ -67,8 +67,9 @@ while(my $row = <IN>){
 		$n_gt_put=".";
 	}	
 		
+	if ($somatic == 1 ){
 	print OUT "$chr\t$pos\t.\t$ref\t$alt\t.\tPASS\t" . "NS=2;DP=$total_dp;POW=$power;IMPAIR=$improper;MQ0=$mq0;MUTX_LOD=$mutlod;SOMATIC=$somatic" . "\tGT:AD:DP:GQ:INSC:DELC\t" . "$n_gt_put:$normal_depth_ref,$normal_depth_alt:$normal_depth:99:0:0\t" . "0/1:$tumor_depth_ref,$tumor_depth_alt:$tumor_depth:99:$insc:$delc\n";	    
-}
+}}
 close IN;
 close OUT;
 sub header{

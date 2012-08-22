@@ -29,8 +29,7 @@ else
 ######	Reading run_info.txt and assigning to variables
     seq_file=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
-    analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2)
-    analysis=`echo "$analysis" | tr "[A-Z]" "[a-z]"`
+    analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
     email=$( cat $run_info | grep -w '^EMAIL' | cut -d '=' -f2)
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     center=$( cat $run_info | grep -w '^CENTER' | cut -d '=' -f2 )
@@ -55,7 +54,8 @@ else
     paired=$( cat $run_info | grep -w '^PAIRED' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
-
+	paramaters=$( cat $tool_info | grep -w '^NOVO_params' | cut -d '=' -f2)
+	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
 ########################################################	
 ######		Check FASTQ for Illumina or Sanger quality scrore
     
@@ -129,20 +129,20 @@ else
     then
         if [ $ILL2SANGER1 -gt 65 ] && [ $ILL2SANGER2 -gt 65 ]
         then
-            $novoalign --hdrhd off -v 120 -c $threads -i PE 425,80 -x 5 -r Random -d $genome_novo -F ILMFQ -f $fastq/$filename1 $fastq/$filename2 \
+            $novoalign --hdrhd off -v 120 -c $threads -i PE 425,80 $paramaters -r Random -d $genome_novo -F ILMFQ -f $fastq/$filename1 $fastq/$filename2 \
             -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$sample\tPL:$platform\tCN:$center" > $output_dir_sample/$sample.$SGE_TASK_ID.sam
         
         else
-            $novoalign --hdrhd off -v 120 -c $threads -i PE 425,80 -x 5 -r Random -d $genome_novo -F STDFQ -f $fastq/$filename1 $fastq/$filename2 \
+            $novoalign --hdrhd off -v 120 -c $threads -i PE 425,80 $paramaters -r Random -d $genome_novo -F STDFQ -f $fastq/$filename1 $fastq/$filename2 \
             -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$sample\tPL:$platform\tCN:$center" > $output_dir_sample/$sample.$SGE_TASK_ID.sam   
         fi
     else
         if [ $ILL2SANGER1 -gt 65 ]
         then
-            $novoalign --hdrhd off -v 120 -c $threads -i PE 425,80 -x 5 -r Random -d $genome_novo -F ILMFQ -f $fastq/$filename1 \
+            $novoalign --hdrhd off -v 120 -c $threads -i PE 425,80 $paramaters -r Random -d $genome_novo -F ILMFQ -f $fastq/$filename1 \
             -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" > $output_dir_sample/$sample.$SGE_TASK_ID.sam
         else
-            $novoalign --hdrhd off -v 120 -c $threads -i PE 425,80 -x 5 -r Random -d $genome_novo -F STDFQ -f $fastq/$filename1 \
+            $novoalign --hdrhd off -v 120 -c $threads -i PE 425,80 $paramaters -r Random -d $genome_novo -F STDFQ -f $fastq/$filename1 \
             -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" > $output_dir_sample/$sample.$SGE_TASK_ID.sam   
         fi        
     fi    
@@ -163,8 +163,14 @@ else
     $samtools/samtools view -bS $output_dir_sample/$sample.$SGE_TASK_ID.sam > $output_dir_sample/$sample.$SGE_TASK_ID.bam  
     if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.bam ]
     then
-        $script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.bam align_novo.sh ERROR empty
-        exit 1
+		$script_path/email.sh $output_dir_sample/$sample.$SGE_TASK_ID.bam "is truncated" $JOB_NAME $JOB_ID $run_info
+		touch $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log
+		while [ ! -f $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log ]
+		do
+			echo "waiting for job to be fixed"
+			sleep 10m
+		done
+		rm $output_dir_sample/$sample.$SGE_TASK_ID.sam  
     else
         rm $output_dir_sample/$sample.$SGE_TASK_ID.sam  
     fi
@@ -173,4 +179,5 @@ else
 ######		Sort BAM, adds RG & remove duplicates
 
     $script_path/convert.bam.sh $output_dir_sample $sample.$SGE_TASK_ID.bam $sample.$SGE_TASK_ID $SGE_TASK_ID $run_info
+	
 fi

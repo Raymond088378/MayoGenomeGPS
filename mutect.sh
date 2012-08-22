@@ -44,7 +44,6 @@ else
         param="-L chr$chr"
     fi
     
-	 #param="-L chr$chr"
     check=0
     if [ ! -d $output/temp ]
 	then
@@ -53,9 +52,9 @@ else
 	
 	while [[ $check -eq 0 ]]
     do
-        if [  `find . -name '*.log'` ]
+        if [[  `find . -name '*.log'` ]]
 	then
-		if [ `grep -l $output/$output_file *.log` ]
+		if [[ `grep -l $output/$output_file *.log` ]]
 		then
 			rm `grep -l $output/$output_file *.log` 
 		fi
@@ -69,7 +68,7 @@ else
         -B:dbsnp,VCF $dbSNP \
         -et NO_ET \
         --out $output/$output_file $command_line_params
-        if [  `find . -name '*.log'` ]
+        if [[  `find . -name '*.log'` ]]
 	then
 		len=`cat *.log | grep $output/$output_file | wc -l`
 		check=` [ $len -gt 0 ] && echo "0" || echo "1"`
@@ -77,7 +76,9 @@ else
 		then
 			rm core.*
 		fi
-	fi
+	else
+            check=1    
+        fi
     done    
     
 	perl $script_path/mutect2vcf.pl -i $output/$output_file -o $output/$output_file.temp -ns $normal_sample -ts $tumor_sample

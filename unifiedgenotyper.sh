@@ -71,11 +71,11 @@ else
 			$bam \
 			--out $vcf $command_line_params
 		fi
-		sleep 1m
+		sleep 15
         check=`[ -s $vcf.idx ] && echo "1" || echo "0"`
         if [ $check -eq 0 ]
         then
-		if [  `find . -name '*.log'` ]
+		if [[  `find . -name '*.log'` ]]
 		then
 			rm `grep -l $vcf *.log`
 			rm core.*

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $# != 5 ]
+if [ $# != 7 ]
 then
-    echo -e "Usage: stand alone script for annotation using single sample and single vcf or text file \n <sample name><vcf or txt file><output folder><tool_info file> <genome build>"
+    echo -e "Usage: stand alone script for annotation using single sample and single vcf or text file \n <sample name><vcf or txt file><output folder><tool_info file> <genome build><single/multi><script_path>"
 else
 	echo -e "\n ************************************************** \n"
 	echo " Started the annotation for your data on `date` "
@@ -11,14 +11,16 @@ else
 	output=$3
 	tool_info=$4
 	GenomeBuild=$5
+	multi=$6
+	script_path=$7
 	## paths
 	mkdir -p $output
-	script_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" 
-	if [ ${#script_path} -eq 0 ]
-	then
-		echo "Please enter full path to the annotation script"
-		exit 1;
-	fi	
+	#script_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" 
+	#if [ ${#script_path} -eq 0 ]
+	#then
+	#	echo "Please enter full path to the annotation script"
+	#	exit 1;
+	#fi	
 	snpeff=$( cat $tool_info | grep -w '^SNPEFF' | cut -d '=' -f2)
 	sift=$( cat $tool_info | grep -w '^SIFT' | cut -d '=' -f2) 
 	pph=$(cat $tool_info | grep -w '^POLYPHEN' |  cut -d '=' -f2)
@@ -32,7 +34,11 @@ else
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
 	http=$( cat $tool_info | grep -w '^HTTP_SERVER' | cut -d '=' -f2)
 	export PERL5LIB=/projects/bsi/bictools/apps/annotation/polyphen/2.2.2/perl/:$perllib:$PERL5LIB
-	
+	 tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2 )
+    vcftools=$( cat $tool_info | grep -w '^VCFTOOLS' | cut -d '=' -f2 )
+	perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
+	export PERL5LIB=$PERL5LIB:$perllib
+	PATH=$tabix/:$PATH
 	echo " vcf validation step "
 	type=`cat $file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'`
 	ff="$sample.vcf"
@@ -40,8 +46,13 @@ else
 	then	
 		perl $script_path/convert_txt_vcf.pl $file $sample > $output/$ff
 	else
-		col=`cat $file | awk '$0 ~ /#CHROM/' | awk -v num=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == num) {print i} } }'`
-		cat $file | awk -v num=$col 'BEGIN {OFS="\t"} { if ($0 ~ /^##/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8,$9,$num; }' > $output/$ff
+		if [ $multi == "multi" ]
+		then	
+			cat $file  | $script_path/convert.vcf.pl > $output/$ff
+		else
+			col=`cat $file | awk '$0 ~ /#CHROM/' | awk -v num=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == num) {print i} } }'`
+			cat $file | awk -v num=$col 'BEGIN {OFS="\t"} { if ($0 ~ /^##/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8,$9,$num; }' | $script_path/convert.vcf.pl > $output/$ff
+		fi
 	fi
 	
 	## ADD BLAT column 
@@ -50,24 +61,20 @@ else
 	then
 		blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
 		blat_ref=$( cat $tool_info | grep -w '^BLAT_REF' | cut -d '=' -f2 )
-		blat_server=$( cat $tool_info | grep -w '^BLAT_SERVER' | cut -d '=' -f2 )
-		blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
 		blat_window=$( cat $tool_info | grep -w '^WINDOW_BLAT' | cut -d '=' -f2 )
-		$script_path/vcf_blat_verify.pl -i $output/$ff -o $output/$ff.tmp -w $blat_window -b $blat -r $ref -sam $samtools -br $blat_ref -bs $blat_server -bp $blat_port -th $thread
+		$script_path/vcf_blat_verify.pl -i $output/$ff -o $output/$ff.tmp -w $blat_window -b $blat -r $ref -sam $samtools -br $blat_ref
 		mv $output/$ff.tmp $output/$ff
-		rm $output/$ff.blat.log
-		`ps aux | grep $output/$ff.blat.log | awk '{print $2}' | xargs -t kill -9` 
 	fi
 	perl $script_path/vcfsort.pl $ref.fai $output/$ff > $output/$ff.sort
 	mv $output/$ff.sort $output/$ff
 	n=`cat $output/$ff |  awk '$0 ~ /^##INFO=<ID=CAPTURE/' | wc -l`
-	perl $script_path/vcf_to_variant_vcf.pl -i $output/$ff -v $output/$ff.SNV.vcf -l $output/$ff.INDEL.vcf
+	$script_path/vcf_to_variant_vcf.pl -i $output/$ff -v $output/$ff.SNV.vcf -l $output/$ff.INDEL.vcf
 	rm $output/$ff
 	
 	if [ $n == 0 ]
 	then
-		perl $script_path/markSnv_IndelnPos.pl -s $output/$ff.SNV.vcf -i $output/$ff.INDEL.vcf -n 10 -o $output/$ff.SNV.vcf.pos
-		cat $output/$ff.SNV.vcf.pos | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1;CLOSE2INDEL="$NF,$9,$10;}' > $output/$ff.SNV.vcf
+		$script_path/markSnv_IndelnPos.pl -s $output/$ff.SNV.vcf -i $output/$ff.INDEL.vcf -n 10 -o $output/$ff.SNV.vcf.pos
+		cat $output/$ff.SNV.vcf.pos | $script_path/add.info.close2indel.vcf.pl | $script_path/add.info.capture.vcf.pl > $output/$ff.SNV.vcf
 		rm $output/$ff.SNV.vcf.pos
 	fi
 	## RUN SIFT
@@ -82,11 +89,7 @@ else
 	echo " Running Polyphen "
 	$script_path/polyphen.sh $output $ff $pph $script_path $GenomeBuild $sample $thread &
 	
-	while [[ ! -s $output/$sample.predictions.tsv || ! -s $output/$sample.polyphen.txt ||  ! -s $output/$sample.INDEL.filtered.eff || ! -s $output/$sample.SNV.filtered.eff ]]
-	do
-		echo " waiting for sift, snpeff, polyphen annotation to complete "
-		sleep 2m
-	done	
+		
 	#### now add annotations
 	bed=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
 	codon_ref=$( cat $tool_info | grep -w '^CODON_REF' | cut -d '=' -f2)
@@ -112,23 +115,23 @@ else
 	typeset -i codon
 	typeset -i SNP_Type
 	#convert to text file
-	perl $script_path/parse.vcf.SNV.pl -i $output/$ff.SNV.vcf -o $output/$sample.snv -s $sample -h 1
-	perl $script_path/parse.vcf.INDEL.pl -i $output/$ff.INDEL.vcf -o $output/$sample.indel -s $sample -h 1	
-	rm $output/$ff.SNV.vcf $output/$ff.INDEL.vcf
+	$script_path/parse.vcf.sh $output/$ff.SNV.vcf $output/$sample.snv $tool_info SNV $script_path
+	$script_path/parse.vcf.sh $output/$ff.INDEL.vcf $output/$sample.indel $tool_info INDEL $script_path
+	
 	file=$output/$sample.snv
 	## Add DBSNP
 	echo " Adding annotation columns to excel worksheet "
 	cat $file | awk 'NR>1' > $file.forrsIDs
-	perl $script_path/add.rsids.pl -i $file.forrsIDs -s $dbsnp_rsids_snv -o $file.forrsIDs.added
-	perl $script_path/add.dbsnp.disease.snv.pl -i $file.forrsIDs.added -b 1 -s $dbsnp_rsids_disease -c 1 -p 2 -o $file.forrsIDs.added.disease
-	perl $script_path/extract.rsids.pl -i $file -r $file.forrsIDs.added.disease -o $file.rsIDs -v SNV
+	$script_path/add.rsids.pl -i $file.forrsIDs -s $dbsnp_rsids_snv -o $file.forrsIDs.added
+	$script_path/add.dbsnp.disease.snv.pl -i $file.forrsIDs.added -b 1 -s $dbsnp_rsids_disease -c 1 -p 2 -o $file.forrsIDs.added.disease
+	$script_path/extract.rsids.pl -i $file -r $file.forrsIDs.added.disease -o $file.rsIDs -v SNV
 	rm $file.forrsIDs.added $file.forrsIDs.added.disease $file.forrsIDs $file
 	echo " dbSNP columns added to the report "
 	
 	### Add Frequencies
 	cat $file.rsIDs | awk 'NR>1' | cut -f 1,2,3,4,5 > $file.rsIDs.forFrequencies
 	echo " adding allele frequencies to the report "
-	perl $script_path/add_hapmap_1kgenome_allele_freq.pl -i $file.rsIDs.forFrequencies -c 1 -p 2 -b 1 -e CEU -s $hapmap/all_allele_freqs_CEU.txt -g $kgenome/CEU.$GenomeBuild -o $file.rsIDs.CEU&&perl $script_path/add_hapmap_1kgenome_allele_freq.pl -i $file.rsIDs.CEU -c 1 -p 2 -b 1 -e YRI -s $hapmap/all_allele_freqs_YRI.txt -g $kgenome/YRI.$GenomeBuild -o $file.rsIDs.CEU.YRI&&perl $script_path/add_hapmap_1kgenome_allele_freq.pl -i $file.rsIDs.CEU.YRI -c 1 -p 2 -b 1 -e JPT+CHB -s $hapmap/all_allele_freqs_JPT+CHB.txt -g $kgenome/JPT+CHB.$GenomeBuild -o $file.rsIDs.CEU.YRI.CHBJPT.txt
+	$script_path/add_hapmap_1kgenome_allele_freq.pl -i $file.rsIDs.forFrequencies -c 1 -p 2 -b 1 -e CEU -s $hapmap/all_allele_freqs_CEU.txt -g $kgenome/CEU.$GenomeBuild -o $file.rsIDs.CEU&&perl $script_path/add_hapmap_1kgenome_allele_freq.pl -i $file.rsIDs.CEU -c 1 -p 2 -b 1 -e YRI -s $hapmap/all_allele_freqs_YRI.txt -g $kgenome/YRI.$GenomeBuild -o $file.rsIDs.CEU.YRI&&perl $script_path/add_hapmap_1kgenome_allele_freq.pl -i $file.rsIDs.CEU.YRI -c 1 -p 2 -b 1 -e JPT+CHB -s $hapmap/all_allele_freqs_JPT+CHB.txt -g $kgenome/JPT+CHB.$GenomeBuild -o $file.rsIDs.CEU.YRI.CHBJPT.txt
 	rm $file.rsIDs.CEU $file.rsIDs.CEU.YRI 
 	## BGI
 	perl $script_path/add_bgi_freq.pl -i $file.rsIDs.CEU.YRI.CHBJPT.txt -r $bgi -o $file.rsIDs.CEU.YRI.CHBJPT.BGI.txt
@@ -147,7 +150,13 @@ else
 	pos=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Position") {print i} } }' $file`
 	ref=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Ref") {print i} } }' $file`
 	alt=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Alt") {print i} } }' $file`
-	rm $output/log
+	
+	while [[ ! -s $output/$sample.predictions.tsv ]]
+	do
+		echo "waiting for sift to finish"
+		sleep 2m
+	done	
+	
 	## sift
 	perl $script_path/parse_siftPredictions.pl -i $file -s $output/$sample.predictions.tsv -c $chr -p $pos -r $ref -a $alt -o $file.sift
 	rm $output/$sample.predictions.tsv $file
@@ -229,6 +238,14 @@ else
 	    rm $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i}.txt
 	    rm $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i}
 	done
+	while [[ ! -s $output/$sample.polyphen.txt ||  ! -s $output/$sample.INDEL.filtered.eff || ! -s $output/$sample.SNV.filtered.eff ]]
+	do
+		echo " waiting for snpeff, polyphen annotation to complete "
+		sleep 2m
+	done
+	rm $output/$ff.SNV.vcf $output/$ff.INDEL.vcf
+	rm $output/log
+	## polyphen
 	perl $script_path/add_polphen.pl $file.sift.codons.map.repeat.base.snp.UCSCtracks $output/$sample.polyphen.txt $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly
 	rm $output/$sample.polyphen.txt $file.sift.codons.map.repeat.base.snp.UCSCtracks
 	perl $script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $output/$sample.SNV.eff -o $output/$sample.SNV.report

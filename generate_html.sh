@@ -37,7 +37,6 @@ else
 	master_gene_file=$( cat $tool_info | grep -w '^MASTER_GENE_FILE' | cut -d '=' -f2 )
 	samples=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" " " )
 	bed=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
-        user=$( cat $run_info | grep -w '^USER_EMAIL' | cut -d '=' -f2 )
         
 	if [ $tool == "whole_genome" ]
 	then
@@ -105,7 +104,8 @@ else
 	SUB="$tool workflow completion for RunID ${run_num} "
 	MESG=" ${text} ${text1} $tool workflow completed for ${run_num} on ${END} and ready for tertiary analysis in ${output_dir} "
 	## send the completion email
-	echo -e "$MESG" | mailx -v -s "$SUB" "$user" 
+	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
+	echo -e "$MESG" | mailx -v -s "$SUB" "$TO" 
 	echo `date`
 fi
 

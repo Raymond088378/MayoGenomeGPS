@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ $# != 2 ]
+if [ $# -le 1 ]
 then
 	echo "Usage : </path/to/output folder> </path/to/run info file>"
 else
@@ -8,6 +8,10 @@ else
 	echo `date`
 	output_dir=$1
 	run_info=$2
+        if [ $3 ]
+        then
+            SGE_TASK_ID=$3
+        fi    
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 	samples=$(cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2| tr ":" " ")
 	chrs=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2| tr ":" " ")	

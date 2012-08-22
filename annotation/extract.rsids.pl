@@ -1,3 +1,4 @@
+#!/usr/local/biotools/perl/5.10.0/bin/perl
 
 #script to add rsIDs to the 4th column of the SNV report
 

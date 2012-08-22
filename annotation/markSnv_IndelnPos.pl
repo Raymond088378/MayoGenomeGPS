@@ -1,5 +1,6 @@
+#!/usr/local/biotools/perl/5.10.0/bin/perl
 use strict;
-use warnings;
+#use warnings;
 use Getopt::Std;
 
 ## considering assumption as 2nd column in the file is position and works for per chromosome file

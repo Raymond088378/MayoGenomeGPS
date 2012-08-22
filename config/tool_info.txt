@@ -33,6 +33,7 @@ BGI_REF=/data2/bsi/reference/genetics/BGI/LuCAMP_200exomeFinal_hg19.txt
 SIFT_REF=/projects/bsi/bictools/apps/variant_detection/sift/4.0.3/db/Human_db_37/
 MASTER_GENE_FILE=/data2/bsi/reference/misc/hg19.master.gene.bed
 MASTER_ENTREZ_FILE=/data2/bsi/reference/misc/hg19.master.entrezid.bed
+MATER_GENE_BODY=/data2/bsi/reference/misc/hg19.gene.body
 CAPTUREKIT=/data4/bsi/refdata/exomeCapture/SureSelect_All_Exon_V4_with_annotation_hg19_.bed
 ONTARGET=/data4/bsi/refdata/exomeCapture/AgilentV4_ucsc_refflat_hg19_2011-01-24.10bp.merge.bed
 BLACKLISTED=/data2/bsi/reference/misc/wgEncodeDacMapabilityConsensusExcludable.bed
@@ -56,7 +57,7 @@ BWA=/projects/bsi/bictools/apps/alignment/bwa/0.5.9/
 BOWTIE=/projects/bsi/bictools/apps/alignment/bowtie/2.0.0-beta5/
 JAVA=/usr/java/latest/bin
 SAMTOOLS=/projects/bsi/bictools/apps/alignment/samtools/samtools-0.1.18/
-GATK=/projects/bsi/bictools/apps/alignment/GenomeAnalysisTK/1.6-13-g91f02df/
+GATK=/projects/bsi/bictools/apps/alignment/GenomeAnalysisTK/1.7/
 SOMATIC_SNIPER=/projects/bsi/bictools/apps/variant_detection/somatic_sniper/1.0.0.1-19/bin/
 BEDTOOLS=/projects/bsi/bictools/apps/misc/BEDTools/2.16.2/bin/
 PICARD=/projects/bsi/bictools/apps/alignment/picard/1.67/
@@ -75,7 +76,7 @@ CIRCOS=/projects/bsi/bictools/apps/visualizers/circos/circos-0.54/
 SIFT=/projects/bsi/bictools/apps/variant_detection/sift/4.0.3/bin/
 VCFTOOLS=/projects/bsi/bictools/apps/variant_detection/vcftools/0.1.8a/
 TABIX=/projects/bsi/bictools/apps/misc/tabix/0.2.5/
-SNPEFF=/projects/bsi/bictools/apps/annotation/snpeff/2.0.5d/
+SNPEFF=/projects/bsi/bictools/apps/annotation/snpeff/3.0/
 POLYPHEN=/projects/bsi/bictools/apps/annotation/polyphen/2.2.2/
 
 ### libraries
@@ -104,16 +105,18 @@ REMOVE_ALIGNED_BAM=YES
 T_DEPTH_FILTER=6
 
 #Parameters
-SNVMIX2_params=-q 30 -Q 30
+SNVMIX2_params=-q 20 -Q 30
 SNVMIX2_Filter=-p 0.8
-UnifiedGenotyper_params=-rf MappingQuality -mmq 30 --min_base_quality_score 30 -dcov 1000
-SOMATIC_INDEL_params=-rf MappingQuality -mmq 30 --filter_expressions T_COV<6||N_COV<4||T_INDEL_CF<0.7||T_INDEL_F<0.1||T_CONS_CNT<2||N_CONS_CNT>0 -dcov 1000 -mnr 2000
-SOMATIC_SNIPER_params=-q 30 -Q 40
-MUTECT_params=-dt ALL_READS -dcov 1000 --min_qscore 30
+UnifiedGenotyper_params=
+SOMATIC_INDEL_params=
+SOMATIC_SNIPER_params=-q 20 -Q 40
+MUTECT_params=--min_qscore 30
 BREAKDANCER_params=-c 5 -r 10
-CREST_params=--min_sclip_len 10 --min_sclip_reads 5
+CREST_params=
 JSM_Filter=-prob 0.5
-JOINTSNVMIX_params=--min_map_qual 30 --min_base_qual 30
+JOINTSNVMIX_params=
+NOVO_params=-g 60 -x 2  
+
 
 MAX_ALT_ALLELES=5
 MAX_READS_REALIGN=50000

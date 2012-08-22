@@ -53,13 +53,14 @@ while(my $row = <IN>){
 	my @tgeno=('0/0','0/1','1/1','0/0','0/1','1/1','0/0','0/1','1/1');
 	my $c=0;
 	for(my $i =8 ; $i <=14; $i++,$c++)	{
-		if ($prob < $line[$i])	{
+		if ($prob <= $line[$i])	{
 			$id=$c;
 			$prob=$line[$i];
 		}
 	}
+	if ($PSOM >= $filter_prob){
 	print OUT "$chr\t$pos\t.\t$ref\t$alt\t.\tPASS\t" . "NS=2:DP=$total_dp:PGERM=$PGERM:PLOH=$PLOH:PHETMUT=$PHETMUT:PHOMMUT=$PHOMMUT:PSOM=$PSOM:PPS=$line[$#line]" . "\tGT:AD:DP:GQ\t" . "$ngeno[$id]:$normal_depth_ref,$normal_depth_alt:$normal_depth:99\t" . "$tgeno[$id]:$tumor_depth_ref,$tumor_depth_alt:$tumor_depth:99\n";	    
-}
+}}
 close IN;
 close OUT;
 sub header{

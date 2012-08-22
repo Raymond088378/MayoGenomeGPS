@@ -1,4 +1,5 @@
-#! /usr/bin/perl
+#!/usr/local/biotools/perl/5.10.0/bin/perl
+
 use warnings;
 use strict;
 use Getopt::Std;

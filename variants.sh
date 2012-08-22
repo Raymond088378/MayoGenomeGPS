@@ -49,7 +49,7 @@ else
 	
 	
 	bam=chr${chr}.cleaned.bam
-
+	
 	## update dashborad
 	if [ $SGE_TASK_ID == 1 ]
 	then
@@ -204,7 +204,7 @@ else
 				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $chr $run_info "$bam"
 				
 			fi
-		elif [ $SNV_caller == "GATK_SNVMIX" ]
+		elif [ $SNV_caller == "BEAUTY_EXOME" ]
 		then
 			## call indeles using GATK
 			param="-L chr${chr}"

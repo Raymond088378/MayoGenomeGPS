@@ -26,48 +26,87 @@ else
 	
 	export JAVA_HOME=$javahome
 	export PATH=$javahome/bin:$PATH
+	### error checking 
+	#for i in `echo $bam | tr ":" " "`
+	#do
+	#	if [ ! -s $input/$i ]
+	#	then
+	#		$script_path/email.sh $input/$i "not found" $JOB_NAME $JOB_ID $run_info
+	#		touch $input/$i.fix.log
+	#		while [ ! -f $input/$i.fix.log ]
+	#		do
+	#			echo "waiting for job to be fixed"
+	#			sleep 10m
+	#		done	
+	#	fi
+	#done	
 	
     ### update dash board    
     if [ $SGE_TASK_ID == 1 ]
     then
-        $script_path/dashboard.sh $samples $run_info Realignment started
-    fi    
+        for i in `echo $samples | tr ":" " "`
+		do
+			$script_path/dashboard.sh $i $run_info Realignment started
+		done
+	fi    
     
     if [ $flag == 1 ]
     then
         $script_path/realign_per_chr.sh $input $bam $output_bam $run_info 0 1 $samples $chr
-        if [ ! -s $output_bam/chr${chr}.realigned.bam ]
-        then
-            echo "ERROR: [`date`] realign_recal.sh File $output_bam/chr${chr}.realigned.bam not created" 
-            exit 1
-        fi
+#        if [ ! -s $output_bam/chr${chr}.realigned.bam ]
+#        then
+#			$script_path/email.sh $output_bam/chr${chr}.realigned.bam "not found" $JOB_NAME $JOB_ID $run_info
+#			touch $output_bam/chr${chr}.realigned.bam.fix.log
+#			while [ ! -f $output_bam/chr${chr}.realigned.bam.fix.log ]
+#			do
+#				echo "waiting for job to be fixed"
+#				sleep 10m
+#			done		
+#        fi
 
         $script_path/recal_per_chr.sh $output_bam chr${chr}.realigned.bam $output_bam $run_info 1 0 multi $chr
-        if [ ! -s $output_bam/chr${chr}.cleaned.bam ]
-        then
-            echo "ERROR: [`date`] realign_recal.sh File $output_bam/chr${chr}.recalibrated.bam not created"
-            exit 1
-        fi
+#        if [ ! -s $output_bam/chr${chr}.cleaned.bam ]
+#        then
+#			$script_path/email.sh $output_bam/chr${chr}.cleaned.bam "not found" $JOB_NAME $JOB_ID $run_info
+#			touch $output_bam/chr${chr}.cleaned.bam.fix.log
+#			while [ ! -f $output_bam/chr${chr}.cleaned.bam.fix.log ]
+#			do
+#				echo "waiting for job to be fixed"
+#				sleep 10m
+#			done	
+#        fi
     else
         $script_path/recal_per_chr.sh $input $bam $output_bam $run_info 0 1 $samples $chr
-        if [ ! -s $output_bam/chr${chr}.recalibrated.bam ]
-        then
-            echo "ERROR: [`date`] realign_recal.sh File $output_bam/chr${chr}.recalibrated.bam not created"
-            exit 1
-        fi
-
-        $script_path/realign_per_chr.sh  $output_bam chr${chr}.recalibrated.bam $output_bam $run_info 1 0 multi $chr
-        if [ ! -s $output_bam/chr${chr}.cleaned.bam ]
-        then
-            echo "ERROR: [`date`] realign_recal.sh File $output_bam/chr${chr}.realigned.bam not created"
-            exit 1
-        fi
+#        if [ ! -s $output_bam/chr${chr}.recalibrated.bam ]
+#        then
+#            $script_path/email.sh $output_bam/chr${chr}.recalibrated.bam "not found" $JOB_NAME $JOB_ID $run_info
+#			touch $output_bam/chr${chr}.recalibrated.bam.fix.log
+#			while [ ! -f $output_bam/chr${chr}.recalibrated.bam.fix.log ]
+#			do
+#				echo "waiting for job to be fixed"
+#				sleep 10m
+#			done		
+#        fi
+        $script_path/realign_per_chr.sh $output_bam chr${chr}.recalibrated.bam $output_bam $run_info 1 0 multi $chr
+#        if [ ! -s $output_bam/chr${chr}.cleaned.bam ]
+#        then
+#			$script_path/email.sh $output_bam/chr${chr}.cleaned.bam "not found" $JOB_NAME $JOB_ID $run_info
+#			touch $output_bam/chr${chr}.cleaned.bam.fix.log
+#			while [ ! -f $output_bam/chr${chr}.cleaned.bam.fix.log ]
+#			do
+#				echo "waiting for job to be fixed"
+#				sleep 10m
+#			done		
+#        fi
     fi
 	
     ## update the dash board
     if [ $SGE_TASK_ID == 1 ]
     then
-		$script_path/dashboard.sh $samples $run_info Realignment complete
+		 for i in `echo $samples | tr ":" " "`
+		do
+			$script_path/dashboard.sh $i $run_info Realignment complete
+		done
     fi    
     echo `date`
 fi	

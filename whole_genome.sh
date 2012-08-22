@@ -20,16 +20,12 @@ else
 	echo `date`
 	run_info=$1
 	dos2unix $run_info
-
-	perl_path=`which perl`
-	if [ $perl_path != "/usr/local/biotools/perl/5.10.0/bin/perl" ]
+	if [ `perl -v 1 | tr " " "\n" | grep '^v'` != "v5.10.0" ]
 	then
 		echo -e "\nperl path is not correct in your enviornment"
 		echo "Perl path should point to /usr/local/biotools/perl/5.10.0/bin/perl if the user use the command which perl, user can change this using mayobiotools"
 		exit 1;
 	fi
-
-
 	dir_info=`dirname $run_info`
 	if [ "$dir_info" = "." ]
 	then
@@ -45,10 +41,6 @@ else
 	## removing trailing and leading spaces from run ifno file
 	cat $run_info | sed -e "s/ *$//" | sed -e "s/^ *//" > $run_info.tmp
 	mv $run_info.tmp $run_info
-	input=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
-	output=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
-	PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
-	email=$( cat $run_info | grep -w '^EMAIL' | cut -d '=' -f2)
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 	sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
 	dos2unix $sample_info
@@ -58,6 +50,11 @@ else
 	mv $sample_info.tmp $sample_info
 	cat $tool_info | sed -e "s/ *$//" | sed -e "s/^ *//" > $tool_info.tmp
 	mv $tool_info.tmp $tool_info
+	
+	input=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
+	output=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
+	PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
+	email=$( cat $run_info | grep -w '^EMAIL' | cut -d '=' -f2)
 	samples=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2)
 	groups=$( cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2)
 	tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
@@ -94,7 +91,7 @@ else
 	then
 		echo "Configuration files are malformed: look at the erros in $run_info.configuration_errors.log "
 		exit 1;
-		else
+	else
 		rm $run_info.configuration_errors.log
 	fi	
 
@@ -119,25 +116,17 @@ else
 		snpeff=$output_annot/SNPEFF
 		polyphen=$output_annot/POLYPHEN
 	fi
-##########################################################
-	if [ $tool == "whole_genome" ]
-	then
-		cat $master_gene_file | awk '$1 !~ /random/ && $1 !~ /hap/ && $1 !~ /chrUn/' | cut -f 1,2,3 | $bed/sortBed -i stdin | $bed/mergeBed -i stdin >  $output_dir/bed_file.bed	
-	fi
+
+	##########################################################
 
 	echo -e "${tool} analysis for ${run_num} for ${PI} " >> $output_dir/log.txt
 	START=`date`
 	echo -e "Analysis started at:" >> $output_dir/log.txt
 	echo -e "${START}" >>  $output_dir/log.txt
-
-	if [[ $analysis != "mayo" && $analysis != "external"  && $analysis != "realignment"  &&  $analysis != "variant" && $analysis != "alignment" && $analysis != "annotation" && $analysis != "realign-mayo" && $analysis != "ontarget" ]]
-	then
-		echo -e "\nERROR: Please Specify the correct Analysis type(alignment,realignment,variant,external,mayo,realign-mayo,annotation,ontarget)\n"
-		echo `date`
-		exit 1;
-	fi
+	
 	#### sge paramters
 	args="-V -wd $output_dir/logs -q $queue -m ae -M $email -l h_stack=10M"
+	#############################################################
 
 	if [ $multi_sample != "YES" ]
 	then

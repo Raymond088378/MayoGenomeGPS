@@ -1,3 +1,4 @@
+#!/usr/local/biotools/perl/5.10.0/bin/perl
 ## Saurabh Baheti
 ## April 13th 2012
 ## contact baheti.saurabh@mayo.edu
@@ -35,7 +36,7 @@ else{
     my $input_c=<IN>;
     my $snp=<SNP>;
     my $flag=0;
-    while(defined $snp || defined $input_c){
+	while(defined $snp || defined $input_c){
         chomp $input_c if defined $input_c;
         chomp $snp if defined $snp;
         if (!defined $input_c)	{
@@ -54,30 +55,17 @@ else{
 				print OUT "$snp_array[4]\t$snp_array[9]\n";
 				$snp=<SNP>;
 				$input_c=<IN>;
-				$flag=1;
 			}
 			elsif($in_array[0] eq $snp_array[1] && $in_array[1] > $snp_array[3]) {
 				$snp=<SNP>;
-				$flag=1;
 			}
 			elsif ($in_array[0] eq $snp_array[1] && $in_array[1] < $snp_array[3])   {
 				print OUT "$input_c\t";
 				print OUT "-\t-\n";
 				$input_c=<IN>;
-				$flag=1;
 			}
 			elsif ($in_array[0] ne $snp_array[1])	{
-				$snp=<SNP>;
-			}		
-			else    {
-				if ($flag == 1)	{
-					print OUT "$input_c\t";
-					print OUT "-\t-\n";
-					$input_c=<IN>;
-				}
-				else	{	
-					$snp=<SNP>;
-				}	
+				$snp=<SNP>;		
 			}
 		}
     }

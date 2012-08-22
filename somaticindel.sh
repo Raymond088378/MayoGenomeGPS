@@ -49,11 +49,11 @@ else
 		-verbose $output/$indel_v \
 		-I:normal $normal_bam \
 		-I:tumor $tumor_bam $command_line_params
-		sleep 1m
+		sleep 15
 		check=`[ -s $output/$output_file.idx ] && echo "1" || echo "0"`
         if [ $check -eq 0 ]
         then
-            if [  `find . -name '*.log'` ]
+            if [[  `find . -name '*.log'` ]]
 		then
 			rm `grep -l $output/$output_file *.log`
 			rm core.*
