@@ -35,7 +35,15 @@ else
         $script_path/errorlog.sh sortbam.sh $outbam ERROR empty
         exit 1;
     else
-        rm $inbam
+        $samtools/samtools view -H $outbam 2> $outbam.log
+		if [ `cat $outbam.log | wc -l` -gt 0 ]
+		then
+			echo "$outbam :bam is truncated or corrupted "
+			exit 1;
+		else
+			rm $outbam.log
+		fi	
+		rm $inbam
         if [ $index == "TRUE" ]
         then
             $samtools/samtools index $outbam

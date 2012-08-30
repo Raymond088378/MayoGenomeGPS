@@ -18,7 +18,6 @@ else
 	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
 	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2 )
 	http_server=$( cat $tool_info | grep -w '^HTTP_SERVER' | cut -d '=' -f2 )
-	queue=$( cat $run_info | grep -w '^QUEUE' | cut -d '=' -f2)
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
 	lanes=$( cat $run_info | grep -w '^LANEINDEX' | cut -d '=' -f2)
 	tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2)
@@ -67,7 +66,7 @@ else
 		if [ $GenomeBuild == "hg19" ]
 		then
 			$java/java -Xmx7g -Xms512m -jar $script_path/TREATUploader.jar -n $PI_LANID -u $run_num -i $output_dir/Reports/INDEL.xls -s $output_dir/Reports/SNV.xls -r $run_num
-			else
+		else
 			$java/java -Xmx7g -Xms512m -jar $script_path/TREATUploader.jar -n $PI_LANID -u $run_num -i $output_dir/Reports/INDEL.xls -s $output_dir/Reports/SNV.xls -r $run_num
 		fi		
 		echo -e "Variants uploaded to TableBrowser" >> $output_dir/log.txt
@@ -104,8 +103,7 @@ else
 	SUB="$tool workflow completion for RunID ${run_num} "
 	MESG=" ${text} ${text1} $tool workflow completed for ${run_num} on ${END} and ready for tertiary analysis in ${output_dir} "
 	## send the completion email
-	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
-	echo -e "$MESG" | mailx -v -s "$SUB" "$TO" 
+	echo -e "$MESG" | mailx -v -s "$SUB" "$email" 
 	echo `date`
 fi
 

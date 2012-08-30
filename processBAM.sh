@@ -27,31 +27,36 @@ else
 ######		Reading run_info.txt and assigning to variables
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2)
-    picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
     reorder=$( cat $run_info | grep -w '^REORDERSAM' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
-    ref_path=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
-    java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
-    center=$( cat $run_info | grep -w '^CENTER' | cut -d '=' -f2 )
-    platform=$( cat $run_info | grep -w '^PLATFORM' | cut -d '=' -f2 )
-    GenomeBuild=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2 )
     dup=$( cat $run_info | grep -w '^MARKDUP' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
-    max_files=$( cat $tool_info | grep -w '^MAX_FILE_HANDLES' | cut -d '=' -f2 )
-    max_reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
-	dup_flag=$( cat $tool_info | grep -w '^REMOVE_DUP' | cut -d '=' -f2 |  tr "[a-z]" "[A-Z]")
-	
 ########################################################	
-######		PICARD to merge BAM file
+
     ### dashboard update
-    $script_path/dashboard.sh $sample $run_info Alignment started
-    INPUTARGS="";
+    if [ $analysis == "realign-mayo" ]
+	then
+		$script_path/dashboard.sh $sample $run_info Alignment started
+    fi
+	INPUTARGS="";
     files=""
     indexes=""
     cd $input
     for file in $input/*sorted.bam
     do
-        INPUTARGS="INPUT="$file" "$INPUTARGS;
+        $samtools/samtools view -H $file 2> $file.fix.log
+		if [ `cat $file.fix.log | wc -l` -gt 0 ]
+		then
+			$script_path/email.sh $file "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+			while [ -f $file.fix.log ]
+			do
+				echo "waiting for the file to be fixed"
+				sleep 2m
+			done
+		else
+			rm $file.fix.log 
+		fi	
+		INPUTARGS="INPUT="$file" "$INPUTARGS;
         files=$file" $files";
         indexes=${file}.bai" $indexes"
     done
@@ -75,7 +80,13 @@ else
 		fi
 	else	
 	    $script_path/MergeBam.sh "$INPUTARGS" $input/$sample.sorted.bam $input true $run_info
-		rm $indexes
+		for i in $indexes
+		do
+			if [ -s $i ]
+			then
+				rm $i
+			fi
+		done			
 	fi
 	
     ### add read grouup information
@@ -106,10 +117,13 @@ else
     then
         $samtools/samtools flagstat $input/$sample.sorted.bam > $input/$sample.flagstat
     fi
-    ### index the bam again to mainatin the time stamp for bam and index generation for down stream tools
+    ### index the bam again to maintain the time stamp for bam and index generation for down stream tools
     $samtools/samtools index $input/$sample.sorted.bam
 	
     ## dashboard
     $script_path/dashboard.sh $sample $run_info Alignment complete
+	## size of the bam file
+	size=`du -b $input/$sample.sorted.bam | sed 's/\([0-9]*\).*/\1/'`
+	$script_path/filesize.sh Alignment $sample $sample.sorted.bam $JOB_ID $size $run_info
     echo `date`
 fi

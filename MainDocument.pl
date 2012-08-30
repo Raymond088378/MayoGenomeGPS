@@ -15,6 +15,8 @@ else    {
 	open DESC, ">$desc" or die "can not open $desc : $!\n";
 	my @line=split(/=/,`perl -ne "/^DISEASE/ && print" $run_info`);
 	my $disease=$line[$#line];chomp $disease;
+	@line=split(/=/,`perl -ne "/^TOOL/ && print" $run_info`);
+	my $workflow=$line[$#line];chomp $date;
 	@line=split(/=/,`perl -ne "/^DATE/ && print" $run_info`);
 	my $date=$line[$#line];chomp $date;
 	@line=split(/=/,`perl -ne "/^SAMPLENAMES/ && print" $run_info`);
@@ -45,10 +47,8 @@ else    {
 	my $run_num=$line[$#line];chomp $run_num;
 	@line=split(/=/,`perl -ne "/^TB_PORT/ && print" $tool_info`);
 	my $port=$line[$#line];chomp $port;
-	$port="8886";
 	@line=split(/=/,`perl -ne "/^TB_HOST/ && print" $tool_info`);
 	my $host=$line[$#line];chomp $host;
-	$host="charlotte";
 	@line=split(/=/,`perl -ne "/^SAMPLE_INFO/ && print" $run_info`);
 	my $sample_info=$line[$#line];chomp $sample_info;
 	@line=split(/=/,`perl -ne "/^LABINDEXES/ && print" $run_info`);
@@ -229,7 +229,13 @@ else    {
 	<td class=\"helpHed\">Item</td>
 	<td class=\"helpHed\">Description</td></tr>
 	<td class=\"helpBod\">Disease Type</td><td class=\"helpBod\">$disease</td></tr>
-	<td class=\"helpBod\">Number of Samples</td><td class=\"helpBod\">$num_samples</td></tr>";
+	<td class=\"helpBod\">Number of Samples</td><td class=\"helpBod\">$num_samples</td></tr>
+	<td class=\"helpBod\">Workflow</td><td class=\"helpBod\">$workflow $version</td></tr>
+	<td class=\"helpBod\">Workflow</td><td class=\"helpBod\">$workflow $version</td></tr>";
+	if ($tool eq 'exome')	{
+		$target=$target_region/1000000;$target=sprintf("%.2f",$target);
+		print OUT "<td class=\"helpBod\">Capture Kit used</td><td class=\"helpBod\">$ontarget ($target Mbp)</td></tr>";
+	}	
 	if ($analysis ne 'annotation')	{
 		print OUT "<td class=\"helpBod\">Read Length</td><td class=\"helpBod\">$read_length</td></tr>
 		<td class=\"helpBod\">PairedEnd(PE)/SingleRead(SR)</td><td class=\"helpBod\">$read_call</td></tr>";
@@ -271,8 +277,8 @@ else    {
 	print OUT "</ul></ul>\n";
 	print OUT "<p align='right'><a href=\"#top\">-top-</a></p>";
 	print OUT "<a name=\"Analysis Plan\" id=\"Analysis Plan\"></a><p align='left'><b><u> III. Analysis Plan</p></b></u><br>\n";
-	print OUT "<b><P ALIGN=\"CENTER\">What's new: New features and updates </b> <a href= \"http://bioinformatics.mayo.edu/BMI/bin/view/Main/BioinformaticsCore/Analytics/GENOME_GPS\"target=\"_blank\">Genome_GPS</a></P>";
-	print OUT "<a href= \"${tool}_workflow.png\"target=\"_blank\"><P ALIGN=\"CENTER\"><img border=\"0\" src=\"${tool}_workflow.png\" width=\"700\" height=\"478\"><b><u><caption align=\"bottom\">Genome_GPS_$version</caption></b></u></p>";
+	print OUT "<b><P ALIGN=\"CENTER\">What's new: New features and updates </b> <a href= \"http://bioinformatics.mayo.edu/BMI/bin/view/Main/BioinformaticsCore/Analytics/$workflow\"target=\"_blank\">$workflow</a></P>";
+	print OUT "<a href= \"${tool}_workflow.png\"target=\"_blank\"><P ALIGN=\"CENTER\"><img border=\"0\" src=\"${tool}_workflow.png\" width=\"700\" height=\"478\"><b><u><caption align=\"bottom\">$workflow  $version</caption></b></u></p>";
 	print OUT "<p align='right'><a href=\"#top\">-top-</a></p>";
 	print OUT "<a name=\"Received Data\" id=\"Received Data\"></a><p align='left'><b><u> IV. Received Data</p></b></u> 
 	<ul>
@@ -281,22 +287,22 @@ else    {
 	# printing the samples information table
 	
 	print OUT "<a name=\"Sample Summary\" id=\"Sample Summary\"></a> 2. Sample Summary<br>
-        <br><table cellspacing=\"0\" class=\"sofT\"><tr>
-        <td class=\"helpHed\">Lane</td>
-        <td class=\"helpHed\">Index</td>
-        <td class=\"helpHed\">Sample Names</td></tr>";
-        for (my $i = 0; $i < $num_samples; $i++)        {
-                my @LaneNumbers= split(/,/,$laneArray[$i]);
-                my @Indexes=split(/,/,$IndexArray[$i]);
-                my $len_lanes = scalar(@LaneNumbers);
-                for (my $j =0; $j < $len_lanes; $j++)   {
-                        print OUT "
-                        <td class=\"helpBod\">$LaneNumbers[$j]</td>
-                        <td class=\"helpBod\">$Indexes[$j]</td>
-                        <td class=\"helpBod\">$sampleArray[$i]</td></tr>
-                        \n";
-                }
-        }
+	<br><table cellspacing=\"0\" class=\"sofT\"><tr>
+	<td class=\"helpHed\">Lane</td>
+	<td class=\"helpHed\">Index</td>
+	<td class=\"helpHed\">Sample Names</td></tr>";
+	for (my $i = 0; $i < $num_samples; $i++)        {
+		my @LaneNumbers= split(/,/,$laneArray[$i]);
+		my @Indexes=split(/,/,$IndexArray[$i]);
+		my $len_lanes = scalar(@LaneNumbers);
+		for (my $j =0; $j < $len_lanes; $j++)   {
+				print OUT "
+				<td class=\"helpBod\">$LaneNumbers[$j]</td>
+				<td class=\"helpBod\">$Indexes[$j]</td>
+				<td class=\"helpBod\">$sampleArray[$i]</td></tr>
+				\n";
+		}
+	}
 	print OUT "<td class=\"helpHed\"></td><td class=\"helpHed\"></td><td class=\"helpHed\"></td></tr>";
 	print OUT "</table>";
 	
@@ -1151,7 +1157,7 @@ else    {
 		$re="CodingRegion";
 	}	
 	if ( ( $analysis eq "external" ) || ( $analysis eq "variant") || ($analysis eq "realignment") || ($analysis eq "mayo") || ($analysis eq 'realign-mayo')  )	{
-		my $target=$target_region/1000000;$target=sprintf("%.2f",$target);
+		$target=$target_region/1000000;$target=sprintf("%.2f",$target);
 		print OUT "
 		<ul><li><a name=\"Percent coverage of $re\" id=\"Percent coverage of $re\"></a>Percent coverage of $re
 		<ul>

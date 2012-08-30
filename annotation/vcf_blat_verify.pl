@@ -87,7 +87,7 @@ if( $options{'help'} ){
 ## make sure everything passed was peachy
 &check_parameters(\%options);
 
-print "Starting main program\n";
+print " Starting main program\n";
 timer(); #call timer to see when process ended.
 
 my $blat_ref=$options{blat_ref};

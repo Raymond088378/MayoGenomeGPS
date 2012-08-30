@@ -54,7 +54,15 @@ else
 ######		PICARD to sort raw BAM file
 
     ## check if BAM is sorted
-    SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input/$input_bam -s $samtools`
+    $samtools/samtools view -H $input/$input_bam 2> $input/$input_bam.log
+	if [ `cat $input/$input_bam.log | wc -l` -gt 0 ]
+	then
+		echo "$input/$input_bam : bam is corruped or truncated"
+		exit 1;
+	else
+		rm $input/$input_bam.log
+	fi	
+	SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input/$input_bam -s $samtools`
     if [ $SORT_FLAG == 1 ]
     then
         ln -s $input/$input_bam $input/$sample.sorted.bam
@@ -65,7 +73,6 @@ else
 #############################################################	
 ######		PICARD to check availability of ReadGroup and platform info
 
-
     RG_ID=`$samtools/samtools view -H $input/$sample.sorted.bam | grep "^@RG" | tr '\t' '\n' | grep "^ID"| cut -f 2 -d ":"`
     sam=`echo $sample | awk -F'.' '{print $1}'`
     if [ "$RG_ID" != "$sam" ]
@@ -74,13 +81,16 @@ else
     fi
     
     ### flagstat on each bam file
-    $samtools/samtools flagstat $input/$sample.sorted.bam > $input/$sample.flagstat
+    $samtools/samtools index $input/$sample.sorted.bam
+	$samtools/samtools flagstat $input/$sample.sorted.bam > $input/$sample.flagstat
     if [ ! -s $input/$sample.flagstat ]
     then
         $script_path/errorlog.sh convert.bam.sh $input/$sample.flagstat ERROR empty
 		exit 1;
 	fi
     ## update secondary dahboard
-    $script_path/dashboard.sh $sample $run_info Alignment complete $id
+    size=`du -b $input/$sample.sorted.bam | sed 's/\([0-9]*\).*/\1/'`
+	$script_path/filesize.sh alignment $sam $sample.sorted.bam $JOB_ID $size $run_info
+	$script_path/dashboard.sh $sample $run_info Alignment complete $id
     echo `date`
 fi

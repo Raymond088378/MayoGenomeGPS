@@ -37,8 +37,8 @@ else
     flowcell=`echo $run_num | awk -F'_' '{print $NF}' | sed 's/.\(.*\)/\1/'`
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2 )
-    threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2) 
-    ### update dashboard
+    
+	### update dashboard
     $script_path/dashboard.sh $sample $run_info Annotation started
     
     if [ $5 ]
@@ -59,15 +59,22 @@ else
     
     if [[ $num_snvs == 0 || $chr -eq 'M' ]]
     then
-        touch $sift/${sample}_chr${chr}_predictions.tsv
+        touch $sift/${sam}_chr${chr}_predictions.tsv
         echo -e "Coordinates\tCodons\tTranscript ID\tProtein ID\tSubstitution\tRegion\tdbSNP ID\tSNP Type\tPrediction\tScore\tMedian Info\t# Seqs at position\tGene ID\tGene Name\tOMIM Disease\tAverage Allele Freqs\tUser Comment" > $sift/${sam}_chr${chr}_predictions.tsv
     else
         cat $input/$snv_file | awk '$0 !~ /^#/' | sed -e '/chr/s///g' | awk '{print $1","$2",1,"$4"/"$5}' > $sift/$snv_file.sift
         a=`pwd`
         #running SIFT for each sample
         cd $sift_path
-        $script_path/parallel.sift.pl $threads $sift/$snv_file.sift $sift_ref $sift_path/ $sift/${sam}_chr${chr}_predictions.tsv $sift/
+        perl $sift_path/SIFT_exome_nssnvs.pl -i $sift/$snv_file.sift -d $sift_ref -o $sift/ -A 1 -B 1 -J 1 -K 1 > $sift/$sam.chr${chr}.sift.run
+        id=`perl -n -e ' /Your job id is (\d+)/ && print "$1\n" ' $sift/$sam.chr${chr}.sift.run`
+        rm $sift/$sam.chr${chr}.sift.run
         # sift inconsistent results flips alt base by itself getting rid of wrong calls from sift output
+        mv $sift/$id/${id}_predictions.tsv $sift/${sam}_chr${chr}_predictions.tsv
+        if [ ${#id} -gt 1 ]
+		then
+			rm -R $sift/$id
+        fi
 		perl $script_path/sift.inconsistent.pl $sift/${sam}_chr${chr}_predictions.tsv $sift/$snv_file.sift
         mv $sift/${sam}_chr${chr}_predictions.tsv_mod $sift/${sam}_chr${chr}_predictions.tsv
         rm $sift/$snv_file.sift

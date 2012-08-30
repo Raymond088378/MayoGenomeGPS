@@ -35,7 +35,15 @@ else
     
     if [ -s $outbam ]
     then
-        mv $outbam $inbam
+        $samtools/samtools view -H $outbam 2> $outbam.log
+		if [ `cat $outbam.log | wc -l` -gt 0 ]
+		then
+			echo "$outbam :bam is truncated or corrupted "
+			exit 1;
+		else
+			rm $outbam.log
+		fi	
+		mv $outbam $inbam
         $samtools/samtools index $inbam
     else
         $script_path/errorlog.sh $outbam convert.bam.sh ERROR empty

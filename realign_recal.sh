@@ -23,23 +23,10 @@ else
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
 	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
-	
+	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
 	export JAVA_HOME=$javahome
 	export PATH=$javahome/bin:$PATH
-	### error checking 
-	#for i in `echo $bam | tr ":" " "`
-	#do
-	#	if [ ! -s $input/$i ]
-	#	then
-	#		$script_path/email.sh $input/$i "not found" $JOB_NAME $JOB_ID $run_info
-	#		touch $input/$i.fix.log
-	#		while [ ! -f $input/$i.fix.log ]
-	#		do
-	#			echo "waiting for job to be fixed"
-	#			sleep 10m
-	#		done	
-	#	fi
-	#done	
+
 	
     ### update dash board    
     if [ $SGE_TASK_ID == 1 ]
@@ -47,57 +34,42 @@ else
         for i in `echo $samples | tr ":" " "`
 		do
 			$script_path/dashboard.sh $i $run_info Realignment started
+			id=`echo $samples | awk -v sample=$i -F ':' '{ for(i=1;i<=NF;i++){ if ($i == sample) {print i} } }'`
+			in=`echo $input | cut -d ":" -f "$id"`
+			bb=`echo $bam | cut -d ":" -f "$id"`
+			size=`du -b $in/$bb | sed 's/\([0-9]*\).*/\1/'`
+			$script_path/filesize.sh Realignment $i $bb $JOB_ID $size $run_info
 		done
 	fi    
-    
+	
+	### check and validate the input files
+	for i in `echo $samples | tr ":" " "`
+	do
+		id=`echo $samples | awk -v sample=$i -F ':' '{ for(i=1;i<=NF;i++){ if ($i == sample) {print i} } }'`
+		in=`echo $input | cut -d ":" -f "$id"`
+		bb=`echo $bam | cut -d ":" -f "$id"`
+		$samtools/samtools view -H $in/$bb 2> $in/$bb.fix.log
+		if [ `cat $in/$bb.fix.log | wc -l` -gt 0 ]
+		then
+			$script_path/email.sh $in/$bb "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+			while [ -f $in/$bb.fix.log ]
+			do
+				echo "waiting for the $in/$bb to be fixed"
+				sleep 2m
+			done
+		else
+			rm $in/$bb.fix.log
+		fi
+	done		
+
+		
     if [ $flag == 1 ]
     then
         $script_path/realign_per_chr.sh $input $bam $output_bam $run_info 0 1 $samples $chr
-#        if [ ! -s $output_bam/chr${chr}.realigned.bam ]
-#        then
-#			$script_path/email.sh $output_bam/chr${chr}.realigned.bam "not found" $JOB_NAME $JOB_ID $run_info
-#			touch $output_bam/chr${chr}.realigned.bam.fix.log
-#			while [ ! -f $output_bam/chr${chr}.realigned.bam.fix.log ]
-#			do
-#				echo "waiting for job to be fixed"
-#				sleep 10m
-#			done		
-#        fi
-
         $script_path/recal_per_chr.sh $output_bam chr${chr}.realigned.bam $output_bam $run_info 1 0 multi $chr
-#        if [ ! -s $output_bam/chr${chr}.cleaned.bam ]
-#        then
-#			$script_path/email.sh $output_bam/chr${chr}.cleaned.bam "not found" $JOB_NAME $JOB_ID $run_info
-#			touch $output_bam/chr${chr}.cleaned.bam.fix.log
-#			while [ ! -f $output_bam/chr${chr}.cleaned.bam.fix.log ]
-#			do
-#				echo "waiting for job to be fixed"
-#				sleep 10m
-#			done	
-#        fi
     else
         $script_path/recal_per_chr.sh $input $bam $output_bam $run_info 0 1 $samples $chr
-#        if [ ! -s $output_bam/chr${chr}.recalibrated.bam ]
-#        then
-#            $script_path/email.sh $output_bam/chr${chr}.recalibrated.bam "not found" $JOB_NAME $JOB_ID $run_info
-#			touch $output_bam/chr${chr}.recalibrated.bam.fix.log
-#			while [ ! -f $output_bam/chr${chr}.recalibrated.bam.fix.log ]
-#			do
-#				echo "waiting for job to be fixed"
-#				sleep 10m
-#			done		
-#        fi
         $script_path/realign_per_chr.sh $output_bam chr${chr}.recalibrated.bam $output_bam $run_info 1 0 multi $chr
-#        if [ ! -s $output_bam/chr${chr}.cleaned.bam ]
-#        then
-#			$script_path/email.sh $output_bam/chr${chr}.cleaned.bam "not found" $JOB_NAME $JOB_ID $run_info
-#			touch $output_bam/chr${chr}.cleaned.bam.fix.log
-#			while [ ! -f $output_bam/chr${chr}.cleaned.bam.fix.log ]
-#			do
-#				echo "waiting for job to be fixed"
-#				sleep 10m
-#			done		
-#        fi
     fi
 	
     ## update the dash board
@@ -108,5 +80,21 @@ else
 			$script_path/dashboard.sh $i $run_info Realignment complete
 		done
     fi    
-    echo `date`
+	### file name will be chr*.cleaned.bam
+	$samtools/samtools view -H $output_bam/chr$chr.cleaned.bam 2>$output_bam/chr$chr.cleaned.bam.log
+	if [ `cat $output_bam/chr$chr.cleaned.bam.log | wc -l` -gt 0 ]
+	then
+		echo "$output_bam/chr$chr.cleaned.bam : BAM file is truncated or corrupt"
+		exit 1;
+	else
+		rm $output_bam/chr$chr.cleaned.bam.log
+	fi	
+	size=`du -b $output_bam/chr$chr.cleaned.bam | sed 's/\([0-9]*\).*/\1/'`
+	if [ `echo $samples | tr ":" "\n" | wc -l -gt 1` ]
+	then
+		$script_path/filesize.sh Realignment multi_sample chr$chr.cleaned.bam $JOB_ID $size $run_info
+	else
+		$script_path/filesize.sh Realignment $samples chr$chr.cleaned.bam $JOB_ID $size $run_info
+	fi
+	echo `date`
 fi	

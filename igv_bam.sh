@@ -45,7 +45,15 @@ else
         pair=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2)
         for i in *.cleaned.bam
         do
-            $samtools/samtools view -H $i > $output/$sample/$sample.header.sam
+			$samtools/samtools view -H $i 2> $i.fix.log
+			if [ `cat $i.fix.log | wc -l` -gt 0 ]
+			then
+				echo "$i : bam is truncated or corrupt"
+				exit 1;
+			else
+				rm $i.fix.log
+			fi	
+			$samtools/samtools view -H $i > $output/$sample/$sample.header.sam
         done
 
         for i in $pair
@@ -97,7 +105,15 @@ else
         cd $input/$sample/
         for i in *.cleaned.bam
         do
-            $samtools/samtools view -H $i > $output/$sample.header.sam
+            $samtools/samtools view -H $i 2> $i.fix.log
+			if [ `cat $i.fix.log | wc -l` -gt 0 ]
+			then
+				echo "$i : bam is truncated or corrupt"
+				exit 1;
+			else
+				rm $i.fix.log
+			fi	
+			$samtools/samtools view -H $i > $output/$sample.header.sam
         done
         # only merge if there is more than 1 chr
         ### hard coding to find extension *.cleaned.bam
@@ -141,11 +157,13 @@ else
         then
             if [ ! -d $out ]
             then
-                mkdir $out
+                mkdir -p $out
+				chmod -Rf 777 $out
             fi
             if [ $multi == "YES" ]
             then
                 mkdir -p $out/$sample
+				chmod -Rf 777 $out/$sample
 				pair=$( cat $sample_info | grep -w "$sample" | cut -d '=' -f2)
                 for i in $pair
                 do

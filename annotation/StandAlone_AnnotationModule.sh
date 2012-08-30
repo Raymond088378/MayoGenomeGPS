@@ -4,6 +4,7 @@ if [ $# != 7 ]
 then
     echo -e "Usage: stand alone script for annotation using single sample and single vcf or text file \n <sample name><vcf or txt file><output folder><tool_info file> <genome build><single/multi><script_path>"
 else
+	set -x
 	echo -e "\n ************************************************** \n"
 	echo " Started the annotation for your data on `date` "
 	sample=$1
@@ -15,16 +16,16 @@ else
 	script_path=$7
 	## paths
 	mkdir -p $output
-	#script_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" 
+	#script_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 	#if [ ${#script_path} -eq 0 ]
 	#then
 	#	echo "Please enter full path to the annotation script"
 	#	exit 1;
-	#fi	
+	#fi
 	snpeff=$( cat $tool_info | grep -w '^SNPEFF' | cut -d '=' -f2)
-	sift=$( cat $tool_info | grep -w '^SIFT' | cut -d '=' -f2) 
+	sift=$( cat $tool_info | grep -w '^SIFT' | cut -d '=' -f2)
 	pph=$(cat $tool_info | grep -w '^POLYPHEN' |  cut -d '=' -f2)
-	sift_ref=$( cat $tool_info | grep -w '^SIFT_REF' | cut -d '=' -f2) 
+	sift_ref=$( cat $tool_info | grep -w '^SIFT_REF' | cut -d '=' -f2)
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
 	gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
@@ -34,7 +35,7 @@ else
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
 	http=$( cat $tool_info | grep -w '^HTTP_SERVER' | cut -d '=' -f2)
 	export PERL5LIB=/projects/bsi/bictools/apps/annotation/polyphen/2.2.2/perl/:$perllib:$PERL5LIB
-	 tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2 )
+	tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2 )
     vcftools=$( cat $tool_info | grep -w '^VCFTOOLS' | cut -d '=' -f2 )
 	perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
 	export PERL5LIB=$PERL5LIB:$perllib
@@ -43,19 +44,19 @@ else
 	type=`cat $file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'`
 	ff="$sample.vcf"
 	if [ $type == "txt" ]
-	then	
+	then
 		perl $script_path/convert_txt_vcf.pl $file $sample > $output/$ff
 	else
 		if [ $multi == "multi" ]
-		then	
+		then
 			cat $file  | $script_path/convert.vcf.pl > $output/$ff
 		else
 			col=`cat $file | awk '$0 ~ /#CHROM/' | awk -v num=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == num) {print i} } }'`
 			cat $file | awk -v num=$col 'BEGIN {OFS="\t"} { if ($0 ~ /^##/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8,$9,$num; }' | $script_path/convert.vcf.pl > $output/$ff
 		fi
 	fi
-	
-	## ADD BLAT column 
+
+	## ADD BLAT column
 	n=`cat $output/$ff |  awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
 	if [ $n == 0 ]
 	then
@@ -70,7 +71,7 @@ else
 	n=`cat $output/$ff |  awk '$0 ~ /^##INFO=<ID=CAPTURE/' | wc -l`
 	$script_path/vcf_to_variant_vcf.pl -i $output/$ff -v $output/$ff.SNV.vcf -l $output/$ff.INDEL.vcf
 	rm $output/$ff
-	
+
 	if [ $n == 0 ]
 	then
 		$script_path/markSnv_IndelnPos.pl -s $output/$ff.SNV.vcf -i $output/$ff.INDEL.vcf -n 10 -o $output/$ff.SNV.vcf.pos
@@ -80,7 +81,7 @@ else
 	## RUN SIFT
 	echo " Running SIFT "
 	$script_path/sift.sh $output $ff $sift $sift_ref $script_path $sample $thread &
-	
+
 	### RUN SNPEFF
 	## SNVs
 	echo " Running SNPEFF "
@@ -88,8 +89,8 @@ else
 	### POLYPHEN
 	echo " Running Polyphen "
 	$script_path/polyphen.sh $output $ff $pph $script_path $GenomeBuild $sample $thread &
-	
-		
+
+
 	#### now add annotations
 	bed=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
 	codon_ref=$( cat $tool_info | grep -w '^CODON_REF' | cut -d '=' -f2)
@@ -105,19 +106,19 @@ else
 	sao=$( cat $tool_info | grep -w '^SNP_SAO' | cut -d '=' -f2 )
 	build=$( cat $tool_info | grep -w '^SNP_BUILD' | cut -d '=' -f2 )
 	dbsnp_rsids_snv=$( cat $tool_info | grep -w '^dbSNP_SNV_rsIDs' | cut -d '=' -f2)
-	dbsnp_rsids_disease=$( cat $tool_info | grep -w '^dbSNP_disease_rsIDs' | cut -d '=' -f2) 
+	dbsnp_rsids_disease=$( cat $tool_info | grep -w '^dbSNP_disease_rsIDs' | cut -d '=' -f2)
 	hapmap=$( cat $tool_info | grep -w '^HAPMAP' | cut -d '=' -f2)
 	kgenome=$( cat $tool_info | grep -w '^KGENOME' | cut -d '=' -f2)
-	bgi=$( cat $tool_info | grep -w '^BGI_REF' | cut -d '=' -f2) 
+	bgi=$( cat $tool_info | grep -w '^BGI_REF' | cut -d '=' -f2)
 	cosmic=$( cat $tool_info | grep -w '^COSMIC_SNV_REF' | cut -d '=' -f2)
 	esp=$( cat $tool_info | grep -w '^ESP' | cut -d '=' -f2)
-	
+
 	typeset -i codon
 	typeset -i SNP_Type
 	#convert to text file
-	$script_path/parse.vcf.sh $output/$ff.SNV.vcf $output/$sample.snv $tool_info SNV $script_path
-	$script_path/parse.vcf.sh $output/$ff.INDEL.vcf $output/$sample.indel $tool_info INDEL $script_path
-	
+	$script_path/parse.vcf.sh $output/$ff.SNV.vcf $output/$sample.snv $tool_info SNV $script_path $sample
+	$script_path/parse.vcf.sh $output/$ff.INDEL.vcf $output/$sample.indel $tool_info INDEL $script_path $sample
+
 	file=$output/$sample.snv
 	## Add DBSNP
 	echo " Adding annotation columns to excel worksheet "
@@ -127,12 +128,12 @@ else
 	$script_path/extract.rsids.pl -i $file -r $file.forrsIDs.added.disease -o $file.rsIDs -v SNV
 	rm $file.forrsIDs.added $file.forrsIDs.added.disease $file.forrsIDs $file
 	echo " dbSNP columns added to the report "
-	
+
 	### Add Frequencies
 	cat $file.rsIDs | awk 'NR>1' | cut -f 1,2,3,4,5 > $file.rsIDs.forFrequencies
 	echo " adding allele frequencies to the report "
 	$script_path/add_hapmap_1kgenome_allele_freq.pl -i $file.rsIDs.forFrequencies -c 1 -p 2 -b 1 -e CEU -s $hapmap/all_allele_freqs_CEU.txt -g $kgenome/CEU.$GenomeBuild -o $file.rsIDs.CEU&&perl $script_path/add_hapmap_1kgenome_allele_freq.pl -i $file.rsIDs.CEU -c 1 -p 2 -b 1 -e YRI -s $hapmap/all_allele_freqs_YRI.txt -g $kgenome/YRI.$GenomeBuild -o $file.rsIDs.CEU.YRI&&perl $script_path/add_hapmap_1kgenome_allele_freq.pl -i $file.rsIDs.CEU.YRI -c 1 -p 2 -b 1 -e JPT+CHB -s $hapmap/all_allele_freqs_JPT+CHB.txt -g $kgenome/JPT+CHB.$GenomeBuild -o $file.rsIDs.CEU.YRI.CHBJPT.txt
-	rm $file.rsIDs.CEU $file.rsIDs.CEU.YRI 
+	rm $file.rsIDs.CEU $file.rsIDs.CEU.YRI
 	## BGI
 	perl $script_path/add_bgi_freq.pl -i $file.rsIDs.CEU.YRI.CHBJPT.txt -r $bgi -o $file.rsIDs.CEU.YRI.CHBJPT.BGI.txt
 	rm $file.rsIDs.CEU.YRI.CHBJPT.txt
@@ -144,19 +145,19 @@ else
 	perl $script_path/extract.allele_freq.pl -i $file.rsIDs -f $file.rsIDs.CEU.YRI.CHBJPT.BGI.Cosmic.ESP.txt -o $file.rsIDs.allele_frequencies -v SNV
 	rm $file.rsIDs.CEU.YRI.CHBJPT.BGI.Cosmic.txt $file.rsIDs.CEU.YRI.CHBJPT.BGI.Cosmic.ESP.txt $file.rsIDs.forFrequencies $file.rsIDs
 	echo " Allele frequencies added to the report "
-	
+
 	file=$file.rsIDs.allele_frequencies
 	chr=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Chr") {print i} } }' $file`
 	pos=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Position") {print i} } }' $file`
 	ref=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Ref") {print i} } }' $file`
 	alt=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Alt") {print i} } }' $file`
-	
+
 	while [[ ! -s $output/$sample.predictions.tsv ]]
 	do
 		echo "waiting for sift to finish"
 		sleep 2m
-	done	
-	
+	done
+
 	## sift
 	perl $script_path/parse_siftPredictions.pl -i $file -s $output/$sample.predictions.tsv -c $chr -p $pos -r $ref -a $alt -o $file.sift
 	rm $output/$sample.predictions.tsv $file
@@ -196,7 +197,7 @@ else
 	$bed/intersectBed -a $file.sift.codons.map.repeat.ChrPos.bed -b $miRbase -c | awk '{print $NF}' > $file.sift.codons.map.repeat.ChrPos.bed.i
 	echo -e "\nmiRbase" >> $file.sift.codons.map.repeat.ChrPos.bed.i.tmp
 	cat $file.sift.codons.map.repeat.ChrPos.bed.i >> $file.sift.codons.map.repeat.ChrPos.bed.i.tmp
-	rm $file.sift.codons.map.repeat.ChrPos.bed.i $file.sift.codons.map.repeat.ChrPos.bed 
+	rm $file.sift.codons.map.repeat.ChrPos.bed.i $file.sift.codons.map.repeat.ChrPos.bed
 	paste $file.sift.codons.map.repeat $file.sift.codons.map.repeat.ChrPos.bed.i.tmp > $file.sift.codons.map.repeat.base
 	rm $file.sift.codons.map.repeat.ChrPos.bed.i.tmp $file.sift.codons.map.repeat
 	cat $file.sift.codons.map.repeat.base | awk 'NR>2' | awk '{print $1"\t"($2-1)"\t"$2}' > $file.sift.codons.map.repeat.base.ChrPos.bed
@@ -217,7 +218,7 @@ else
 	do
 		cat $file.sift.codons.map.repeat.base.ChrPos.bed.$type >> $file.sift.codons.map.repeat.base.ChrPos.bed.$type.tmp
 	done
-	
+
 	paste $file.sift.codons.map.repeat.base $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.tmp $file.sift.codons.map.repeat.base.ChrPos.bed.scs.tmp $file.sift.codons.map.repeat.base.ChrPos.bed.sao.tmp $file.sift.codons.map.repeat.base.ChrPos.bed.build.tmp > $file.sift.codons.map.repeat.base.snp
 	rm $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.tmp $file.sift.codons.map.repeat.base.ChrPos.bed.scs.tmp $file.sift.codons.map.repeat.base.ChrPos.bed.sao.tmp $file.sift.codons.map.repeat.base.ChrPos.bed.build.tmp
 	rm $file.sift.codons.map.repeat.base.ChrPos.bed.ssr $file.sift.codons.map.repeat.base.ChrPos.bed.scs $file.sift.codons.map.repeat.base.ChrPos.bed.sao $file.sift.codons.map.repeat.base.ChrPos.bed.build
@@ -231,7 +232,7 @@ else
 		perl $script_path/matching_ucsc_tracks.pl $file.sift.codons.map.repeat.base.snp.ChrPos.bed $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i} $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i}.txt ${i}
 	done
 	echo " UCSC tracks are added to the report "
-	paste $file.sift.codons.map.repeat.base.snp $file.sift.codons.map.repeat.base.snp.ChrPos.bed.conservation.txt $file.sift.codons.map.repeat.base.snp.ChrPos.bed.regulation.txt $file.sift.codons.map.repeat.base.snp.ChrPos.bed.tfbs.txt $file.sift.codons.map.repeat.base.snp.ChrPos.bed.tss.txt $file.sift.codons.map.repeat.base.snp.ChrPos.bed.enhancer.txt > $file.sift.codons.map.repeat.base.snp.UCSCtracks 
+	paste $file.sift.codons.map.repeat.base.snp $file.sift.codons.map.repeat.base.snp.ChrPos.bed.conservation.txt $file.sift.codons.map.repeat.base.snp.ChrPos.bed.regulation.txt $file.sift.codons.map.repeat.base.snp.ChrPos.bed.tfbs.txt $file.sift.codons.map.repeat.base.snp.ChrPos.bed.tss.txt $file.sift.codons.map.repeat.base.snp.ChrPos.bed.enhancer.txt > $file.sift.codons.map.repeat.base.snp.UCSCtracks
 	rm $file.sift.codons.map.repeat.base.snp.ChrPos.bed $file.sift.codons.map.repeat.base.snp
 	for i in conservation regulation tfbs tss enhancer
 	do
@@ -250,9 +251,9 @@ else
 	rm $output/$sample.polyphen.txt $file.sift.codons.map.repeat.base.snp.UCSCtracks
 	perl $script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $output/$sample.SNV.eff -o $output/$sample.SNV.report
 	perl $script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $output/$sample.SNV.filtered.eff -o $output/$sample.filtered.SNV.report
-	rm $output/$sample.SNV.eff $output/$sample.SNV.filtered.eff $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly 
+	rm $output/$sample.SNV.eff $output/$sample.SNV.filtered.eff $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly
 	echo " polyphen and snpeff are added to the report "
-	
+
 	for report in $output/$sample.SNV.report $output/$sample.filtered.SNV.report
 	do
 		perl $script_path/add_entrezID.pl -i $report -m $GeneIdMap -o $report.entrezid
@@ -273,20 +274,20 @@ else
 	perl $script_path/add_dbsnp_indel.pl -i $file.forrsIDs -b 1 -s $dbsnp_rsids_indel -c 1 -p 2 -x 3 -o $file.forrsIDs.added
 	cat $file.forrsIDs.added | awk '{if(NR != 1) print $0"\t0"; else print $0"\tDiseaseVariant"}' > $file.forrsIDs.added.disease
 	perl $script_path/extract.rsids.pl -i $file -r $file.forrsIDs.added.disease -o $file.rsIDs -v INDEL
-	rm $file.forrsIDs.added $file.forrsIDs.added.disease $file $file.forrsIDs 
+	rm $file.forrsIDs.added $file.forrsIDs.added.disease $file $file.forrsIDs
 	## Frequency
-	cosmic=$( cat $tool_info | grep -w '^COSMIC_INDEL_REF' | cut -d '=' -f2) 
+	cosmic=$( cat $tool_info | grep -w '^COSMIC_INDEL_REF' | cut -d '=' -f2)
 	cat $file.rsIDs | awk 'NR>1' | cut -f 1,2,3,4,5 > $file.rsIDs.forfrequencies
 	perl $script_path/add.cosmic.pl $file.rsIDs.forfrequencies 0 $cosmic $GenomeBuild 1 $file.rsIDs.forfrequencies.cosmic.txt
 	rm $file.rsIDs.forfrequencies
 	perl $script_path/extract.allele_freq.pl -i $file.rsIDs -f $file.rsIDs.forfrequencies.cosmic.txt -o $file.rsIDs.frequencies -v INDEL
-	rm $file.rsIDs $file.rsIDs.forfrequencies.cosmic.txt 
+	rm $file.rsIDs $file.rsIDs.forfrequencies.cosmic.txt
 	## add snpeff prediction
 	echo " annotated reports should be done soon "
-	perl $script_path/add_snpeff_indel.pl -i $file.rsIDs.frequencies -s $output/$sample.INDEL.eff -o $output/$sample.INDEL.report 
-	perl $script_path/add_snpeff_indel_filter.pl -i $file.rsIDs.frequencies -s $output/$sample.INDEL.filtered.eff -o $output/$sample.filtered.INDEL.report 
+	perl $script_path/add_snpeff_indel.pl -i $file.rsIDs.frequencies -s $output/$sample.INDEL.eff -o $output/$sample.INDEL.report
+	perl $script_path/add_snpeff_indel_filter.pl -i $file.rsIDs.frequencies -s $output/$sample.INDEL.filtered.eff -o $output/$sample.filtered.INDEL.report
 	rm $output/$sample.INDEL.eff $output/$sample.INDEL.filtered.eff $file.rsIDs.frequencies
-	for report in $output/$sample.INDEL.report $output/$sample.filtered.INDEL.report 
+	for report in $output/$sample.INDEL.report $output/$sample.filtered.INDEL.report
 	do
 		perl $script_path/add_entrezID.pl -i $report -m $GeneIdMap -o $report.entrezid
 		mv $report.entrezid $report
@@ -295,7 +296,7 @@ else
 	done
 	perl $script_path/add.cols.pl $output/$sample.INDEL.report INDEL $http $GenomeBuild > $output/$sample.INDEL.xls
 	perl $script_path/add.cols.pl $output/$sample.filtered.INDEL.report INDEL $http $GenomeBuild > $output/$sample.filtered.INDEL.xls
-	rm $output/$sample.INDEL.report $output/$sample.filtered.INDEL.report 
+	rm $output/$sample.INDEL.report $output/$sample.filtered.INDEL.report
 	echo " Annotation finished on `date` "
 	echo -e "\n ************************************************** \n"
 fi

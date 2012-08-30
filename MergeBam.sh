@@ -17,7 +17,8 @@ else
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
     reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
-    
+    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
+	
     $java/java -Xmx6g -Xms512m \
     -jar $picard/MergeSamFiles.jar \
     $inbam \
@@ -29,15 +30,26 @@ else
     
     if [ ! -s $outbam ]
     then
-        echo "ERROR: merging bams failed $outbam"
-    else
+        $script_path/errorlog.sh $outbam MergeBam.sh ERROR empty
+		exit 1;
+	else
         files=`echo $inbam | sed -e '/INPUT=/s///g'`
         indexes=`echo $inbam | sed -e '/INPUT=/s///g' | tr " " "\n" | awk '{print $0".bai"}'`
-		rm $files $indexes
-        #if [ $index == "TRUE" ]
-        #then
-            $samtools/samtools index $outbam
-        #fi
+		for i in $files 
+		do
+			if [ -s $i ]
+			then
+				rm $i
+			fi
+		done
+		for i in $indexes
+		do
+			if [ -s $i ]
+			then
+				rm $i 
+			fi
+		done	
+        $samtools/samtools index $outbam
     fi
     echo `date`
 fi	

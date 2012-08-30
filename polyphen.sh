@@ -23,7 +23,8 @@ else
     perl=$(cat $tool_info | grep -w '^PERL_CIRCOS' |  cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2) 	
-    if [ $5 ]
+threads=2   
+   if [ $5 ]
     then
 		sam=$prefix.$sample
     else

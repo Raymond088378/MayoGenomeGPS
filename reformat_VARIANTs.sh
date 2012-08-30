@@ -38,31 +38,6 @@ else
 	perllib=$( cat $tool_info | grep -w '^PERLLIB' | cut -d '=' -f2)
 	export PERL5LIB=$perllib:$PERL5LIB
 	export PATH=$PERL5LIB:$PATH
-	range=20000
-    let blat_port+=$RANDOM%range
-    status=`$blat/gfServer status $blat_server $blat_port | wc -l`;
-    if [ "$status" -le 1 ]
-    then
-		$blat/gfServer start $blat_server $blat_port -log=$output/$sample.blat.log $blat_ref  &
-		sleep 3m
-    fi
-    status=`$blat/gfServer status $blat_server $blat_port | wc -l`;
-
-    while [ "$status" -le 1 ]
-    do
-        blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
-        range=20000
-        let blat_port+=$RANDOM%range
-        status=`$blat/gfServer status $blat_server $blat_port | wc -l`;
-        if [ "$status" -le 1 ]
-        then
-            rm $output/$sample.blat.log
-            $blat/gfServer start $blat_server $blat_port -log=$output/$sample.blat.log $blat_ref  &
-            sleep 3m
-        fi
-		status=`$blat/gfServer status $blat_server $blat_port | wc -l`;
-    done
-	
 	
     if [ $marker -eq 2 ]
     then
@@ -85,7 +60,7 @@ else
 			n=`cat $output/$sample.SNV.vcf |  awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
 			if [ $n == 0 ]
 			then
-				$script_path/vcf_blat_verify.pl -i $output/$sample.SNV.vcf -o $output/$sample.SNV.vcf.tmp -w $window_blat -b $blat -r $ref -sam $samtools -br $blat_ref -bs $blat_server -bp $blat_port -th $threads
+				$script_path/vcf_blat_verify.pl -i $output/$sample.SNV.vcf -o $output/$sample.SNV.vcf.tmp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
 				perl $script_path/vcfsort.pl $ref.fai $output/$sample.SNV.vcf.tmp > $output/$sample.SNV.vcf
 				rm $output/$sample.SNV.vcf.tmp
 			else
@@ -95,7 +70,7 @@ else
 			n=`cat $output/$sample.INDEL.vcf |  awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
 			if [ $n == 0 ]
 			then
-				$script_path/vcf_blat_verify.pl -i $output/$sample.INDEL.vcf -o $output/$sample.INDEL.vcf.tmp -w $window_blat -b $blat -r $ref -sam $samtools -br $blat_ref -bs $blat_server -bp $blat_port -th $threads
+				$script_path/vcf_blat_verify.pl -i $output/$sample.INDEL.vcf -o $output/$sample.INDEL.vcf.tmp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
 				perl $script_path/vcfsort.pl $ref.fai $output/$sample.INDEL.vcf.tmp > $output/$sample.INDEL.vcf
 				rm $output/$sample.INDEL.vcf.tmp 
 			else
@@ -113,36 +88,32 @@ else
 			n=`cat $output/$sample.vcf |  awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
 			if [ $n == 0 ]
 			then
-				$script_path/vcf_blat_verify.pl -i $output/$sample.vcf -o $output/$sample.vcf.tmp -w $window_blat -b $blat -r $ref -sam $samtools -br $blat_ref -bs $blat_server -bp $blat_port -th $threads
+				$script_path/vcf_blat_verify.pl -i $output/$sample.vcf -o $output/$sample.vcf.tmp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
 				perl $script_path/vcfsort.pl $ref.fai $output/$sample.vcf.tmp > $output/$sample.vcf
 				rm $output/$sample.vcf.tmp
 			else
 				perl $script_path/vcfsort.pl $ref.fai $output/$sample.vcf > $output/$sample.vcf.tmp
 				mv $output/$sample.vcf.tmp $output/$sample.vcf
 			fi
-			perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.vcf -v $output/$sample.SNV.vcf -l $output/$sample.INDEL.vcf
+			perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.vcf -v $output/$sample.SNV.vcf -l $output/$sample.INDEL.vcf -t both
 			rm $output/$sample.vcf
 		fi	
 			
 		for chr in $chrs
         do
-            perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.SNV.vcf -v $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -l $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -c chr$chr -s $sample
-            rm $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
-            perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.INDEL.vcf -v $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf.temp -l $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -c chr$chr -s $sample
-            rm $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf.temp
-            cat $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' > $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp
-            perl $script_path/add_format_field_vcf.pl $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp INDEL > $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
-            rm $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp
+            perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.SNV.vcf -v $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -t snv -c chr$chr -s $sample
+            perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.INDEL.vcf -t indel -l $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -c chr$chr -s $sample
+            cat $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | $script_path/add.info.capture.vcf.pl > $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp
+            mv $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
             if [ `cat $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -ge 1 ]
 			then
 				perl $script_path/markSnv_IndelnPos.pl -s $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -i $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
-				cat $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1;CLOSE2INDEL="$NF,$9,$10;}' > $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf  
+				cat $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf  
+				rm $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
 			else
-				cat $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1;CLOSE2INDEL=0",$9,$10;}' > $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf.tmp
+				cat $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf | $script_path/add.info.close2indel.vcf.pl > $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf.tmp
 				mv $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf.tmp $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf	
-			fi	
-			perl $script_path/add_format_field_vcf.pl $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf SNV > $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf 
-            mv $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf		
+			fi		
         done
         rm $output/$sample.SNV.vcf $output/$sample.INDEL.vcf 
     else
@@ -159,7 +130,7 @@ else
 			n=`cat $output/$sample.SNV.vcf |  awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
 			if [ $n == 0 ]
 			then
-				$script_path/vcf_blat_verify.pl -i $output/$sample.SNV.vcf -o $output/$sample.SNV.vcf.tmp -w $window_blat -b $blat -r $ref -sam $samtools -br $blat_ref -bs $blat_server -bp $blat_port -th $threads
+				$script_path/vcf_blat_verify.pl -i $output/$sample.SNV.vcf -o $output/$sample.SNV.vcf.tmp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
 				perl $script_path/vcfsort.pl $ref.fai $output/$sample.SNV.vcf.tmp > $output/$sample.SNV.vcf
 				rm $output/$sample.SNV.vcf.tmp
 			else
@@ -168,11 +139,9 @@ else
 			fi	
             for chr in $chrs	
             do
-                perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.SNV.vcf -v $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -l $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -c chr$chr -s $sample
-                rm $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
-                cat $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1;CLOSE2INDEL=0",$9,$10;}' > $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
-				perl $script_path/add_format_field_vcf.pl $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf SNV > $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf
-                rm $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf			
+                perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.SNV.vcf -v $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -t snv -c chr$chr -s $sample
+                cat $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf | $script_path/add.info.close2indel.vcf.pl |  $script_path/add.info.capture.vcf.pl > $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
+				mv $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf
             done
             rm $output/$sample.SNV.vcf
         elif [ $variant_type == "INDEL" ]
@@ -188,7 +157,7 @@ else
             n=`cat $output/$sample.INDEL.vcf |  awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
 			if [ $n == 0 ]
 			then
-				$script_path/vcf_blat_verify.pl -i $output/$sample.INDEL.vcf -o $output/$sample.INDEL.vcf.tmp -w $window_blat -b $blat -r $ref -sam $samtools -br $blat_ref -bs $blat_server -bp $blat_port -th $threads
+				$script_path/vcf_blat_verify.pl -i $output/$sample.INDEL.vcf -o $output/$sample.INDEL.vcf.tmp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
 				perl $script_path/vcfsort.pl $ref.fai $output/$sample.INDEL.vcf.tmp > $output/$sample.INDEL.vcf
 				rm $output/$sample.INDEL.vcf.tmp 
 			else
@@ -197,16 +166,13 @@ else
 			fi
 			for chr in $chrs		
             do
-                perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.INDEL.vcf -v $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -l $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -c chr$chr -s $sample
-                rm $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf
-                cat $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | awk 'BEGIN {OFS="\t"} {if ($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8";CAPTURE=1",$9,$10;}' > $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp
-				perl $script_path/add_format_field_vcf.pl $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp INDEL > $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf  
-                rm $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp
+                perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.INDEL.vcf -t indel -l $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -c chr$chr -s $sample
+                cat $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | $script_path/add.info.capture.vcf.pl > $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp
+				mv $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
             done
             rm $output/$sample.INDEL.vcf 
         fi		
     fi
-    rm $output/$sample.blat.log
     echo `date`	
 fi	
 	

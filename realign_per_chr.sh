@@ -74,7 +74,7 @@ else
     
                 if [ ! -s $input/$bam ]
                 then
-                    echo "ERROR : realign_per_chr. File $input/$bam does not exist"
+					script_path/errorlog.sh $input/$bam realign_per_chr.sh ERROR "does not exist"
                     exit 1
                 fi
                 $script_path/samplecheckBAM.sh $input $bam $output $run_info $sample $chopped $chr
@@ -88,7 +88,7 @@ else
     else
         if [ ! -s $input/$bam ]
         then
-            echo "ERROR : realign_per_chr. File $input/$bam does not exist"
+            $script_path/errorlog.sh $input/$bam realign_per_chr.sh ERROR "does not exist"
             exit 1
         fi
         $script_path/samplecheckBAM.sh $input $bam $output $run_info $samples $chopped $chr
@@ -97,7 +97,7 @@ else
     
 	if [ ! -d $output/temp/ ]
 	then
-		mkdir $output/temp/
+		mkdir -p $output/temp/
 	fi
 	
     ## GATK Target Creator

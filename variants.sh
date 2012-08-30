@@ -38,17 +38,37 @@ else
 	ped=$( cat $tool_info | grep -w '^PEDIGREE' | cut -d '=' -f2 )
 	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
 	bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
-        blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
-        blat_ref=$( cat $tool_info | grep -w '^BLAT_REF' | cut -d '=' -f2 )
-        window_blat=$( cat $tool_info | grep -w '^WINDOW_BLAT' | cut -d '=' -f2 )
+	blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
+	blat_ref=$( cat $tool_info | grep -w '^BLAT_REF' | cut -d '=' -f2 )
+	window_blat=$( cat $tool_info | grep -w '^WINDOW_BLAT' | cut -d '=' -f2 )
 	export PERL5LIB=$PERL5LIB:$perllib
 	export PATH=$tabix/:$PATH
 
 	export JAVA_HOME=$javahome
 	export PATH=$JAVA_HOME/bin:$PATH
 	
-	
+	#### check and validate the bam file and let user to proceed after validation
 	bam=chr${chr}.cleaned.bam
+	$samtools/samtools view -H $input/$bam 2> $input/$bam.fix.log
+	if [ `cat $input/$bam.log | wc -l` -gt 0 ]
+	then
+		$script_path/email.sh $input/$bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+		while [ -f $input/$bam.fix.log ]
+		do
+			echo "waiting for the $input/$bam to be fixed"
+			sleep 2m
+		done
+	else
+		rm $input/$bam.fix.log
+	fi		
+		
+	size=`du -b $input/$bam | sed 's/\([0-9]*\).*/\1/'`
+	if [ `echo $samples | tr ":" "\n" | wc -l -gt 1` ]
+	then
+		$script_path/filesize.sh VariantCalling multi_sample $bam $JOB_ID $size $run_info
+	else
+		$script_path/filesize.sh VariantCalling $samples $bam $JOB_ID $size $run_info
+	fi
 	
 	## update dashborad
 	if [ $SGE_TASK_ID == 1 ]
@@ -190,11 +210,10 @@ else
 				### call snvs using snvmix
 				$script_path/snvmix2.sh $sample $input/chr${chr}.pileup $output/$sample.variants.chr${chr}.raw.snv.vcf target "$param" $run_info &
 				while [[ ! -s $output/$sample.variants.chr${chr}.raw.indel.vcf || ! -s $output/$sample.variants.chr${chr}.raw.indel.vcf.multi.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snv.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snv.vcf.multi.vcf ]]
-			do
-				echo " waiting for gatk and snvnix to complete to complete "
-				sleep 2m	
-			done
-				
+				do
+					echo " waiting for gatk and snvnix to complete to complete "
+					sleep 2m	
+				done
 				### merge snvs and indels to give on vcf
 				in="$output/$sample.variants.chr${chr}.raw.snv.vcf $output/$sample.variants.chr${chr}.raw.indel.vcf"
 				$script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.vcf $run_info yes
@@ -283,7 +302,7 @@ else
 				$script_path/combinevcf.sh "$input_var" $output/$sample.chr${chr}.snv.vcf.multi.vcf $run_info no
 				#Add back the annotations that were lost (i.e. SomaticScore JSM_Prob
 				### annotate vcfs
-				in_bam="-I $input/$bam -resource:ss $output/$sample.chr$chr.snv.ss.vcf.multi.vcf -resource:jsm $output/$sample.chr$chr.snv.jsm.vcf.multi.vcf -resource:mutect $output/$sample.chr$chr.snv.mutect.vcf.multi.vcf -E ss.SS -E ss.SSC -E jsm.PGERM -E jsm.PHETMUT -E jsm.PHOMMUT -E jsm.PLOH -E jsm.PPS -E jsm.PSOM -E mutect.MUTX -E mutect.POW"
+				in_bam="-I $input/$bam -resource:ss $output/$sample.chr$chr.snv.ss.vcf.multi.vcf -resource:jsm $output/$sample.chr$chr.snv.jsm.vcf.multi.vcf -resource:mutect $output/$sample.chr$chr.snv.mutect.vcf.multi.vcf -E ss.SS -E ss.SSC -E jsm.PGERM -E jsm.PHETMUT -E jsm.PHOMMUT -E jsm.PLOH -E jsm.PPS -E jsm.PSOM -E mutect.MUTX -E mutect.POW -E mutect.MUTX_LOD"
 				$script_path/annotate_vcf.sh $output/$sample.chr${chr}.snv.vcf.multi.vcf $chr $run_info "$in_bam"
 				rm $output/$sample.chr$chr.snv.ss.vcf.multi.vcf $output/$sample.chr$chr.snv.jsm.vcf.multi.vcf $output/$sample.chr$chr.snv.mutect.vcf.multi.vcf
 				rm $output/$sample.chr$chr.snv.ss.vcf.multi.vcf.idx $output/$sample.chr$chr.snv.jsm.vcf.multi.vcf.idx $output/$sample.chr$chr.snv.mutect.vcf.multi.vcf.idx
@@ -340,7 +359,10 @@ else
 	fi
 	if [ $tool == "exome" ]
 	then
-		rm $output/chr$chr.target.bed
+		if [ -s $output/chr$chr.target.bed ]
+		then
+			rm $output/chr$chr.target.bed
+		fi
 	fi
 	### after this we get multiple indels and snp files which need to be merged for Multi samples but just filter for
 	if [ ${#sampleArray[@]} -gt 1 ]
@@ -384,29 +406,32 @@ else
 	if [ ${#sampleArray[@]} == 1 ]
 	then
 		### add the ED column
-                $script_path/vcf_blat_verify.pl -i $output/${sampleArray[1]}.variants.chr$chr.raw.vcf -o $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref 
-                mv $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp $output/${sampleArray[1]}.variants.chr$chr.raw.vcf
-                $script_path/vcf_blat_verify.pl -i $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf -o $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref 
-                mv $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf
-                bam=chr${chr}.cleaned.bam
+		$script_path/vcf_blat_verify.pl -i $output/${sampleArray[1]}.variants.chr$chr.raw.vcf -o $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref 
+		mv $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp $output/${sampleArray[1]}.variants.chr$chr.raw.vcf
+		$script_path/vcf_blat_verify.pl -i $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf -o $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref 
+		mv $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf
+		bam=chr${chr}.cleaned.bam
 		rm $output/$bam.$chr.bam
 		rm $output/$bam.$chr.bam.bai
 		rm $output/${sampleArray[1]}.chr$chr.bam
 		rm $output/${sampleArray[1]}.chr$chr.bam.bai
 		rm $output/${sampleArray[1]}.chr$chr-sorted.bam
 		rm $output/${sampleArray[1]}.chr$chr-sorted.bam.bai
+		### update the file size
+		size=`du -b $output/${sampleArray[1]}.variants.chr$chr.raw.vcf | sed 's/\([0-9]*\).*/\1/'`
+		$script_path/filesize.sh VariantCalling ${sampleArray[1]} ${sampleArray[1]}.variants.chr$chr.raw.vcf $JOB_ID $size $run_info
 	fi
 	if [ ${#sampleArray[@]} -gt 1 ]
 	then
 		$script_path/vcf_blat_verify.pl -i $output/variants.chr$chr.raw.vcf -o $output/variants.chr$chr.raw.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
-                        mv $output/variants.chr$chr.raw.vcf.temp $output/variants.chr$chr.raw.vcf
-                        $script_path/vcf_blat_verify.pl -i $output/variants.chr$chr.raw.multi.vcf -o $output/variants.chr$chr.raw.multi.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
-                        mv $output/variants.chr$chr.raw.multi.vcf.temp $output/variants.chr$chr.raw.multi.vcf
-                        $script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.vcf -o $output/MergeAllSamples.chr$chr.raw.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
-                        mv $output/MergeAllSamples.chr$chr.raw.vcf.temp $output/MergeAllSamples.chr$chr.raw.vcf
-                        $script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.multi.vcf -o $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
-                        mv $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp $output/MergeAllSamples.chr$chr.raw.multi.vcf
-                        for i in $(seq 1 ${#sampleArray[@]})
+		mv $output/variants.chr$chr.raw.vcf.temp $output/variants.chr$chr.raw.vcf
+		$script_path/vcf_blat_verify.pl -i $output/variants.chr$chr.raw.multi.vcf -o $output/variants.chr$chr.raw.multi.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
+		mv $output/variants.chr$chr.raw.multi.vcf.temp $output/variants.chr$chr.raw.multi.vcf
+		$script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.vcf -o $output/MergeAllSamples.chr$chr.raw.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
+		mv $output/MergeAllSamples.chr$chr.raw.vcf.temp $output/MergeAllSamples.chr$chr.raw.vcf
+		$script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.multi.vcf -o $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
+		mv $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp $output/MergeAllSamples.chr$chr.raw.multi.vcf
+		for i in $(seq 1 ${#sampleArray[@]})
 		do	
 			rm $output/${sampleArray[$i]}.chr$chr.rg.bam
 			rm $output/${sampleArray[$i]}.chr$chr.rg.bam.$chr.bam
@@ -416,6 +441,10 @@ else
 			rm $output/${sampleArray[$i]}.chr$chr-sorted.bam
 			rm $output/${sampleArray[$i]}.chr$chr-sorted.bam.bai
 		done
+		size=`du -b $output/variants.chr$chr.raw.vcf | sed 's/\([0-9]*\).*/\1/'`
+		$script_path/filesize.sh VariantCalling multi_sample variants.chr$chr.raw.vcf $JOB_ID $size $run_info
+		size=`du -b $output/MergeAllSamples.chr$chr.raw.vcf | sed 's/\([0-9]*\).*/\1/'`
+		$script_path/filesize.sh VariantCalling multi_sample MergeAllSamples.chr$chr.raw.vcf $JOB_ID $size $run_info
 	fi
 	
 	

@@ -67,7 +67,7 @@ else
 			$script_path/errorlog.sh $input/$sample.variants.chr$chr.filter.vcf OnTarget_variants.sh ERROR "not exist"
 			exit 1;
 		fi    
-		perl $script_path/vcf_to_variant_vcf.pl -i $input/$sample.variants.chr$chr.filter.vcf -v $input/$sample.variants.chr$chr.SNV.filter.vcf -l $input/$sample.variants.chr$chr.INDEL.filter.vcf -f 
+		perl $script_path/vcf_to_variant_vcf.pl -i $input/$sample.variants.chr$chr.filter.vcf -v $input/$sample.variants.chr$chr.SNV.filter.vcf -l $input/$sample.variants.chr$chr.INDEL.filter.vcf -t both -f 
 		$bedtools/intersectBed -header -a $input/$sample.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf
 		rm $input/$sample.variants.chr$chr.SNV.filter.vcf 
 		$bedtools/intersectBed -header -a $input/$sample.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf
@@ -105,7 +105,7 @@ else
 		### multi sample calling
 		group=$sample 
 		input=$variants/$group 
-		perl $script_path/vcf_to_variant_vcf.pl -i $input/$group.variants.chr$chr.filter.vcf -v $input/$group.variants.chr$chr.SNV.filter.vcf -l $input/$group.variants.chr$chr.INDEL.filter.vcf -f
+		perl $script_path/vcf_to_variant_vcf.pl -i $input/$group.variants.chr$chr.filter.vcf -v $input/$group.variants.chr$chr.SNV.filter.vcf -l $input/$group.variants.chr$chr.INDEL.filter.vcf -t both -f
 		$bedtools/intersectBed -header -a $input/$group.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/$group.variants.chr$chr.SNV.filter.i.vcf
 		rm $input/$group.variants.chr$chr.SNV.filter.vcf 
 		$bedtools/intersectBed -header -a $input/$group.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/$group.variants.chr$chr.INDEL.filter.i.vcf
@@ -136,7 +136,7 @@ else
 		fi	
 		
 		### for somatic calls
-		perl $script_path/vcf_to_variant_vcf.pl -i $input/$group.somatic.variants.chr$chr.filter.vcf -v $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf -l $input/TUMOR.$group.variants.chr$chr.INDEL.filter.vcf -f
+		perl $script_path/vcf_to_variant_vcf.pl -i $input/$group.somatic.variants.chr$chr.filter.vcf -v $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf -l $input/TUMOR.$group.variants.chr$chr.INDEL.filter.vcf -t both -f
 		$bedtools/intersectBed -header -a $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.vcf
 		rm $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf
 		$bedtools/intersectBed -header -a $input/TUMOR.$group.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.vcf

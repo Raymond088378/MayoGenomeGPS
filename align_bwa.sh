@@ -38,6 +38,8 @@ else
             else
                 eval filename${j}=$i
             fi
+			size=`du -b $fastq/filename${j} | sed 's/\([0-9]*\).*/\1/'`
+			$script_path/filesize.sh alignment $sample filename${j} $JOB_ID $size $run_info
             let j=j+1
         done
 		$bwa/bwa sampe -r "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" $genome_bwa $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai $output_dir_sample/$sample.$SGE_TASK_ID.R2.sai $fastq/$filename1 $fastq/$filename2 > $output_dir_sample/$sample.$SGE_TASK_ID.sam 
@@ -51,6 +53,8 @@ else
 		else
 			filename1=$R1
 		fi	
+		size=`du -b $fastq/$filename1 | sed 's/\([0-9]*\).*/\1/'`
+		$script_path/filesize.sh alignment $sample $filename1 $JOB_ID $size $run_info
 		$bwa/bwa samse -r "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" $genome_bwa $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai $fastq/$filename1 > $output_dir_sample/$sample.$SGE_TASK_ID.sam 	
 	fi
 	
@@ -59,6 +63,8 @@ else
         $script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.sam align_bwa.sh ERROR empty
         exit 1
     else
+		size=`du -b $output_dir_sample/$sample.$SGE_TASK_ID.sam | sed 's/\([0-9]*\).*/\1/'`
+		$script_path/filesize.sh alignment $sample $sample.$SGE_TASK_ID.sam $JOB_ID $size $run_info
         if [ $paired == 0 ]
         then
             rm $fastq/$filename1
@@ -70,24 +76,17 @@ else
     fi  
 
     $samtools/samtools view -bt $ref.fai $output_dir_sample/$sample.$SGE_TASK_ID.sam > $output_dir_sample/$sample.$SGE_TASK_ID.bam  
-    if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.bam ]
-    then
-		$script_path/email.sh $output_dir_sample/$sample.$SGE_TASK_ID.bam "is truncated" $JOB_NAME $JOB_ID $run_info
-		touch $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log
-		while [ ! -f $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log ]
-		do
-			echo "waiting for job to be fixed"
-			sleep 10m
-		done
-		rm $output_dir_sample/$sample.$SGE_TASK_ID.sam  
-    else
-        rm $output_dir_sample/$sample.$SGE_TASK_ID.sam  
-    fi
-	
+	$samtools/samtools view -H $output_dir_sample/$sample.$SGE_TASK_ID.bam 2> $output_dir_sample/$sample.$SGE_TASK_ID.bam.log
+	if [ `cat $output_dir_sample/$sample.$SGE_TASK_ID.bam.log | wc -l` -gt 0 ]	
+	then
+		echo " $output_dir_sample/$sample.$SGE_TASK_ID.bam : bam file is truncated or corruped"
+		exit 1;
+	else
+		rm  $output_dir_sample/$sample.$SGE_TASK_ID.bam.log
+	fi	
+
 	########################################################	
 ######		Sort BAM, adds RG 
-
-    $script_path/convert.bam.sh $output_dir_sample $sample.$SGE_TASK_ID.bam $sample.$SGE_TASK_ID $SGE_TASK_ID $run_info
-    
-	echo `date`
+	$script_path/convert.bam.sh $output_dir_sample $sample.$SGE_TASK_ID.bam $sample.$SGE_TASK_ID $SGE_TASK_ID $run_info
+    echo `date`
 fi	

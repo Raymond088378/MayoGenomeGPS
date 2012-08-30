@@ -33,6 +33,13 @@ else
 		fi
 	done
 
+	$samtools/samtools view -H $output/$bam 2> $output/$bam.log
+	if [ `cat $output/$bam.log | wc -l` -gt 0 ]
+	then
+		echo " $output/$bam :bam is truncated or corrupted"
+		exit 1;
+	fi
+	
 	## extract read for specfic chromosome
 	if [ ! -s $output/$bam.bai ]
 	then

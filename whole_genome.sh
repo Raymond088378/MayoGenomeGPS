@@ -123,11 +123,16 @@ else
 	START=`date`
 	echo -e "Analysis started at:" >> $output_dir/log.txt
 	echo -e "${START}" >>  $output_dir/log.txt
+	### update the dashboard
 	
 	#### sge paramters
 	args="-V -wd $output_dir/logs -q $queue -m ae -M $email -l h_stack=10M"
 	#############################################################
-
+	### get the identification number for this run.
+	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
+	unique_id=`$java/java -jar $script_path/AddGPSMetadata.jar -p $script_path/AddGPSMetadata.properties -t $type -a begin -I -r $run_num -s $run_num -u $TO`
+	echo -e "\nIDENTIFICATION_NUMBER=$unique_id" >> $run_info
+	
 	if [ $multi_sample != "YES" ]
 	then
 		echo "Single sample"
@@ -150,6 +155,13 @@ else
 					let numfiles=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`
 				fi	
 
+				if [ $analysis == "mayo" ]
+				then
+					for ((i=1; i <=$numfiles; i++));
+					do
+						$script_path/dashboard.sh $sample $run_info Beginning started $i
+					done
+				fi	
 				if [ $aligner == "novoalign" ]
 				then
 					echo "novoalign is used as aligner"
@@ -189,7 +201,16 @@ else
 				for ((i=1; i <=$num_bams; i++));
 				do
 					bam=`echo $infile | awk -v num=$i '{print $num}'`
+					$samtools/samtools view -H $input/$bam 2> $align_dir/$sample.$i.sorted.bam.log
+					if [ `cat $align_dir/$sample.$i.sorted.bam.log | wc -l` -gt 0 ]
+					then
+						echo "$input/$bam : bam file is truncated or corrupted" 	
+						exit 1;
+					else
+						rm $align_dir/$sample.$i.sorted.bam.log
+					fi	
 					ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
+					$script_path/dashboard.sh $sample $run_info Beginning started $i
 				done  
 				qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=4G $script_path/processBAM.sh $align_dir $sample $run_info
 				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $output_dir/IGV_BAM
@@ -206,7 +227,13 @@ else
 					for ((i=1; i <=$num_bams; i++));
 					do
 						bam=`echo $infile | awk -v num=$i '{print $num}'`
-						ln -s $input/$bam $realign_dir/$sample.$i.sorted.bam
+						$samtools/samtools view -H $input/$bam 2> $align_dir/$sample.$i.sorted.bam.log
+						if [ `cat $align_dir/$sample.$i.sorted.bam.log | wc -l` -gt 0 ]
+						then
+							echo "$input/$bam : bam file is truncated or corrupted" 	
+							exit 1;
+						fi
+						ln -s $input/$bam $realign_dir/$sample.$i.sorted.bam						
 					done
 					qsub $args -N $type.$version.reformat_BAM.$sample.$run_num -l h_vmem=8G $script_path/reformat_BAM.sh $realign_dir $sample $run_info	
 					qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.reformat_BAM.$sample.$run_num $script_path/extract_reads_bam.sh $realign_dir $bamfile $run_info $output_dir/IGV_BAM

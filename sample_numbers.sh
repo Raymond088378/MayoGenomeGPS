@@ -544,12 +544,12 @@ else
             capture_indels=0
             for chr in $chrs
             do
-                col=`cat $variants/TUMOR.$group.variants.chr${chr}.SNV.filter.i.c.vcf| awk '$0 ~ /^#/' | tail -1 | awk -v s=$tumor -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
+                col=`cat $ontarget/TUMOR.$group.variants.chr${chr}.SNV.filter.i.c.vcf| awk '$0 ~ /^#/' | tail -1 | awk -v s=$tumor -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
                 s=`cat $ontarget/TUMOR.$group.variants.chr${chr}.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' |  awk -v num=$col '$num !~ /^\.\/\./ ' | wc -l`
 				genomic_snvs=`expr $genomic_snvs "+" $s`
 				s_c=`cat $ontarget/TUMOR.$group.variants.chr${chr}.SNV.filter.i.c.vcf | awk '$0 !~ /^#/'  | awk -v num=$col '$num !~ /^\.\/\./ ' |  grep -c 'CAPTURE=1'`
 				capture_snvs=`expr $capture_snvs "+" $s_c`
-				col=`cat $variants/TUMOR.$group.variants.chr${chr}.INDEL.filter.i.c.vcf| awk '$0 ~ /^#/' | tail -1 | awk -v s=$tumor -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
+				col=`cat $ontarget/TUMOR.$group.variants.chr${chr}.INDEL.filter.i.c.vcf| awk '$0 ~ /^#/' | tail -1 | awk -v s=$tumor -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
                                 i=`cat $ontarget/TUMOR.$group.variants.chr${chr}.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' |  awk -v num=$col '$num !~ /^\.\/\./ ' | wc -l`
 				i_c=`cat $ontarget/TUMOR.$group.variants.chr${chr}.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/'  | awk -v num=$col '$num !~ /^\.\/\./ ' |  grep -c 'CAPTURE=1'`
 				capture_indels=`expr $capture_indels "+" $i_c`
