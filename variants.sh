@@ -1,4 +1,4 @@
-
+#!/bin/bash
 
 if [ $# -le 4 ]
 then
@@ -50,7 +50,7 @@ else
 	#### check and validate the bam file and let user to proceed after validation
 	bam=chr${chr}.cleaned.bam
 	$samtools/samtools view -H $input/$bam 2> $input/$bam.fix.log
-	if [ `cat $input/$bam.log | wc -l` -gt 0 ]
+	if [ `cat $input/$bam.fix.log | wc -l` -gt 0 ]
 	then
 		$script_path/email.sh $input/$bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
 		while [ -f $input/$bam.fix.log ]
@@ -63,7 +63,7 @@ else
 	fi		
 		
 	size=`du -b $input/$bam | sed 's/\([0-9]*\).*/\1/'`
-	if [ `echo $samples | tr ":" "\n" | wc -l -gt 1` ]
+	if [ `echo $samples | tr ":" "\n" | wc -l` -gt 1 ]
 	then
 		$script_path/filesize.sh VariantCalling multi_sample $bam $JOB_ID $size $run_info
 	else
@@ -245,8 +245,7 @@ else
 			input_var=""
 			input_var="-V:GATK $output/$sample.variants.chr${chr}.raw.gatk.vcf.multi.vcf -V:SNVMix $output/$sample.variants.chr${chr}.raw.snvmix.vcf.multi.vcf -priority GATK,SNVMix"
 			$script_path/combinevcf.sh "$input_var" ${output}/$sample.variants.chr${chr}.raw.multi.vcf $run_info yes
-			$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $chr $run_info "$bam" 
-			
+			$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $chr $run_info "$bam" 	
 		fi
 	else
 		## assuming that normal is the first column/sample
@@ -394,7 +393,6 @@ else
 		done
 		$script_path/combinevcf.sh "$input_var" $output/MergeAllSamples.chr$chr.snvs.raw.vcf $run_info yes
 		$script_path/combinevcf.sh "$multi_var" $output/MergeAllSamples.chr$chr.snvs.raw.multi.vcf $run_info yes
-
 		## combine both snv and indel
 		in="$output/MergeAllSamples.chr$chr.snvs.raw.vcf $output/MergeAllSamples.chr$chr.Indels.raw.vcf"
 		$script_path/concatvcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.vcf $run_info yes
@@ -402,10 +400,15 @@ else
 		$script_path/concatvcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.multi.vcf $run_info yes
 	fi
 
-	## remove files
+	## remove files and add ED blat field
 	if [ ${#sampleArray[@]} == 1 ]
 	then
 		### add the ED column
+		if [[ ! -s $output/${sampleArray[1]}.variants.chr$chr.raw.vcf  || ! -s $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf ]]
+		then
+			echo "ERROR : variant calling failed for ${sampleArray[1]} in variantss.h script"	
+			exit 1;
+		fi
 		$script_path/vcf_blat_verify.pl -i $output/${sampleArray[1]}.variants.chr$chr.raw.vcf -o $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref 
 		mv $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp $output/${sampleArray[1]}.variants.chr$chr.raw.vcf
 		$script_path/vcf_blat_verify.pl -i $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf -o $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref 
@@ -423,6 +426,11 @@ else
 	fi
 	if [ ${#sampleArray[@]} -gt 1 ]
 	then
+		if [[ ! -s $output/variants.chr$chr.raw.vcf || ! -s $output/variants.chr$chr.raw.multi.vcf || ! -s $output/MergeAllSamples.chr$chr.raw.vcf || ! -s $output/MergeAllSamples.chr$chr.raw.multi.vcf ]]
+		then
+			echo "ERROR : variant calling failed for pair in variants.sh script"	
+			exit 1;
+		fi
 		$script_path/vcf_blat_verify.pl -i $output/variants.chr$chr.raw.vcf -o $output/variants.chr$chr.raw.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
 		mv $output/variants.chr$chr.raw.vcf.temp $output/variants.chr$chr.raw.vcf
 		$script_path/vcf_blat_verify.pl -i $output/variants.chr$chr.raw.multi.vcf -o $output/variants.chr$chr.raw.multi.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref

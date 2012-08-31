@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# != 6 ]
 then
@@ -39,7 +39,7 @@ else
     
     if [ ! -d $out/temp ]
 	then
-		mkdir $out/temp
+		mkdir -p $out/temp
 	fi
 	count=0
 	while [[ $check -eq 0 && $count -le 10 ]]
@@ -75,13 +75,13 @@ else
         check=`[ -s $vcf.idx ] && echo "1" || echo "0"`
         if [ $check -eq 0 ]
         then
-		if [[  `find . -name '*.log'` ]]
-		then
-			rm `grep -l $vcf *.log`
-			rm core.*
-		fi
-	fi 
-	let count=count+1	
+			if [[  `find . -name '*.log'` ]]
+			then
+				rm `grep -l $vcf *.log`
+				rm core.*
+			fi
+		fi 
+		let count=count+1	
     done 
 	
 	perl $script_path/convertvcf.pl $vcf > $vcf.tmp

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #	INFO
 #	the script generate a merged report per sample includes sift and sseq annotation (getting rid of redundant columns )
@@ -112,6 +112,7 @@ else
 	    rm $file.sift.codons
 	else
 	    echo "ERROR : adding blacklisted, Alignablility or Uniqueness columns failed for $file"
+		exit 1;
 	fi    
 	## intersect with repeat region bed file
 	cat $file.sift.codons.map | awk 'NR>2' | awk '{print $1"\t"($2-1)"\t"$2}' > $file.sift.codons.map.ChrPos.bed
@@ -131,6 +132,7 @@ else
 	    rm $file.sift.codons.map
 	else
 	    echo "ERROR : adding repeat region failed for $file"
+		exit 1;
 	fi    
 	### intersect with miRbase bed file
 	cat $file.sift.codons.map.repeat | awk 'NR>2' | awk '{print $1"\t"($2-1)"\t"$2}' > $file.sift.codons.map.repeat.ChrPos.bed
@@ -151,6 +153,7 @@ else
 	    rm $file.sift.codons.map.repeat
 	else
 	    echo "ERROR : adding miRbase failed for $file"
+		exit 1;
 	fi    
 	### intersect with SSR SCS
 	## SSR=SNP Suspect Reason
@@ -186,6 +189,7 @@ else
 	    rm $file.sift.codons.map.repeat.base
 	else
 	    echo "ERROR : adding SSR and SCS failed for $file"
+		exit 1;
 	fi    
         ### add ucsc tracks
 	cat $file.sift.codons.map.repeat.base.snp | awk 'NR>2' | awk '{print $1"\t"($2-1)"\t"$2}' > $file.sift.codons.map.repeat.base.snp.ChrPos.bed
@@ -212,6 +216,7 @@ else
 	    rm $file.sift.codons.map.repeat.base.snp
 	else
 	    echo "ERROR : addding UCSC tracks failed for $file"
+		exit 1;
 	fi
 	
 	### add polyphen

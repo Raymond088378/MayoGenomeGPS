@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 if [ $# != 8 ]
 then
 	echo "Usage: <normal bam> <tumor bam > <output dir> <chromosome> <tumor sample name> <normal sample name> <output vcf file name> <run info>"
@@ -47,19 +47,19 @@ else
     check=0
     if [ ! -d $output/temp ]
 	then
-		mkdir $output/temp
+		mkdir -p $output/temp
 	fi
 	
 	while [[ $check -eq 0 ]]
     do
         if [[  `find . -name '*.log'` ]]
-	then
-		if [[ `grep -l $output/$output_file *.log` ]]
 		then
-			rm `grep -l $output/$output_file *.log` 
-		fi
+			if [[ `grep -l $output/$output_file *.log` ]]
+			then
+				rm `grep -l $output/$output_file *.log` 
+			fi
         fi
-	$java/java -XX:MaxPermSize=128M -Xmx6g -Xms512m -jar $mutect/muTect-1.0.27783.jar \
+		$java/java -XX:MaxPermSize=128M -Xmx6g -Xms512m -jar $mutect/muTect-1.0.27783.jar \
         -T MuTect \
         --reference_sequence $ref \
         $param -nt $threads \
@@ -69,14 +69,14 @@ else
         -et NO_ET \
         --out $output/$output_file $command_line_params
         if [[  `find . -name '*.log'` ]]
-	then
-		len=`cat *.log | grep $output/$output_file | wc -l`
-		check=` [ $len -gt 0 ] && echo "0" || echo "1"`
-		if [ $check -eq 0 ]
 		then
-			rm core.*
-		fi
-	else
+			len=`cat *.log | grep $output/$output_file | wc -l`
+			check=` [ $len -gt 0 ] && echo "0" || echo "1"`
+			if [ $check -eq 0 ]
+			then
+				rm core.*
+			fi
+		else
             check=1    
         fi
     done    

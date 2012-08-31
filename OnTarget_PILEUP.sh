@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ##	INFO
 #	To Intersect pileup with OnTarget Kit by splitting the bam file into 200 files
 
@@ -26,10 +26,8 @@ else
 		SGE_TASK_ID=$5
     fi
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    bed=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
     CaptureKit=$( cat $tool_info | grep -w '^CAPTUREKIT' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
-    master_gene_file=$( cat $tool_info | grep -w '^MASTER_GENE_FILE' | cut -d '=' -f2 )
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
@@ -37,6 +35,8 @@ else
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     gene_body=$( cat $tool_info | grep -w '^MATER_GENE_BODY' | cut -d '=' -f2 )
 	multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
+	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
+	gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     
     #cd $output
     if [ $tool == "whole_genome" ]
@@ -46,105 +46,60 @@ else
         kit=$CaptureKit
     fi
     
-    if [ ! -s $bam ]
-    then
-        $script_path/errorlog.sh $bam OnTarget_PILEUP.sh ERROR "not exist"
-		exit 1;
-    fi    
+    $samtools/samtools view -H $bam 2> $bam.fix.log
+	if [ `cat $bam.fix.log | wc -l` -gt 0 ]
+	then
+		echo "$bam : bam file is truncated or corrupt"
+		$script_path/email.sh $bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+		while [ -f $bam.fix.log ]
+		do
+			echo "waiting for the new bam file"
+			sleep 2m
+		done
+	else
+		rm $bam.fix.log
+	fi	
     #make bed format pileup
-    
+    mkdir -p $output/temp
+	
     if [ $multi == "YES" ]
     then
         pair=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2 | tr "\t" " ")
-        for i in $pair
+        $java/java -Xmx2g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar \
+		$gatk/GenomeAnalysisTK.jar \
+		-et NO_ET \
+		-K $gatk/Hossain.Asif_mayo.edu.key \
+		-T CoverageBySample  \
+		-I $bam \ 
+		-R $ref \
+		-L $kit -o $output/$sample.chr$chr.txt
+		
+		for i in $pair
         do
-			$samtools/samtools index $input/$sample.$i.chr$chr.bam
-			$samtools/samtools mpileup -A -s -f $ref $input/$sample.$i.chr$chr.bam | awk '{if ($1 ~ /chr/) {print $1"\t"$2-1"\t"$2"\t"$4"\t"$3}}'  > $output/$sample.$i.chr$chr.pileup.bed
-            rm $input/$sample.$i.chr$chr.bam.bai
-			total=`cat $output/$sample.$i.chr$chr.pileup.bed | wc -l`
-            perl $script_path/split.a.file.into.n.parts.pl 25 $output/$sample.$i.chr$chr.pileup.bed $total
-            rm $output/$sample.$i.chr$chr.pileup.bed
-            cd $output
-            # intersect the pileup with the intersect kit
-            for ((j=1;j<=26; j++))
-            do
-                if [ -f $output/$sample.$i.chr$chr.pileup.bed.$j.txt ]
-				then
-					if [ -s $output/$sample.$i.chr$chr.pileup.bed.$j.txt ]
-					then
-						$bed/intersectBed -a $kit -b $output/$sample.$i.chr$chr.pileup.bed.$j.txt -wa -wb > $output/$sample.$i.chr$chr.pileup.bed.$j.txt.i
-					fi
-					rm $output/$sample.$i.chr$chr.pileup.bed.$j.txt	
-				fi
-			done
-        
-            #merge all the interscted pileup
+			#merge all the interscted pileup
             for((j=0; j<=99; j++))
             do
-                total=0
-                for((k=1; k<=26; k++))
-				do
-                    a=0
-                    if [ -f $sample.$i.chr$chr.pileup.bed.$k.txt.i ]
-					then
-						a=`awk '$(NF-1)>'$j'' $sample.$i.chr$chr.pileup.bed.$k.txt.i | wc -l`
-						total=`expr $total "+" $a`
-					fi	
-                done
-                echo $total >> $output/$sample.$i.chr$chr.pileup.i.out
-            done    
-            for((k=1; k<=26; k++))
-			do
-				if [ -f $output/$sample.$i.chr$chr.pileup.bed.$k.txt.i ]
-				then
-					rm $output/$sample.$i.chr$chr.pileup.bed.$k.txt.i
-				fi
+				a=`cat $output/$sample.chr$chr.txt | grep -w "$i" | awk '$NF>'$j'' | wc -l`
+				echo $a >> $output/$sample.$i.chr$chr.pileup.i.out
 			done	
         done    
     else	
 		bam=$input/chr$chr.cleaned.bam
-		$samtools/samtools mpileup -A -s -f $ref $bam | awk '{if ($1 ~ /chr/) {print $1"\t"$2-1"\t"$2"\t"$4"\t"$3}}'  > $output/$sample.chr$chr.pileup.bed
-		#split the file into 25 parts to use less memory
-        total=`cat $output/$sample.chr$chr.pileup.bed | wc -l`
-        perl $script_path/split.a.file.into.n.parts.pl 25 $output/$sample.chr$chr.pileup.bed $total
-        rm $output/$sample.chr$chr.pileup.bed
-        cd $output
-        # intersect the pileup with the intersect kit
-        for ((i=1;i<=26; i++))
-        do
-			if [ -f $output/$sample.chr$chr.pileup.bed.$i.txt ]
-			then
-				if [ -s $output/$sample.chr$chr.pileup.bed.$i.txt ]
-				then
-					$bed/intersectBed -a $kit -b $output/$sample.chr$chr.pileup.bed.$i.txt -wa -wb > $output/$sample.chr$chr.pileup.bed.$i.txt.i
-				fi
-				rm $output/$sample.chr$chr.pileup.bed.$i.txt	
-			fi	
-        done
-        
+		$java/java -Xmx2g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar \
+		$gatk/GenomeAnalysisTK.jar \
+		-et NO_ET \
+		-K $gatk/Hossain.Asif_mayo.edu.key \
+		-T CoverageBySample  \
+		-I $bam \ 
+		-R $ref \
+		-L $kit -o $output/$sample.chr$chr.txt
         #merge all the interscted pileup
         for((j=0; j<=99; j++))
         do
-            total=0
-            for ((i=1;i<=26; i++))
-            do
-                a=0
-                if [ -f $sample.chr$chr.pileup.bed.$i.txt.i ]
-				then
-					a=`awk '$(NF-1)>'$j'' $sample.chr$chr.pileup.bed.$i.txt.i | wc -l`
-					total=`expr $total "+" $a`
-				fi
-			done
-            echo $total >> $output/$sample.chr$chr.pileup.i.out
+			a=`cat $sample.chr$chr.txt | grep -w $sample | awk '$NF>'$j''  | wc -l`
+			echo $a >> $output/$sample.chr$chr.pileup.i.out
         done    
-        
-		for((k=1; k<=26; k++))
-		do
-			if [ -f $output/$sample.chr$chr.pileup.bed.$k.txt.i ]
-			then
-				rm $output/$sample.chr$chr.pileup.bed.$k.txt.i
-			fi
-		done	
+		rm $sample.chr$chr.txt	
 	fi
     echo `date`
 fi	

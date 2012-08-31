@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ##	INFO
 ##	script used to annotate both SNVs and INDELs using snpeff jar script
@@ -51,6 +51,7 @@ else
         if [ ! -s $input/$snv_file ]
         then
             $script_path/errorlog.sh $input/$snv_file snpeff.sh ERROR "not found"
+			exit 1;
         fi
         num_snvs=`cat $input/$snv_file | awk '$0 !~ /^#/' | wc -l`
         if [ $num_snvs -ge 1 ]
@@ -73,15 +74,20 @@ else
             --get-INFO SNPEFF_GENE_NAME --get-INFO SNPEFF_IMPACT --get-INFO SNPEFF_TRANSCRIPT_ID \
             --out $snpeff/$snv_file.annotate
             
-            perl $script_path/parse_snpeffect.pl $snpeff/$snv_file.annotate.INFO > $snpeff/$sam.chr${chr}.snv.filtered.eff
+            $script_path/parse_snpeffect.pl $snpeff/$snv_file.annotate.INFO > $snpeff/$sam.chr${chr}.snv.filtered.eff
             rm $snpeff/$snv_file.annotate.INFO $snpeff/$snv_file.annotate.log $snpeff/$sam.chr${chr}.snv.eff.vcf
             rm $snpeff/$sam.chr${chr}.snv.eff.vcf.idx $snpeff/$snv_file.annotate.vcf.vcfidx $snpeff/$snv_file.annotate.vcf.idx $snpeff/$snv_file.annotate.vcf
         else
             echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tEffect\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList" > $snpeff/$sam.chr${chr}.snv.eff
             
 			echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tEffect\tFunctionalClass\tFunctionalImpact\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList\n" > $snpeff/$sam.chr${chr}.snv.filtered.eff
-        fi    
-    fi
+        fi  
+		if [[ ! -s $snpeff/$sam.chr${chr}.snv.eff || ! -s $snpeff/$sam.chr${chr}.snv.filtered.eff ]]
+		then
+			$script_path/errorlog.sh "$snpeff/$sam.chr${chr}.snv.eff $snpeff/$sam.chr${chr}.snv.filtered.eff" snpeff.sh ERROR "failed to create" 
+			exit 1;
+		fi
+	fi
 
     if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]	
     then
@@ -89,6 +95,7 @@ else
         if [ ! -s $input/$indel_file ]
         then
             $script_path/errorlog.sh $input/$indel_file snpeff.sh ERROR "not found"
+			exit 1;
         fi
         num_indels=`cat $input/$indel_file | awk '$0 !~ /^#/' | wc -l`
         if [ $num_indels -ge 1 ]
@@ -112,13 +119,18 @@ else
             --get-INFO SNPEFF_IMPACT --get-INFO SNPEFF_TRANSCRIPT_ID \
             --out $snpeff/$indel_file.annotate
             
-            perl $script_path/parse_snpeffect.pl $snpeff/$indel_file.annotate.INFO > $snpeff/$sam.chr${chr}.indel.filtered.eff
+            $script_path/parse_snpeffect.pl $snpeff/$indel_file.annotate.INFO > $snpeff/$sam.chr${chr}.indel.filtered.eff
             rm $snpeff/$indel_file.annotate.INFO $snpeff/$indel_file.annotate.log $snpeff/$sam.chr${chr}.indel.eff.vcf
             rm $snpeff/$sam.chr${chr}.indel.eff.vcf.idx $snpeff/$indel_file.annotate.vcf.vcfidx $snpeff/$indel_file.annotate.vcf.idx $snpeff/$indel_file.annotate.vcf
-	else
-	    echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tEffect\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList" > $snpeff/$sam.chr${chr}.indel.eff
-	    echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tEffect\tFunctionalClass\tFunctionalImpact\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList\n" >  $snpeff/$sam.chr${chr}.indel.filtered.eff
+		else
+			echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tEffect\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList" > $snpeff/$sam.chr${chr}.indel.eff
+			echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tEffect\tFunctionalClass\tFunctionalImpact\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList\n" >  $snpeff/$sam.chr${chr}.indel.filtered.eff
         fi
+		if [[ ! -s $snpeff/$sam.chr${chr}.indel.eff || ! -s $snpeff/$sam.chr${chr}.indel.filtered.eff ]]
+		then
+			$script_path/errorlog.sh "$snpeff/$sam.chr${chr}.indel.eff $snpeff/$sam.chr${chr}.indel.filtered.eff" snpeff.sh ERROR "failed to create" 
+			exit 1;
+		fi
     fi    
     echo `date`
 fi	

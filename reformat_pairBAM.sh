@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 if [ $# != 3 ];
 then
     echo -e "Usage: wrapper to merge bam files and validate the bam for downstream analysis \n merge_align.bam.sh </path/to/input directory> <name of BAM to sort> <sample name> </path/to/run_info.txt>";
@@ -33,6 +33,18 @@ else
     cd $input
     for file in $input/*sorted.bam
     do
+		$samtools/samtools view -H $file 2> $file.fix.log
+		if [ `cat $file.fix.log | wc -l` -gt 0 ]
+		then
+			$script_path/email.sh $file "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+			while [ -f $file.fix.log ]
+			do
+				echo "waiting for the file to be fixed"
+				sleep 2m
+			done
+		else
+			rm $file.fix.log 
+		fi	
 		INPUTARGS="INPUT="$file" "$INPUTARGS;
 		files=$file" $files";
     done

@@ -25,8 +25,21 @@ else
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	command_line_params=$( cat $tool_info | grep -w '^SNVMIX2_params' | cut -d '=' -f2 )
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
-        
     temp=`echo $output | sed -e '/.vcf/s///g'`
+	
+	$samtools/samtools view -H $bam 2>$bam.fix.log
+	if [ `cat $bam.fix.log | wc -l` -gt 0 ]
+	then
+		$script_path/email.sh $bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+		while [ -f $bam.fix.log ]
+		do
+			echo "waiting for the $bam to be fixed"
+			sleep 2m
+		done
+	else
+		rm $bam.fix.log
+	fi		
+	
 	mkfifo $bam.pileup 
 	$samtools/samtools mpileup -A -s -f $ref $bam > $bam.pileup &
 	pileup=$bam.pileup

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ## this scripts work per chr and accepts an array job paramter to extract the chr information
 ## creat a folder name temp in the output folder befor euisng this script
 ## GATK version using GenomeAnalysisTK-1.2-4-gd9ea764
@@ -24,12 +24,7 @@ else
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
     Kgenome=$( cat $tool_info | grep -w '^KGENOME_REF' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
-    picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 ) 
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
-    out=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
-    PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
-    tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
-    run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
     
     if [ $recal == 1 ]
     then
@@ -78,8 +73,8 @@ else
     else
         if [ ! -s $input/$bam ]
         then
-            echo "ERROR : recal_per_chr. File $input/$bam does not exist"
-            exit 1
+            $script_path/errorlog.sh $input/$bam realign_per_chr.sh ERROR "does not exist"
+            exit 1;
         fi
         $script_path/samplecheckBAM.sh $input $bam $output $run_info $samples $chopped $chr
         input_bam="-I $output/$samples.chr${chr}-sorted.bam"
@@ -87,7 +82,7 @@ else
             
     if [ ! -d $output/temp/ ]
 	then
-		mkdir $output/temp/
+		mkdir -p $output/temp/
 	fi
 	
 	## Recal metrics file creation

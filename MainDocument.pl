@@ -15,8 +15,8 @@ else    {
 	open DESC, ">$desc" or die "can not open $desc : $!\n";
 	my @line=split(/=/,`perl -ne "/^DISEASE/ && print" $run_info`);
 	my $disease=$line[$#line];chomp $disease;
-	@line=split(/=/,`perl -ne "/^TOOL/ && print" $run_info`);
-	my $workflow=$line[$#line];chomp $date;
+	@line=split(/=/,`perl -ne "/^TOOL=/ && print" $run_info`);
+	my $workflow=$line[$#line];chomp $workflow;
 	@line=split(/=/,`perl -ne "/^DATE/ && print" $run_info`);
 	my $date=$line[$#line];chomp $date;
 	@line=split(/=/,`perl -ne "/^SAMPLENAMES/ && print" $run_info`);
@@ -89,7 +89,8 @@ else    {
 			$target_region=`awk '{sum+=\$3-\$2+1; print sum}' $ontarget | tail -1`;chomp $target_region;
 		}
 		elsif ($tool eq 'whole_genome'){
-			$ontarget=$path."/bed_file.bed";
+			@line=split(/=/,`perl -ne "/^MATER_GENE_BODY/ && print" $tool_info`);
+			$ontarget=$line[$#line];chomp $ontarget;
 			$target_region=`awk '{sum+=\$3-\$2+1; print sum}' $ontarget | tail -1`;chomp $target_region;
 		}
 		@line=split(/=/,`perl -ne "/^HTTP_SERVER/ && print" $tool_info`);
@@ -230,10 +231,9 @@ else    {
 	<td class=\"helpHed\">Description</td></tr>
 	<td class=\"helpBod\">Disease Type</td><td class=\"helpBod\">$disease</td></tr>
 	<td class=\"helpBod\">Number of Samples</td><td class=\"helpBod\">$num_samples</td></tr>
-	<td class=\"helpBod\">Workflow</td><td class=\"helpBod\">$workflow $version</td></tr>
 	<td class=\"helpBod\">Workflow</td><td class=\"helpBod\">$workflow $version</td></tr>";
 	if ($tool eq 'exome')	{
-		$target=$target_region/1000000;$target=sprintf("%.2f",$target);
+		my $target=$target_region/1000000;$target=sprintf("%.2f",$target);
 		print OUT "<td class=\"helpBod\">Capture Kit used</td><td class=\"helpBod\">$ontarget ($target Mbp)</td></tr>";
 	}	
 	if ($analysis ne 'annotation')	{
@@ -1157,7 +1157,7 @@ else    {
 		$re="CodingRegion";
 	}	
 	if ( ( $analysis eq "external" ) || ( $analysis eq "variant") || ($analysis eq "realignment") || ($analysis eq "mayo") || ($analysis eq 'realign-mayo')  )	{
-		$target=$target_region/1000000;$target=sprintf("%.2f",$target);
+		my $target=$target_region/1000000;$target=sprintf("%.2f",$target);
 		print OUT "
 		<ul><li><a name=\"Percent coverage of $re\" id=\"Percent coverage of $re\"></a>Percent coverage of $re
 		<ul>

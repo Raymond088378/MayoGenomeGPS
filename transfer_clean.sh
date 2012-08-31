@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# != 2 ]
 then
@@ -61,12 +61,12 @@ else
     
     if [ -d $secondary/Reports_per_Sample/temp ]
 	then
-		rm -R $secondary/Reports_per_Sample/temp
+		rm -Rf $secondary/Reports_per_Sample/temp
     fi
 	
 	if [ -d $secondary/Reports_per_Sample/plot ]
 	then
-		rm -R $secondary/Reports_per_Sample/plot
+		rm -Rf $secondary/Reports_per_Sample/plot
     fi
 	
 	mkdir $delivery/Reports_per_Sample
@@ -82,8 +82,8 @@ else
 		chmod -Rf 777 $delivery/Reports_per_Sample/SV
 		mv $secondary/Reports_per_Sample/SV/*.vcf $delivery/Reports_per_Sample/SV/
 		mv $secondary/Reports_per_Sample/SV/*.vcf.idx $delivery/Reports_per_Sample/SV/
-		rm -R $secondary/struct
-		rm -R $secondary/cnv
+		rm -Rf $secondary/struct
+		rm -Rf $secondary/cnv
     fi
     
     
@@ -93,12 +93,12 @@ else
     mv $secondary/Reports_per_Sample/*.multi.vcf $delivery/Reports_per_Sample/
     
     
-    rm -R $secondary/Reports_per_Sample/
+    rm -Rf $secondary/Reports_per_Sample/
     
     mkdir $delivery/Reports/
     chmod -Rf 777 $delivery/Reports/
 	mv $secondary/Reports/*.xls $delivery/Reports/
-    rm -R $secondary/Reports/
+    rm -Rf $secondary/Reports/
     mv $secondary/Coverage.JPG $delivery/	
 	
     if [ $type == "exome" ]
@@ -121,9 +121,9 @@ else
     ### make tar balls
     cd $secondary
     tar -cvzf logs.tar.gz logs
-    rm -R $secondary/logs
+    rm -Rf $secondary/logs
     tar -cvzf numbers.tar.gz numbers
-    rm -R $secondary/numbers
+    rm -Rf $secondary/numbers
     
     ##### transfer files to tertiary folder
     mkdir -p $tertiary/variants
@@ -135,21 +135,27 @@ else
     
     if [ -d $tertiary/variants ]
     then
-        rm -R $secondary/variants
+        rm -Rf $secondary/variants
     fi	
     
     ### delete intermediate files
-    rm -R $secondary/alignment
-    rm -R $secondary/annotation
-    rm -R $secondary/OnTarget
-    rm -R $secondary/realign
-    rm -R $secondary/TempReports
+    rm -Rf $secondary/alignment
+    rm -Rf $secondary/annotation
+    rm -Rf $secondary/OnTarget
+    rm -Rf $secondary/realign
+    rm -Rf $secondary/TempReports
     
     if [ $delivery != "NA" ]
     then
         if [ -d $delivery/IGV_BAM ]
 		then
-			rm -R $secondary/IGV_BAM
+			if [ "$(ls -A $delivery/IGV_BAM)" ]
+			then
+				echo "ERROR: there are no files in the IGV bam folder for delivery location : $delivery/IGV_BAM "
+				exit 1;
+			else	
+				rm -Rf $secondary/IGV_BAM
+			fi
 		fi
 	fi
     

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# != 8 ]
 then
@@ -21,7 +21,34 @@ else
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
 	command_line_params=$( cat $tool_info | grep -w '^SOMATIC_SNIPER_params' | cut -d '=' -f2 )
     bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
-    snv=$tumor_sample.chr$chr.snv.output
+    samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
+	snv=$tumor_sample.chr$chr.snv.output
+	
+	$samtools/samtools view -H $tumor_bam 2> $tumor_bam.fix.log
+	$samtools/samtools view -H $normal_bam 2> $normal_bam.fix.log
+	if [ `cat $tumor_bam.fix.log | wc -l` -gt 0 ]
+	then
+		$script_path/email.sh $tumor_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+		while [ -f $tumor_bam.fix.log ]
+		do
+			echo "waiting for the $tumor_bam to be fixed"
+			sleep 2m
+		done
+	else
+		rm $tumor_bam.fix.log
+	fi	
+
+	if [ `cat $normal_bam.fix.log | wc -l` -gt 0 ]
+	then
+		$script_path/email.sh $normal_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+		while [ -f $normal_bam.fix.log ]
+		do
+			echo "waiting for the $normal_bam to be fixed"
+			sleep 2m
+		done
+	else
+		rm $normal_bam.fix.log
+	fi	
 	
     $somatic_sniper/bam-somaticsniper $command_line_params -F vcf -f $ref $tumor_bam $normal_bam $output/$snv
     cat $output/$snv | awk 'BEGIN {OFS="\t"} {if($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,"PASS",$8,$9,$10,$11;}' | sed -e "/NORMAL/s//$normal_sample/g" | sed -e "/TUMOR/s//$tumor_sample/g"  | awk '$0 ~ /^#/ || $5 !~ /,/' | $script_path/ssniper_vcf_add_AD.pl > $output/$output_file

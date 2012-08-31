@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ##	INFO
 ##	script is used to submit batch scripts to locally installed sift database
@@ -28,15 +28,10 @@ else
     fi	
     #SGE_TASK_ID=22
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
     sift_ref=$( cat $tool_info | grep -w '^SIFT_REF' | cut -d '=' -f2) 
     sift_path=$( cat $tool_info | grep -w '^SIFT' | cut -d '=' -f2) 
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
-    analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
-    run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
-    flowcell=`echo $run_num | awk -F'_' '{print $NF}' | sed 's/.\(.*\)/\1/'`
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
-    java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2 )
     
 	### update dashboard
     $script_path/dashboard.sh $sample $run_info Annotation started
@@ -52,6 +47,7 @@ else
     if [ ! -s $input/$snv_file ]
     then
         $script_path/errorlog.sh $input/$snv_file sift.sh ERROR "not found"
+		exit 1;
     fi
     
     num_snvs=`cat $input/$snv_file | awk '$0 !~ /^#/' | wc -l`
@@ -75,7 +71,7 @@ else
 		then
 			rm -R $sift/$id
         fi
-		perl $script_path/sift.inconsistent.pl $sift/${sam}_chr${chr}_predictions.tsv $sift/$snv_file.sift
+		$script_path/sift.inconsistent.pl $sift/${sam}_chr${chr}_predictions.tsv $sift/$snv_file.sift
         mv $sift/${sam}_chr${chr}_predictions.tsv_mod $sift/${sam}_chr${chr}_predictions.tsv
         rm $sift/$snv_file.sift
         cd $a

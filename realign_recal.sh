@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #	INFO
 #	wrapper for 2A and 2B
 
@@ -90,7 +90,7 @@ else
 		rm $output_bam/chr$chr.cleaned.bam.log
 	fi	
 	size=`du -b $output_bam/chr$chr.cleaned.bam | sed 's/\([0-9]*\).*/\1/'`
-	if [ `echo $samples | tr ":" "\n" | wc -l -gt 1` ]
+	if [ `echo $samples | tr ":" "\n" | wc -l` -gt 1 ]
 	then
 		$script_path/filesize.sh Realignment multi_sample chr$chr.cleaned.bam $JOB_ID $size $run_info
 	else

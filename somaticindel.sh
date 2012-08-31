@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# != 7 ]
 then
@@ -23,18 +23,42 @@ else
 	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
 	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
 	command_line_params=$( cat $tool_info | grep -w '^SOMATIC_INDEL_params' | cut -d '=' -f2 )
+	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	export JAVA_HOME=$javahome
 	export PATH=$javahome/bin:$PATH
-	
-
-    indel_v=$tumor_sample.chr$chr.indel.txt
-	
-    check=0
+	indel_v=$tumor_sample.chr$chr.indel.txt
+	check=0
 	count=0
 	if [ ! -d $output/temp ]
 	then
-		mkdir $output/temp
+		mkdir -p $output/temp
 	fi
+	
+	$samtools/samtools view -H $tumor_bam 2> $tumor_bam.fix.log
+	$samtools/samtools view -H $normal_bam 2> $normal_bam.fix.log
+	if [ `cat $tumor_bam.fix.log | wc -l` -gt 0 ]
+	then
+		$script_path/email.sh $tumor_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+		while [ -f $tumor_bam.fix.log ]
+		do
+			echo "waiting for the $tumor_bam to be fixed"
+			sleep 2m
+		done
+	else
+		rm $tumor_bam.fix.log
+	fi	
+
+	if [ `cat $normal_bam.fix.log | wc -l` -gt 0 ]
+	then
+		$script_path/email.sh $normal_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+		while [ -f $normal_bam.fix.log ]
+		do
+			echo "waiting for the $normal_bam to be fixed"
+			sleep 2m
+		done
+	else
+		rm $normal_bam.fix.log
+	fi	
 	
 	while [[ $check -eq 0 && $count -le 10 ]]
     do
@@ -54,11 +78,11 @@ else
         if [ $check -eq 0 ]
         then
             if [[  `find . -name '*.log'` ]]
-		then
-			rm `grep -l $output/$output_file *.log`
-			rm core.*
+			then
+				rm `grep -l $output/$output_file *.log`
+				rm core.*
+			fi
 		fi
-	fi
 		let count=count+1	
     done 
 	
@@ -67,15 +91,14 @@ else
         $script_path/errorlog.sh $output/$output_file somaticindel.sh ERROR "failed to create"
 		exit 1;
     else
-        perl $script_path/convertvcf.pl $output/$output_file > $output/$output_file.tmp
+        $script_path/convertvcf.pl $output/$output_file > $output/$output_file.tmp
 		mv $output/$output_file.tmp $output/$output_file
-		perl $script_path/fixindelAD.pl $output/$output_file $output/$output_file.temp
+		$script_path/fixindelAD.pl $output/$output_file $output/$output_file.temp
         mv $output/$output_file.temp $output/$output_file
         rm $output/$indel_v
-        n=`cat $output/$output_file |  awk '$0 ~ /^##FORMAT=<ID=GT/' | wc -l`
-		if [ $n == 0 ]
+        if [ `cat $output/$output_file |  awk '$0 ~ /^##FORMAT=<ID=GT/' | wc -l` == 0 ]
         then
-            perl $script_path/add.gt.to.vcf.pl $output/$output_file | awk '$0 ~ /^#/ || $8 ~ /SOMATIC/' > $output/$output_file.tmp
+            $script_path/add.gt.to.vcf.pl $output/$output_file | awk '$0 ~ /^#/ || $8 ~ /SOMATIC/' > $output/$output_file.tmp
         else
             cat $output/$output_file | awk '$0 ~ /^#/ || $8 ~ /SOMATIC/' > $output/$output_file.tmp
 		fi

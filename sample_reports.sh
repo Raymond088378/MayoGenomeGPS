@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ##	INFO
 ##	to merge the scripts to call in one script to control sapnning jobs
 if [ $# -le 7 ]
@@ -21,25 +21,60 @@ else
 	fi	
 	#SGE_TASK_ID=22
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-	variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2)
-	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2)
+	variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
-	email=$( cat $run_info | grep -w '^EMAIL' | cut -d '=' -f2)
-	analysis=`echo "$analysis" | tr "[A-Z]" "[a-z]"`
-	variant_type=`echo "$variant_type" | tr "[a-z]" "[A-Z]"`
 	which_chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
-	multi_sample=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
-
+	
 	## prepocessing the input file from variant module or user added 
 	if [[ $9 ]]
 	then
+		if [ ! -s $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf  ]
+		then
+			touch $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf.fix.log
+			$script_path/email.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf  "not found" $JOB_NAME $JOB_ID $run_info
+			while [ -f $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf.fix.log ]
+			do
+				echo "waiting for the fix"
+				sleep 2m
+			done
+		fi			
 		$script_path/parse.vcf.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf $TempReports/$gr.$sample.chr${which_chr}.snv $run_info SNV
 		##INDEL
+		if [ ! -s $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf  ]
+		then
+			touch $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf.fix.log
+			$script_path/email.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf  "not found" $JOB_NAME $JOB_ID $run_info
+			while [ -f $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf.fix.log ]
+			do
+				echo "waiting for the fix"
+				sleep 2m
+			done
+		fi	
 		$script_path/parse.vcf.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf $TempReports/$gr.$sample.chr${which_chr}.indel $run_info INDEL
 		sam=$gr.$sample
 	else
+		if [ ! -s $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf  ]
+		then
+			touch $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf.fix.log
+			$script_path/email.sh $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf  "not found" $JOB_NAME $JOB_ID $run_info
+			while [ -f $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf.fix.log ]
+			do
+				echo "waiting for the fix"
+				sleep 2m
+			done
+		fi		
 		$script_path/parse.vcf.sh $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf $TempReports/$sample.chr${which_chr}.snv $run_info SNV
 		##INDEL
+		if [ ! -s $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf  ]
+		then
+			touch $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf.fix.log
+			$script_path/email.sh $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf  "not found" $JOB_NAME $JOB_ID $run_info
+			while [ -f $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf.fix.log ]
+			do
+				echo "waiting for the fix"
+				sleep 2m
+			done
+		fi	
 		$script_path/parse.vcf.sh $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf $TempReports/$sample.chr${which_chr}.indel $run_info INDEL	
 		sam=$sample
 	fi	

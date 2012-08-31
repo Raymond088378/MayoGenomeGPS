@@ -28,17 +28,22 @@ else
     dbsnp_rsids_disease=$( cat $tool_info | grep -w '^dbSNP_disease_rsIDs' | cut -d '=' -f2) 
     
     num=`cat $TempReports/$snv | wc -l` 
-    cat $TempReports/$snv | awk 'NR>1' > $TempReports/$snv.forrsIDs
+    if [ $num -eq 0 ]
+	then
+		$script_path/errorlog.sh $TempReports/$snv add.rsids_snvs.sh ERROR "not created"
+		exit 1;
+	fi	
+	cat $TempReports/$snv | awk 'NR>1' > $TempReports/$snv.forrsIDs
 	len=`cat $TempReports/$snv.forrsIDs | wc -l`
 	if [ $len -gt 1 ]
 	then
 		file=`basename $dbsnp_rsids_snv`
 		base=`basename $snv`
 		cat $dbsnp_rsids_snv | grep -w chr$chr | grep -v 'cDNA' | sort -n -k 3,12n -k 4,12n > $TempReports/$file.chr$chr.$snv
-		perl $script_path/add.rsids.pl -i $TempReports/$snv.forrsIDs -s $TempReports/$file.chr$chr.$snv -o $TempReports/$snv.forrsIDs.added
+		$script_path/add.rsids.pl -i $TempReports/$snv.forrsIDs -s $TempReports/$file.chr$chr.$snv -o $TempReports/$snv.forrsIDs.added
 		rm  $TempReports/$file.chr$chr.$snv 
 		## add column to add flag for disease variant
-		perl $script_path/add.dbsnp.disease.snv.pl -i $TempReports/$snv.forrsIDs.added -b 1 -s $dbsnp_rsids_disease -c 1 -p 2 -o $TempReports/$snv.forrsIDs.added.disease -r $chr
+		$script_path/add.dbsnp.disease.snv.pl -i $TempReports/$snv.forrsIDs.added -b 1 -s $dbsnp_rsids_disease -c 1 -p 2 -o $TempReports/$snv.forrsIDs.added.disease -r $chr
     else
 		value=`echo $dbsnp_rsids_snv | perl -wlne 'print $1 if /.+dbSNP(\d+)/'`
 		echo -e "dbsnp${value}\tdbsnp${value}Alleles" > $TempReports/$snv.forrsIDs.added
@@ -50,7 +55,7 @@ else
 		paste $TempReports/$snv.forrsIDs.added $TempReports/$snv.forrsIDs.added.disease > $TempReports/$snv.forrsIDs.added.disease.tmp
 		mv $TempReports/$snv.forrsIDs.added.disease.tmp $TempReports/$snv.forrsIDs.added.disease 
 	fi
-	perl $script_path/extract.rsids.pl -i $TempReports/$snv -r $TempReports/$snv.forrsIDs.added.disease -o $TempReports/$snv.rsIDs -v SNV
+	$script_path/extract.rsids.pl -i $TempReports/$snv -r $TempReports/$snv.forrsIDs.added.disease -o $TempReports/$snv.rsIDs -v SNV
     num_a=`cat $TempReports/$snv.rsIDs |wc -l `
     if [ $num == $num_a ]
     then
@@ -58,7 +63,9 @@ else
         rm $TempReports/$snv.forrsIDs.added
         rm $TempReports/$snv.forrsIDs
         rm $TempReports/$snv.forrsIDs.added.disease
-    fi
+    else
+		exit 1;
+	fi
     echo `date`
 fi	
 	

@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+
 if [ $# != 3 ];
 then
     echo -e "Usage: wrapper to merge bam files and validate the bam for downstream analysis \n merge_align.bam.sh </path/to/input directory> <name of BAM to sort> <sample name> </path/to/run_info.txt>";
@@ -32,15 +33,27 @@ else
     cd $input
     for file in $input/*sorted.bam
     do
-      INPUTARGS="INPUT="$file" "$INPUTARGS;
-      files=$file" $files";
+		$samtools/samtools view -H $file 2> $file.fix.log
+		if [ `cat $file.fix.log | wc -l` -gt 0 ]
+		then
+			$script_path/email.sh $file "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+			while [ -f $file.fix.log ]
+			do
+				echo "waiting for the file to be fixed"
+				sleep 2m
+			done
+		else
+			rm $file.fix.log 
+		fi	
+		INPUTARGS="INPUT="$file" "$INPUTARGS;
+		files=$file" $files";
     done
     
     num_times=`echo $INPUTARGS | tr " " "\n" | grep -c -w 'INPUT'`
     if [ $num_times == 1 ]
     then
-	bam=`echo $INPUTARGS | cut -d '=' -f2`
-	mv $bam $input/$sample.bam
+		bam=`echo $INPUTARGS | cut -d '=' -f2`
+		mv $bam $input/$sample.bam
         SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input/$sample.bam -s $samtools`
         if [ $SORT_FLAG == 1 ]
         then
@@ -67,7 +80,14 @@ else
     then
         $script_path/reoderBam.sh $input/$sample.sorted.bam $input/$sample.sorted.tmp.bam $input $run_info  
     fi
-	
+	if [ -s $input/$sample.sorted.bam ]
+	then
+		size=`du -b $input/$sample.sorted.bam | sed 's/\([0-9]*\).*/\1/'`
+		$script_path/filesize.sh Realignment $sample $sample.sorted.bam $JOB_ID $size $run_info
+	else
+		$script_path/errorlog.sh reformat_BAM.sh $input/$sample.sorted.bam ERROR "not found"
+		exit 1;
+	fi	
     echo `date`
 fi	
 	

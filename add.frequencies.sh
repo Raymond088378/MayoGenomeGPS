@@ -28,7 +28,13 @@ else
     esp=$( cat $tool_info | grep -w '^ESP' | cut -d '=' -f2)
     
     num=`cat $TempReports/$var.rsIDs | wc -l `
-    cat $TempReports/$var.rsIDs | awk 'NR>1' | cut -f 1,2,3,4,5 > $TempReports/$var.forFrequencies.temp
+    if [ $num -eq 0 ]
+	then
+		$script_path/errorlog.sh $TempReports/$var.rsIDs add.frequencies.sh ERROR "not created"
+		exit 1;
+	fi	
+	
+	cat $TempReports/$var.rsIDs | awk 'NR>1' | cut -f 1,2,3,4,5 > $TempReports/$var.forFrequencies.temp
 	len=`cat $TempReports/$var.forFrequencies.temp | wc -l`
 	if [ $len -gt 1 ]
 	then

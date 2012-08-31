@@ -107,7 +107,7 @@ T_DEPTH_FILTER=6
 #Parameters
 SNVMIX2_params=-q 20 -Q 30
 SNVMIX2_Filter=-p 0.8
-UnifiedGenotyper_params=
+UnifiedGenotyper_params=-maxAlleles 5
 SOMATIC_INDEL_params=
 SOMATIC_SNIPER_params=-q 20 -Q 40
 MUTECT_params=--min_qscore 30

@@ -11,7 +11,6 @@ else
     sample=$2
     run_info=$3
     numbers=$4
-    
     group=$sample
 ##############################################################		
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
@@ -31,11 +30,12 @@ else
 ##############################################################		
     #variant_type=SNV
     #numbers=$input_dir/numbers
-    $script_path/dashboard.sh $sample $run_info Statistics started
+    
 	
     if [ $multi_sample != "YES" ]
     then
         echo "Single sample"
+		$script_path/dashboard.sh $sample $run_info Statistics started
 		### get the alignment statistics
 		if [[ $analysis != "annotation"  && $analysis != "variant"  && $analysis != "ontarget" ]] 
 		then
@@ -179,13 +179,13 @@ else
 				echo -e "KNOWN Transition To Transversion Ratio" >> $numbers/$sample.out
 				cat $file | awk 'NR>2' | awk -v num=$dbsnp '$num ~ /^rs/' > $file.known
 				tt=`perl $script_path/transition.transversion.persample.pl $file.known $ref $alt`
-                                if [ ${#tt} -gt 0 ]
-                                then
-                                    echo $tt >> $numbers/$sample.out
+				if [ ${#tt} -gt 0 ]
+				then
+					echo $tt >> $numbers/$sample.out
 				else
-                                    tt=0
-                                    echo $tt >> $numbers/$sample.out
-                                fi    
+					tt=0
+					echo $tt >> $numbers/$sample.out
+				fi    
 				for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
 				do
 					echo -e "KNOWN $snv" >> $numbers/$sample.out 
@@ -311,11 +311,13 @@ else
 				echo $CTX >> $numbers/$sample.out
 			fi	
 		fi
+		$script_path/dashboard.sh $sample $run_info Statistics complete
 	else
 	    echo "Multi sample"
         for sample in `cat $sample_info | grep -w "^$group" | cut -d '=' -f2`
         do
-            #### alignment stats
+            $script_path/dashboard.sh $sample $run_info Statistics started
+			#### alignment stats
             if [ $analysis != "variant" ]
             then
             alignment=$input_dir/alignment/$sample	
@@ -698,7 +700,5 @@ else
 			fi	
 		done
     fi 
-    ### update dash board
-    $script_path/dashboard.sh $sample $run_info Statistics complete
     echo `date`
 fi   

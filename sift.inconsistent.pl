@@ -1,3 +1,5 @@
+#!/usr/local/biotools/perl/5.10.0/bin/perl
+
 # script to check the inconsistency by SIFT 
 # it automatically flips the alternate base during the annotation
 
@@ -31,4 +33,4 @@ foreach my $entry (keys %hash_annot)	{
 			print OUT "$hash_annot{$entry}\n";
 		}
 }
-close OUT		
+close OUT;		

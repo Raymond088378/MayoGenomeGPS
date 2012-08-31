@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ########################################################
 ###### 	Merge BAMs for a sample,  FOR WHOLE GENOME ANALYSIS PIPELINE

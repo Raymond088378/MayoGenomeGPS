@@ -2,7 +2,7 @@
 
 if [ $# != 5 ]
 then
-		echo -e "Usage: In buit QC script \n <filename> <error message><job name><job id><runinfo>"
+	echo -e "Usage: In buit QC script \n <filename> <error message><job name><job id><runinfo>"
 else	
 	file=$1
 	message=$2
@@ -14,7 +14,7 @@ else
 
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
 	SUB="$tool workflow In error State for RunID ${run_num}"
-	MESG="Filename:$file\nError:$message from the predecessor\njobname:$job_name\njobid:$job_id\nPlease fix the error and delete the $file.fix.log file so that job can resume properly"
+	MESG="Filename: $file\nError: $message from the predecessor job\njobname: $job_name\njobid: $job_id\nPlease fix the error and delete the $file.fix.log file so that job can resume properly"
 	## send the completion email
 	echo -e "$MESG" | mailx -v -s "$SUB" "$TO" 
 fi	
