@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ##	INFO
 ##	to add rsids to per sample report
@@ -26,6 +26,12 @@ else
 	dbsnp_rsids_indel=$( cat $tool_info | grep -w '^dbSNP_INDEL_rsIDs' | cut -d '=' -f2)
 	GenomeBuild=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2) 
 	num=`cat $TempReports/$indel | wc -l`
+	if [ $num -eq 0 ]
+	then
+		$script_path/errorlog.sh $TempReports/$indel ERROR "not exist"
+		exit 1;
+	fi	
+	
 	cat $TempReports/$indel | awk 'NR>1' > $TempReports/$indel.forrsIDs
 	if [ `cat $TempReports/$indel.forrsIDs | wc -l` -gt 1 ]
 	then
@@ -49,6 +55,7 @@ else
 		rm $TempReports/$indel
 	else
 		$script_path/errorlog.sh $TempReports/$indel.rsIDs add.rsids_indel.sh ERROR "failed to create"
+		exit 1;
 	fi	
 	echo `date`
 fi	

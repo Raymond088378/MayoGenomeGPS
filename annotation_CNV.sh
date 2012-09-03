@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 	
 ########################################################
 ###### 	CNV ANNOTATION FOR TUMOR/NORMAL PAIR WHOLE GENOME ANALYSIS PIPELINE
@@ -22,7 +22,6 @@ else
     report_dir=$3
 	sample=$4
 	group=$sample
-#SGE_TASK_ID=1
     
 ########################################################	
 ######		Reading run_info.txt and assigning to variables

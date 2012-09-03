@@ -34,7 +34,7 @@ else
 		exit 1;
 	fi	
 	
-	cat $TempReports/$var.rsIDs | awk 'NR>1' | cut -f 1,2,3,4,5 > $TempReports/$var.forFrequencies.temp
+	cat $TempReports/$var.rsIDs | awk 'NR>1' | cut -f 1-5 > $TempReports/$var.forFrequencies.temp
 	len=`cat $TempReports/$var.forFrequencies.temp | wc -l`
 	if [ $len -gt 1 ]
 	then
@@ -71,6 +71,7 @@ else
         rm $TempReports/$var.forFrequencies.temp
     else
         $script_path/errorlog.sh $TempReports/$var.rsIDs.allele_frequencies add.frequencies.sh ERROR "failed to create"
+		exit 1;
     fi    
     echo `date`
 fi	

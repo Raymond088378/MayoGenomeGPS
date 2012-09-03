@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 	
 ########################################################
 ###### 	GENE SUMMARY FOR TUMOR/NORMAL PAIR WHOLE GENOME ANALYSIS PIPELINE

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# != 4 ]
 then
@@ -6,7 +6,6 @@ then
 else
     set -x
     echo `date`
-    
     input=$1
     output=$2
     run_info=$3
@@ -17,7 +16,7 @@ else
     vcftools=$( cat $tool_info | grep -w '^VCFTOOLS' | cut -d '=' -f2)
 	perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
 	tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2)
-        ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
+	ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
 	export PERL5LIB=$PERL5LIB:$perllib
 	export PATH=$tabix/:$PATH
 	
@@ -54,10 +53,10 @@ else
 				if [ $i != ".idx" ]
 				then
 					if [ -s $i ]
-                                        then
-                                            rm $i
-                                        fi
-                                fi
+					then
+						rm $i
+					fi
+				fi
 			done	
         fi
     fi

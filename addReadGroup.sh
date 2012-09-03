@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# != 5 ]
 then
@@ -35,16 +35,16 @@ else
     
     if [ -s $outbam ]
     then
-        $samtools/samtools view -H $outbam 2> $outbam.log
-		if [ `cat $outbam.log | wc -l` -gt 0 ]
+        $samtools/samtools view -H $outbam 2> $outbam.fix.log
+		if [ `cat $outbam.fix.log | wc -l` -gt 0 ]
 		then
 			echo "$outbam :bam is truncated or corrupted "
 			exit 1;
 		else
-			rm $outbam.log
+			rm $outbam.fix.log
+			mv $outbam $inbam
+			$samtools/samtools index $inbam
 		fi	
-		mv $outbam $inbam
-        $samtools/samtools index $inbam
     else
         $script_path/errorlog.sh $outbam convert.bam.sh ERROR empty
 		exit 1;

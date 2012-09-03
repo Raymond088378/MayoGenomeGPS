@@ -1,10 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# != 2 ]
 then
 	echo "Usage: wrapper to copy the config files\n <output dir ><run_info>"
 else
-    set -x
     echo `date`	
     output_dir=$1
     run_info=$2

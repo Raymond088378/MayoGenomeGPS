@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ##	INFO
 ##	to add rsids to per sample report

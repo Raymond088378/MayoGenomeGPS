@@ -407,7 +407,7 @@ else
 				mem="-l h_vmem=16G"
 			fi    
 			sleep 5
-			qsub $args -N $type.$version.annotate_sample.$run_num -hold_jid $id $mem $script_path/annotate_sample.sh $output_dir $run_info    
+			qsub $args -N $type.$version.merge_sample.$run_num -hold_jid $id $mem $script_path/merge_sample.sh $output_dir $run_info    
 		fi
 		id_igv=""
 		id_numbers=""
@@ -427,18 +427,18 @@ else
 			hold="-hold_jid $id_numbers,$id_gene_summary"
 		elif [ $analysis == "annotation" -o $analysis == "ontarget" ]
 		then
-			hold="-hold_jid $type.$version.annotate_sample.$run_num,$id_numbers,$id_gene_summary"
+			hold="-hold_jid $type.$version.merge_sample.$run_num,$id_numbers,$id_gene_summary"
 		elif [[ $analysis == "mayo" || $analysis == "external" || $analysis == "variant" || $analysis == "realign-mayo" || $analysis == "realignment" ]]
 		then
 			if [ $tool == "whole_genome" ]
 			then
-				hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.annotate_sample.$run_num,$type.$version.annotation.CNV.sh.$run_num,$type.$version.annotation.SV.sh.$run_num,$id_reads"
+				hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.merge_sample.$run_num,$type.$version.annotation.CNV.sh.$run_num,$type.$version.annotation.SV.sh.$run_num,$id_reads"
 			elif [[  $tool == "exome"  && $all_sites == "YES" ]]
 			then
-				hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.annotate_sample.$run_num,$type.$version.concat_raw_variants.$run_num,$id_reads"
+				hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.merge_sample.$run_num,$type.$version.concat_raw_variants.$run_num,$id_reads"
 			elif  [[  $tool == "exome"  && $all_sites == "NO" ]]
 			then
-				hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.annotate_sample.$run_num,$id_reads"
+				hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.merge_sample.$run_num,$id_reads"
 			fi
 		fi
 		## generate html page for all teh modules

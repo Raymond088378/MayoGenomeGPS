@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# -le 3 ]
 then
@@ -33,11 +33,13 @@ else
 		fi
 	done
 
-	$samtools/samtools view -H $output/$bam 2> $output/$bam.log
-	if [ `cat $output/$bam.log | wc -l` -gt 0 ]
+	$samtools/samtools view -H $output/$bam 2> $output/$bam.fix.log
+	if [ `cat $output/$bam.fix.log | wc -l` -gt 0 ]
 	then
 		echo " $output/$bam :bam is truncated or corrupted"
 		exit 1;
+	else
+		rm $output/$bam.fix.log
 	fi
 	
 	## extract read for specfic chromosome

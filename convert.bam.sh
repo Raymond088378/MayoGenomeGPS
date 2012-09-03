@@ -54,13 +54,13 @@ else
 ######		PICARD to sort raw BAM file
 
     ## check if BAM is sorted
-    $samtools/samtools view -H $input/$input_bam 2> $input/$input_bam.log
-	if [ `cat $input/$input_bam.log | wc -l` -gt 0 ]
+    $samtools/samtools view -H $input/$input_bam 2> $input/$input_bam.fix.log
+	if [ `cat $input/$input_bam.fix.log | wc -l` -gt 0 ]
 	then
 		echo "$input/$input_bam : bam is corruped or truncated"
 		exit 1;
 	else
-		rm $input/$input_bam.log
+		rm $input/$input_bam.fix.log
 	fi	
 	SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input/$input_bam -s $samtools`
     if [ $SORT_FLAG == 1 ]
@@ -87,10 +87,11 @@ else
     then
         $script_path/errorlog.sh convert.bam.sh $input/$sample.flagstat ERROR empty
 		exit 1;
-	fi
-    ## update secondary dahboard
-    size=`du -b $input/$sample.sorted.bam | sed 's/\([0-9]*\).*/\1/'`
-	$script_path/filesize.sh alignment $sam $sample.sorted.bam $JOB_ID $size $run_info
-	$script_path/dashboard.sh $sample $run_info Alignment complete $id
-    echo `date`
+	else
+		## update secondary dahboard
+		size=`du -b $input/$sample.sorted.bam | sed 's/\([0-9]*\).*/\1/'`
+		$script_path/filesize.sh alignment $sam $sample.sorted.bam $JOB_ID $size $run_info
+		$script_path/dashboard.sh $sample $run_info Alignment complete $id
+    fi
+	echo `date`
 fi

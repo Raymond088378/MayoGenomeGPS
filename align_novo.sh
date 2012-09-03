@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ########################################################
 ###### 	ALIGNMENT SCRIPT FOR WHOLE GENOME ANALYSIS PIPELINE
@@ -77,9 +77,15 @@ else
                 eval filename${j}=$i
                 $script_path/fastq.sh $i $seq_file $(eval echo \$filename$j) $fastq $run_info $fastqc
             fi
-            let j=j+1
-			size=`du -b $seq_file/$i | sed 's/\([0-9]*\).*/\1/'`
-			$script_path/filesize.sh alignment $sample $i $JOB_ID $size $run_info
+           if [ ! -s $fastq/filename${j} ]
+			then
+				echo "ERROR : $fastq/filename${j} does not exist"
+				exit 1;
+			else		
+				size=`du -b $fastq/filename${j} | sed 's/\([0-9]*\).*/\1/'`
+				$script_path/filesize.sh alignment $sample filename${j} $JOB_ID $size $run_info
+            fi
+			 let j=j+1
         done
     elif [ $paired == 0 ]
     then
@@ -94,24 +100,14 @@ else
             filename1=$R1
             $script_path/fastq.sh $R1 $seq_file $filename1 $fastq $run_info $fastqc
         fi
-		size=`du -b $seq_file/$R1 | sed 's/\([0-9]*\).*/\1/'`
-		$script_path/filesize.sh alignment $sample $R1 $JOB_ID $size $run_info
-    fi    
-    ## check if the fastqs are zipped or not
-    
-    if [ ! -s $fastq/$filename1 ]
-    then
-		$script_path/errorlog.sh $fastq/$filename1 align_novo.sh ERROR empty
-        exit 1
-    fi
-
-    if [ $paired == 1 ]
-    then
-        if [ ! -s $fastq/$filename2 ]
-        then
-			$script_path/errorlog.sh $fastq/$filename2 align_novo.sh ERROR empty
-            exit 1
-        fi
+		if [ ! -s $fastq/$filename1 ]
+		then
+			echo "ERROR : $fastq/$filename1 does not exist"
+			exit 1;
+		else
+			size=`du -b $fastq/$filename1 | sed 's/\([0-9]*\).*/\1/'`
+			$script_path/filesize.sh alignment $sample $filename1 $JOB_ID $size $run_info
+		fi
     fi    
     ILL2SANGER1=`perl $script_path/checkFastqQualityScores.pl $fastq/$filename1 1000`
     if [ $paired == 1 ]

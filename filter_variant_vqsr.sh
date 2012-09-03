@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# -le  3 ]
 then
@@ -59,7 +59,7 @@ else
 	export PATH=$r_soft:$javahome/bin:$PATH
 	
     ### split the vcf file for indels and snvs to appy the vqsr seperately
-    perl $script_path/vcf_to_variant_vcf.pl -i $inputvcf -v $inputvcf.SNV.vcf -l $inputvcf.INDEL.vcf   
+    perl $script_path/vcf_to_variant_vcf.pl -i $inputvcf -v $inputvcf.SNV.vcf -l $inputvcf.INDEL.vcf -t both   
 
 	raw_calls_snvs=`cat $inputvcf.SNV.vcf | awk '$0 !~ /#/' | wc -l`
 	raw_calls_indels=`cat $inputvcf.INDEL.vcf | awk '$0 !~ /#/' | wc -l`
@@ -67,25 +67,25 @@ else
     if [ ! -s $hapmap ]
     then
         $script_path/errorlog.sh $hapmap filter_variant_vqsr.sh ERROR "not exist"
-        exit 1
+        exit 1;
     fi
 
     if [ ! -s $omni ]
     then
         $script_path/errorlog.sh $omni filter_variant_vqsr.sh ERROR "not exist"
-        exit 1
+        exit 1;
     fi
 
     if [ ! -s $dbSNP ]
     then
         $script_path/errorlog.sh $dbSNP filter_variant_vqsr.sh ERROR "not exist"
-        exit 1
+        exit 1;
     fi
 
     if [ ! -s $inputvcf ]
     then
         $script_path/errorlog.sh $inputvcf filter_variant_vqsr.sh ERROR "not exist"
-        exit 1
+        exit 1;
     fi
 	
 	if [ ! -s $mills ]
@@ -120,7 +120,7 @@ else
 				--maxGaussians 4 \
 				--percentBadVariants 0.05 \
 				-rscriptFile $output/plot/$input_name.plots.R
-				sleep 1m
+				sleep 15
 				check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
 				if [ $check -eq 0 ]
 				then
@@ -154,7 +154,7 @@ else
 				-recalFile $output/temp/$input_name.recal \
 				-tranchesFile $output/temp/$input_name.tranches \
 				-o $outfile.SNV.vcf
-				sleep 1m
+				sleep 15
 			fi
 			
 			filter_calls_snvs=`cat $outfile.SNV.vcf | awk '$0 !~ /#/' | wc -l`
@@ -192,84 +192,82 @@ else
 	then
 		if [ ! $5 ]
 		then
-		count=0
-		check=0
-		while [[ $check -eq 0 && $count -le 10 ]]
-		do
-			$java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-			-R $ref \
-			-et NO_ET \
-			-K $gatk/Hossain.Asif_mayo.edu.key \
-			-T VariantRecalibrator \
-			-mode INDEL  \
-			-nt $threads \
-			-input $inputvcf.INDEL.vcf \
-			-resource:mills,VCF,known=true,training=true,truth=true,prior=12.0 $mills \
-			-an QD -an FS -an HaplotypeScore -an ReadPosRankSum \
-			-recalFile $output/temp/$input_name.recal \
-			-tranchesFile $output/temp/$input_name.tranches \
-			--maxGaussians 4 \
-			--percentBadVariants 0.05 \
-			-rscriptFile $output/plot/$input_name.plots.R
-			sleep 1m 
-			check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
-			if [ $check -eq 0 ]
+			count=0
+			check=0
+			while [[ $check -eq 0 && $count -le 10 ]]
+			do
+				$java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+				-R $ref \
+				-et NO_ET \
+				-K $gatk/Hossain.Asif_mayo.edu.key \
+				-T VariantRecalibrator \
+				-mode INDEL  \
+				-nt $threads \
+				-input $inputvcf.INDEL.vcf \
+				-resource:mills,VCF,known=true,training=true,truth=true,prior=12.0 $mills \
+				-an QD -an FS -an HaplotypeScore -an ReadPosRankSum \
+				-recalFile $output/temp/$input_name.recal \
+				-tranchesFile $output/temp/$input_name.tranches \
+				--maxGaussians 4 \
+				--percentBadVariants 0.05 \
+				-rscriptFile $output/plot/$input_name.plots.R
+				sleep 15 
+				check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
+				if [ $check -eq 0 ]
+				then
+					rm `grep -l $output/plot/$input_name.plots.R *.log`
+					rm core.*
+				fi
+				let count=count+1
+			done	
+			if [ `cat $output/temp/$input_name.recal | wc -l` -le 2 ]
 			then
-				rm `grep -l $output/plot/$input_name.plots.R *.log`
-				rm core.*
+				$script_path/errorlog.sh $output/temp/$input_name.recal filter_variant_vqsr.sh WARNING "failed to create"
 			fi
-			let count=count+1
-		done	
-		if [ `cat $output/temp/$input_name.recal | wc -l` -le 2 ]
-		then
-			$script_path/errorlog.sh $output/temp/$input_name.recal filter_variant_vqsr.sh WARNING "failed to create"
-		fi
 
-		if [ ! -s $output/temp/$input_name.tranches ]
-		then
-			$script_path/errorlog.sh $output/temp/$input_name.tranches filter_variant_vqsr.sh WARNING "failed to create"
-		fi
-
-		## Apply Recalibrator
-		if [[ `cat $output/temp/$input_name.recal | wc -l` -gt 2  && -s $output/temp/$input_name.tranches ]]
-		then
-			$java/java -Xmx6g -XX:-UseGCOverheadLimit -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-			-R $ref \
-			-et NO_ET \
-			-K $gatk/Hossain.Asif_mayo.edu.key \
-			-mode INDEL \
-			-T ApplyRecalibration \
-			-nt $threads \
-			-input $inputvcf.INDEL.vcf \
-			-recalFile $output/temp/$input_name.recal \
-			-tranchesFile $output/temp/$input_name.tranches \
-			-o $outfile.INDEL.vcf
-			sleep 1m 
-		fi
+			if [ ! -s $output/temp/$input_name.tranches ]
+			then
+				$script_path/errorlog.sh $output/temp/$input_name.tranches filter_variant_vqsr.sh WARNING "failed to create"
+			fi
+			## Apply Recalibrator
+			if [[ `cat $output/temp/$input_name.recal | wc -l` -gt 2  && -s $output/temp/$input_name.tranches ]]
+			then
+				$java/java -Xmx6g -XX:-UseGCOverheadLimit -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+				-R $ref \
+				-et NO_ET \
+				-K $gatk/Hossain.Asif_mayo.edu.key \
+				-mode INDEL \
+				-T ApplyRecalibration \
+				-nt $threads \
+				-input $inputvcf.INDEL.vcf \
+				-recalFile $output/temp/$input_name.recal \
+				-tranchesFile $output/temp/$input_name.tranches \
+				-o $outfile.INDEL.vcf
+				sleep 15 
+			fi
 		
-		filter_calls_indels=`cat $outfile.INDEL.vcf | awk '$0 !~ /#/' | wc -l`
-		
-		if [[ ! -s $outfile.INDEL.vcf || ! -s ${outfile}.INDEL.vcf.idx || $raw_calls_indels != $filter_calls_indels ]]
-		then
-			$script_path/errorlog.sh $outfile.INDEL.vcf filter_variant_vqsr.sh WARNING "failed to create"
-			### V3 best practice from GATK
-			$script_path/hardfilters_variants.sh $inputvcf.INDEL.vcf $outfile.INDEL.vcf $run_info INDEL
-		fi
-		rm $inputvcf.INDEL.vcf $inputvcf.INDEL.vcf.idx        
+			filter_calls_indels=`cat $outfile.INDEL.vcf | awk '$0 !~ /#/' | wc -l`
+			if [[ ! -s $outfile.INDEL.vcf || ! -s ${outfile}.INDEL.vcf.idx || $raw_calls_indels != $filter_calls_indels ]]
+			then
+				$script_path/errorlog.sh $outfile.INDEL.vcf filter_variant_vqsr.sh WARNING "failed to create"
+				### V3 best practice from GATK
+				$script_path/hardfilters_variants.sh $inputvcf.INDEL.vcf $outfile.INDEL.vcf $run_info INDEL
+			fi
+			rm $inputvcf.INDEL.vcf $inputvcf.INDEL.vcf.idx        
 				
-		## remove the file
-		if [ -s $output/temp/$input_name.recal ]
-		then
-			rm $output/temp/$input_name.recal $output/temp/$input_name.recal.idx
-		fi
-		
-		if [ -s $output/temp/$input_name.tranches ]
-		then
-			rm $output/temp/$input_name.tranches $output/temp/$input_name.tranches.pdf	
-		fi
-            else
-                $script_path/hardfilters_variants.sh $inputvcf.INDEL.vcf $outfile.INDEL.vcf $run_info INDEL
-            fi    
+			## remove the file
+			if [ -s $output/temp/$input_name.recal ]
+			then
+				rm $output/temp/$input_name.recal $output/temp/$input_name.recal.idx
+			fi
+			
+			if [ -s $output/temp/$input_name.tranches ]
+			then
+				rm $output/temp/$input_name.tranches $output/temp/$input_name.tranches.pdf	
+			fi
+		else
+			$script_path/hardfilters_variants.sh $inputvcf.INDEL.vcf $outfile.INDEL.vcf $run_info INDEL
+		fi    
     else
         cp $inputvcf.INDEL.vcf $outfile.INDEL.vcf
         rm $inputvcf.INDEL.vcf

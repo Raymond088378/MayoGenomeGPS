@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ $# != 3 ];
 then
     echo -e "Usage: wrapper script to run the alignment using NOVO ALIGN \n align_split_thread.sh <sample name> <output_dir> </path/to/run_info.txt>";
@@ -38,9 +40,15 @@ else
             else
                 eval filename${j}=$i
             fi
-			size=`du -b $fastq/filename${j} | sed 's/\([0-9]*\).*/\1/'`
-			$script_path/filesize.sh alignment $sample filename${j} $JOB_ID $size $run_info
-            let j=j+1
+			if [ ! -s $fastq/filename${j} ]
+			then
+				echo "ERROR : $fastq/filename${j} does not exist"
+				exit 1;
+			else		
+				size=`du -b $fastq/filename${j} | sed 's/\([0-9]*\).*/\1/'`
+				$script_path/filesize.sh alignment $sample filename${j} $JOB_ID $size $run_info
+            fi
+			let j=j+1
         done
 		$bwa/bwa sampe -r "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" $genome_bwa $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai $output_dir_sample/$sample.$SGE_TASK_ID.R2.sai $fastq/$filename1 $fastq/$filename2 > $output_dir_sample/$sample.$SGE_TASK_ID.sam 
 	else
@@ -53,15 +61,21 @@ else
 		else
 			filename1=$R1
 		fi	
-		size=`du -b $fastq/$filename1 | sed 's/\([0-9]*\).*/\1/'`
-		$script_path/filesize.sh alignment $sample $filename1 $JOB_ID $size $run_info
+		if [ ! -s $fastq/$filename1 ]
+		then
+			echo "ERROR : $fastq/$filename1 does not exist"
+			exit 1;
+		else
+			size=`du -b $fastq/$filename1 | sed 's/\([0-9]*\).*/\1/'`
+			$script_path/filesize.sh alignment $sample $filename1 $JOB_ID $size $run_info
+		fi
 		$bwa/bwa samse -r "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" $genome_bwa $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai $fastq/$filename1 > $output_dir_sample/$sample.$SGE_TASK_ID.sam 	
 	fi
 	
 	if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.sam ]
     then
         $script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.sam align_bwa.sh ERROR empty
-        exit 1
+        exit 1;
     else
 		size=`du -b $output_dir_sample/$sample.$SGE_TASK_ID.sam | sed 's/\([0-9]*\).*/\1/'`
 		$script_path/filesize.sh alignment $sample $sample.$SGE_TASK_ID.sam $JOB_ID $size $run_info

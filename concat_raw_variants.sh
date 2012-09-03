@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ $# != 2 ]
 then
 	echo "Usage : </path/to/output folder> </path/to/run info file>"
@@ -39,6 +41,9 @@ else
 	then
 		rm $inputargs
 		rm $indexes
+	else
+		$script_path/errorlog.sh $var_dir/raw.SNV.vcf.gz concat_raw_variants.sh ERROR "failed to create"
+		exit 1;
 	fi
 
 	### INDEL merging
@@ -59,6 +64,9 @@ else
 	then
 		rm $inputargs
 		rm $indexes
+	else
+		$script_path/errorlog.sh $var_dir/raw.INDEL.vcf.gz concat_raw_variants.sh ERROR "failed to create"
+		exit 1;
 	fi	
 	echo `date`
 fi	
