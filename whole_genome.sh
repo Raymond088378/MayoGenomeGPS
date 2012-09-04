@@ -65,6 +65,7 @@ else
 	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
 	all_sites=$( cat $tool_info | grep -w '^EMIT_ALL_SITES' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 	aligner=$( cat $run_info | grep -w '^ALIGNER' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
+	upload_tb=$( cat $run_info | grep -w '^UPLOAD_TABLEBROWSER' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 	numchrs=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | wc -l)
 	paired=$( cat $run_info | grep -w '^PAIRED' | cut -d '=' -f2)
 	threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2)
@@ -449,7 +450,13 @@ else
 		fi
 		## generate html page for all teh modules
 		sleep 5
-		qsub $args -l h_vmem=2G -N $type.$version.generate_html.$run_num $hold $script_path/generate_html.sh $output_dir $run_info
+		if [[ $upload_tb == "YES" ]]
+		then
+			mem="8G"
+		else
+			mem="2G"
+		fi	
+		qsub $args -l h_vmem=$mem -N $type.$version.generate_html.$run_num $hold $script_path/generate_html.sh $output_dir $run_info
 	else
 		echo "Multi-sample"
 		numgroups=$(cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2 | tr ":" "\n" | wc -l)
@@ -707,7 +714,13 @@ else
 			done    
 		fi
 		sleep 5
-		qsub $args -N $type.$version.generate_html.$run_num -l h_vmem=2G -hold_jid $id $script_path/generate_html.sh $output_dir $run_info 	
+		if [[ $upload_tb == "YES" ]]
+		then
+			mem="8G"
+		else
+			mem="2G"
+		fi	
+		qsub $args -N $type.$version.generate_html.$run_num -l h_vmem=$mem -hold_jid $id $script_path/generate_html.sh $output_dir $run_info 	
 	fi
 	echo `date`
 fi

@@ -18,10 +18,13 @@ else
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
 	run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
 	identify=$( cat $run_info | grep -w '^IDENTIFICATION_NUMBER' | cut -d '=' -f2)
-	
+	output=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
+	PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
+	tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
+	out=$output/$PI/$tool/$run_num
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
 	size=`du -b $dirname/$filename | sed 's/\([0-9]*\).*/\1/'`
 	
-	$java/java -Xmx1g -jar $script_path/AddGPSMetadata.jar -p $script_path/AddGPSMetadata.properties -S $identify -t $type -a $analysis -b $size -j $job -r $run_num -s $sample -n $filename -u $TO
+	$java/java -Xmx1g -jar $script_path/AddGPSMetadata.jar -p $script_path/AddGPSMetadata.properties -S $identify -t $type -a $analysis -b $size -j $job -r $run_num -s $sample -n $filename -u $TO -F $out/filesize.csv
 	echo `date`
 fi

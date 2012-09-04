@@ -28,7 +28,6 @@ else
 
     input=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    email=$( cat $run_info | grep -w '^EMAIL' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
     master_gene_file=$( cat $tool_info | grep -w '^MASTER_GENE_FILE' | cut -d '=' -f2 )
@@ -60,6 +59,7 @@ else
         then
             $script_path/errorlog.sh $break/$sample.breakdancer.txt annotation_SV.sh WARNING "no SV "
             touch $report_dir/$sample.SV.annotated.txt
+			rm $crest/$sample.crest.tmp $break/$sample.break.tmp $break/$sample.breakdancer.txt $crest/$sample.crest.txt 
         else
 
             ### concatenating & formatting crest and breakdancer files
@@ -135,6 +135,7 @@ else
             then
                 $script_path/errorlog.sh $break/$group.$tumor.breakdancer.txt annotation_SV.sh WARNING "not SV"
                 touch $report_dir/$group.$tumor.SV.annotated.txt
+				rm $crest/$group.$tumor.crest.tmp $crest/$group.$tumor.crest.txt $break/$group.$tumor.break.tmp $break/$group.$tumor.breakdancer.txt
             else
 				### concatenating & formatting crest and breakdancer files
                 touch $SV_dir/$group.$tumor.SV.tmp

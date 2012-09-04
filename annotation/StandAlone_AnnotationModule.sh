@@ -2,7 +2,7 @@
 
 if [ $# != 7 ]
 then
-    echo -e "Usage: stand alone script for annotation using single sample and single vcf or text file \n <sample name><vcf or txt file><output folder><tool_info file> <genome build><single/multi><script_path>"
+    echo -e "Usage: stand alone script for annotation using a single vcf or text file \n <sample name><vcf or txt file><output folder><tool_info file> <genome build><single/multi><script_path>"
 else
 	echo -e "\n ************************************************** \n"
 	echo " Started the annotation for your data on `date` "

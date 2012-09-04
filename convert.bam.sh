@@ -89,8 +89,7 @@ else
 		exit 1;
 	else
 		## update secondary dahboard
-		size=`du -b $input/$sample.sorted.bam | sed 's/\([0-9]*\).*/\1/'`
-		$script_path/filesize.sh alignment $sam $sample.sorted.bam $JOB_ID $size $run_info
+		$script_path/filesize.sh alignment $sam $input $sample.sorted.bam $JOB_ID $size $run_info
 		$script_path/dashboard.sh $sample $run_info Alignment complete $id
     fi
 	echo `date`

@@ -287,8 +287,10 @@ else
 				num_crest=`cat $input_dir/Reports_per_Sample/SV/$sample.filter.crest.vcf | awk '$0 !~ /#/'|wc -l`
 				num_sv=`expr $num_break "+" $num_crest`     
 				genomic_sv=`cat $struct/$sample.SV.annotated.txt | wc -l`
-				genomic_sv=`expr $genomic_sv "-" 1`
-			
+				if [ $genomic_sv -gt 0 ]
+				then
+					genomic_sv=`expr $genomic_sv "-" 1`
+				fi
 				ITX=`cat $struct/$sample.SV.annotated.txt | grep ITX | wc -l`
 				INV=`cat $struct/$sample.SV.annotated.txt | grep INV | wc -l`
 				DEL=`cat $struct/$sample.SV.annotated.txt | grep DEL | wc -l`
@@ -675,8 +677,10 @@ else
 				num_crest=`cat $input_dir/Reports_per_Sample/SV/$group.$tumor.somatic.filter.crest.vcf | awk '$0 !~ /#/'|wc -l`
 				num_sv=`expr $num_break "+" $num_crest`
 				genomic_sv=`cat $struct/$group.$tumor.SV.annotated.txt | wc -l`
-				genomic_sv=`expr $genomic_sv "-" 1`
-    
+				if [ $genomic_sv -gt 0 ]
+				then
+					genomic_sv=`expr $genomic_sv "-" 1`
+				fi
 				ITX=`cat $struct/$group.$tumor.SV.annotated.txt | grep ITX | wc -l`
 				INV=`cat $struct/$group.$tumor.SV.annotated.txt | grep INV | wc -l`
 				DEL=`cat $struct/$group.$tumor.SV.annotated.txt | grep DEL | wc -l`

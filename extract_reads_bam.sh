@@ -58,7 +58,6 @@ else
 	done
 
 	### extract unmapped reads
-
 	$samtools/samtools view -b -f 12 $output/$bam > $output/$bam.unmapped.bam
 	$samtools/samtools index $output/$bam.unmapped.bam
 	input=$input" INPUT=$output/$bam.unmapped.bam"
@@ -76,7 +75,7 @@ else
 			for s in $sam
 			do
 				a="ID:$s|";
-				gr="$gr $a"
+				gr="$gr$a"
 			done
 			gr=`echo $gr |  sed "s/|$//"`
 			$samtools/samtools view -b -r $sample $output/$bam.extra.bam > $output/$sample.extra.bam
