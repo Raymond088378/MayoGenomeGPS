@@ -123,7 +123,6 @@ else
     ## dashboard
     $script_path/dashboard.sh $sample $run_info Alignment complete
 	## size of the bam file
-	size=`du -b $input/$sample.sorted.bam | sed 's/\([0-9]*\).*/\1/'`
-	$script_path/filesize.sh Alignment $sample $sample.sorted.bam $JOB_ID $size $run_info
+	$script_path/filesize.sh Alignment $sample $input $sample.sorted.bam $JOB_ID $size $run_info
     echo `date`
 fi

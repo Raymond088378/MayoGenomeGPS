@@ -34,39 +34,42 @@ else
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     gene_body=$( cat $tool_info | grep -w '^MATER_GENE_BODY' | cut -d '=' -f2 )
     multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
-    	
+	tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")	
+	
     if [ $tool == "whole_genome" ]
     then
         kit=$gene_body
     else
         kit=$CaptureKit
     fi    
-    
-    
-	$samtools/samtools view -H $bam 2> $bam.fix.log
-	if [ `cat $bam.fix.log | wc -l` -gt 0 ]
+	
+    if [ $multi != "YES" ]
 	then
-		echo "$bam : bam file is truncated or corrupt"
-		$script_path/email.sh $bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-		while [ -f $bam.fix.log ]
-		do
-			echo "waiting for the new and fixed bam file"
-			sleep 2m
-		done
-	else
-		rm $bam.fix.log
-	fi	
-
+		bam=$input/chr$chr.cleaned.bam
+		$samtools/samtools view -H $bam 2> $bam.fix.OnTarget_BAM.log
+		if [ `cat $bam.fix.OnTarget_BAM.log | wc -l` -gt 0 ]
+		then
+			echo "$bam : bam file is truncated or corrupt"
+			$script_path/email.sh $bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+			while [ -f $bam.fix.OnTarget_BAM.log ]
+			do
+				echo "waiting for the new and fixed bam file"
+				sleep 2m
+			done
+		else
+			rm $bam.fix.OnTarget_BAM.log
+		fi	
+	fi
+	
     if [ $multi == "YES" ]
     then
         pair=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2 | tr "\t" " ")
         for i in $pair
         do
-            $bed/intersectBed -abam $input/$sample.$i.chr$chr.bam -b $kit | $samtools/samtools view -  | wc -l > $output/$sample.$i.chr$chr.bam.i.out  
-        done
+            $bed/intersectBed -abam $input/$sample.$i.chr$chr.bam -b $kit | $samtools/samtools view -  | wc -l > $output/$sample.$i.chr$chr.bam.i.out
+        done 
     else   
-        bam=$input/chr$chr.cleaned.bam
-		#intersect with the target kit
+        #intersect with the target kit
         $bed/intersectBed -abam $bam -b $kit | $samtools/samtools view - | wc -l > $output/$sample.chr$chr.bam.i.out
     fi
     echo `date`

@@ -124,8 +124,11 @@ else
 				check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
 				if [ $check -eq 0 ]
 				then
-					rm `grep -l $output/plot/$input_name.plots.R *.log`
-					rm core.*
+					if [[  `find . -name '*.log'` ]]
+					then
+						rm `grep -l $output/plot/$input_name.plots.R *.log`
+						rm core.*
+					fi
 				fi
 				let count=count+1
 			done
@@ -215,8 +218,11 @@ else
 				check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
 				if [ $check -eq 0 ]
 				then
-					rm `grep -l $output/plot/$input_name.plots.R *.log`
-					rm core.*
+					if [[  `find . -name '*.log'` ]]
+					then
+						rm `grep -l $output/plot/$input_name.plots.R *.log`
+						rm core.*
+					fi
 				fi
 				let count=count+1
 			done	

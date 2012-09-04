@@ -7,9 +7,9 @@ else
 	echo `date`
 	analysis=$1
 	sample=$2
-	filename=$3
-	job=$4
-	size=$5
+	dirname=$3
+	filename=$4
+	job=$5
 	run_info=$6
 	
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
@@ -18,8 +18,10 @@ else
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
 	run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
 	identify=$( cat $run_info | grep -w '^IDENTIFICATION_NUMBER' | cut -d '=' -f2)
-	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
 	
-	$java/java -jar $script_path/AddGPSMetadata.jar -p $script_path/AddGPSMetadata.properties -S $identify -t $type -a $analysis -b $size -j $job -r $run_num -s $sample -n $filename -u $TO
+	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
+	size=`du -b $dirname/$filename | sed 's/\([0-9]*\).*/\1/'`
+	
+	$java/java -Xmx1g -jar $script_path/AddGPSMetadata.jar -p $script_path/AddGPSMetadata.properties -S $identify -t $type -a $analysis -b $size -j $job -r $run_num -s $sample -n $filename -u $TO
 	echo `date`
 fi

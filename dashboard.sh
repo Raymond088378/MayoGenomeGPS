@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# -le 3 ]
 then
@@ -42,16 +42,16 @@ else
             then
                 if [ $status == "complete" ]
                 then
-                    $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -r $run_num -s $stage -a $tool
+                    $java/java -Xmx1g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -r $run_num -s $stage -a $tool
                 else
-                    $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -r $run_num -s $stage -a $tool
+                    $java/java -Xmx1g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -r $run_num -s $stage -a $tool
                 fi
             else
                 if [ $status == "complete" ]
                 then
-                    $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
+                    $java/java -Xmx1g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
                 else
-                    $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
+                    $java/java -Xmx1g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
                 fi		
             fi
         else
@@ -68,16 +68,16 @@ else
                     then
                         if [ $status == "complete" ]
                         then
-                            $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -r $run_num -s $stage -a $tool
+                            $java/java -Xmx1g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -r $run_num -s $stage -a $tool
                         else
-                            $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -r $run_num -s $stage -a $tool
+                            $java/java -Xmx1g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -r $run_num -s $stage -a $tool
                         fi		
                     else
                         if [ $status == "complete" ]
                         then
-                            $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
+                            $java/java -Xmx1g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
                         else
-                            $java/java -Xmx2g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
+                            $java/java -Xmx1g -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
                         fi		
                     fi
                     let i=i+1

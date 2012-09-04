@@ -69,11 +69,3 @@ else
     fi
     echo `date`
 fi
-
-        
-    
-        
-
-    
-      
-

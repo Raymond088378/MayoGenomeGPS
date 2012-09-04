@@ -62,12 +62,11 @@ else
 		rm $input/$bam.fix.log
 	fi		
 		
-	size=`du -b $input/$bam | sed 's/\([0-9]*\).*/\1/'`
 	if [ `echo $samples | tr ":" "\n" | wc -l` -gt 1 ]
 	then
-		$script_path/filesize.sh VariantCalling multi_sample $bam $JOB_ID $size $run_info
+		$script_path/filesize.sh VariantCalling multi_sample $input $bam $JOB_ID $size $run_info
 	else
-		$script_path/filesize.sh VariantCalling $samples $bam $JOB_ID $size $run_info
+		$script_path/filesize.sh VariantCalling $samples $input $bam $JOB_ID $size $run_info
 	fi
 	
 	## update dashborad
@@ -421,8 +420,7 @@ else
 		rm $output/${sampleArray[1]}.chr$chr-sorted.bam
 		rm $output/${sampleArray[1]}.chr$chr-sorted.bam.bai
 		### update the file size
-		size=`du -b $output/${sampleArray[1]}.variants.chr$chr.raw.vcf | sed 's/\([0-9]*\).*/\1/'`
-		$script_path/filesize.sh VariantCalling ${sampleArray[1]} ${sampleArray[1]}.variants.chr$chr.raw.vcf $JOB_ID $size $run_info
+		$script_path/filesize.sh VariantCalling ${sampleArray[1]} $output ${sampleArray[1]}.variants.chr$chr.raw.vcf $JOB_ID $size $run_info
 	fi
 	if [ ${#sampleArray[@]} -gt 1 ]
 	then
@@ -449,10 +447,8 @@ else
 			rm $output/${sampleArray[$i]}.chr$chr-sorted.bam
 			rm $output/${sampleArray[$i]}.chr$chr-sorted.bam.bai
 		done
-		size=`du -b $output/variants.chr$chr.raw.vcf | sed 's/\([0-9]*\).*/\1/'`
-		$script_path/filesize.sh VariantCalling multi_sample variants.chr$chr.raw.vcf $JOB_ID $size $run_info
-		size=`du -b $output/MergeAllSamples.chr$chr.raw.vcf | sed 's/\([0-9]*\).*/\1/'`
-		$script_path/filesize.sh VariantCalling multi_sample MergeAllSamples.chr$chr.raw.vcf $JOB_ID $size $run_info
+		$script_path/filesize.sh VariantCalling multi_sample $output variants.chr$chr.raw.vcf $JOB_ID $size $run_info
+		$script_path/filesize.sh VariantCalling multi_sample $output MergeAllSamples.chr$chr.raw.vcf $JOB_ID $size $run_info
 	fi
 	
 	

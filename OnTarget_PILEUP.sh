@@ -45,19 +45,27 @@ else
     else
         kit=$CaptureKit
     fi
-    
-    $samtools/samtools view -H $bam 2> $bam.fix.log
-	if [ `cat $bam.fix.log | wc -l` -gt 0 ]
+    cat $kit | grep -w chr$chr > $output/$sample.chr$chr.bed
+	if [ `cat $kit | wc -l` -gt 0 ]
+	then
+		param="$output/$sample.chr$chr.bed"
+	else
+		param="chr$chr"
+	fi
+	
+    bam=$input/chr$chr.cleaned.bam 
+	$samtools/samtools view -H $bam 2> $bam.fix.OnTarget_PILEUP.log
+	if [ `cat $bam.fix.OnTarget_PILEUP.log | wc -l` -gt 0 ]
 	then
 		echo "$bam : bam file is truncated or corrupt"
 		$script_path/email.sh $bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-		while [ -f $bam.fix.log ]
+		while [ -f $bam.fix.OnTarget_PILEUP.log ]
 		do
 			echo "waiting for the new bam file"
 			sleep 2m
 		done
 	else
-		rm $bam.fix.log
+		rm $bam.fix.OnTarget_PILEUP.log
 	fi	
     #make bed format pileup
     mkdir -p $output/temp
@@ -70,9 +78,8 @@ else
 		-et NO_ET \
 		-K $gatk/Hossain.Asif_mayo.edu.key \
 		-T CoverageBySample  \
-		-I $bam \ 
-		-R $ref \
-		-L $kit -o $output/$sample.chr$chr.txt
+		-I $bam -R $ref \
+		-L $param -o $output/$sample.chr$chr.txt
 		
 		for i in $pair
         do
@@ -84,23 +91,22 @@ else
 			done	
         done    
     else	
-		bam=$input/chr$chr.cleaned.bam
 		$java/java -Xmx2g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar \
 		$gatk/GenomeAnalysisTK.jar \
 		-et NO_ET \
 		-K $gatk/Hossain.Asif_mayo.edu.key \
 		-T CoverageBySample  \
-		-I $bam \ 
-		-R $ref \
-		-L $kit -o $output/$sample.chr$chr.txt
+		-I $bam -R $ref \
+		-L $param -o $output/$sample.chr$chr.txt
         #merge all the interscted pileup
         for((j=0; j<=99; j++))
         do
-			a=`cat $sample.chr$chr.txt | grep -w $sample | awk '$NF>'$j''  | wc -l`
+			a=`cat $output/$sample.chr$chr.txt | grep -w "^$sample" | awk '$NF>'$j''  | wc -l`
 			echo $a >> $output/$sample.chr$chr.pileup.i.out
         done    
-		rm $sample.chr$chr.txt	
+		
 	fi
+	rm $output/$sample.chr$chr.txt $output/$sample.chr$chr.bed
     echo `date`
 fi	
     

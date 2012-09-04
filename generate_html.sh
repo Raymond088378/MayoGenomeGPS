@@ -53,14 +53,11 @@ else
 	cd $output_dir/logs
 	
 	files=`ls -lhrt | awk 'NR>1' |awk -F' ' '{print $NF}' | tr "\n" " "`
-	cat $files > $output_dir/LOG
-	
-    cat $output_dir/LOG | grep -w '^ERROR ' > $output_dir/errorlog
-	cat $output_dir/LOG | grep -w '^WARNING ' > $output_dir/warninglog	
-    rm $output_dir/LOG
-	
-	e_size=`ls -l $output_dir/errorlog | awk '{ print $5 }'`
+	cat $files | grep -w '^ERROR ' > $output_dir/errorlog
+	cat  $files | grep -w '^WARNING ' > $output_dir/warninglog	
+    e_size=`ls -l $output_dir/errorlog | awk '{ print $5 }'`
 	w_size=`ls -l $output_dir/warninglog | awk '{ print $5 }'`
+	
 	if [ $e_size -le 0 ]
 	then
 		text="SUCCESS"
@@ -78,7 +75,7 @@ else
 	MESG=" ${text} ${text1} $tool workflow completed for ${run_num} on ${END} and ready for tertiary analysis in ${output_dir} "
 	## send the completion email
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
-	echo -e "$MESG\nTIMESTAMPS:\n" | cat - $output_dir/log.txt | mailx -v -s "$SUB" "$TO" 
+	echo -e "$MESG\n\nTIMESTAMPS:" | cat - $output_dir/log.txt | mailx -v -s "$SUB" "$TO" 
 	echo `date`
 fi
 

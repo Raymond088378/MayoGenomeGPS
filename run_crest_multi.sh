@@ -74,7 +74,7 @@ else
 	if [ "$status" -eq 0 ]
 	then
 		$blat/gfServer start $blat_server $blat_port -log=$output_dir/$group/log/blat.$group.$chr.txt $blat_ref  &
-		sleep 3m
+		sleep 4m
 	fi
 
 	let num_tumor=`echo $samples|tr " " "\n"|wc -l`-1
@@ -107,8 +107,9 @@ else
 			then
 				rm $output_dir/$sample/log/blat.$sample.$chr.txt
 				$blat/gfServer start $blat_server $blat_port -log=$output_dir/$group/log/blat.$group.$chr.txt $blat_ref  &
-				sleep 3m
+				sleep 4m
 			fi
+			status=`$blat/gfServer status $blat_server $blat_port | wc -l`;
 		done 	
 
 		$crest/CREST.pl -f $output_dir/$group/$sample.chr$chr.cover \

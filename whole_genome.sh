@@ -32,7 +32,6 @@ else
 		echo "ERROR : run_info=$run_info should be specified as a complete path\n";
 		exit 1;
 	fi
-
 	if [ ! -s $run_info ]
 	then
 		echo "ERROR : run_info=$run_info does not exist \n";
@@ -70,10 +69,10 @@ else
 	paired=$( cat $run_info | grep -w '^PAIRED' | cut -d '=' -f2)
 	threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2)
 	variant_type=$(cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")   
-	bed=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
-	master_gene_file=$( cat $tool_info | grep -w '^MASTER_GENE_FILE' | cut -d '=' -f2 )
-	somatic_caller=$(cat $run_info | grep -w '^SOMATIC_CALLER' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")  
-	if [ $somatic_caller == "JOINTSNVMIX" ]
+	somatic_caller=$(cat $run_info | grep -w '^SOMATIC_CALLER' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]") 
+	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
+	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2 )
+	if [[ $somatic_caller == "JOINTSNVMIX" || $somatic_caller == "BEAUTY_EXOME" ]]
 	then
 		python_path=`which python`
 		if [ $python_path != "/usr/local/biotools/python/2.7/bin/python" ]
@@ -93,7 +92,6 @@ else
 	else
 		rm $run_info.configuration_errors.log
 	fi	
-
 	### create folders
 	$script_path/create_folder.sh $run_info
 	output_dir=$output/$PI/$tool/$run_num
@@ -115,23 +113,29 @@ else
 		snpeff=$output_annot/SNPEFF
 		polyphen=$output_annot/POLYPHEN
 	fi
-
 	##########################################################
-
 	echo -e "${tool} analysis for ${run_num} for ${PI} " >> $output_dir/log.txt
 	START=`date`
 	echo -e "Analysis started at:" >> $output_dir/log.txt
 	echo -e "${START}" >>  $output_dir/log.txt
-	### update the dashboard
+	echo -e "TOOL INFO file used : $tool_info" >>  $output_dir/log.txt
+	echo -e "SAMPLE INFO file used : $sample_info" >>  $output_dir/log.txt
+	echo -e "RUN INFO  file used : $run_info" >>  $output_dir/log.txt
 	
-	#### sge paramters
+	###########################################################
+	#### sge paramtersff
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
-	args="-V -wd $output_dir/logs -q $queue -m ae -M $TO -l h_stack=10M"
+	args="-V -wd $output_dir/logs -q $queue -m a -M $TO -l h_stack=10M"
 	#############################################################
 	### get the identification number for this run.
-	unique_id=`$java/java -jar $script_path/AddGPSMetadata.jar -p $script_path/AddGPSMetadata.properties -t $type -a begin -I -r $run_num -s $run_num -u $TO`
-	echo -e "\nIDENTIFICATION_NUMBER=$unique_id" >> $run_info
-	
+	unique_id=`$java/java -Xmx1g -jar $script_path/AddGPSMetadata.jar -p $script_path/AddGPSMetadata.properties -t $type -a begin -I -r $run_num -s $run_num -u $TO`
+	if echo $unique_id | egrep -q '^[0-9]+$'
+	then
+		echo -e "IDENTIFICATION_NUMBER=$unique_id" >> $run_info
+	else
+		echo "ERROR : unique identification for the workflow was not generated"
+		exit 1;
+	fi	
 	if [ $multi_sample != "YES" ]
 	then
 		echo "Single sample"
@@ -234,11 +238,13 @@ else
 					for ((i=1; i <=$num_bams; i++));
 					do
 						bam=`echo $infile | awk -v num=$i '{print $num}'`
-						$samtools/samtools view -H $input/$bam 2> $align_dir/$sample.$i.sorted.bam.log
-						if [ `cat $align_dir/$sample.$i.sorted.bam.log | wc -l` -gt 0 ]
+						$samtools/samtools view -H $input/$bam 2> $align_dir/$sample.$i.sorted.bam.fix.log
+						if [ `cat $align_dir/$sample.$i.sorted.bam.fix.log | wc -l` -gt 0 ]
 						then
 							echo "$input/$bam : bam file is truncated or corrupted" 	
 							exit 1;
+						else
+							rm $align_dir/$sample.$i.sorted.bam.fix.log
 						fi
 						ln -s $input/$bam $realign_dir/$sample.$i.sorted.bam						
 					done
@@ -255,7 +261,7 @@ else
 					variant_id="$type.$version.realign_recal.$sample.$run_num"
 				fi
 				sleep 5
-				qsub $args -N $type.$version.igv_bam.$sample.$run_num -l h_vmem=2G -hold_jid $variant_id $script_path/igv_bam.sh $output_dir/realign $output_dir/IGV_BAM $sample $output_dir/alignment $run_info
+				qsub $args -N $type.$version.igv_bam.$sample.$run_num -l h_vmem=2G -hold_jid $variant_id,$type.$version.extract_reads_bam.$sample.$run_num $script_path/igv_bam.sh $output_dir/realign $output_dir/IGV_BAM $sample $output_dir/alignment $run_info
 				sleep 5
 				qsub $args -N $type.$version.variants.$sample.$run_num -hold_jid $variant_id -pe threaded $threads -l h_vmem=4G -t 1-$numchrs:1 $script_path/variants.sh $realign_dir $sample $variant_dir 1 $run_info
 				sleep 5
@@ -344,7 +350,7 @@ else
 					hold="-hold_jid $type.$version.run_single_crest.sh.$sample.$run_num,$type.$version.run_cnvnator.$sample.$run_num,$type.$version.run_breakdancer.$sample.$run_num,$type.$version.run_breakdancer_in.$sample.$run_num"
 					mkdir -p $output_dir/Reports_per_Sample/SV
 					sleep 5
-					qsub $args -N $type.$version.summaryze_struct_single.$sample.$run_num -l h_vmem=4G $hold $script_path/summaryze_struct_single.sh $sample $output_dir $run_info
+					qsub $args -N $type.$version.summaryze_struct_single.$sample.$run_num -l h_vmem=5G $hold $script_path/summaryze_struct_single.sh $sample $output_dir $run_info
 					sleep 5
 					qsub $args -N $type.$version.plot_circos_cnv_sv.$sample.$run_num -hold_jid $type.$version.summaryze_struct_single.$sample.$run_num -l h_vmem=2G $script_path/plot_circos_cnv_sv.sh $break/$sample/$sample.break $crest/$sample/$sample.filter.crest $cnv/$sample.cnv.filter.bed $sample $output_dir/circos $run_info	
 				fi
@@ -542,7 +548,7 @@ else
 				id=""
 				for sample in $samples
 				do
-					id=$id"$type.$version.processBAM.$sample.$run_num,"
+					id=$id"$type.$version.processBAM.$sample.$run_num,$type.$version.extract_reads_bam.$sample.$run_num"
 				done    
 				sleep 5
 				qsub $args -N $type.$version.realign_recal.$group.$run_num -hold_jid $id -l h_vmem=8G -t 1-$numchrs:1 $script_path/realign_recal.sh $input_dirs $bam_samples $names_samples $realign_dir $run_info 1
@@ -559,7 +565,7 @@ else
 			sleep 5
 			qsub $args -N $type.$version.OnTarget_BAM.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=2G -t 1-$numchrs:1 $script_path/OnTarget_BAM.sh $output_dir/IGV_BAM $output_dir/OnTarget $group $run_info
 			sleep 5
-			qsub $args -N $type.$version.OnTarget_PILEUP.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=6G -t 1-$numchrs:1 $script_path/OnTarget_PILEUP.sh $output_dir/IGV_BAM $output_dir/OnTarget $group $run_info
+			qsub $args -N $type.$version.OnTarget_PILEUP.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=6G -t 1-$numchrs:1 $script_path/OnTarget_PILEUP.sh $realign_dir $output_dir/OnTarget $group $run_info
 			sleep 5
 			qsub $args -N $type.$version.getCoverage.$group.$run_num -hold_jid $type.$version.OnTarget_PILEUP.$group.$run_num -l h_vmem=2G $script_path/getCoverage.sh $output_dir/OnTarget $output_dir/numbers $group $run_info
 			sleep 5
@@ -589,7 +595,8 @@ else
 			sleep 5
 			qsub $args -N $type.$version.sample_reports.$group.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=4G $script_path/sample_reports.sh $run_info $group $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir TUMOR
 			sleep 5
-			qsub $args -N $type.$version.sample_report.$group.$run_num -l h_vmem=2G -hold_jid $type.$version.sample_reports.$group.$run_num $script_path/sample_report.sh $output_dir $TempReports $group $run_info TUMOR         if [ $tool == "whole_genome" ]
+			qsub $args -N $type.$version.sample_report.$group.$run_num -l h_vmem=2G -hold_jid $type.$version.sample_reports.$group.$run_num $script_path/sample_report.sh $output_dir $TempReports $group $run_info TUMOR
+                        if [ $tool == "whole_genome" ]
 			then
 				crest=$output_dir/struct/crest
 				break=$output_dir/struct/break
@@ -619,7 +626,7 @@ else
 				done
 				hhold="$id,$type.$version.run_segseq.$group.$run_num,$type.$version.run_crest_multi.$group.$run_num"
 				sleep 5
-				qsub $args -N $type.$version.summaryze_struct_group.$group.$run_num -l h_vmem=4G -hold_jid $hhold $script_path/summaryze_struct_group.sh $group $output_dir $run_info
+				qsub $args -N $type.$version.summaryze_struct_group.$group.$run_num -l h_vmem=5G -hold_jid $hhold $script_path/summaryze_struct_group.sh $group $output_dir $run_info
 				mkdir -p $output_dir/circos;
 				for i in $(seq 2 ${#sampleArray[@]})
 				do  

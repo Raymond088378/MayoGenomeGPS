@@ -92,7 +92,7 @@ else
 	if [ "$status" -le 1 ]
 	then
 		$blat/gfServer start localhost $blat_port -log=$output_dir/$sample/log/blat.$sample.$chr.txt $blat_ref  &
-		sleep 3m
+		sleep 4m
 	fi
 
 	$crest/extractSClip.pl -i $input_bam -r chr$chr --ref_genome $ref_genome -o $output_dir/$sample -p $sample
@@ -109,8 +109,9 @@ else
 		then
 			rm $output_dir/$sample/log/blat.$sample.$chr.txt
 			$blat/gfServer start localhost $blat_port -log=$output_dir/$sample/log/blat.$sample.$chr.txt $blat_ref  &
-			sleep 3m
+			sleep 4m
 		fi
+		status=`$blat/gfServer status localhost $blat_port | wc -l`;
     done 	
 	cd $crest    
 	if [ -f $output_dir/$sample/$sample.chr$chr.cover ]

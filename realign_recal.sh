@@ -37,8 +37,7 @@ else
 			id=`echo $samples | awk -v sample=$i -F ':' '{ for(i=1;i<=NF;i++){ if ($i == sample) {print i} } }'`
 			in=`echo $input | cut -d ":" -f "$id"`
 			bb=`echo $bam | cut -d ":" -f "$id"`
-			size=`du -b $in/$bb | sed 's/\([0-9]*\).*/\1/'`
-			$script_path/filesize.sh Realignment $i $bb $JOB_ID $size $run_info
+			$script_path/filesize.sh Realignment $i $in $bb $JOB_ID $size $run_info
 		done
 	fi    
 	
@@ -81,20 +80,19 @@ else
 		done
     fi    
 	### file name will be chr*.cleaned.bam
-	$samtools/samtools view -H $output_bam/chr$chr.cleaned.bam 2>$output_bam/chr$chr.cleaned.bam.log
-	if [ `cat $output_bam/chr$chr.cleaned.bam.log | wc -l` -gt 0 ]
+	$samtools/samtools view -H $output_bam/chr$chr.cleaned.bam 2>$output_bam/chr$chr.cleaned.bam.fix.log
+	if [ `cat $output_bam/chr$chr.cleaned.bam.fix.log | wc -l` -gt 0 ]
 	then
 		echo "$output_bam/chr$chr.cleaned.bam : BAM file is truncated or corrupt"
 		exit 1;
 	else
-		rm $output_bam/chr$chr.cleaned.bam.log
+		rm $output_bam/chr$chr.cleaned.bam.fix.log
 	fi	
-	size=`du -b $output_bam/chr$chr.cleaned.bam | sed 's/\([0-9]*\).*/\1/'`
 	if [ `echo $samples | tr ":" "\n" | wc -l` -gt 1 ]
 	then
-		$script_path/filesize.sh Realignment multi_sample chr$chr.cleaned.bam $JOB_ID $size $run_info
+		$script_path/filesize.sh Realignment multi_sample $output_bam chr$chr.cleaned.bam $JOB_ID $size $run_info
 	else
-		$script_path/filesize.sh Realignment $samples chr$chr.cleaned.bam $JOB_ID $size $run_info
+		$script_path/filesize.sh Realignment $samples $output_bam chr$chr.cleaned.bam $JOB_ID $size $run_info
 	fi
 	echo `date`
 fi	

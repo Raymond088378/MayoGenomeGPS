@@ -4,7 +4,6 @@ if [ $# != 7 ]
 then
     echo -e "Usage: stand alone script for annotation using single sample and single vcf or text file \n <sample name><vcf or txt file><output folder><tool_info file> <genome build><single/multi><script_path>"
 else
-	set -x
 	echo -e "\n ************************************************** \n"
 	echo " Started the annotation for your data on `date` "
 	sample=$1
@@ -16,12 +15,6 @@ else
 	script_path=$7
 	## paths
 	mkdir -p $output
-	#script_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-	#if [ ${#script_path} -eq 0 ]
-	#then
-	#	echo "Please enter full path to the annotation script"
-	#	exit 1;
-	#fi
 	snpeff=$( cat $tool_info | grep -w '^SNPEFF' | cut -d '=' -f2)
 	sift=$( cat $tool_info | grep -w '^SIFT' | cut -d '=' -f2)
 	pph=$(cat $tool_info | grep -w '^POLYPHEN' |  cut -d '=' -f2)
@@ -130,7 +123,7 @@ else
 	echo " dbSNP columns added to the report "
 
 	### Add Frequencies
-	cat $file.rsIDs | awk 'NR>1' | cut -f 1,2,3,4,5 > $file.rsIDs.forFrequencies
+	cat $file.rsIDs | awk 'NR>1' | cut -f 1-5 > $file.rsIDs.forFrequencies
 	echo " adding allele frequencies to the report "
 	$script_path/add_hapmap_1kgenome_allele_freq.pl -i $file.rsIDs.forFrequencies -c 1 -p 2 -b 1 -e CEU -s $hapmap/all_allele_freqs_CEU.txt -g $kgenome/CEU.$GenomeBuild -o $file.rsIDs.CEU&&perl $script_path/add_hapmap_1kgenome_allele_freq.pl -i $file.rsIDs.CEU -c 1 -p 2 -b 1 -e YRI -s $hapmap/all_allele_freqs_YRI.txt -g $kgenome/YRI.$GenomeBuild -o $file.rsIDs.CEU.YRI&&perl $script_path/add_hapmap_1kgenome_allele_freq.pl -i $file.rsIDs.CEU.YRI -c 1 -p 2 -b 1 -e JPT+CHB -s $hapmap/all_allele_freqs_JPT+CHB.txt -g $kgenome/JPT+CHB.$GenomeBuild -o $file.rsIDs.CEU.YRI.CHBJPT.txt
 	rm $file.rsIDs.CEU $file.rsIDs.CEU.YRI
@@ -277,7 +270,7 @@ else
 	rm $file.forrsIDs.added $file.forrsIDs.added.disease $file $file.forrsIDs
 	## Frequency
 	cosmic=$( cat $tool_info | grep -w '^COSMIC_INDEL_REF' | cut -d '=' -f2)
-	cat $file.rsIDs | awk 'NR>1' | cut -f 1,2,3,4,5 > $file.rsIDs.forfrequencies
+	cat $file.rsIDs | awk 'NR>1' | cut -f 1-5 > $file.rsIDs.forfrequencies
 	perl $script_path/add.cosmic.pl $file.rsIDs.forfrequencies 0 $cosmic $GenomeBuild 1 $file.rsIDs.forfrequencies.cosmic.txt
 	rm $file.rsIDs.forfrequencies
 	perl $script_path/extract.allele_freq.pl -i $file.rsIDs -f $file.rsIDs.forfrequencies.cosmic.txt -o $file.rsIDs.frequencies -v INDEL
