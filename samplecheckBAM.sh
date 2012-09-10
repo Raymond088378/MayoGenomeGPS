@@ -16,7 +16,7 @@ else
     then
         echo "already there"
     else
-        mkdir $output/temp
+        mkdir -p $output/temp
     fi
     
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
@@ -27,10 +27,20 @@ else
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     max_reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
     
-    check=`[ -f $input/$bam.bai ] && echo "1" || echo "0"`
+    $samtools/samtools view -H $input/$bam 2>$input/$bam.fix.log
+	
+	if [ `cat $input/$bam.fix.log | wc -l` -gt 0 ]
+	then
+		echo "ERROR : $input/$bam is truncated or corrupted"
+		exit 1;
+	else
+		rm $input/$bam.fix.log
+	fi	
+	
+	check=`[ -f $input/$bam.bai ] && echo "1" || echo "0"`
     if [ $check -eq 0 ]
     then
-        ln -s $input/$bam $output/$bam.$chr.bam
+		ln -s $input/$bam $output/$bam.$chr.bam
         $samtools/samtools index $output/$bam.$chr.bam
     else
         ln -s $input/$bam $output/$bam.$chr.bam
@@ -40,7 +50,7 @@ else
     ## extracting the BAM for specific chromosome
     if [ $chopped == 0 ]
     then
-        $samtools/samtools view -b  $output/$bam.$chr.bam chr${chr} > $output/$sample.chr${chr}.bam
+        $samtools/samtools view -b $output/$bam.$chr.bam chr${chr} > $output/$sample.chr${chr}.bam
         $samtools/samtools index $output/$sample.chr${chr}.bam
     else
         ln -s  $output/$bam.$chr.bam $output/$sample.chr${chr}.bam

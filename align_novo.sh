@@ -82,8 +82,7 @@ else
 				echo "ERROR : $fastq/filename${j} does not exist"
 				exit 1;
 			else		
-				size=`du -b $fastq/filename${j} | sed 's/\([0-9]*\).*/\1/'`
-				$script_path/filesize.sh alignment $sample filename${j} $JOB_ID $size $run_info
+				$script_path/filesize.sh alignment $sample $fastq filename${j} $JOB_ID $size $run_info
             fi
 			 let j=j+1
         done
@@ -105,8 +104,7 @@ else
 			echo "ERROR : $fastq/$filename1 does not exist"
 			exit 1;
 		else
-			size=`du -b $fastq/$filename1 | sed 's/\([0-9]*\).*/\1/'`
-			$script_path/filesize.sh alignment $sample $filename1 $JOB_ID $size $run_info
+			$script_path/filesize.sh alignment $sample $fastq $filename1 $JOB_ID $run_info
 		fi
     fi    
     ILL2SANGER1=`perl $script_path/checkFastqQualityScores.pl $fastq/$filename1 1000`
@@ -144,8 +142,7 @@ else
         $script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.sam align_novo.sh ERROR empty
         exit 1;
     else
-        size=`du -b $output_dir_sample/$sample.$SGE_TASK_ID.sam | sed 's/\([0-9]*\).*/\1/'`
-		$script_path/filesize.sh alignment $sample $sample.$SGE_TASK_ID.sam $JOB_ID $size $run_info
+		$script_path/filesize.sh alignment.out $sample $output_dir_sample $sample.$SGE_TASK_ID.sam $JOB_ID $run_info
 		if [ $paired == 0 ]
         then
             rm $fastq/$filename1

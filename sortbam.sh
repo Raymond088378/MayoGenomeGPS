@@ -27,8 +27,10 @@ else
     MAX_RECORDS_IN_RAM=$reads \
     SO=$order \
     TMP_DIR=$tmp_dir \
+	CREATE_INDEX=true \
     VALIDATION_STRINGENCY=SILENT	
-    
+    file=`echo $outbam | sed -e 's/\(.*\)..../\1/'`
+	mv $file.bai $file.bam.bai
     
     if [ ! -s $outbam ]
     then
@@ -38,7 +40,7 @@ else
         $samtools/samtools view -H $outbam 2> $outbam.log
 		if [ `cat $outbam.log | wc -l` -gt 0 ]
 		then
-			echo "$outbam :bam is truncated or corrupted "
+			$script_path/errorlog.sh rmdup.sh $outbam ERROR "truncated or corrupted"
 			exit 1;
 		else
 			rm $outbam.log
@@ -46,8 +48,10 @@ else
 		rm $inbam
         if [ $index == "TRUE" ]
         then
-            $samtools/samtools index $outbam
-        fi    
+            echo "index already created"
+        else
+			rm $file.bam.bai
+		fi    
     fi
     echo `date`
 fi

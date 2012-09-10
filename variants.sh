@@ -64,9 +64,9 @@ else
 		
 	if [ `echo $samples | tr ":" "\n" | wc -l` -gt 1 ]
 	then
-		$script_path/filesize.sh VariantCalling multi_sample $input $bam $JOB_ID $size $run_info
+		$script_path/filesize.sh VariantCalling multi_sample $input $bam $JOB_ID $run_info
 	else
-		$script_path/filesize.sh VariantCalling $samples $input $bam $JOB_ID $size $run_info
+		$script_path/filesize.sh VariantCalling $samples $input $bam $JOB_ID $run_info
 	fi
 	
 	## update dashborad
@@ -157,8 +157,6 @@ else
 				fi
 				$tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
 				mv $output/$sample.variants.chr${chr}.raw.all.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.multi.vcf
-				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $chr $run_info "$bam" 
-				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $chr $run_info "$bam"
 			else
 				param="-L chr${chr}"
 				bam="-I $output/$sample.chr${chr}-sorted.bam"
@@ -169,8 +167,8 @@ else
 					$script_path/phaseByTransmission.sh $output/$sample.variants.chr${chr}.raw.all.vcf $output/$sample.variants.chr${chr}.raw.all.pbt.vcf $run_info
 				fi
 				mv $output/$sample.variants.chr${chr}.raw.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.multi.vcf
-				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $chr $run_info "$bam" 
-				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $chr $run_info "$bam" 
+				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info "$bam" 
+				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam" 
 			fi
 		elif [ $SNV_caller == "SNVMIX" ]
 		then
@@ -185,13 +183,12 @@ else
 				### call snvs using SNVmix
 				$script_path/snvmix2.sh $sample "$bam" $output/$sample.variants.chr${chr}.raw.snv.all.vcf all "$param" $run_info
 				### annoatte vcf
-				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.snv.all.vcf $chr $run_info "$bam"
+				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.snv.all.vcf $run_info "$bam"
 				### merge snvs and indels to give on vcf
 				in="$output/$sample.variants.chr${chr}.raw.snv.all.vcf $output/$sample.variants.chr${chr}.raw.indel.all.vcf "
 				$script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.all.vcf $run_info yes
-				in="$output/$sample.variants.chr${chr}.raw.snv.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.indel.vcf.multi.vcf"
-				$script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.vcf.multi.vcf $run_info yes
-				mv $output/$sample.variants.chr${chr}.raw.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.multi.vcf
+				in="$output/$sample.variants.chr${chr}.raw.snv.all.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.indel.all.vcf.multi.vcf"
+				$script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info yes
 				cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "." || $0 ~ /^#/' | grep -v "\./\."  | grep -v "0\/0" > $output/$sample.variants.chr${chr}.raw.vcf
 				if [[ $len -gt 0 && $only_ontarget == "YES" ]]
 				then
@@ -199,8 +196,6 @@ else
 					mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
 				fi
 				$tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
-				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $chr $run_info "$bam" 
-				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $chr $run_info "$bam"
 			else
 				## call indeles using GATK
 				param="-L chr${chr}"
@@ -218,8 +213,8 @@ else
 				$script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.vcf $run_info yes
 				in="$output/$sample.variants.chr${chr}.raw.snv.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.indel.vcf.multi.vcf"
 				$script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info yes
-				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $chr $run_info "$bam" 
-				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $chr $run_info "$bam"
+				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info "$bam" 
+				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam"
 				
 			fi
 		elif [ $SNV_caller == "BEAUTY_EXOME" ]
@@ -240,11 +235,11 @@ else
 			input_var="-V:GATK $output/$sample.variants.chr${chr}.raw.gatk.vcf -V:SNVMix $output/$sample.variants.chr${chr}.raw.snvmix.vcf -priority GATK,SNVMix"
 			#Combine Variants
 			$script_path/combinevcf.sh "$input_var" ${output}/$sample.variants.chr${chr}.raw.vcf $run_info yes
-			$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $chr $run_info "$bam" 
+			$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam" 
 			input_var=""
 			input_var="-V:GATK $output/$sample.variants.chr${chr}.raw.gatk.vcf.multi.vcf -V:SNVMix $output/$sample.variants.chr${chr}.raw.snvmix.vcf.multi.vcf -priority GATK,SNVMix"
 			$script_path/combinevcf.sh "$input_var" ${output}/$sample.variants.chr${chr}.raw.multi.vcf $run_info yes
-			$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $chr $run_info "$bam" 	
+			$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info "$bam" 	
 		fi
 	else
 		## assuming that normal is the first column/sample
@@ -291,7 +286,7 @@ else
 				#Add back the annotations that were lost (i.e. SomaticScore JSM_Prob
 				### annotate vcfs
 				in_bam="-I $input/$bam -resource:ss $output/$sample.chr$chr.snv.ss.vcf -resource:jsm $output/$sample.chr$chr.snv.jsm.vcf -resource:mutect $output/$sample.chr$chr.snv.mutect.vcf -E ss.SS -E ss.SSC -E jsm.PGERM -E jsm.PHETMUT -E jsm.PHOMMUT -E jsm.PLOH -E jsm.PPS -E jsm.PSOM -E mutect.MUTX -E mutect.POW -E mutect.MUTX_LOD"
-				$script_path/annotate_vcf.sh $output/$sample.chr${chr}.snv.vcf $chr $run_info "$in_bam"
+				$script_path/annotate_vcf.sh $output/$sample.chr${chr}.snv.vcf $run_info "$in_bam"
 				rm $output/$sample.chr$chr.snv.ss.vcf $output/$sample.chr$chr.snv.jsm.vcf $output/$sample.chr$chr.snv.mutect.vcf
 				rm $output/$sample.chr$chr.snv.ss.vcf.idx $output/$sample.chr$chr.snv.jsm.vcf.idx $output/$sample.chr$chr.snv.mutect.vcf.idx
 				input_var="-V:MuTect $output/$sample.chr$chr.snv.mutect.vcf.multi.vcf -V:JSM $output/$sample.chr$chr.snv.jsm.vcf.multi.vcf -V:SomSniper $output/$sample.chr$chr.snv.ss.vcf.multi.vcf -priority SomSniper,JSM,MuTect"
@@ -301,7 +296,7 @@ else
 				#Add back the annotations that were lost (i.e. SomaticScore JSM_Prob
 				### annotate vcfs
 				in_bam="-I $input/$bam -resource:ss $output/$sample.chr$chr.snv.ss.vcf.multi.vcf -resource:jsm $output/$sample.chr$chr.snv.jsm.vcf.multi.vcf -resource:mutect $output/$sample.chr$chr.snv.mutect.vcf.multi.vcf -E ss.SS -E ss.SSC -E jsm.PGERM -E jsm.PHETMUT -E jsm.PHOMMUT -E jsm.PLOH -E jsm.PPS -E jsm.PSOM -E mutect.MUTX -E mutect.POW -E mutect.MUTX_LOD"
-				$script_path/annotate_vcf.sh $output/$sample.chr${chr}.snv.vcf.multi.vcf $chr $run_info "$in_bam"
+				$script_path/annotate_vcf.sh $output/$sample.chr${chr}.snv.vcf.multi.vcf $run_info "$in_bam"
 				rm $output/$sample.chr$chr.snv.ss.vcf.multi.vcf $output/$sample.chr$chr.snv.jsm.vcf.multi.vcf $output/$sample.chr$chr.snv.mutect.vcf.multi.vcf
 				rm $output/$sample.chr$chr.snv.ss.vcf.multi.vcf.idx $output/$sample.chr$chr.snv.jsm.vcf.multi.vcf.idx $output/$sample.chr$chr.snv.mutect.vcf.multi.vcf.idx
 				#remove old files
@@ -310,12 +305,12 @@ else
 			in_bam="-I $input/$bam"
 			if [ $somatic_caller != "BEAUTY_EXOME" ]
 			then
-				$script_path/annotate_vcf.sh $output/$sample.chr$chr.snv.vcf $chr $run_info "$in_bam"
+				$script_path/annotate_vcf.sh $output/$sample.chr$chr.snv.vcf $run_info "$in_bam"
 			fi
 			### somatic indel calling
 			$script_path/somaticindel.sh $output/$tumor $output/$normal $chr $sample $output $sample.chr$chr.indel.vcf $run_info
 			### annoatte vcfs
-			$script_path/annotate_vcf.sh $output/$sample.chr$chr.indel.vcf $chr $run_info "$in_bam"
+			$script_path/annotate_vcf.sh $output/$sample.chr$chr.indel.vcf $run_info "$in_bam"
 		done
 		## Germline calling
 		param="-L chr${chr}"
@@ -343,16 +338,16 @@ else
 			input_var="-V:GATK $output/variants.chr${chr}.raw.gatk.vcf -V:SNVMIX ${output}/variants.chr${chr}.raw.snvmix.vcf -priority GATK,SNVMIX"
 			#Combine Variants
 			$script_path/combinevcf.sh "$input_var" ${output}/variants.chr${chr}.raw.vcf $run_info yes
-			$script_path/annotate_vcf.sh $output/variants.chr${chr}.raw.vcf $chr $run_info "$bam"
+			$script_path/annotate_vcf.sh $output/variants.chr${chr}.raw.vcf $run_info "$bam"
 			input_var="-V:GATK $output/variants.chr${chr}.raw.gatk.vcf.multi.vcf -V:SNVMIX ${output}/variants.chr${chr}.raw.snvmix.vcf.multi.vcf -priority GATK,SNVMIX"
 			#Combine Variants
 			$script_path/combinevcf.sh "$input_var" ${output}/variants.chr${chr}.raw.multi.vcf $run_info yes
-			$script_path/annotate_vcf.sh $output/variants.chr${chr}.raw.multi.vcf $chr $run_info "$bam"
+			$script_path/annotate_vcf.sh $output/variants.chr${chr}.raw.multi.vcf $run_info "$bam"
 		else
 			mv $output/variants.chr${chr}.raw.gatk.vcf ${output}/variants.chr${chr}.raw.vcf
 			mv $output/variants.chr${chr}.raw.gatk.vcf.multi.vcf $output/variants.chr${chr}.raw.multi.vcf
-			$script_path/annotate_vcf.sh ${output}/variants.chr${chr}.raw.vcf $chr $run_info "$bam"
-			$script_path/annotate_vcf.sh $output/variants.chr${chr}.raw.multi.vcf $chr $run_info "$bam"
+			$script_path/annotate_vcf.sh ${output}/variants.chr${chr}.raw.vcf $run_info "$bam"
+			$script_path/annotate_vcf.sh $output/variants.chr${chr}.raw.multi.vcf $run_info "$bam"
 		fi		
 	fi
 	if [ $tool == "exome" ]
@@ -420,7 +415,7 @@ else
 		rm $output/${sampleArray[1]}.chr$chr-sorted.bam
 		rm $output/${sampleArray[1]}.chr$chr-sorted.bam.bai
 		### update the file size
-		$script_path/filesize.sh VariantCalling ${sampleArray[1]} $output ${sampleArray[1]}.variants.chr$chr.raw.vcf $JOB_ID $size $run_info
+		$script_path/filesize.sh VariantCalling ${sampleArray[1]} $output ${sampleArray[1]}.variants.chr$chr.raw.vcf $JOB_ID $run_info
 	fi
 	if [ ${#sampleArray[@]} -gt 1 ]
 	then
@@ -447,8 +442,8 @@ else
 			rm $output/${sampleArray[$i]}.chr$chr-sorted.bam
 			rm $output/${sampleArray[$i]}.chr$chr-sorted.bam.bai
 		done
-		$script_path/filesize.sh VariantCalling multi_sample $output variants.chr$chr.raw.vcf $JOB_ID $size $run_info
-		$script_path/filesize.sh VariantCalling multi_sample $output MergeAllSamples.chr$chr.raw.vcf $JOB_ID $size $run_info
+		$script_path/filesize.sh VariantCalling multi_sample $output variants.chr$chr.raw.vcf $JOB_ID $run_info
+		$script_path/filesize.sh VariantCalling multi_sample $output MergeAllSamples.chr$chr.raw.vcf $JOB_ID $run_info
 	fi
 	
 	

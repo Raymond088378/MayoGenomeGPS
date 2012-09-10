@@ -4,7 +4,7 @@
 ###### 	MASTER SCRIPT FOR WHOLE GENOME ANALYSIS PIPELINE
 
 ######		Program:			whole_genome_pipeline.sh
-######		Date:				06/05/2012
+######		Date:				09/07/2012
 ######		Summary:			Master script encompassing subscripts for alignment, remove duplicates, realignment, 
 ######                          	recalibration, fastqc, variant calling and final filtering of variants.
 ######		Input files:		$1	=	/path/to/run_info.txt
@@ -20,10 +20,10 @@ else
 	echo `date`
 	run_info=$1
 	dos2unix $run_info
-	if [ `perl -v 1 | tr " " "\n" | grep '^v'` != "v5.10.0" ]
+	if [ `perl -v 2>&1 | tr " " "\n" | grep '^v'` != "v5.10.0" ]
 	then
 		echo -e "\nperl path is not correct in your enviornment"
-		echo "Perl path should point to /usr/local/biotools/perl/5.10.0/bin/perl if the user use the command which perl, user can change this using mayobiotools"
+		echo "Perl path should point to /usr/local/biotools/perl/5.10.0/bin/perl if the user use the command which perl and user can change this using mayobiotools"
 		exit 1;
 	fi
 	dir_info=`dirname $run_info`
@@ -41,9 +41,21 @@ else
 	cat $run_info | sed -e "s/ *$//" | sed -e "s/^ *//" > $run_info.tmp
 	mv $run_info.tmp $run_info
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
+	if [ ! -s $tool_info ]
+	then
+		echo "ERROR : tool_info=$tool_info does not exist \n";
+		exit 1;
+	else
+		dos2unix $tool_info
+	fi
 	sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
-	dos2unix $sample_info
-	dos2unix $tool_info
+	if [ ! -s $sample_info ]
+	then
+		echo "ERROR : sample_info=$sample_info does not exist \n";
+		exit 1;
+	else
+		dos2unix $sample_info
+	fi
 	## removing trailing and leading spaces
 	cat $sample_info | sed -e "s/ *$//" | sed -e "s/^ *//" > $sample_info.tmp
 	mv $sample_info.tmp $sample_info
@@ -76,7 +88,7 @@ else
 	if [[ $somatic_caller == "JOINTSNVMIX" || $somatic_caller == "BEAUTY_EXOME" ]]
 	then
 		python_path=`which python`
-		if [ $python_path != "/usr/local/biotools/python/2.7/bin/python" ]
+		if [ `python -V  2>&1 | tr " " "\n" | grep -v Python` !=  "2.7" ]
 		then
 			echo -e "\n python path is not correct in your enviorment"
 			echo " Python path should point to /usr/local/biotools/python/2.7/bin/python if the user use the command which python, user can change this using mayobiotools"
@@ -318,7 +330,7 @@ else
 					sleep 5
 					qsub $args -N $type.$version.sift.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $sample $run_info
 					sleep 5
-					qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=6G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info	    	
+					qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -pe threaded $threads -t 1-$numchrs:1 -l h_vmem=3G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info	    	
 				fi
 				sleep 5
 				qsub $args -N $type.$version.snpeff.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info		
@@ -518,7 +530,7 @@ else
 
 		for group in `echo $groups | tr ":" "\n"`
 		do
-			sleep 10
+			sleep 5
 			samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" "\n")
 			bam_samples=""
 			input_dirs=""
@@ -590,9 +602,9 @@ else
 			qsub $args -N $type.$version.snpeff.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $group $run_info TUMOR
 			##POLYPHEN
 			sleep 5
-			qsub $args -N $type.$version.polyphen.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=6G $script_path/polyphen.sh $polyphen $output_OnTarget $group $run_info  
+			qsub $args -N $type.$version.polyphen.$group.$run_num $hold_args -t 1-$numchrs:1 -pe threaded $threads -l h_vmem=3G $script_path/polyphen.sh $polyphen $output_OnTarget $group $run_info  
 			sleep 5
-			qsub $args -N $type.$version.polyphen.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=6G $script_path/polyphen.sh $polyphen $output_OnTarget $group $run_info TUMOR
+			qsub $args -N $type.$version.polyphen.$group.$run_num $hold_args -t 1-$numchrs:1 -pe threaded $threads -l h_vmem=3G $script_path/polyphen.sh $polyphen $output_OnTarget $group $run_info TUMOR
 			hold="$type.$version.sift.$group.$run_num,$type.$version.snpeff.$group.$run_num,$type.$version.polyphen.$group.$run_num"
 			sleep 5
 			qsub $args -N $type.$version.sample_reports.$group.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=4G $script_path/sample_reports.sh $run_info $group $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir

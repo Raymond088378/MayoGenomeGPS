@@ -10,7 +10,7 @@ script_path=$9
 sample=${10}
 	
 	
-	$java/java -Xmx2g -Xms512m -jar $snpeff/snpEff.jar eff -chr chr -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.SNV.vcf | $script_path/snpeff.pl > $output/$sample.SNV.eff
+	$java/java -Xmx2g -Xms512m -jar $snpeff/snpEff.jar eff -o txt -chr chr -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.SNV.vcf | $script_path/snpeff.pl > $output/$sample.SNV.eff
 	$java/java -Xmx2g -Xms512m -jar $snpeff/snpEff.jar eff -chr chr -o vcf -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.SNV.vcf | awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"3.0c (build 2012-07-30), by Pablo Cingolani\""; else print $0;}' > $output/$ff.SNV.vcf.eff.vcf
 	$java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
 	-T VariantAnnotator \
@@ -45,7 +45,7 @@ sample=${10}
 	if [ $num_indels -ge 1 ]
 	then
 	
-		$java/java -Xmx2g -Xms512m -jar $snpeff/snpEff.jar eff -chr chr -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.INDEL.vcf | $script_path/snpeff.pl > $output/$sample.INDEL.eff
+		$java/java -Xmx2g -Xms512m -jar $snpeff/snpEff.jar eff -o txt -chr chr -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.INDEL.vcf | $script_path/snpeff.pl > $output/$sample.INDEL.eff
 		$java/java -Xmx2g -Xms512m -jar $snpeff/snpEff.jar eff -o vcf -chr chr -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.INDEL.vcf | awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"3.0c (build 2012-07-30), by Pablo Cingolani\""; else print $0;}' > $output/$ff.INDEL.vcf.eff.vcf
 
 		### use GATK to filter the multiple transcript

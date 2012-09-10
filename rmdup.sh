@@ -30,17 +30,31 @@ else
     ASSUME_SORTED=$sorted \
     REMOVE_DUPLICATES=$remove \
     MAX_FILE_HANDLES=$files \
-    VALIDATION_STRINGENCY=SILENT \
+    CREATE_INDEX=true \
+	VALIDATION_STRINGENCY=SILENT \
     CO=MarkDuplicates \
     TMP_DIR=$tmp_dir
-    
+	file=`echo $outbam | sed -e 's/\(.*\)..../\1/'`
+	mv $file.bai $file.bam.bai
+	
     if [ -s $outbam ]
     then
-        mv $outbam $inbam
-        if [ $index == "TRUE" ]
+       $samtools/samtools view -H $outbam 2> $outbam.log
+		if [ `cat $outbam.log | wc -l` -gt 0 ]
+		then
+			$script_path/errorlog.sh rmdup.sh $outbam ERROR "truncated or corrupted"
+			exit 1;
+		else
+			rm $outbam.log
+		fi	
+		
+		mv $outbam $inbam
+        if [ $index == "FALSE" ]
         then
-            $samtools/samtools index $inbam
-        fi
+            rm $file.bam.bai
+        else
+			mv $outbam.bai $inbam.bai
+		fi
     else
         $script_path/errorlog.sh rmdup.sh $outbam ERROR empty
 		exit 1;

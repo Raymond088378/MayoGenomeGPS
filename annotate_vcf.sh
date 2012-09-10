@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ $# != 4 ]
+if [ $# != 3 ]
 then
     echo -e "Usage: to annotate vcf files \n <input vcf file><chromosome><run info file></path/to/tumor bam> </path/to/normal bam> "
 else
@@ -8,9 +8,8 @@ else
     echo `date`
     
     vcf=$1
-    chr=$2
-    run_info=$3
-    input=$4
+    run_info=$2
+    input=$3
     
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)

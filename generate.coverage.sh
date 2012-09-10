@@ -35,7 +35,7 @@ else
 		samples=""
 		for group in $groups
 		do
-			for sam in `cat $sample_info | grep "^$group" | cut -f2 -d '=' | tr "\t" " "`
+			for sam in `cat $sample_info | grep -w "^$group" | cut -f2 -d '=' | tr "\t" " "`
 			do
 				samples=$samples"$group.$sam "
 			done

@@ -25,14 +25,25 @@ else
     MAX_RECORDS_IN_RAM=$reads \
     OUTPUT=$outbam \
     TMP_DIR=$tmp_dir \
-    CREATE_INDEX=false \
+    CREATE_INDEX=true \
     VALIDATION_STRINGENCY=SILENT
+    file=`echo $outbam | sed -e 's/\(.*\)..../\1/'`
+	mv $file.bai $file.bam.bai
     
-    if [ ! -s $outbam ]
+	if [ ! -s $outbam ]
     then
         $script_path/errorlog.sh $outbam MergeBam.sh ERROR empty
 		exit 1;
 	else
+		$samtools/samtools view -H $outbam 2>$outbam.fix.log
+		if [ `cat $outbam.fix.log | wc -l` -gt 0 ]
+		then
+			$script_path/errorlog.sh $outbam MergeBam.sh ERROR "truncated or corrupt"
+			exit 1;
+		else
+			rm $outbam.fix.log
+		fi
+		
         files=`echo $inbam | sed -e '/INPUT=/s///g'`
         indexes=`echo $inbam | sed -e '/INPUT=/s///g' | tr " " "\n" | awk '{print $0".bai"}'`
 		for i in $files 
@@ -49,7 +60,6 @@ else
 				rm $i 
 			fi
 		done	
-        $samtools/samtools index $outbam
     fi
     echo `date`
 fi	

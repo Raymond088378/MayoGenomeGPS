@@ -31,7 +31,10 @@ else
     OUTPUT=$outbam \
     PL=$platform SM=$sample CN=$center ID=$sample PU=$sample LB=$GenomeBuild \
     TMP_DIR=$tmp_dir \
+	CREATE_INDEX=true \
     VALIDATION_STRINGENCY=SILENT		
+    file=`echo $outbam | sed -e 's/\(.*\)..../\1/'`
+	mv $file.bai $file.bam.bai
     
     if [ -s $outbam ]
     then
@@ -43,7 +46,7 @@ else
 		else
 			rm $outbam.fix.log
 			mv $outbam $inbam
-			$samtools/samtools index $inbam
+			mv $outbam.bai $inbam.bai
 		fi	
     else
         $script_path/errorlog.sh $outbam convert.bam.sh ERROR empty

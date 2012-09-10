@@ -37,7 +37,9 @@ else
     then
         $script_path/errorlog.sh $input/$snv_file polyphen.sh ERROR "not found"
 		exit 1;
-    fi
+    else
+		$script_path/filesize.sh polyphen $sam $input $snv_file $JOB_ID $run_info
+	fi
     
     cat $input/$snv_file | awk '$0 !~ /^#/' | awk '{print $1":"$2"\t"$4"/"$5}' > $polyphen/$snv_file.poly
     num=`cat $polyphen/$snv_file.poly |wc -l `
@@ -71,6 +73,8 @@ else
 	then
 		$script_path/errorlog.sh $polyphen/$snv_file.poly polyphen.sh ERROR "not created"
 		exit 1;
+	else
+		$script_path/filesize.sh polyphen.out $sam $polyphen $snv_file.poly $JOB_ID $run_info
 	fi	
 	echo `date`
 fi    

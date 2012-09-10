@@ -33,6 +33,11 @@ else
 	$samtools/samtools view -b $bam chr${chr} > $input/chr${chr}.cleaned.bam
     $samtools/samtools index $input/chr${chr}.cleaned.bam
     $samtools/samtools flagstat $input/chr${chr}.cleaned.bam > $input/chr${chr}.flagstat
-    echo `date`
+    if [ ! -s $input/chr${chr}.cleaned.bam.bai ]
+	then
+		echo "ERROR : $input/chr${chr}.cleaned.bam file not found"
+		exit 1;
+	fi	
+	echo `date`
 fi	
 	

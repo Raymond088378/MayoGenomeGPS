@@ -224,6 +224,8 @@ else    {
 	my $num_groups=scalar(@groupArray);
 	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime;   ## to pull todays date
 	$year += 1900;$mon++;
+	my $username = getpwuid( $< );
+	my @user=split(/[:;]/,`finger $username`);
 	print OUT "<a name=\"Project Description\" id=\"Project Description\"></a><p align='left'><b><u> II. Project Description</p></b></u>";
 	print OUT "<ul><a name=\"Background\" id=\"Background\"></a><p align='left'> 1. Background</p>";
 	print OUT "<table cellspacing=\"0\" class=\"sofT\"><tr>
@@ -243,6 +245,7 @@ else    {
 	print OUT "<td class=\"helpBod\">Genome Build (hg18/hg19)</td><td class=\"helpBod\">$GenomeBuild</td></tr>
 	<td class=\"helpBod\">StartDate</td><td class=\"helpBod\">$date</td></tr>
 	<td class=\"helpBod\">EndDate</td><td class=\"helpBod\">$mon/$mday/$year</td></tr>
+	<td class=\"helpBod\">Results Compiled By</td><td class=\"helpBod\">$user[2]</td></tr>
 	</table>";
 	print OUT "Note: Further raw NGS data will be used for statistical analysis<br>\n";
 	my $loc=$path;

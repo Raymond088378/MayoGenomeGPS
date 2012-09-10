@@ -54,6 +54,8 @@ else
 			exit 1;
         fi
         num_snvs=`cat $input/$snv_file | awk '$0 !~ /^#/' | wc -l`
+		$script_path/filesize.sh snpeff $sam $input $snv_file $JOB_ID $run_info
+		
         if [ $num_snvs -ge 1 ]
         then
             $java/java -Xmx2g -Xms512m -jar $snpeff_path/snpEff.jar eff -o txt -chr chr -noStats -noLog \
@@ -86,6 +88,8 @@ else
 		then
 			$script_path/errorlog.sh "$snpeff/$sam.chr${chr}.snv.eff $snpeff/$sam.chr${chr}.snv.filtered.eff" snpeff.sh ERROR "failed to create" 
 			exit 1;
+		else
+			$script_path/filesize.sh snpeff.out $sam $snpeff $sam.chr${chr}.snv.eff $JOB_ID $run_info
 		fi
 	fi
 
@@ -130,6 +134,8 @@ else
 		then
 			$script_path/errorlog.sh "$snpeff/$sam.chr${chr}.indel.eff $snpeff/$sam.chr${chr}.indel.filtered.eff" snpeff.sh ERROR "failed to create" 
 			exit 1;
+		else
+			$script_path/filesize.sh snpeff.out $sam $snpeff $sam.chr${chr}.indel.eff $JOB_ID $run_info
 		fi
     fi    
     echo `date`

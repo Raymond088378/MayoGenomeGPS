@@ -45,8 +45,7 @@ else
 				echo "ERROR : $fastq/filename${j} does not exist"
 				exit 1;
 			else		
-				size=`du -b $fastq/filename${j} | sed 's/\([0-9]*\).*/\1/'`
-				$script_path/filesize.sh alignment $sample filename${j} $JOB_ID $size $run_info
+				$script_path/filesize.sh alignment $sample $fastq filename${j} $JOB_ID $run_info
             fi
 			let j=j+1
         done
@@ -66,8 +65,7 @@ else
 			echo "ERROR : $fastq/$filename1 does not exist"
 			exit 1;
 		else
-			size=`du -b $fastq/$filename1 | sed 's/\([0-9]*\).*/\1/'`
-			$script_path/filesize.sh alignment $sample $filename1 $JOB_ID $size $run_info
+			$script_path/filesize.sh alignment $sample $fastq $filename1 $JOB_ID $run_info
 		fi
 		$bwa/bwa samse -r "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" $genome_bwa $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai $fastq/$filename1 > $output_dir_sample/$sample.$SGE_TASK_ID.sam 	
 	fi
@@ -77,8 +75,7 @@ else
         $script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.sam align_bwa.sh ERROR empty
         exit 1;
     else
-		size=`du -b $output_dir_sample/$sample.$SGE_TASK_ID.sam | sed 's/\([0-9]*\).*/\1/'`
-		$script_path/filesize.sh alignment $sample $sample.$SGE_TASK_ID.sam $JOB_ID $size $run_info
+		$script_path/filesize.sh alignment.out $sample $output_dir_sample $sample.$SGE_TASK_ID.sam $JOB_ID $size $run_info
         if [ $paired == 0 ]
         then
             rm $fastq/$filename1

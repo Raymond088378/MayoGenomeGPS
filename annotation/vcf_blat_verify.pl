@@ -60,7 +60,7 @@ B<--help,-h>
 
 use strict;
 use warnings;
-use Data::Dumper;
+#use Data::Dumper;
 use Cwd;
 use Pod::Usage;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);

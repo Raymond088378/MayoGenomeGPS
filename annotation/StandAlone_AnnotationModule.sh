@@ -31,14 +31,20 @@ else
 	tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2 )
     vcftools=$( cat $tool_info | grep -w '^VCFTOOLS' | cut -d '=' -f2 )
 	perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
-	export PERL5LIB=$PERL5LIB:$perllib
+	export PERL5LIB=$perllib:$PERL5LIB
 	PATH=$tabix/:$PATH
 	echo " vcf validation step "
 	type=`cat $file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'`
 	ff="$sample.vcf"
 	if [ $type == "txt" ]
 	then
-		perl $script_path/convert_txt_vcf.pl $file $sample > $output/$ff
+		if [ `cat $file | awk 'NR=1'| awk -F'\t' '{print NF}'` != 4 ]
+		then
+			echo "txt file is not properly formatted"
+			exit 1;
+		else	
+			$script_path/convert_txt_vcf.pl $file $sample > $output/$ff
+		fi
 	else
 		if [ $multi == "multi" ]
 		then
@@ -48,26 +54,33 @@ else
 			cat $file | awk -v num=$col 'BEGIN {OFS="\t"} { if ($0 ~ /^##/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8,$9,$num; }' | $script_path/convert.vcf.pl > $output/$ff
 		fi
 	fi
-
+	
+	### extract multi-allelic variants and keep that as a vcf file
+	cat $output/$ff | awk '$0 ~ /^#/ || $5 ~ /,/ || $4 ~ /,/' > $output/$sample.multi.vcf
+	cat $output/$ff | awk '$0 ~ /^#/ || ($5 !~ /,/ && $4 !~ /,/)' > $output/$ff.temp
+	mv $output/$ff.temp $output/$ff
+	
 	## ADD BLAT column
-	n=`cat $output/$ff |  awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
+	n=`cat $output/$ff |  awk '$0 ~ /^#/' | awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
 	if [ $n == 0 ]
 	then
-		blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
+		echo " Adding Blat column to the vcf file"
+                blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
 		blat_ref=$( cat $tool_info | grep -w '^BLAT_REF' | cut -d '=' -f2 )
 		blat_window=$( cat $tool_info | grep -w '^WINDOW_BLAT' | cut -d '=' -f2 )
 		$script_path/vcf_blat_verify.pl -i $output/$ff -o $output/$ff.tmp -w $blat_window -b $blat -r $ref -sam $samtools -br $blat_ref
 		mv $output/$ff.tmp $output/$ff
 	fi
-	perl $script_path/vcfsort.pl $ref.fai $output/$ff > $output/$ff.sort
+	$script_path/vcfsort.pl $ref.fai $output/$ff > $output/$ff.sort
 	mv $output/$ff.sort $output/$ff
-	n=`cat $output/$ff |  awk '$0 ~ /^##INFO=<ID=CAPTURE/' | wc -l`
-	$script_path/vcf_to_variant_vcf.pl -i $output/$ff -v $output/$ff.SNV.vcf -l $output/$ff.INDEL.vcf
+	n=`cat $output/$ff |   awk '$0 ~ /^#/' | awk '$0 ~ /^##INFO=<ID=CAPTURE/' | wc -l`
+	perl $script_path/vcf_to_variant_vcf.pl -i $output/$ff -v $output/$ff.SNV.vcf -l $output/$ff.INDEL.vcf -t both
 	rm $output/$ff
 
 	if [ $n == 0 ]
 	then
-		$script_path/markSnv_IndelnPos.pl -s $output/$ff.SNV.vcf -i $output/$ff.INDEL.vcf -n 10 -o $output/$ff.SNV.vcf.pos
+		echo " Adding CloseToIndel column to the vcf file"
+                $script_path/markSnv_IndelnPos.pl -s $output/$ff.SNV.vcf -i $output/$ff.INDEL.vcf -n 10 -o $output/$ff.SNV.vcf.pos
 		cat $output/$ff.SNV.vcf.pos | $script_path/add.info.close2indel.vcf.pl | $script_path/add.info.capture.vcf.pl > $output/$ff.SNV.vcf
 		rm $output/$ff.SNV.vcf.pos
 	fi
@@ -76,7 +89,6 @@ else
 	$script_path/sift.sh $output $ff $sift $sift_ref $script_path $sample $thread &
 
 	### RUN SNPEFF
-	## SNVs
 	echo " Running SNPEFF "
 	$script_path/snpeff.sh $java $snpeff $GenomeBuild $output $ff $gatk $ref $vcftools $script_path $sample &
 	### POLYPHEN
@@ -109,7 +121,8 @@ else
 	typeset -i codon
 	typeset -i SNP_Type
 	#convert to text file
-	$script_path/parse.vcf.sh $output/$ff.SNV.vcf $output/$sample.snv $tool_info SNV $script_path $sample
+	echo " Converting VCF files to TEXT files"
+        $script_path/parse.vcf.sh $output/$ff.SNV.vcf $output/$sample.snv $tool_info SNV $script_path $sample
 	$script_path/parse.vcf.sh $output/$ff.INDEL.vcf $output/$sample.indel $tool_info INDEL $script_path $sample
 
 	file=$output/$sample.snv
@@ -186,7 +199,8 @@ else
 	paste $file.sift.codons.map $file.sift.codons.map.ChrPos.bed.i.tmp > $file.sift.codons.map.repeat
 	rm $file.sift.codons.map.ChrPos.bed.i.tmp $file.sift.codons.map.ChrPos.bed.i $file.sift.codons.map.ChrPos.bed $file.sift.codons.map
 	### intersect with miRbase bed file
-	cat $file.sift.codons.map.repeat | awk 'NR>2' | awk '{print $1"\t"($2-1)"\t"$2}' > $file.sift.codons.map.repeat.ChrPos.bed
+	echo " adding more columns "
+        cat $file.sift.codons.map.repeat | awk 'NR>2' | awk '{print $1"\t"($2-1)"\t"$2}' > $file.sift.codons.map.repeat.ChrPos.bed
 	$bed/intersectBed -a $file.sift.codons.map.repeat.ChrPos.bed -b $miRbase -c | awk '{print $NF}' > $file.sift.codons.map.repeat.ChrPos.bed.i
 	echo -e "\nmiRbase" >> $file.sift.codons.map.repeat.ChrPos.bed.i.tmp
 	cat $file.sift.codons.map.repeat.ChrPos.bed.i >> $file.sift.codons.map.repeat.ChrPos.bed.i.tmp
@@ -207,7 +221,8 @@ else
 	echo -e "\nSNP_ClinicalSig" > $file.sift.codons.map.repeat.base.ChrPos.bed.scs.tmp
 	echo -e "\nVariant_AlleleOrigin" > $file.sift.codons.map.repeat.base.ChrPos.bed.sao.tmp
 	echo -e "\nFirst_dbSNP_Build" > $file.sift.codons.map.repeat.base.ChrPos.bed.build.tmp
-	for type in ssr scs sao build
+	echo " adding more columns "
+        for type in ssr scs sao build
 	do
 		cat $file.sift.codons.map.repeat.base.ChrPos.bed.$type >> $file.sift.codons.map.repeat.base.ChrPos.bed.$type.tmp
 	done
@@ -246,8 +261,7 @@ else
 	perl $script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $output/$sample.SNV.filtered.eff -o $output/$sample.filtered.SNV.report
 	rm $output/$sample.SNV.eff $output/$sample.SNV.filtered.eff $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly
 	echo " polyphen and snpeff are added to the report "
-
-	for report in $output/$sample.SNV.report $output/$sample.filtered.SNV.report
+        for report in $output/$sample.SNV.report $output/$sample.filtered.SNV.report
 	do
 		perl $script_path/add_entrezID.pl -i $report -m $GeneIdMap -o $report.entrezid
 		mv $report.entrezid $report
@@ -258,10 +272,15 @@ else
 	perl $script_path/add.cols.pl $output/$sample.SNV.report SNV $http $GenomeBuild > $output/$sample.SNV.xls
 	perl $script_path/add.cols.pl $output/$sample.filtered.SNV.report SNV $http $GenomeBuild > $output/$sample.filtered.SNV.xls
 	rm $output/$sample.SNV.report $output/$sample.filtered.SNV.report
+        perl $script_path/sort.variantReport.pl -i $output/$sample.SNV.xls -o $output/$sample.SNV.xls.sort -f Position
+        mv $output/$sample.SNV.xls.sort $output/$sample.SNV.xls
+        perl $script_path/sort.variantReport.pl -i $output/$sample.filtered.SNV.xls -o $output/$sample.filtered.SNV.xls.sort -f Position
+        mv $output/$sample.filtered.SNV.xls.sort $output/$sample.filtered.SNV.xls
 	echo " SNV report is ready "
 	##INDEL
 	## DBSNP
-	dbsnp_rsids_indel=$( cat $tool_info | grep -w '^dbSNP_INDEL_rsIDs' | cut -d '=' -f2)
+	echo " adding indel annotation to the INDELs"
+        dbsnp_rsids_indel=$( cat $tool_info | grep -w '^dbSNP_INDEL_rsIDs' | cut -d '=' -f2)
 	file=$output/$sample.indel
 	cat $file | awk 'NR>1' > $file.forrsIDs
 	perl $script_path/add_dbsnp_indel.pl -i $file.forrsIDs -b 1 -s $dbsnp_rsids_indel -c 1 -p 2 -x 3 -o $file.forrsIDs.added
@@ -269,6 +288,7 @@ else
 	perl $script_path/extract.rsids.pl -i $file -r $file.forrsIDs.added.disease -o $file.rsIDs -v INDEL
 	rm $file.forrsIDs.added $file.forrsIDs.added.disease $file $file.forrsIDs
 	## Frequency
+        echo " adding more columns "
 	cosmic=$( cat $tool_info | grep -w '^COSMIC_INDEL_REF' | cut -d '=' -f2)
 	cat $file.rsIDs | awk 'NR>1' | cut -f 1-5 > $file.rsIDs.forfrequencies
 	perl $script_path/add.cosmic.pl $file.rsIDs.forfrequencies 0 $cosmic $GenomeBuild 1 $file.rsIDs.forfrequencies.cosmic.txt
@@ -289,7 +309,11 @@ else
 	done
 	perl $script_path/add.cols.pl $output/$sample.INDEL.report INDEL $http $GenomeBuild > $output/$sample.INDEL.xls
 	perl $script_path/add.cols.pl $output/$sample.filtered.INDEL.report INDEL $http $GenomeBuild > $output/$sample.filtered.INDEL.xls
-	rm $output/$sample.INDEL.report $output/$sample.filtered.INDEL.report
-	echo " Annotation finished on `date` "
+        rm $output/$sample.INDEL.report $output/$sample.filtered.INDEL.report
+        perl $script_path/sort.variantReport.pl -i $output/$sample.INDEL.xls -o $output/$sample.INDEL.xls.sort -f Start
+        mv $output/$sample.INDEL.xls.sort $output/$sample.INDEL.xls
+        perl $script_path/sort.variantReport.pl -i $output/$sample.filtered.INDEL.xls -o $output/$sample.filtered.INDEL.xls.sort -f Start
+        mv $output/$sample.filtered.INDEL.xls.sort $output/$sample.filtered.INDEL.xls
+        echo " Annotation finished on `date` "
 	echo -e "\n ************************************************** \n"
 fi

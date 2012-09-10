@@ -105,15 +105,15 @@ REMOVE_ALIGNED_BAM=YES
 T_DEPTH_FILTER=6
 
 #Parameters
-SNVMIX2_params=-q 20 -Q 30
+SNVMIX2_params=
 SNVMIX2_Filter=-p 0.8
 UnifiedGenotyper_params=-maxAlleles 5
 SOMATIC_INDEL_params=
-SOMATIC_SNIPER_params=-q 20 -Q 40
-MUTECT_params=--min_qscore 30
+SOMATIC_SNIPER_params=-q 20 -Q 20
+MUTECT_params=
 BREAKDANCER_params=-c 5 -r 10
 CREST_params=
-JSM_Filter=-prob 0.5
+JSM_Filter=-prob 0.1
 JOINTSNVMIX_params=
 NOVO_params=-g 60 -x 2  
 

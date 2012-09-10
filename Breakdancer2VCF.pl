@@ -1,3 +1,4 @@
+#!/usr/local/biotools/perl/5.10.0/bin/perl
 ### tool to convert break dancer output to vcf output 
     ##  contact : Saurabh Baheti
     ##	email	: baheti.saurabh@mayo.edu

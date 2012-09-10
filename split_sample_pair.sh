@@ -35,8 +35,8 @@ else
                 gr="$gr$a"
             done
             gr=`echo $gr |  sed "s/|$//"`
-            cat $output/$sample.chr$chr.header.sam |grep -E -v "$gr" > $output/$sample.chr$chr.$i.header.sam
-            $samtools/samtools view -b -r $i $input/$sample//chr$chr.cleaned.bam > $output/$sample.$i.chr$chr.bam
+            cat $output/$sample.chr$chr.header.sam | grep -w -E -v "$gr" > $output/$sample.chr$chr.$i.header.sam
+            $samtools/samtools view -b -r $i $input/$sample/chr$chr.cleaned.bam > $output/$sample.$i.chr$chr.bam
             $samtools/samtools reheader $output/$sample.chr$chr.$i.header.sam $output/$sample.$i.chr$chr.bam > $output/$sample.$i.chr$chr.re.bam
             mv $output/$sample.$i.chr$chr.re.bam $output/$sample.$i.chr$chr.bam
             rm $output/$sample.chr$chr.$i.header.sam
@@ -45,9 +45,3 @@ else
     fi
     echo `date`
 fi
-
-		
-            
-
-
-

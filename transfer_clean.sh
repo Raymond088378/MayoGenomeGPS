@@ -158,7 +158,6 @@ else
 			fi
 		fi
 	fi
-    
     echo "data is transfered and intermediate files are deleted"
     echo "User needs to transfer the data to the windows share"
     echo `date`

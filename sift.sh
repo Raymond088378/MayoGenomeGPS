@@ -51,6 +51,7 @@ else
     fi
     
     num_snvs=`cat $input/$snv_file | awk '$0 !~ /^#/' | wc -l`
+	$script_path/filesize.sh sift $sam $input $snv_file $JOB_ID $run_info
     #sift acceptable format 
     
     if [[ $num_snvs == 0 || $chr -eq 'M' ]]
@@ -80,6 +81,8 @@ else
     then
         $script_path/errorlog.sh $sift/${sam}_chr${chr}_predictions.tsv sift.sh ERROR "failed to create" 
 		exit 1;
-    fi
+    else
+		$script_path/filesize.sh sift.out $sam $sift ${sam}_chr${chr}_predictions.tsv $JOB_ID $run_info
+	fi
     echo `date`
 fi	
