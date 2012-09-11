@@ -34,7 +34,6 @@ else
 	######		Reading run_info.txt and assigning to variables
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 	sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
-	email=$( cat $run_info | grep -w '^EMAIL' | cut -d '=' -f2)
 	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
 	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
@@ -62,19 +61,14 @@ else
 	echo `date`
 	export PERL5LIB=$perllib
 	PATH=$PATH:$blat:$crest:$perllib
-	mkdir -p $output_dir/$group
-
-	mkdir -p $output_dir/$group/log
-
+	mkdir -p $output_dir/$group $output_dir/$group/log
 	range=20000
 	let blat_port+=$RANDOM%range
-
 	status=`$blat/gfServer status localhost $blat_port | wc -l`;
-
 	if [ "$status" -eq 0 ]
 	then
 		$blat/gfServer start $blat_server $blat_port -log=$output_dir/$group/log/blat.$group.$chr.txt $blat_ref  &
-		sleep 4m
+		sleep 5m
 	fi
 
 	let num_tumor=`echo $samples|tr " " "\n"|wc -l`-1
@@ -88,15 +82,15 @@ else
 		if [ ! -f $output_dir/$group/$sample.chr$chr.cover ]
 		then
 			$script_path/errorlog.sh $output_dir/$group/$sample.chr$chr.cover run_crest_multi.sh ERROR "not exist" 
+			exit 1;
 		fi
 
 		if [ ! -f $output_dir/$group/$sample.chr$chr.sclip.txt ]
 		then
 			$script_path/errorlog.sh $output_dir/$group/$sample.chr$chr.sclip.txt run_crest_multi.sh ERROR "not exist" 
+			exit 1;
 		fi
-
 		status=`$blat/gfServer status $blat_server $blat_port | wc -l`;
-
 		while [ "$status" -le 1 ]
 		do
 			blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
@@ -107,7 +101,7 @@ else
 			then
 				rm $output_dir/$sample/log/blat.$sample.$chr.txt
 				$blat/gfServer start $blat_server $blat_port -log=$output_dir/$group/log/blat.$group.$chr.txt $blat_ref  &
-				sleep 4m
+				sleep 5m
 			fi
 			status=`$blat/gfServer status $blat_server $blat_port | wc -l`;
 		done 	
@@ -122,8 +116,8 @@ else
         then
             rm $output_dir/$group/${file}.chr$chr.bam $output_dir/$group/${file}.chr$chr.bam.bai
         fi
-        perl $script_path/CREST2VCF.pl -i $output_dir/$group/${file}.$chr.predSV.txt -f $ref_genome -o $output_dir/$group/$file.$chr.raw.vcf -s $file -t $samtools
-        perl $script_path/vcfsort.pl ${ref_genome}.fai $output_dir/$group/$file.$chr.raw.vcf > $output_dir/$group/$file.$chr.raw.vcf.sort
+        $script_path/CREST2VCF.pl -i $output_dir/$group/${file}.$chr.predSV.txt -f $ref_genome -o $output_dir/$group/$file.$chr.raw.vcf -s $file -t $samtools
+        $script_path/vcfsort.pl ${ref_genome}.fai $output_dir/$group/$file.$chr.raw.vcf > $output_dir/$group/$file.$chr.raw.vcf.sort
         mv $output_dir/$group/$file.$chr.raw.vcf.sort $output_dir/$group/$file.$chr.raw.vcf
 		if [ ! -s $output_dir/$group/$file.$chr.raw.vcf.fail ]
         then
@@ -137,12 +131,12 @@ else
             touch $output_dir/$group/${file}.$chr.filter.predSV.txt
         fi
 		
-		perl $script_path/CREST2VCF.pl -i $output_dir/$group/${file}.$chr.filter.predSV.txt -f $ref_genome -o $output_dir/$group/${file}.$chr.filter.vcf -s $file -t $samtools
+		$script_path/CREST2VCF.pl -i $output_dir/$group/${file}.$chr.filter.predSV.txt -f $ref_genome -o $output_dir/$group/${file}.$chr.filter.vcf -s $file -t $samtools
 		if [ ! -s $output_dir/$group/${file}.$chr.filter.vcf.fail ]
         then
             rm $output_dir/$group/${file}.$chr.filter.vcf.fail
         fi  
-		perl $script_path/vcfsort.pl ${ref_genome}.fai $output_dir/$group/${file}.$chr.filter.vcf > $output_dir/$group/${file}.$chr.filter.vcf.sort
+		$script_path/vcfsort.pl ${ref_genome}.fai $output_dir/$group/${file}.$chr.filter.vcf > $output_dir/$group/${file}.$chr.filter.vcf.sort
 		mv $output_dir/$group/${file}.$chr.filter.vcf.sort $output_dir/$group/${file}.$chr.filter.vcf
 		
 		### vcf converter for CREST output to VCF
@@ -157,4 +151,5 @@ else
 	done
     rm $output_dir/$group/${normal_sample}.chr$chr.bam $output_dir/$group/${normal_sample}.chr$chr.bam.bai
     rm $output_dir/$group/${normal_sample}.chr$chr.sclip.txt $output_dir/$group/${normal_sample}.chr$chr.cover
+	echo `date`
 fi

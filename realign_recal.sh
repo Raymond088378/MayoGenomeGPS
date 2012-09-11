@@ -61,7 +61,6 @@ else
 		fi
 	done		
 
-		
     if [ $flag == 1 ]
     then
         $script_path/realign_per_chr.sh $input $bam $output_bam $run_info 0 1 $samples $chr

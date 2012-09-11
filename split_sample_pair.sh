@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# -le 4 ]
 then
-	echo -e "Usage: SCRIPT to create IGV BAM \n</path/to/realign dir> </path/to/output folder> <sample> </path/to/alignment folder><run ifno>";
+	echo -e "Usage: SCRIPT to split the bam uisng read group information \n</path/to/realign dir> </path/to/output folder> <sample> </path/to/alignment folder></path/to/run info>";
 else
     set -x
     echo `date`
@@ -19,12 +19,23 @@ else
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
-
+	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     cd $input/$sample
     pair=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2 | tr "\t" " ")
     if [ -f $input/$sample/chr$chr.cleaned.bam ]
     then
-        $samtools/samtools view -H chr$chr.cleaned.bam > $output/$sample.chr$chr.header.sam
+        $samtools/samtools view -H chr$chr.cleaned.bam 1> $output/$sample.chr$chr.header.sam 2> chr$chr.cleaned.bam.fix.ssp.log
+ 		if [ `cat chr$chr.cleaned.bam.fix.ssp.log | wc -l` -gt 0 ]
+		then
+			$script_path/email.sh $input/$sample/chr$chr.cleaned.bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+			while [ -f chr$chr.cleaned.bam.fix.ssp.log ]
+			do
+				echo "waiting for the $input/$sample/chr$chr.cleaned.bam to be fixed"
+				sleep 2m
+			done
+		else
+			rm chr$chr.cleaned.bam.fix.ssp.log
+		fi
         for i in $pair
         do
             sam=`echo $pair | tr " " "\n" | grep -v $i | tr "\n" " "`

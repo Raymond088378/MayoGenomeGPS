@@ -21,9 +21,12 @@ else
 	type=$( cat $run_info | grep -w '^TOOL' | cut -d '=' -f2|tr "[a-z]" "[A-Z]")
 	upload_tb=$( cat $run_info | grep -w '^UPLOAD_TABLEBROWSER' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 	tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
-        
+    samples=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" " ")    
 	# generate Coverage plot
-	
+	for sample in $samples
+	do
+		$script_path/dashboard.sh $sample $run_info Results started
+	done
 	cd $output_dir/numbers
 	if [[ $analysis != "alignment" && $analysis != "annotation"  && $analysis != "ontarget" ]] 
 	then
@@ -76,6 +79,10 @@ else
 	## send the completion email
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
 	echo -e "$MESG\n\nTIMESTAMPS:" | cat - $output_dir/log.txt | mailx -v -s "$SUB" "$TO" 
+	for sample in $samples
+	do
+		$script_path/dashboard.sh $sample $run_info Results complete
+	done
 	echo `date`
 fi
 

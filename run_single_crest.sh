@@ -60,20 +60,23 @@ else
 ########################################################	
 ######		
 	input_bam=$input/chr${chr}.cleaned.bam
-	
-	
+	$samtools/samtools view -H $input_bam 2>$input_bam.fix.crest.log
+	if [ `cat $input_bam.fix.crest.log | wc -l` -gt 0 ]
+	then
+		$script_path/errorlog.sh $input_bam run_cnvnator.sh ERROR "truncated or corrupt bam"
+		exit 1;
+	else
+		rm $input_bam.fix.crest.log
+	fi	
     export PERL5LIB=$perllib:$crest
 	PATH=$PATH:$blat:$crest:$perllib
 	mkdir -p $output_dir/$sample
-
 	SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input_bam -s $samtools`
 	if [ $SORT_FLAG == 0 ]
 	then
 		echo "ERROR : run_crest_multi $input_bam should be sorted"
 		exit 1;
 	fi
-
-
     if [ ! -s $input_bam.bai ]
 	then
 	    $samtools/samtools index $input_bam 
@@ -92,13 +95,10 @@ else
 	if [ "$status" -le 1 ]
 	then
 		$blat/gfServer start localhost $blat_port -log=$output_dir/$sample/log/blat.$sample.$chr.txt $blat_ref  &
-		sleep 4m
+		sleep 5m
 	fi
-
 	$crest/extractSClip.pl -i $input_bam -r chr$chr --ref_genome $ref_genome -o $output_dir/$sample -p $sample
-
 	status=`$blat/gfServer status localhost $blat_port | wc -l`;
-
 	while [ "$status" -le 1 ]
 	do
 		blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
@@ -122,28 +122,24 @@ else
 		--cap3 $cap3/cap3 \
 		-o $output_dir/$sample -p $sample.$chr
 		
-        rm $input_bam
-        rm $input_bam.bai
+        rm $input_bam $input_bam.bai
         
-		perl $script_path/CREST2VCF.pl -i $output_dir/$sample/$sample.$chr.predSV.txt -f $ref_genome -o $output_dir/$sample/$sample.$chr.raw.vcf -s $sample -t $samtools
+		$script_path/CREST2VCF.pl -i $output_dir/$sample/$sample.$chr.predSV.txt -f $ref_genome -o $output_dir/$sample/$sample.$chr.raw.vcf -s $sample -t $samtools
 		if [ ! -s $output_dir/$sample/$sample.$chr.raw.vcf.fail ]
         then
             rm $output_dir/$sample/$sample.$chr.raw.vcf.fail
         fi  
-		perl $script_path/vcfsort.pl ${ref_genome}.fai $output_dir/$sample/$sample.$chr.raw.vcf > $output_dir/$sample/$sample.$chr.raw.vcf.sort
+		$script_path/vcfsort.pl ${ref_genome}.fai $output_dir/$sample/$sample.$chr.raw.vcf > $output_dir/$sample/$sample.$chr.raw.vcf.sort
 		mv $output_dir/$sample/$sample.$chr.raw.vcf.sort $output_dir/$sample/$sample.$chr.raw.vcf
-		
 		awk "((\$10>=$min_read)&&(\$11>=$min_read)&&(\$14>=$min_id)&&(\$16>=$min_id))" $output_dir/$sample/$sample.$chr.predSV.txt | awk '{print $1"\t"$2"\t"$2+1"\t"$5"\t"$6"\t"$6+1}' | $bedtools/pairToBed -a stdin -b $blacklist_sv -type neither | $script_path/report_original.pl $output_dir/$sample/$sample.$chr.predSV.txt > $output_dir/$sample/$sample.$chr.filter.predSV.txt
-	
 		### convert the output to VCF format
-		perl $script_path/CREST2VCF.pl -i $output_dir/$sample/$sample.$chr.filter.predSV.txt -f $ref_genome -o $output_dir/$sample/$sample.$chr.filter.vcf -s $sample -t $samtools
+		$script_path/CREST2VCF.pl -i $output_dir/$sample/$sample.$chr.filter.predSV.txt -f $ref_genome -o $output_dir/$sample/$sample.$chr.filter.vcf -s $sample -t $samtools
 		if [ ! -s $output_dir/$sample/$sample.$chr.filter.vcf.fail ]
         then
             rm $output_dir/$sample/$sample.$chr.filter.vcf.fail
         fi  
-		perl $script_path/vcfsort.pl ${ref_genome}.fai $output_dir/$sample/$sample.$chr.filter.vcf > $output_dir/$sample/$sample.$chr.filter.vcf.sort
+		$script_path/vcfsort.pl ${ref_genome}.fai $output_dir/$sample/$sample.$chr.filter.vcf > $output_dir/$sample/$sample.$chr.filter.vcf.sort
 		mv $output_dir/$sample/$sample.$chr.filter.vcf.sort $output_dir/$sample/$sample.$chr.filter.vcf
-		
 		if [ -f $output_dir/$sample/$sample.$chr.predSV.txt ]
 		then
 			rm $output_dir/$sample/$sample.chr$chr.cover $output_dir/$sample/$sample.chr$chr.sclip.txt 
@@ -153,10 +149,10 @@ else
 	else
 		$script_path/errorlog.sh $output_dir/$sample/$sample.chr$chr.cover run_single_crest.sh ERROR "failed to create"
 		touch $output_dir/$sample/$sample.$chr.predSV.txt
-		perl $script_path/CREST2VCF.pl -i $output_dir/$sample/$sample.$chr.predSV.txt -f $ref_genome -o $output_dir/$sample/$sample.$chr.raw.vcf -s $sample -t $samtools
+		$script_path/CREST2VCF.pl -i $output_dir/$sample/$sample.$chr.predSV.txt -f $ref_genome -o $output_dir/$sample/$sample.$chr.raw.vcf -s $sample -t $samtools
 		rm $output_dir/$sample/$sample.$chr.raw.vcf.fail
 		touch  $output_dir/$sample/$sample.$chr.filter.predSV.txt
-		perl $script_path/CREST2VCF.pl -i $output_dir/$sample/$sample.$chr.filter.predSV.txt -f $ref_genome -o $output_dir/$sample/$sample.$chr.filter.vcf -s $sample -t $samtools
+		$script_path/CREST2VCF.pl -i $output_dir/$sample/$sample.$chr.filter.predSV.txt -f $ref_genome -o $output_dir/$sample/$sample.$chr.filter.vcf -s $sample -t $samtools
 		rm $output_dir/$sample/$sample.$chr.filter.vcf.fail
 	fi
     echo `date`

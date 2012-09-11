@@ -47,7 +47,7 @@ else
 		base=`basename $file`
 		dir=`dirname $file`
         $script_path/filesize.sh processBAM $sample $dir $base $JOB_ID $run_info
-		$samtools/samtools view -H $file 2> $file.fix.log
+		$samtools/samtools view -H $file 1>$file.header 2> $file.fix.log
 		if [ `cat $file.fix.log | wc -l` -gt 0 ]
 		then
 			$script_path/email.sh $file "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
@@ -59,6 +59,7 @@ else
 		else
 			rm $file.fix.log 
 		fi	
+		rm $file.header
 		INPUTARGS="INPUT="$file" "$INPUTARGS;
         files=$file" $files";
         indexes=${file}.bai" $indexes"
@@ -122,10 +123,9 @@ else
     fi
     ### index the bam again to maintain the time stamp for bam and index generation for down stream tools
     $samtools/samtools index $input/$sample.sorted.bam
-	
     ## dashboard
     $script_path/dashboard.sh $sample $run_info Alignment complete
 	## size of the bam file
-	$script_path/filesize.sh Alignment.out $sample $input $sample.sorted.bam $JOB_ID $size $run_info
+	$script_path/filesize.sh Alignment.out $sample $input $sample.sorted.bam $JOB_ID $run_info
     echo `date`
 fi

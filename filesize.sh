@@ -25,6 +25,6 @@ else
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
 	size=`du -b $dirname/$filename | sed 's/\([0-9]*\).*/\1/'`
 	
-	$java/java -Xmx1g -jar $script_path/AddGPSMetadata.jar -p $script_path/AddGPSMetadata.properties -S $identify -t $type -a $analysis -b $size -j $job -r $run_num -s $sample -n $filename -u $TO -F $out/filesize.csv
+	$java/java -Xmx1g -jar $script_path/AddGPSMetadata.jar -p $script_path/AddGPSMetadata.properties -S $identify -t $type -a $analysis -b $size -j $job -r $run_num -s $sample -n $filename -u $TO -F $out/size/filesize.$job.csv
 	echo `date`
 fi

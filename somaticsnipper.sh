@@ -24,30 +24,30 @@ else
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	snv=$tumor_sample.chr$chr.snv.output
 	
-	$samtools/samtools view -H $tumor_bam 2> $tumor_bam.fix.log
-	$samtools/samtools view -H $normal_bam 2> $normal_bam.fix.log
-	if [ `cat $tumor_bam.fix.log | wc -l` -gt 0 ]
+	$samtools/samtools view -H $tumor_bam 2> $tumor_bam.fix.ss.log
+	$samtools/samtools view -H $normal_bam 2> $normal_bam.fix.ss.log
+	if [ `cat $tumor_bam.fix.ss.log | wc -l` -gt 0 ]
 	then
 		$script_path/email.sh $tumor_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-		while [ -f $tumor_bam.fix.log ]
+		while [ -f $tumor_bam.fix.ss.log ]
 		do
 			echo "waiting for the $tumor_bam to be fixed"
 			sleep 2m
 		done
 	else
-		rm $tumor_bam.fix.log
+		rm $tumor_bam.fix.ss.log
 	fi	
 
-	if [ `cat $normal_bam.fix.log | wc -l` -gt 0 ]
+	if [ `cat $normal_bam.fix.ss.log | wc -l` -gt 0 ]
 	then
 		$script_path/email.sh $normal_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-		while [ -f $normal_bam.fix.log ]
+		while [ -f $normal_bam.fix.ss.log ]
 		do
 			echo "waiting for the $normal_bam to be fixed"
 			sleep 2m
 		done
 	else
-		rm $normal_bam.fix.log
+		rm $normal_bam.fix.ss.log
 	fi	
 	
     $somatic_sniper/bam-somaticsniper $command_line_params -F vcf -f $ref $tumor_bam $normal_bam $output/$snv

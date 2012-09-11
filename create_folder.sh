@@ -38,6 +38,7 @@ else
 	fi
 	
 	mkdir -p $output_dir/logs
+	mkdir -p $output_dir/size
 
 	if [[ $analysis != "annotation"  && $analysis != "ontarget" ]]
 	then

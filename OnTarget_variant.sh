@@ -83,7 +83,13 @@ else
 		fi
 		if [ `cat $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
 		then
-			$script_path/errorlog.sh $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+			if [ `cat $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | wc -l` -lt 1 ]
+			then
+				$script_path/errorlog.sh $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf OnTarget_variants.sh ERROR "failed to generate"
+				exit 1;
+			else	
+				$script_path/errorlog.sh $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+			fi
 			cp $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
 			cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
 		else
@@ -93,7 +99,13 @@ else
 		rm $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
 		if [ `cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
 		then
-			$script_path/errorlog.sh $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+			if [ `cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf |wc-l` -lt 1 ]
+			then
+				$script_path/errorlog.sh $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh ERROR "failed to generate"
+				exit 1;
+			else	
+				$script_path/errorlog.sh $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+			fi
 		fi      
     else
 		echo "Multi sample"
@@ -117,7 +129,13 @@ else
 		rm $OnTarget/$group.variants.chr$chr.INDEL.filter.i.vcf
 		if [ `cat $OnTarget/$group.variants.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
 		then
-			$script_path/errorlog.sh $OnTarget/$group.variants.chr$chr.INDEL.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+			if [ `cat $OnTarget/$group.variants.chr$chr.INDEL.filter.i.c.vcf | wc -l` -lt 1 ]
+			then
+				$script_path/errorlog.sh $OnTarget/$group.variants.chr$chr.INDEL.filter.i.c.vcf OnTarget_variants.sh ERROR "failed to generate"
+				exit 1;
+			else	
+				$script_path/errorlog.sh $OnTarget/$group.variants.chr$chr.INDEL.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+			fi
 			cp $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.pos.vcf 
 			cat $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf
 		else
@@ -127,7 +145,13 @@ else
 		rm $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
 		if [ `cat $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
 		then
-			$script_path/errorlog.sh $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+			if [ `cat $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf | wc -l` -lt 1 ]
+			then
+				$script_path/errorlog.sh $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh ERROR "failed to generate"
+				exit 1;
+			else	
+				$script_path/errorlog.sh $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+			fi
 		fi	
 		
 		### for somatic calls
@@ -148,7 +172,13 @@ else
 		rm $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.vcf
 		if [ `cat $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
 		then
-			$script_path/errorlog.sh $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+			if [ `cat $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf | wc -l` -lt 1 ]
+			then
+				$script_path/errorlog.sh $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf OnTarget_variants.sh ERROR "failed to generate"
+				exit 1;
+			else	
+				$script_path/errorlog.sh $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+			fi
 			cp $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
 			cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf
 		else   
@@ -158,7 +188,13 @@ else
 		rm $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
 		if [ `cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
 		then
-			$script_path/errorlog.sh $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+			if [ `cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf | wc -l` -lt 1 ]
+			then
+				$script_path/errorlog.sh $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh ERROR "failed to generate"
+				exit 1;
+			else	
+				$script_path/errorlog.sh $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+			fi
 		fi   
     fi
     echo `date`

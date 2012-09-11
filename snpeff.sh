@@ -81,7 +81,6 @@ else
             rm $snpeff/$sam.chr${chr}.snv.eff.vcf.idx $snpeff/$snv_file.annotate.vcf.vcfidx $snpeff/$snv_file.annotate.vcf.idx $snpeff/$snv_file.annotate.vcf
         else
             echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tEffect\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList" > $snpeff/$sam.chr${chr}.snv.eff
-            
 			echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tEffect\tFunctionalClass\tFunctionalImpact\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList\n" > $snpeff/$sam.chr${chr}.snv.filtered.eff
         fi  
 		if [[ ! -s $snpeff/$sam.chr${chr}.snv.eff || ! -s $snpeff/$sam.chr${chr}.snv.filtered.eff ]]

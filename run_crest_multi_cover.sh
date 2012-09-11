@@ -25,49 +25,23 @@ else
     input=$3
     output_dir=$4
     run_info=$5
-
-
-
-    ########################################################	
+	########################################################	
     ######		Reading run_info.txt and assigning to variables
     #SGE_TASK_ID=1
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
-    email=$( cat $run_info | grep -w '^EMAIL' | cut -d '=' -f2)
-    java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
     crest=$( cat $tool_info | grep -w '^CREST' | cut -d '=' -f2 )
-    picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 ) 
     perllib=$( cat $tool_info | grep -w '^PERLLIB' | cut -d '=' -f2 )
-    blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
-    cap3=$( cat $tool_info | grep -w '^CAP3' | cut -d '=' -f2 )
-    blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
-    blat_ref=$( cat $tool_info | grep -w '^BLAT_REF' | cut -d '=' -f2 )
-
-    blat_server=$( cat $tool_info | grep -w '^BLAT_SERVER' | cut -d '=' -f2 )
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     ref_genome=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2 )
     samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2)
-    #bam=$input/chr$chr.cleaned.bam
 
-    min_read=$( cat $tool_info | grep -w '^STRUCT_MIN_SUPPORT' | cut -d '=' -f2)
-    min_id=$( cat $tool_info | grep -w '^STRUCT_MIN_IDENTITY' | cut -d '=' -f2)
-    blacklist_sv=$( cat $tool_info | grep -w '^BLACKLIST_SV' | cut -d '=' -f2 )
-    bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
-    PATH=$bedtools/:$PATH
-
-    echo `date`
     export PERL5LIB=$perllib:$crest
     PATH=$PATH:$blat:$crest:$perllib
-    mkdir -p $output_dir/$group
-
-    mkdir -p $output_dir/$group/log
-
-
-
-
-    ln -s $input/$group.$sample.chr$chr.bam $output_dir/$group/$sample.chr$chr.bam
+	mkdir -p $output_dir/$group $output_dir/$group/log
+	ln -s $input/$group.$sample.chr$chr.bam $output_dir/$group/$sample.chr$chr.bam
     file=$output_dir/$group/$sample.chr$chr.bam
     SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $file -s $samtools`
     if [ $SORT_FLAG == 0 ]
@@ -80,7 +54,6 @@ else
     then
         $samtools/samtools index $file
     fi
-
-    $crest/extractSClip.pl -i $file -r chr$chr --ref_genome $ref_genome -o $output_dir/$group -p $sample
+	$crest/extractSClip.pl -i $file -r chr$chr --ref_genome $ref_genome -o $output_dir/$group -p $sample
     echo `date`
 fi

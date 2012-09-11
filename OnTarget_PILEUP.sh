@@ -67,12 +67,10 @@ else
 	else
 		rm $bam.fix.OnTarget_PILEUP.log
 	fi	
-    #make bed format pileup
     mkdir -p $output/temp
 	
     if [ $multi == "YES" ]
     then
-        pair=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2 | tr "\t" " ")
         $java/java -Xmx2g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar \
 		$gatk/GenomeAnalysisTK.jar \
 		-et NO_ET \
@@ -80,7 +78,7 @@ else
 		-T CoverageBySample  \
 		-I $bam -R $ref \
 		-L $param -o $output/$sample.chr$chr.txt
-		
+		pair=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2 | tr "\t" " ")
 		for i in $pair
         do
 			#merge all the interscted pileup

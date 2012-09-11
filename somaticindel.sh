@@ -27,37 +27,37 @@ else
 	export JAVA_HOME=$javahome
 	export PATH=$javahome/bin:$PATH
 	indel_v=$tumor_sample.chr$chr.indel.txt
-	check=0
-	count=0
+	let check=0
+	let count=0
 	if [ ! -d $output/temp ]
 	then
 		mkdir -p $output/temp
 	fi
 	
-	$samtools/samtools view -H $tumor_bam 2> $tumor_bam.fix.log
-	$samtools/samtools view -H $normal_bam 2> $normal_bam.fix.log
-	if [ `cat $tumor_bam.fix.log | wc -l` -gt 0 ]
+	$samtools/samtools view -H $tumor_bam 2> $tumor_bam.fix.si.log
+	$samtools/samtools view -H $normal_bam 2> $normal_bam.fix.si.log
+	if [ `cat $tumor_bam.fix.si.log | wc -l` -gt 0 ]
 	then
 		$script_path/email.sh $tumor_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-		while [ -f $tumor_bam.fix.log ]
+		while [ -f $tumor_bam.fix.si.log ]
 		do
 			echo "waiting for the $tumor_bam to be fixed"
 			sleep 2m
 		done
 	else
-		rm $tumor_bam.fix.log
+		rm $tumor_bam.fix.si.log
 	fi	
 
-	if [ `cat $normal_bam.fix.log | wc -l` -gt 0 ]
+	if [ `cat $normal_bam.fix.si.log | wc -l` -gt 0 ]
 	then
 		$script_path/email.sh $normal_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-		while [ -f $normal_bam.fix.log ]
+		while [ -f $normal_bam.fix.si.log ]
 		do
 			echo "waiting for the $normal_bam to be fixed"
 			sleep 2m
 		done
 	else
-		rm $normal_bam.fix.log
+		rm $normal_bam.fix.si.log
 	fi	
 	
 	while [[ $check -eq 0 && $count -le 10 ]]
