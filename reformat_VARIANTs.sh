@@ -51,8 +51,8 @@ else
 			type=`cat $input/$snv_file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'`
 			if [ $type == "txt" ]
 			then
-				perl $script_path/convert_txt_vcf.pl $input/$snv_file $sample > $output/$sample.SNV.vcf
-				perl $script_path/convert_txt_vcf.pl $input/$indel_file $sample > $output/$sample.INDEL.vcf
+				$script_path/convert_txt_vcf.pl $input/$snv_file $sample > $output/$sample.SNV.vcf
+				$script_path/convert_txt_vcf.pl $input/$indel_file $sample > $output/$sample.INDEL.vcf
 			else
 				cp $input/$snv_file $output/$sample.SNV.vcf
 				cp $input/$indel_file $output/$sample.INDEL.vcf 
@@ -61,27 +61,27 @@ else
 			if [ $n == 0 ]
 			then
 				$script_path/vcf_blat_verify.pl -i $output/$sample.SNV.vcf -o $output/$sample.SNV.vcf.tmp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
-				perl $script_path/vcfsort.pl $ref.fai $output/$sample.SNV.vcf.tmp > $output/$sample.SNV.vcf
+				$script_path/vcfsort.pl $ref.fai $output/$sample.SNV.vcf.tmp > $output/$sample.SNV.vcf
 				rm $output/$sample.SNV.vcf.tmp
 			else
-				perl $script_path/vcfsort.pl $ref.fai $output/$sample.SNV.vcf > $output/$sample.SNV.vcf.tmp
+				$script_path/vcfsort.pl $ref.fai $output/$sample.SNV.vcf > $output/$sample.SNV.vcf.tmp
 				mv $output/$sample.SNV.vcf.tmp $output/$sample.SNV.vcf
 			fi	
 			n=`cat $output/$sample.INDEL.vcf |  awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
 			if [ $n == 0 ]
 			then
 				$script_path/vcf_blat_verify.pl -i $output/$sample.INDEL.vcf -o $output/$sample.INDEL.vcf.tmp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
-				perl $script_path/vcfsort.pl $ref.fai $output/$sample.INDEL.vcf.tmp > $output/$sample.INDEL.vcf
+				$script_path/vcfsort.pl $ref.fai $output/$sample.INDEL.vcf.tmp > $output/$sample.INDEL.vcf
 				rm $output/$sample.INDEL.vcf.tmp 
 			else
-				perl $script_path/vcfsort.pl $ref.fai $output/$sample.INDEL.vcf > $output/$sample.INDEL.vcf.tmp
+				$script_path/vcfsort.pl $ref.fai $output/$sample.INDEL.vcf > $output/$sample.INDEL.vcf.tmp
 				mv $output/$sample.INDEL.vcf.tmp $output/$sample.INDEL.vcf 
 			fi
 		else
 			type=`cat $input/$snv_file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'`
 			if [ $type == "txt" ]
 			then
-				perl $script_path/convert_txt_vcf.pl $input/$snv_file $sample > $output/$sample.vcf
+				$script_path/convert_txt_vcf.pl $input/$snv_file $sample > $output/$sample.vcf
 			else
 				cp $input/$snv_file $output/$sample.vcf
 			fi
@@ -89,25 +89,25 @@ else
 			if [ $n == 0 ]
 			then
 				$script_path/vcf_blat_verify.pl -i $output/$sample.vcf -o $output/$sample.vcf.tmp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
-				perl $script_path/vcfsort.pl $ref.fai $output/$sample.vcf.tmp > $output/$sample.vcf
+				$script_path/vcfsort.pl $ref.fai $output/$sample.vcf.tmp > $output/$sample.vcf
 				rm $output/$sample.vcf.tmp
 			else
-				perl $script_path/vcfsort.pl $ref.fai $output/$sample.vcf > $output/$sample.vcf.tmp
+				$script_path/vcfsort.pl $ref.fai $output/$sample.vcf > $output/$sample.vcf.tmp
 				mv $output/$sample.vcf.tmp $output/$sample.vcf
 			fi
-			perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.vcf -v $output/$sample.SNV.vcf -l $output/$sample.INDEL.vcf -t both
+			$script_path/vcf_to_variant_vcf.pl -i $output/$sample.vcf -v $output/$sample.SNV.vcf -l $output/$sample.INDEL.vcf -t both
 			rm $output/$sample.vcf
 		fi	
 			
 		for chr in $chrs
         do
-            perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.SNV.vcf -v $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -t snv -c chr$chr -s $sample
-            perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.INDEL.vcf -t indel -l $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -c chr$chr -s $sample
+            $script_path/vcf_to_variant_vcf.pl -i $output/$sample.SNV.vcf -v $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -t snv -c chr$chr -s $sample
+            $script_path/vcf_to_variant_vcf.pl -i $output/$sample.INDEL.vcf -t indel -l $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -c chr$chr -s $sample
             cat $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | $script_path/add.info.capture.vcf.pl > $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp
             mv $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
             if [ `cat $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -ge 1 ]
 			then
-				perl $script_path/markSnv_IndelnPos.pl -s $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -i $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
+				$script_path/markSnv_IndelnPos.pl -s $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -i $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
 				cat $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf  
 				rm $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
 			else
@@ -123,7 +123,7 @@ else
             type=`cat $input/$snv_file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'`
             if [ $type == "txt" ]
             then
-                perl $script_path/convert_txt_vcf.pl $input/$snv_file $sample > $output/$sample.SNV.vcf
+                $script_path/convert_txt_vcf.pl $input/$snv_file $sample > $output/$sample.SNV.vcf
             else
                 cp $input/$snv_file $output/$sample.SNV.vcf
             fi 
@@ -131,15 +131,15 @@ else
 			if [ $n == 0 ]
 			then
 				$script_path/vcf_blat_verify.pl -i $output/$sample.SNV.vcf -o $output/$sample.SNV.vcf.tmp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
-				perl $script_path/vcfsort.pl $ref.fai $output/$sample.SNV.vcf.tmp > $output/$sample.SNV.vcf
+				$script_path/vcfsort.pl $ref.fai $output/$sample.SNV.vcf.tmp > $output/$sample.SNV.vcf
 				rm $output/$sample.SNV.vcf.tmp
 			else
-				perl $script_path/vcfsort.pl $ref.fai $output/$sample.SNV.vcf > $output/$sample.SNV.vcf.tmp
+				$script_path/vcfsort.pl $ref.fai $output/$sample.SNV.vcf > $output/$sample.SNV.vcf.tmp
 				mv $output/$sample.SNV.vcf.tmp $output/$sample.SNV.vcf
 			fi	
             for chr in $chrs	
             do
-                perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.SNV.vcf -v $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -t snv -c chr$chr -s $sample
+                $script_path/vcf_to_variant_vcf.pl -i $output/$sample.SNV.vcf -v $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf -t snv -c chr$chr -s $sample 
                 cat $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf | $script_path/add.info.close2indel.vcf.pl |  $script_path/add.info.capture.vcf.pl > $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
 				mv $output/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf $output/$sample.variants.chr$chr.SNV.filter.i.c.vcf
             done
@@ -150,7 +150,7 @@ else
             type=`cat $input/$indel_file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'`
             if [ $type == "txt" ]
             then
-                perl $script_path/convert_txt_vcf.pl $input/$indel_file $sample > $output/$sample.INDEL.vcf 
+                $script_path/convert_txt_vcf.pl $input/$indel_file $sample > $output/$sample.INDEL.vcf 
             else
                 cp $input/$indel_file $output/$sample.INDEL.vcf 
             fi    
@@ -158,15 +158,15 @@ else
 			if [ $n == 0 ]
 			then
 				$script_path/vcf_blat_verify.pl -i $output/$sample.INDEL.vcf -o $output/$sample.INDEL.vcf.tmp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
-				perl $script_path/vcfsort.pl $ref.fai $output/$sample.INDEL.vcf.tmp > $output/$sample.INDEL.vcf
+				$script_path/vcfsort.pl $ref.fai $output/$sample.INDEL.vcf.tmp > $output/$sample.INDEL.vcf
 				rm $output/$sample.INDEL.vcf.tmp 
 			else
-				perl $script_path/vcfsort.pl $ref.fai $output/$sample.INDEL.vcf > $output/$sample.INDEL.vcf.tmp
+				$script_path/vcfsort.pl $ref.fai $output/$sample.INDEL.vcf > $output/$sample.INDEL.vcf.tmp
 				mv $output/$sample.INDEL.vcf.tmp $output/$sample.INDEL.vcf 
 			fi
 			for chr in $chrs		
             do
-                perl $script_path/vcf_to_variant_vcf.pl -i $output/$sample.INDEL.vcf -t indel -l $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -c chr$chr -s $sample
+                $script_path/vcf_to_variant_vcf.pl -i $output/$sample.INDEL.vcf -t indel -l $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -c chr$chr -s $sample
                 cat $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf | $script_path/add.info.capture.vcf.pl > $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp
 				mv $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf.tmp $output/$sample.variants.chr$chr.INDEL.filter.i.c.vcf
             done

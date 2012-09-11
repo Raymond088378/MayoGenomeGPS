@@ -20,4 +20,5 @@ else
 		echo "ERROR : unique identification for the workflow was not generated"
 		exit 1;
 	fi	
+	echo `date`
 fi	

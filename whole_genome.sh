@@ -42,11 +42,11 @@ else
 	mv $run_info.tmp $run_info
 	#### check for unique identification number
 	identify=$( cat $run_info | grep -w '^IDENTIFICATION_NUMBER' | cut -d '=' -f2)
-	if echo $unique_id | egrep -q '^[0-9]+$'
+	if echo $identify | egrep -q '^[0-9]+$'
 	then
 		echo "HURRAY !!! you are good to run the workflow"
 	else
-		echo "ERROR : unique identification for the workflow was not generated, please run the unique_id.sh script to generate the same."
+		echo "ERROR : unique identification for the workflow was not generated, please run the unique_id.sh script to generate the same before running the workflow script."
 		exit 1;
 	fi
 	### check for tool info file
@@ -227,7 +227,7 @@ else
 				for ((i=1; i <=$num_bams; i++));
 				do
 					bam=`echo $infile | awk -v num=$i '{print $num}'`
-					$samtools/samtools view -H $input/$bam 2> $align_dir/$sample.$i.sorted.bam.log
+					$samtools/samtools view -H $input/$bam 1>$input/$bam.header 2> $align_dir/$sample.$i.sorted.bam.log
 					if [ `cat $align_dir/$sample.$i.sorted.bam.log | wc -l` -gt 0 ]
 					then
 						echo "$input/$bam : bam file is truncated or corrupted" 	
@@ -235,6 +235,7 @@ else
 					else
 						rm $align_dir/$sample.$i.sorted.bam.log
 					fi	
+					rm $input/$bam.header
 					ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
 					$script_path/dashboard.sh $sample $run_info Beginning started $i
 				done  
@@ -255,7 +256,7 @@ else
 					for ((i=1; i <=$num_bams; i++));
 					do
 						bam=`echo $infile | awk -v num=$i '{print $num}'`
-						$samtools/samtools view -H $input/$bam 2> $align_dir/$sample.$i.sorted.bam.fix.log
+						$samtools/samtools view -H $input/$bam 1>$input/$bam.header 2> $align_dir/$sample.$i.sorted.bam.fix.log
 						if [ `cat $align_dir/$sample.$i.sorted.bam.fix.log | wc -l` -gt 0 ]
 						then
 							echo "$input/$bam : bam file is truncated or corrupted" 	
@@ -263,6 +264,7 @@ else
 						else
 							rm $align_dir/$sample.$i.sorted.bam.fix.log
 						fi
+						rm $input/$bam.header
 						ln -s $input/$bam $realign_dir/$sample.$i.sorted.bam						
 					done
 					
@@ -524,14 +526,15 @@ else
 				for ((i=1; i <=$num_bams; i++));
 				do
 					bam=`echo $infile | awk -v num=$i '{print $num}'`
-					$samtools/samtools view -H $input/$bam 2> $align_dir/$sample.$i.sorted.bam.log
+					$samtools/samtools view -H $input/$bam 1>$input/$bam.header 2> $align_dir/$sample.$i.sorted.bam.log
 					if [ `cat $align_dir/$sample.$i.sorted.bam.log | wc -l` -gt 0 ]
 					then
 						echo "$input/$bam : bam file is truncated or corrupted" 	
 						exit 1;
 					else
 						rm $align_dir/$sample.$i.sorted.bam.log
-					fi	
+					fi
+					rm $input/$bam.header
 					ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
 				done
 				$script_path/check_qstat.sh $limit
@@ -567,7 +570,7 @@ else
 					for ((i=1; i <=$num_bams; i++));
 					do
 						bam=`echo $infile | awk -v num=$i '{print $num}'`
-						$samtools/samtools view -H $input/$bam 2> $realign_dir/$group.$i.sorted.bam.log
+						$samtools/samtools view -H $input/$bam 1>$input/$bam.header 2> $realign_dir/$group.$i.sorted.bam.log
 						if [ `cat $realign_dir/$group.$i.sorted.bam.log | wc -l` -gt 0 ]
 						then
 							echo "$input/$bam : bam file is truncated or corrupted" 	
@@ -575,6 +578,7 @@ else
 						else
 							rm $realign_dir/$group.$i.sorted.bam.log
 						fi	
+						rm $input/$bam.header
 						ln -s $input/$bam $realign_dir/$group.$i.sorted.bam
 					done
 					$script_path/check_qstat.sh $limit
