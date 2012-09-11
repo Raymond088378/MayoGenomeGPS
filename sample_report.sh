@@ -22,6 +22,7 @@ else
 	chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2)
 	chrIndexes=$( echo $chrs | tr ":" "\n" )
 	variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
+	multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 	i=1
 	for chr in $chrIndexes
 	do
@@ -60,7 +61,17 @@ else
 	fi
 	
 	### update the dash board
-	$script_path/dashboard.sh $sample $run_info Annotation complete
+	if [ $multi == "YES" ]
+	then
+		sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
+		ss=$( cat $sample_info | grep -w '^$sample' | cut -d '=' -f2 | tr "\t" " ")
+		for i in $ss
+		do
+			$script_path/dashboard.sh $i $run_info Annotation complete
+		done
+	else
+		$script_path/dashboard.sh $sample $run_info Annotation complete
+	fi	
 	echo `date`
 fi	
 

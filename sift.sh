@@ -32,10 +32,19 @@ else
     sift_path=$( cat $tool_info | grep -w '^SIFT' | cut -d '=' -f2) 
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
-    
+    multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 	### update dashboard
-    $script_path/dashboard.sh $sample $run_info Annotation started
-    
+	if [ $multi == "YES" ]
+	then
+		sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
+		ss=$( cat $sample_info | grep -w '^$sample' | cut -d '=' -f2 | tr "\t" " ")
+		for i in $ss
+		do
+			$script_path/dashboard.sh $i $run_info Annotation started
+		done
+	else
+		$script_path/dashboard.sh $sample $run_info Annotation started
+	fi	
     if [ $5 ]
     then
         sam=$prefix.$sample
