@@ -38,16 +38,16 @@ else
 		exit 1;
 	fi
 	## removing trailing and leading spaces from run ifno file
-	cat $run_info | sed -e "s/ *$//" | sed -e "s/^ *//" > $run_info.tmp
+	cat $run_info|sed 's/[ \t]*$//' |sed 's/^[ \t]*//;s/[ \t]*$//'> $run_info.tmp
 	mv $run_info.tmp $run_info
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 	sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
 	dos2unix $sample_info
 	dos2unix $tool_info
 	## removing trailing and leading spaces
-	cat $sample_info | sed -e "s/ *$//" | sed -e "s/^ *//" > $sample_info.tmp
+	cat $sample_info|sed 's/[ \t]*$//' |sed 's/^[ \t]*//;s/[ \t]*$//'> $sample_info.tmp
 	mv $sample_info.tmp $sample_info
-	cat $tool_info | sed -e "s/ *$//" | sed -e "s/^ *//" > $tool_info.tmp
+	cat $tool_info |sed 's/[ \t]*$//' |sed 's/^[ \t]*//;s/[ \t]*$//' > $tool_info.tmp
 	mv $tool_info.tmp $tool_info
 	
 	input=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
@@ -129,14 +129,7 @@ else
 	args="-V -wd $output_dir/logs -q $queue -m a -M $TO -l h_stack=10M"
 	#############################################################
 	### get the identification number for this run.
-	unique_id=`$java/java -Xmx1g -jar $script_path/AddGPSMetadata.jar -p $script_path/AddGPSMetadata.properties -t $type -a begin -I -r $run_num -s $run_num -u $TO`
-	if echo $unique_id | egrep -q '^[0-9]+$'
-	then
-		echo -e "IDENTIFICATION_NUMBER=$unique_id" >> $run_info
-	else
-		echo "ERROR : unique identification for the workflow was not generated"
-		exit 1;
-	fi	
+	
 	if [ $multi_sample != "YES" ]
 	then
 		echo "Single sample"

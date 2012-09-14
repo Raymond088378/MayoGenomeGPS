@@ -27,15 +27,16 @@ else
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     max_reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
     
-    $samtools/samtools view -H $input/$bam 2>$input/$bam.fix.log
+    $samtools/samtools view -H $input/$bam 1>$input/$bam.sc.header 2>$input/$bam.fix.sc.log
 	
-	if [ `cat $input/$bam.fix.log | wc -l` -gt 0 ]
+	if [ `cat $input/$bam.fix.sc.log | wc -l` -gt 0 ]
 	then
 		echo "ERROR : $input/$bam is truncated or corrupted"
 		exit 1;
 	else
-		rm $input/$bam.fix.log
-	fi	
+		rm $input/$bam.fix.sc.log
+	fi
+	rm $input/$bam.sc.header	
 	
 	check=`[ -f $input/$bam.bai ] && echo "1" || echo "0"`
     if [ $check -eq 0 ]

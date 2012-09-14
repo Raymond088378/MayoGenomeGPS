@@ -38,7 +38,7 @@ else
 		exit 1;
 	fi
 	## removing trailing and leading spaces from run ifno file
-	cat $run_info | sed -e "s/ *$//" | sed -e "s/^ *//" > $run_info.tmp
+	cat $run_info | sed 's/^[ \t]*//;s/[ \t]*$//' > $run_info.tmp
 	mv $run_info.tmp $run_info
 	#### check for unique identification number
 	identify=$( cat $run_info | grep -w '^IDENTIFICATION_NUMBER' | cut -d '=' -f2)
@@ -57,7 +57,7 @@ else
 		exit 1;
 	else
 		dos2unix $tool_info
-		cat $tool_info | sed -e "s/ *$//" | sed -e "s/^ *//" > $tool_info.tmp
+		cat $tool_info | sed 's/^[ \t]*//;s/[ \t]*$//' > $tool_info.tmp
 		mv $tool_info.tmp $tool_info
 	fi
 	### check for sample info file
@@ -68,7 +68,7 @@ else
 		exit 1;
 	else
 		dos2unix $sample_info
-		cat $sample_info | sed -e "s/ *$//" | sed -e "s/^ *//" > $sample_info.tmp
+		cat $sample_info | sed 's/^[ \t]*//;s/[ \t]*$//' > $sample_info.tmp
 		mv $sample_info.tmp $sample_info
 	fi
 	#### extract paths
@@ -126,7 +126,12 @@ else
 	fi	
 	## copy cofig files
 	$script_path/copy_config.sh $output_dir $run_info
-	job_ids_dir=$output_dir/job_ids
+	run_info=$output_dir/run_info.txt
+	cat $run_info | grep -w -v -E '^TOOL_INFO|^SAMPLE_INFO' > $run_info.tmp
+	echo -e "TOOL_INFO=$output_dir/tool_info.txt\nSAMPLE_INFO=$output_dir/sample_info.txt" | cat $run_info.tmp - > $run_info
+	rm $run_info.tmp
+	tool_info=$output_dir/tool_info.txt
+	sample_info=$output_dir/sample_info.txt
 	output_align=$output_dir/alignment
 	if [ $analysis != "alignment" ]
 	then
@@ -337,7 +342,7 @@ else
 					$script_path/check_qstat.sh $limit
 					qsub $args -N $type.$version.sift.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $sample $run_info
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -pe threaded $threads -t 1-$numchrs:1 -l h_vmem=3G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info	    	
+					qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -pe threaded $threads -t 1-$numchrs:1 -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info	    	
 				fi
 				$script_path/check_qstat.sh $limit
 				qsub $args -N $type.$version.snpeff.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info		
@@ -627,9 +632,9 @@ else
 				qsub $args -N $type.$version.snpeff.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $group $run_info TUMOR
 				##POLYPHEN
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.polyphen.$group.$run_num $hold_args -t 1-$numchrs:1 -pe threaded $threads -l h_vmem=3G $script_path/polyphen.sh $polyphen $output_OnTarget $group $run_info  
+				qsub $args -N $type.$version.polyphen.$group.$run_num $hold_args -t 1-$numchrs:1 -pe threaded $threads -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $group $run_info  
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.polyphen.$group.$run_num $hold_args -t 1-$numchrs:1 -pe threaded $threads -l h_vmem=3G $script_path/polyphen.sh $polyphen $output_OnTarget $group $run_info TUMOR
+				qsub $args -N $type.$version.polyphen.$group.$run_num $hold_args -t 1-$numchrs:1 -pe threaded $threads -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $group $run_info TUMOR
 				hold="$type.$version.sift.$group.$run_num,$type.$version.snpeff.$group.$run_num,$type.$version.polyphen.$group.$run_num"
 				$script_path/check_qstat.sh $limit
 				qsub $args -N $type.$version.sample_reports.$group.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=4G $script_path/sample_reports.sh $run_info $group $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir

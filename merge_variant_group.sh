@@ -36,7 +36,8 @@ else
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
     filter_variants=$( cat $tool_info | grep -w '^VARIANT_FILTER' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
-	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
+	somatic_filter_variants=$( cat $tool_info | grep -w '^SOMATIC_VARIANT_FILTER' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
+    javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
 	threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2 )
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	perllib=$( cat $tool_info | grep -w '^PERLLIB' | cut -d '=' -f2)
@@ -105,7 +106,7 @@ else
 	$script_path/concatvcf.sh "$inputargs" $out/$group.variants.raw.vcf $run_info no
 	$script_path/concatvcf.sh "$inputargs_multi" $out/$group.variants.raw.multi.vcf $run_info yes
 	
-    if [ $filter_variants == "YES" ]
+    if [ $somatic_filter_variants == "YES" ]
     then
         $script_path/filter_variant_vqsr.sh $out/$group.variants.raw.vcf $out/$group.variants.filter.vcf BOTH $run_info
     else

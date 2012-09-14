@@ -42,7 +42,7 @@ else
     
 
     if [ -s $vcf.temp.idx ]
-    then
+    then    
         mv $vcf.temp.idx $vcf.idx
         mv $vcf.temp $vcf
     else	

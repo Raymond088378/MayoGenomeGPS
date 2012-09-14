@@ -77,12 +77,12 @@ else
                 eval filename${j}=$i
                 $script_path/fastq.sh $i $seq_file $(eval echo \$filename$j) $fastq $run_info $fastqc
             fi
-           if [ ! -s $fastq/filename${j} ]
+           if [ ! -s $fastq/$(eval echo \$filename$j) ]
 			then
-				echo "ERROR : $fastq/filename${j} does not exist"
+				echo "ERROR : $fastq/$(eval echo \$filename$j) does not exist"
 				exit 1;
 			else		
-				$script_path/filesize.sh alignment $sample $fastq filename${j} $JOB_ID $size $run_info
+				$script_path/filesize.sh alignment $sample $fastq $(eval echo \$filename$j) $JOB_ID $run_info
             fi
 			 let j=j+1
         done

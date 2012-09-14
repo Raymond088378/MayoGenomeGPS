@@ -28,8 +28,8 @@ else
 	then
 		let fidx=($SGE_TASK_ID*2)-1 
 		let sidx=($SGE_TASK_ID*2)
-		R1=`cat $sample_info | grep -w "$sample" | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
-        R2=`cat $sample_info | grep -w "$sample" | cut -d '=' -f2| tr "\t" "\n" | head -n $sidx | tail -n 1`
+		R1=`cat $sample_info | grep -w '^FASTQ:$sample' | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
+        R2=`cat $sample_info | grep -w '^FASTQ:$sample' | cut -d '=' -f2| tr "\t" "\n" | head -n $sidx | tail -n 1`
 		j=1
         for i in $R1 $R2
         do
@@ -40,19 +40,19 @@ else
             else
                 eval filename${j}=$i
             fi
-			if [ ! -s $fastq/filename${j} ]
+			 if [ ! -s $fastq/$(eval echo \$filename$j) ]
 			then
-				echo "ERROR : $fastq/filename${j} does not exist"
+				echo "ERROR : $fastq/$(eval echo \$filename$j) does not exist"
 				exit 1;
-			else		
-				$script_path/filesize.sh alignment $sample $fastq filename${j} $JOB_ID $run_info
+			else			
+				$script_path/filesize.sh alignment $sample $fastq $(eval echo \$filename$j) $JOB_ID $run_info
             fi
 			let j=j+1
         done
 		$bwa/bwa sampe -r "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" $genome_bwa $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai $output_dir_sample/$sample.$SGE_TASK_ID.R2.sai $fastq/$filename1 $fastq/$filename2 > $output_dir_sample/$sample.$SGE_TASK_ID.sam 
 	else
 		let fidx=($SGE_TASK_ID*2)-1 
-		R1=`cat $sample_info | grep -w "$sample" | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
+		R1=`cat $sample_info | grep -w '^FASTQ:$sample' | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
 		extension=$(echo $R1 | sed 's/.*\.//')
 		if [ $extension == "gz" ]
 		then

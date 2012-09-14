@@ -54,6 +54,8 @@ else
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
     r_soft=$( cat $tool_info | grep -w '^R_SOFT' | cut -d '=' -f2)
     javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
+	vqsr_snv_param=$( cat $tool_info | grep -w '^VQSR_params_SNV' | cut -d '=' -f2 )
+	vqsr_indel_param=$( cat $tool_info | grep -w '^VQSR_params_INDEL' | cut -d '=' -f2 )
 	
 	export JAVA_HOME=$javahome
 	export PATH=$r_soft:$javahome/bin:$PATH
@@ -117,9 +119,8 @@ else
 				-an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP \
 				-recalFile $output/temp/$input_name.recal \
 				-tranchesFile $output/temp/$input_name.tranches \
-				--maxGaussians 4 \
-				--percentBadVariants 0.05 \
-				-rscriptFile $output/plot/$input_name.plots.R
+				-rscriptFile $output/plot/$input_name.plots.R $vqsr_snv_param
+				
 				sleep 15
 				check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
 				if [ $check -eq 0 ]
@@ -211,9 +212,8 @@ else
 				-an QD -an FS -an HaplotypeScore -an ReadPosRankSum \
 				-recalFile $output/temp/$input_name.recal \
 				-tranchesFile $output/temp/$input_name.tranches \
-				--maxGaussians 4 \
-				--percentBadVariants 0.05 \
-				-rscriptFile $output/plot/$input_name.plots.R
+				-rscriptFile $output/plot/$input_name.plots.R $vqsr_indel_param
+				
 				sleep 15 
 				check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
 				if [ $check -eq 0 ]

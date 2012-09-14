@@ -49,7 +49,7 @@ else
 	
 	#### check and validate the bam file and let user to proceed after validation
 	bam=chr${chr}.cleaned.bam
-	$samtools/samtools view -H $input/$bam 2> $input/$bam.fix.log
+	$samtools/samtools view -H $input/$bam 1>$input/$bam.header 2> $input/$bam.fix.log
 	if [ `cat $input/$bam.fix.log | wc -l` -gt 0 ]
 	then
 		$script_path/email.sh $input/$bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
@@ -61,7 +61,7 @@ else
 	else
 		rm $input/$bam.fix.log
 	fi		
-		
+	rm $input/$bam.header	
 	if [ `echo $samples | tr ":" "\n" | wc -l` -gt 1 ]
 	then
 		$script_path/filesize.sh VariantCalling multi_sample $input $bam $JOB_ID $run_info
@@ -352,7 +352,7 @@ else
 	fi
 	if [ $tool == "exome" ]
 	then
-		if [ -s $output/chr$chr.target.bed ]
+		if [ -f $output/chr$chr.target.bed ]
 		then
 			rm $output/chr$chr.target.bed
 		fi

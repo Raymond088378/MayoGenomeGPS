@@ -103,7 +103,7 @@ TARGETTED=YES
 REMOVE_DUP=FALSE
 REMOVE_ALIGNED_BAM=YES
 T_DEPTH_FILTER=0
-
+SOMATIC_VARIANT_FILTER=NO
 #Parameters
 SNVMIX2_params=-q 30 -Q 30
 SNVMIX2_Filter=-p 0.8
@@ -116,7 +116,9 @@ CREST_params=--min_sclip_len 10 --min_sclip_reads 5
 JSM_Filter=-prob 0.5
 JOINTSNVMIX_params=--min_map_qual 30 --min_base_qual 30
 NOVO_params=-g 60 -x 2  
-
+VQSR_params_SNV=--maxGaussians 4 --percentBadVariants 0.05
+VQSR_params_INDEL=--maxGaussians 4 --percentBadVariants 0.05
+PICARD_ReadGroup_params=PL=illumina CN=mayo LB=hg19 CREATE_INDEX=true
 
 MAX_ALT_ALLELES=5
 MAX_READS_REALIGN=50000

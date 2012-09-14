@@ -47,20 +47,21 @@ else
 		id=`echo $samples | awk -v sample=$i -F ':' '{ for(i=1;i<=NF;i++){ if ($i == sample) {print i} } }'`
 		in=`echo $input | cut -d ":" -f "$id"`
 		bb=`echo $bam | cut -d ":" -f "$id"`
-		$samtools/samtools view -H $in/$bb 2> $in/$bb.fix.log
-		if [ `cat $in/$bb.fix.log | wc -l` -gt 0 ]
+		$samtools/samtools view -H $in/$bb 1>$in/$bb.rr.header 2> $in/$bb.fix.rr.log
+		if [ `cat $in/$bb.fix.rr.log | wc -l` -gt 0 ]
 		then
 			$script_path/email.sh $in/$bb "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-			while [ -f $in/$bb.fix.log ]
+			while [ -f $in/$bb.fix.rr.log ]
 			do
 				echo "waiting for the $in/$bb to be fixed"
 				sleep 2m
 			done
 		else
-			rm $in/$bb.fix.log
+			rm $in/$bb.fix.rr.log
 		fi
+		rm $in/$bb.rr.header
 	done		
-
+	
     if [ $flag == 1 ]
     then
         $script_path/realign_per_chr.sh $input $bam $output_bam $run_info 0 1 $samples $chr
@@ -79,14 +80,15 @@ else
 		done
     fi    
 	### file name will be chr*.cleaned.bam
-	$samtools/samtools view -H $output_bam/chr$chr.cleaned.bam 2>$output_bam/chr$chr.cleaned.bam.fix.log
-	if [ `cat $output_bam/chr$chr.cleaned.bam.fix.log | wc -l` -gt 0 ]
+	$samtools/samtools view -H $output_bam/chr$chr.cleaned.bam 1>$output_bam/chr$chr.cleaned.bam.rr.header 2>$output_bam/chr$chr.cleaned.bam.fix.rr.log
+	if [ `cat $output_bam/chr$chr.cleaned.bam.fix.rr.log | wc -l` -gt 0 ]
 	then
 		echo "$output_bam/chr$chr.cleaned.bam : BAM file is truncated or corrupt"
 		exit 1;
 	else
-		rm $output_bam/chr$chr.cleaned.bam.fix.log
+		rm $output_bam/chr$chr.cleaned.bam.fix.rr.log
 	fi	
+	rm $output_bam/chr$chr.cleaned.bam.rr.header
 	if [ `echo $samples | tr ":" "\n" | wc -l` -gt 1 ]
 	then
 		$script_path/filesize.sh Realignment multi_sample $output_bam chr$chr.cleaned.bam $JOB_ID $size $run_info

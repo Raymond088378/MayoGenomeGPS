@@ -11,7 +11,7 @@ else
     tmp_dir=$3
     order=$4
     reads=$5
-    index=`echo $6 | tr "[a-z]" "[A-Z]"`
+    index=`echo $6 | tr "[A-Z]" "[a-z]"`
     run_info=$7
     
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
@@ -27,7 +27,7 @@ else
     MAX_RECORDS_IN_RAM=$reads \
     SO=$order \
     TMP_DIR=$tmp_dir \
-	CREATE_INDEX=true \
+	CREATE_INDEX=$index \
     VALIDATION_STRINGENCY=SILENT	
     file=`echo $outbam | sed -e 's/\(.*\)..../\1/'`
 	mv $file.bai $file.bam.bai
@@ -37,7 +37,7 @@ else
         $script_path/errorlog.sh sortbam.sh $outbam ERROR empty
         exit 1;
     else
-        $samtools/samtools view -H $outbam 2> $outbam.log
+        $samtools/samtools view -H $outbam 1>$outbam.header 2> $outbam.log
 		if [ `cat $outbam.log | wc -l` -gt 0 ]
 		then
 			$script_path/errorlog.sh rmdup.sh $outbam ERROR "truncated or corrupted"
@@ -45,8 +45,8 @@ else
 		else
 			rm $outbam.log
 		fi	
-		rm $inbam
-        if [ $index == "TRUE" ]
+		rm $inbam $outbam.header
+        if [ $index == "true" ]
         then
             echo "index already created"
         else

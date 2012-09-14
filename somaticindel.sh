@@ -34,8 +34,8 @@ else
 		mkdir -p $output/temp
 	fi
 	
-	$samtools/samtools view -H $tumor_bam 2> $tumor_bam.fix.si.log
-	$samtools/samtools view -H $normal_bam 2> $normal_bam.fix.si.log
+	$samtools/samtools view -H $tumor_bam 1>$tumor_bam.header 2> $tumor_bam.fix.si.log
+	$samtools/samtools view -H $normal_bam 1>$normal_bam.header 2> $normal_bam.fix.si.log
 	if [ `cat $tumor_bam.fix.si.log | wc -l` -gt 0 ]
 	then
 		$script_path/email.sh $tumor_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
@@ -47,7 +47,7 @@ else
 	else
 		rm $tumor_bam.fix.si.log
 	fi	
-
+	rm $tumor_bam.header
 	if [ `cat $normal_bam.fix.si.log | wc -l` -gt 0 ]
 	then
 		$script_path/email.sh $normal_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
@@ -59,7 +59,7 @@ else
 	else
 		rm $normal_bam.fix.si.log
 	fi	
-	
+	rm $normal_bam.header
 	while [[ $check -eq 0 && $count -le 10 ]]
     do
 		$java/java -Xmx3g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
@@ -91,21 +91,24 @@ else
         $script_path/errorlog.sh $output/$output_file somaticindel.sh ERROR "failed to create"
 		exit 1;
     else
-        $script_path/convertvcf.pl $output/$output_file > $output/$output_file.tmp
+        if [ `cat $output/$output_file | awk '$0 !~ /^#/' | wc -l ` -eq 0 ]
+        then
+            $script_path/errorlog.sh $output/$output_file somaticindel.sh WARNING "no calls"
+        fi 
+		$script_path/convertvcf.pl $output/$output_file > $output/$output_file.tmp
 		mv $output/$output_file.tmp $output/$output_file
 		$script_path/fixindelAD.pl $output/$output_file $output/$output_file.temp
         mv $output/$output_file.temp $output/$output_file
         rm $output/$indel_v
         if [ `cat $output/$output_file |  awk '$0 ~ /^##FORMAT=<ID=GT/' | wc -l` == 0 ]
         then
-            $script_path/add.gt.to.vcf.pl $output/$output_file | awk '$0 ~ /^#/ || $8 ~ /SOMATIC/' > $output/$output_file.tmp
+            perl $script_path/add.gt.to.vcf.pl $output/$output_file | awk '$0 ~ /^#/ || $8 ~ /SOMATIC/' > $output/$output_file.tmp
         else
             cat $output/$output_file | awk '$0 ~ /^#/ || $8 ~ /SOMATIC/' > $output/$output_file.tmp
 		fi
         cat $output/$output_file.tmp | awk '$0 ~ /^#/ || $5 ~ /,/' > $output/$output_file.multi.vcf
 		cat $output/$output_file.tmp | awk '$0 ~ /^#/ || $5 !~ /,/' > $output/$output_file
-		rm $output/$output_file.tmp
-        rm $output/$output_file.idx
+		rm $output/$output_file.tmp $output/$output_file.idx
     fi
     echo `date`
 fi

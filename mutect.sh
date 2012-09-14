@@ -52,13 +52,6 @@ else
 	
 	while [[ $check -eq 0 ]]
     do
-        if [[  `find . -name '*.log'` ]]
-		then
-			if [[ `grep -l $output/$output_file *.log` ]]
-			then
-				rm `grep -l $output/$output_file *.log` 
-			fi
-        fi
 		$java/java -XX:MaxPermSize=128M -Xmx6g -Xms512m -jar $mutect/muTect-1.0.27783.jar \
         -T MuTect \
         --reference_sequence $ref \
@@ -74,6 +67,7 @@ else
 			check=` [ $len -gt 0 ] && echo "0" || echo "1"`
 			if [ $check -eq 0 ]
 			then
+				rm `grep -l $output/$output_file *.log`
 				rm core.*
 			fi
 		else

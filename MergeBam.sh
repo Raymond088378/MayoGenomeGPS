@@ -9,7 +9,7 @@ else
     inbam=$1
     outbam=$2
     tmp_dir=$3
-    index=`echo $4 | tr "[a-z]" "[A-Z]"`
+    index=`echo $4 | tr "[A-Z]" "[a-z]" `
     run_info=$5
     
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
@@ -25,7 +25,7 @@ else
     MAX_RECORDS_IN_RAM=$reads \
     OUTPUT=$outbam \
     TMP_DIR=$tmp_dir \
-    CREATE_INDEX=true \
+    CREATE_INDEX=$index \
     VALIDATION_STRINGENCY=SILENT
     file=`echo $outbam | sed -e 's/\(.*\)..../\1/'`
 	mv $file.bai $file.bam.bai
@@ -35,7 +35,7 @@ else
         $script_path/errorlog.sh $outbam MergeBam.sh ERROR empty
 		exit 1;
 	else
-		$samtools/samtools view -H $outbam 2>$outbam.fix.log
+		$samtools/samtools view -H $outbam 1>$outbam.header 2>$outbam.fix.log
 		if [ `cat $outbam.fix.log | wc -l` -gt 0 ]
 		then
 			$script_path/errorlog.sh $outbam MergeBam.sh ERROR "truncated or corrupt"
@@ -43,7 +43,7 @@ else
 		else
 			rm $outbam.fix.log
 		fi
-		
+		rm $outbam.header
         files=`echo $inbam | sed -e '/INPUT=/s///g'`
         indexes=`echo $inbam | sed -e '/INPUT=/s///g' | tr " " "\n" | awk '{print $0".bai"}'`
 		for i in $files 
