@@ -1,60 +1,45 @@
 #!/bin/bash
 
-if [ $# != 6 ]
+if [ $# != 5 ]
 then
-    echo -e "Usage: SCRIPT unzip and run fastqc\n fastq.sh <input fastq> <input dir> <output fastq> <output dir> <run info> <FASTQC directory>"
+    echo -e "Usage: SCRIPT unzip and run fastqc\n fastq.sh <input fastq> <input dir> <output dir> <run info> <FASTQC directory>"
 else
     set -x
     echo `date`
-    in_fastq=$1
+    read=$1
     input=$2
-    out_fastq=$3
-    output=$4
-    run_info=$5
-    fastqc_dir=$6
-    extension=$(echo $in_fastq | sed 's/.*\.//')
-    filename=$(echo $in_fastq | sed 's/\.[^\.]*$//')
-    
+    output=$3
+    run_info=$4
+    fastqc_dir=$5
+
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     fastqc_path=$( cat $tool_info | grep -w '^FASTQC' | cut -d '=' -f2)
     FASTQC=$( cat $run_info | grep -w '^FASTQC' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
     FOLDER_FASTQC=$( cat $run_info | grep -w '^FOLDER_FASTQC' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     
-    if [ $extension == "gz" ]
+    if [ ! -s $input/$read ]
     then
-        gunzip -c $input/$in_fastq > $output/${out_fastq}
-    else
-        ln -s $input/$in_fastq $output/${out_fastq}
-    fi	
-    
-    if [ ! -s $output/${out_fastq} ]
-    then
-        $script_path/errorlog.sh $output/${out_fastq} fastq.sh ERROR "not exist"
-		exit 1;
+        $script_path/errorlog.sh $input/$read fastq.sh ERROR "not found"
+        exit 1;
     fi
+    
+    ext=$(echo $read | sed 's/.*\.//')
+    if [ $ext != "gz" ]
+    then
+	file1=$(echo $read | sed 's/\.[^\.]*$//')
+    else
+	file1=$(echo $read | sed 's/\.[^\.]*$//'| sed 's/\.[^\.]*$//')
+    fi	
+    ## make a soft link of teh fastq's
+    ln -s $input/$read $output/$read	
     
     ##FASTQC
     if [ $FASTQC == "YES" ]
     then
-        $fastqc_path/fastqc -Xmx256m -Dfastqc.output_dir=$fastqc_dir/ $output/${out_fastq}
-        ext=$(echo $out_fastq | sed 's/.*\.//')
-		if [ $ext == "fastq" ]
-		then
-			file=$(echo $out_fastq | sed 's/\.[^\.]*$//')
-		else
-			file=$out_fastq
-		fi	
+        $fastqc_path/fastqc -o $fastqc_dir/ $output/$read
     else
-        read=${out_fastq}
-		ext=$(echo $read | sed 's/.*\.//')
-		if [ $ext == "fastq" ]
-		then
-			file=$(echo $read | sed 's/\.[^\.]*$//')
-		else
-			file=$read
-		fi		
-		ln -s $FOLDER_FASTQC/${file}_fastqc $fastqc_dir/
+        ln -s $FOLDER_FASTQC/${file1}_fastqc $fastqc_dir/
     fi		
     echo `date`
 fi	

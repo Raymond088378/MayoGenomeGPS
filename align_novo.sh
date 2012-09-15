@@ -64,77 +64,35 @@ else
         let sidx=$SGE_TASK_ID*2
         R1=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
         R2=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" | head -n $sidx | tail -n 1`
-		## run fastqc depending on flag and convert the zip to unzip fastq
-        j=1
         for i in $R1 $R2
         do
-            extension=$(echo $i | sed 's/.*\.//')
-            if [ $extension == "gz" ]
-            then
-                eval filename${j}=$(echo $i | sed 's/\.[^\.]*$//')
-                $script_path/fastq.sh $i $seq_file $(eval echo \$filename$j) $fastq $run_info $fastqc
-            else
-                eval filename${j}=$i
-                $script_path/fastq.sh $i $seq_file $(eval echo \$filename$j) $fastq $run_info $fastqc
-            fi
-           if [ ! -s $fastq/$(eval echo \$filename$j) ]
-			then
-				echo "ERROR : $fastq/$(eval echo \$filename$j) does not exist"
-				exit 1;
-			else		
-				$script_path/filesize.sh alignment $sample $fastq $(eval echo \$filename$j) $JOB_ID $run_info
-            fi
-			 let j=j+1
+            $script_path/fastq.sh $i $seq_file $fastq $run_info $fastqc
+	    $script_path/filesize.sh alignment $sample $fastq $i $JOB_ID $run_info
         done
     elif [ $paired == 0 ]
     then
         let fidx=$SGE_TASK_ID
         R1=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
-        extension=$(echo $R1 | sed 's/.*\.//')
-        filename1=$(echo $R1 | sed 's/\.[^\.]*$//')
-        if [ $extension == "gz" ]
-        then
-            $script_path/fastq.sh $R1 $seq_file $filename1 $fastq $run_info $fastqc
-        else
-            filename1=$R1
-            $script_path/fastq.sh $R1 $seq_file $filename1 $fastq $run_info $fastqc
-        fi
-		if [ ! -s $fastq/$filename1 ]
-		then
-			echo "ERROR : $fastq/$filename1 does not exist"
-			exit 1;
-		else
-			$script_path/filesize.sh alignment $sample $fastq $filename1 $JOB_ID $run_info
-		fi
-    fi    
-    ILL2SANGER1=`perl $script_path/checkFastqQualityScores.pl $fastq/$filename1 1000`
-    if [ $paired == 1 ]
-    then
-        ILL2SANGER2=`perl $script_path/checkFastqQualityScores.pl $fastq/$filename2 1000`
-    fi
+        $script_path/fastq.sh $R1 $seq_file $fastq $run_info $fastqc
+	$script_path/filesize.sh alignment $sample $fastq $R1 $JOB_ID $run_info
+    fi  
+    ILL2SANGER1=`perl $script_path/checkFastqQualityScores.pl $fastq/$R1 10000`
 
 ########################################################	
 ######		Run novoalign for PE or SR
+     if [ $ILL2SANGER1 -gt 65 ] 
+        then
+            qual="-F ILMFQ"
+        else
+            qual="-F STDFQ"
+        fi
     if [ $paired == 1 ]
     then
-        if [ $ILL2SANGER1 -gt 65 ] && [ $ILL2SANGER2 -gt 65 ]
-        then
-            $novoalign --hdrhd off -v 120 -c $threads -i PE 425,80 $paramaters -r Random -d $genome_novo -F ILMFQ -f $fastq/$filename1 $fastq/$filename2 \
+        $novoalign -c $threads $paramaters -d $genome_novo $qual -f $fastq/$R1 $fastq/$R2 \
             -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$sample\tPL:$platform\tCN:$center" > $output_dir_sample/$sample.$SGE_TASK_ID.sam
-        
-        else
-            $novoalign --hdrhd off -v 120 -c $threads -i PE 425,80 $paramaters -r Random -d $genome_novo -F STDFQ -f $fastq/$filename1 $fastq/$filename2 \
-            -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$sample\tPL:$platform\tCN:$center" > $output_dir_sample/$sample.$SGE_TASK_ID.sam   
-        fi
     else
-        if [ $ILL2SANGER1 -gt 65 ]
-        then
-            $novoalign --hdrhd off -v 120 -c $threads -i PE 425,80 $paramaters -r Random -d $genome_novo -F ILMFQ -f $fastq/$filename1 \
-            -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" > $output_dir_sample/$sample.$SGE_TASK_ID.sam
-        else
-            $novoalign --hdrhd off -v 120 -c $threads -i PE 425,80 $paramaters -r Random -d $genome_novo -F STDFQ -f $fastq/$filename1 \
-            -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" > $output_dir_sample/$sample.$SGE_TASK_ID.sam   
-        fi        
+        $novoalign -c $threads $paramaters -d $genome_novo $qual -f $fastq/$R1 \
+            -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" > $output_dir_sample/$sample.$SGE_TASK_ID.sam      
     fi    
     
     if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.sam ]
@@ -145,22 +103,22 @@ else
 		$script_path/filesize.sh alignment.out $sample $output_dir_sample $sample.$SGE_TASK_ID.sam $JOB_ID $run_info
 		if [ $paired == 0 ]
         then
-            rm $fastq/$filename1
+            rm $fastq/$R1
         else
-            rm $fastq/$filename1 $fastq/$filename2
+            rm $fastq/$R1 $fastq/$R2
         fi    
     fi  
 
     $samtools/samtools view -bS $output_dir_sample/$sample.$SGE_TASK_ID.sam > $output_dir_sample/$sample.$SGE_TASK_ID.bam 
-	$samtools/samtools view -H $output_dir_sample/$sample.$SGE_TASK_ID.bam 2> $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log
+	$samtools/samtools view -H $output_dir_sample/$sample.$SGE_TASK_ID.bam 1>$output_dir_sample/$sample.$SGE_TASK_ID.bam.header 2> $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log
 	if [ `cat $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log | wc -l` -gt 0 ]	
 	then
-		echo " $output_dir_sample/$sample.$SGE_TASK_ID.bam : bam file is truncated or corruped"
+		$script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.bam align_novo.sh ERROR "truncated or corrupt"
 		exit 1;
 	else
 		rm  $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log
 	fi	
-
+        rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.header
 ########################################################	
 ######		Sort BAM, adds RG & remove duplicates
 

@@ -30,32 +30,13 @@ else
 ######	Reading run_info.txt and assigning to variables
     seq_file=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
-    analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2)
-    analysis=`echo "$analysis" | tr "[A-Z]" "[a-z]"`
-    email=$( cat $run_info | grep -w '^EMAIL' | cut -d '=' -f2)
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    center=$( cat $run_info | grep -w '^CENTER' | cut -d '=' -f2 )
-    platform=$( cat $run_info | grep -w '^PLATFORM' | cut -d '=' -f2 )
     GenomeBuild=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2 )
-    fastqc=$( cat $tool_info | grep -w '^FASTQC' | cut -d '=' -f2)
     genome_bwa=$( cat $tool_info | grep -w '^BWA_REF' | cut -d '=' -f2)
-    genome_novo=$( cat $tool_info | grep -w '^NOVO_REF' | cut -d '=' -f2)
     bwa=$( cat $tool_info | grep -w '^BWA' | cut -d '=' -f2)
-    novoalign=$( cat $tool_info | grep -w '^NOVOALIGN' | cut -d '=' -f2)
-    samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
-    ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
-    queue=$( cat $run_info | grep -w '^QUEUE' | cut -d '=' -f2)
-    filenames=$(cat $sample_info | grep -w "$sample" | cut -d '=' -f2| tr "\t" "\n")
-    output=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
-    PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
-    tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
-    run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
-    flowcell=`echo $run_num | awk -F'_' '{print $NF}' | sed 's/.\(.*\)/\1/'`
     paired=$( cat $run_info | grep -w '^PAIRED' | cut -d '=' -f2)
-    java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
-    version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
-
+    parameters=$( cat $tool_info | grep -w '^BWA_params' | cut -d '=' -f2 )
 ########################################################	
 ######		Check FASTQ for Illumina or Sanger quality scrore
     
@@ -76,38 +57,24 @@ else
     fi	
 	
     R1=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
-    extension=$(echo $R1 | sed 's/.*\.//')
-    filename1=$(echo $R1 | sed 's/\.[^\.]*$//')
-    if [ $extension == "gz" ]
-    then
-        $script_path/fastq.sh $R1 $seq_file $filename1 $fastq $run_info $fastqc
-    else
-        filename1=$R1
-        $script_path/fastq.sh $R1 $seq_file $filename1 $fastq $run_info $fastqc
-    fi
+    $script_path/fastq.sh $R1 $seq_file $fastq $run_info $fastqc
 ## check if the fastqs are zipped or not
-    
-    if [ ! -s $fastq/$filename1 ]
-    then
-        $script_path/errorlog.sh $fastq/$filename1 align_read_bwa.sh ERROR empty
-        exit 1
-    fi
-    ILL2SANGER1=`perl $script_path/checkFastqQualityScores.pl $fastq/$filename1 1000`
+    ILL2SANGER1=`perl $script_path/checkFastqQualityScores.pl $fastq/$R1 10000`
    
 
 ########################################################	
 ######		Run bwa alignemnt module
     if [ $ILL2SANGER1 -gt 65 ]
     then
-        $bwa/bwa aln -l 32 -t 4 -I $genome_bwa $fastq/$filename1 > $output_dir_sample/$sample.$SGE_TASK_ID.R$read.sai
+        $bwa/bwa aln $parameters -I $genome_bwa $fastq/$R1 > $output_dir_sample/$sample.$SGE_TASK_ID.R$read.sai
     else
-        $bwa/bwa aln -l 32 -t 4 $genome_bwa $fastq/$filename1 > $output_dir_sample/$sample.$SGE_TASK_ID.R$read.sai
+        $bwa/bwa aln $parameters $genome_bwa $fastq/$R1 > $output_dir_sample/$sample.$SGE_TASK_ID.R$read.sai
     fi        
   
     if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.R$read.sai ]
     then
         $script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.R$read.sai align_read_bwa.sh ERROR "not created"
-        exit 1 
+        exit 1; 
     fi  
 	echo `date`
 fi
