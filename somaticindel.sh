@@ -19,7 +19,6 @@ else
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
-    window=$( cat $tool_info | grep -w '^INDEL_WINDOW_SIZE' | cut -d '=' -f2)
 	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
 	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
 	command_line_params=$( cat $tool_info | grep -w '^SOMATIC_INDEL_params' | cut -d '=' -f2 )
@@ -68,7 +67,6 @@ else
 		-K $gatk/Hossain.Asif_mayo.edu.key \
 		-T SomaticIndelDetector \
 		-L chr$chr \
-		--window_size $window \
 		-o $output/$output_file \
 		-verbose $output/$indel_v \
 		-I:normal $normal_bam \

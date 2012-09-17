@@ -19,8 +19,8 @@ else
 	sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
 	genome_bwa=$( cat $tool_info | grep -w '^BWA_REF' | cut -d '=' -f2)
 	bwa=$( cat $tool_info | grep -w '^BWA' | cut -d '=' -f2)
-	center=$( cat $run_info | grep -w '^CENTER' | cut -d '=' -f2 )
-	platform=$( cat $run_info | grep -w '^PLATFORM' | cut -d '=' -f2 )
+	center=$( cat $tool_info | grep -w '^CENTER' | cut -d '=' -f2 )
+	platform=$( cat $tool_info | grep -w '^PLATFORM' | cut -d '=' -f2 )
 	GenomeBuild=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2 )
 	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
 	output_dir_sample=$output_dir/alignment/$sample

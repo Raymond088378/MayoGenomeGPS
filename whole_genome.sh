@@ -80,14 +80,14 @@ else
 	tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
 	type=$( cat $run_info | grep -w '^TOOL' | cut -d '=' -f2|tr "[a-z]" "[A-Z]")
 	version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
-	queue=$( cat $run_info | grep -w '^QUEUE' | cut -d '=' -f2)
+	queue=$( cat $tool_info | grep -w '^QUEUE' | cut -d '=' -f2)
 	run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
 	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
 	multi_sample=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
 	all_sites=$( cat $tool_info | grep -w '^EMIT_ALL_SITES' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 	aligner=$( cat $run_info | grep -w '^ALIGNER' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
-	upload_tb=$( cat $run_info | grep -w '^UPLOAD_TABLEBROWSER' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
+	upload_tb=$( cat $tool_info | grep -w '^UPLOAD_TABLEBROWSER' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 	numchrs=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | wc -l)
 	paired=$( cat $run_info | grep -w '^PAIRED' | cut -d '=' -f2)
 	threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2)
@@ -127,8 +127,10 @@ else
 	## copy cofig files
 	$script_path/copy_config.sh $output_dir $run_info
 	run_info=$output_dir/run_info.txt
+	### todays date
+	add=`date +%D`
 	cat $run_info | grep -w -v -E '^TOOL_INFO|^SAMPLE_INFO' > $run_info.tmp
-	echo -e "TOOL_INFO=$output_dir/tool_info.txt\nSAMPLE_INFO=$output_dir/sample_info.txt" | cat $run_info.tmp - > $run_info
+	echo -e "TOOL_INFO=$output_dir/tool_info.txt\nSAMPLE_INFO=$output_dir/sample_info.txt\nDATE=$add" | cat $run_info.tmp - > $run_info
 	rm $run_info.tmp
 	tool_info=$output_dir/tool_info.txt
 	sample_info=$output_dir/sample_info.txt
@@ -164,7 +166,6 @@ else
 		numsamples=$(cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | wc -l)
 		for sample in `echo $samples | tr ":" "\n"`
 		do            
-			
 			if [ $analysis != "annotation" ]
 			then
 				align_dir=$output_dir/alignment/$sample
@@ -179,7 +180,11 @@ else
 				else
 					let numfiles=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`
 				fi	
-
+				if [ $numfiles -eq 0 ]
+				then
+					echo "sample info file is not properly configured"
+					exit 1;
+				fi	
 				if [ $analysis == "mayo" ]
 				then
 					for ((i=1; i <=$numfiles; i++));
@@ -229,6 +234,11 @@ else
 				mkdir -p $align_dir
 				infile=`cat $sample_info | grep -w ^BAM:${sample} | cut -d '=' -f2`
 				num_bams=`echo $infile | tr " " "\n" | wc -l`
+				if [ $num_bams -eq 0 ]
+				then
+					echo "sample info file is not properly configured"
+					exit 1;
+				fi	
 				for ((i=1; i <=$num_bams; i++));
 				do
 					bam=`echo $infile | awk -v num=$i '{print $num}'`
@@ -258,6 +268,11 @@ else
 				then
 					infile=`cat $sample_info | grep -w ^BAM:${sample} | cut -d '=' -f2`
 					num_bams=`echo $infile | tr " " "\n" | wc -l`
+					if [ $num_bams -eq 0 ]
+					then
+						echo "sample info file is not properly configured"
+						exit 1;
+					fi	
 					for ((i=1; i <=$num_bams; i++));
 					do
 						bam=`echo $infile | awk -v num=$i '{print $num}'`
@@ -497,6 +512,11 @@ else
 				else
 					let numfiles=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`
 				fi
+				if [ $numfiles -eq 0 ]
+				then
+					echo "sample info file is not properly configured"
+					exit 1;
+				fi	
 				if [ $aligner == "novoalign" ]
 				then
 					echo "novoalign is used as aligner"
@@ -528,6 +548,11 @@ else
 			then
 				infile=`cat $sample_info | grep -w ^BAM:${sample} | cut -d '=' -f2 `
 				num_bams=`echo $infile | tr " " "\n" | wc -l`
+				if [ $num_bams -eq 0 ]
+				then
+					echo "sample info file is not properly configured"
+					exit 1;
+				fi	
 				for ((i=1; i <=$num_bams; i++));
 				do
 					bam=`echo $infile | awk -v num=$i '{print $num}'`
@@ -572,6 +597,11 @@ else
 				then
 					infile=`cat $sample_info | grep -w ^BAM:${group} | cut -d '=' -f2`
 					num_bams=`echo $infile | tr " " "\n" | wc -l`
+					if [ $num_bams -eq 0 ]
+					then
+						echo "sample info file is not properly configured"
+						exit 1;
+					fi	
 					for ((i=1; i <=$num_bams; i++));
 					do
 						bam=`echo $infile | awk -v num=$i '{print $num}'`
@@ -767,3 +797,6 @@ else
 	fi
 	echo `date`
 fi
+
+
+#### end of the script

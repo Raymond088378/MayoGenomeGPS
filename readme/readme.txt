@@ -1,38 +1,43 @@
-## March 20 2012
-
-Problem: if there are less number of reads to realign for any Chromosome then GATK fails most of the time. 
-Solution: workflow copies aligned bam as realigned bam with a warning message in the log
-
-
-
-
-
-
-## Saurabh Baheti
-## Feb 28th 2012
+### Saurabh Baheti
+### Sept 17 2012
 
 To run the workflow user needs to create 3 Configuration files i.e
 1) Run information file
 2) Tool information file
 3) Sample information file
-If it is a standard run then user should not change tool info and use the tool info in this space as it is. Make run info and sample info according to the samples you are running.
+If it is a standard run then user should not change tool info and use the tool info in script folder as it is. Make run info and sample info according to the samples you are running.
 
 ### how to run the workflow
 After making these three config files user need to run this script to submit all the jobs
+Step 1. Generate teh unique identification number for a workflow instance
+  	$ /projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/trunk/unique_id.sh $run_info
+  
+Step 2. Run the workflow wrapper to submit jobs to the RCF cluster
+	$ qsub -V -cwd -q ngs-sec -l medp=TRUE -m a -M baheti.saurabh@mayo.edu /path/to/scripts/whole_genome.sh /path/to/run_info_file
+	$ /projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/trunk/whole_genome.sh 
+	Usage: <Please specify path to run_info.txt file> 
 
-$ /projects/bsi/bictools/scripts/dev/WholeGenome/whole_genome.sh 
-Usage: <Please specify path to run_info.txt file> 
 
-$ qsub -V -cwd -q ngs-sec -l medp=TRUE -m a -M baheti.saurabh@mayo.edu /path/to/scripts/whole_genome.sh /path/to/run_info file
 
 ### after completion
 After running the workflow, on completion user will reecieve an email about the completion of workflow, first thing user need to check is the errorlog and warning log file created on the output folder level for potenital errors.
 
-#### after user validate and all teh data is correct and in right format then user can delete the intermediate files uisng this script
+#### after user validate and all the data is correct and in right format then user can delete the intermediate files using this script
 
-$ /path/to/scripts/cleanspace.sh /path/to/output_folder exome/whole_genom
-$ /projects/bsi/bictools/scripts/dev/WholeGenome/cleanspace.sh 
-Usage: </path/to/output dir > <tool (exome/whole_genome)>
+	$ /path/to/scripts/transfer_clean.sh /path/to/output_folder /path/to/run_info_file
+	$ /projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/trunk/transfer_clean.sh
+	Usage: wrapper to clean intermediate files and tansfer the data to tertiary, delivery folder
+ 	<secondary folder> < run_info >
+
+### To test the workflow to get sample results user can use these test datasets
+DIR : /data2/bsi/RandD/sampleData/treat 	
+	drwxrwx--- 3 m088341 biostat  410 Sep  4 16:10 bam
+drwxrws--- 2 m078940 biostat  148 Sep 16 20:46 input_fastq
+-rwxrwx--- 1 tu03325 biostat  661 Sep 17 10:23 run_info.txt
+-rwxrwx--- 1 tu03325 biostat  108 Sep 17 10:23 sample_info.txt
+-rwxrwx--- 1 tu03325 biostat 7508 Sep 17 10:23 tool_info.txt
+drwxrwx--- 2 m088341 biostat  312 Jan 31  2012 variant
+
 
 ##### For testing uisng bams
 location of a dataset

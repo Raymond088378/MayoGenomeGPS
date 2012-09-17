@@ -36,6 +36,7 @@ else
 		else
 			rm chr$chr.cleaned.bam.fix.ssp.log
 		fi
+		rm $output/$sample.chr$chr.header.sam
         for i in $pair
         do
             sam=`echo $pair | tr " " "\n" | grep -v $i | tr "\n" " "`
@@ -52,7 +53,6 @@ else
             mv $output/$sample.$i.chr$chr.re.bam $output/$sample.$i.chr$chr.bam
             rm $output/$sample.chr$chr.$i.header.sam
         done
-        rm $output/$sample.chr$chr.header.sam
     fi
     echo `date`
 fi

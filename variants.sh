@@ -202,7 +202,7 @@ else
 				bam="-I $output/$sample.chr${chr}-sorted.bam"
 				$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.indel.vcf INDEL "$param" EMIT_VARIANTS_ONLY $run_info &
 				### call snvs using snvmix
-				$script_path/snvmix2.sh $sample $input/chr${chr}.pileup $output/$sample.variants.chr${chr}.raw.snv.vcf target "$param" $run_info &
+				$script_path/snvmix2.sh $sample "$bam" $output/$sample.variants.chr${chr}.raw.snv.vcf target "$param" $run_info &
 				while [[ ! -s $output/$sample.variants.chr${chr}.raw.indel.vcf || ! -s $output/$sample.variants.chr${chr}.raw.indel.vcf.multi.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snv.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snv.vcf.multi.vcf ]]
 				do
 					echo " waiting for gatk and snvnix to complete to complete "

@@ -14,13 +14,11 @@ else
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
-    reorder=$( cat $run_info | grep -w '^REORDERSAM' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
+    reorder=$( cat $tool_info | grep -w '^REORDERSAM' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
     ref_path=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
-    center=$( cat $run_info | grep -w '^CENTER' | cut -d '=' -f2 )
-    platform=$( cat $run_info | grep -w '^PLATFORM' | cut -d '=' -f2 )
     GenomeBuild=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2 )
     max_files=$( cat $tool_info | grep -w '^MAX_FILE_HANDLES' | cut -d '=' -f2 )
     max_reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
@@ -33,7 +31,7 @@ else
     cd $input
     for file in $input/*sorted.bam
     do
-		$samtools/samtools view -H $file 2> $file.fix.log
+		$samtools/samtools view -H $file 1>$file.rf.header 2> $file.fix.log
 		if [ `cat $file.fix.log | wc -l` -gt 0 ]
 		then
 			$script_path/email.sh $file "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
@@ -45,6 +43,7 @@ else
 		else
 			rm $file.fix.log 
 		fi	
+		rm $file.rf.header
 		INPUTARGS="INPUT="$file" "$INPUTARGS;
 		files=$file" $files";
     done

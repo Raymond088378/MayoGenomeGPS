@@ -16,7 +16,7 @@ realigd BAM files
 
 4. ontarget module
 
-RAW VCF variant files (only exome)
+RAW VCF variant files
 
 5. annotation module  (positions should be 0 based)
 

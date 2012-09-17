@@ -37,15 +37,15 @@ else
         $script_path/errorlog.sh sortbam.sh $outbam ERROR empty
         exit 1;
     else
-        $samtools/samtools view -H $outbam 1>$outbam.header 2> $outbam.log
-		if [ `cat $outbam.log | wc -l` -gt 0 ]
+        $samtools/samtools view -H $outbam 1>$outbam.sort.header 2> $outbam.sort.log
+		if [ `cat $outbam.sort.log | wc -l` -gt 0 ]
 		then
 			$script_path/errorlog.sh rmdup.sh $outbam ERROR "truncated or corrupted"
 			exit 1;
 		else
-			rm $outbam.log
+			rm $outbam.sort.log
 		fi	
-		rm $inbam $outbam.header
+		rm $inbam $outbam.sort.header
         if [ $index == "true" ]
         then
             echo "index already created"

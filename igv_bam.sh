@@ -45,14 +45,15 @@ else
         pair=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2)
         for i in *.cleaned.bam
         do
-			$samtools/samtools view -H $i 2> $i.fix.log
-			if [ `cat $i.fix.log | wc -l` -gt 0 ]
+			$samtools/samtools view -H $i 1>$i.igv.header 2> $i.fix.igv.log
+			if [ `cat $i.fix.igv.log | wc -l` -gt 0 ]
 			then
 				echo "$i : bam is truncated or corrupt"
 				exit 1;
 			else
-				rm $i.fix.log
+				rm $i.fix.igv.log
 			fi	
+			rm $i.igv.header
 			$samtools/samtools view -H $i > $output/$sample/$sample.header.sam
         done
 
@@ -105,14 +106,15 @@ else
         cd $input/$sample/
         for i in *.cleaned.bam
         do
-            $samtools/samtools view -H $i 2> $i.fix.log
-			if [ `cat $i.fix.log | wc -l` -gt 0 ]
+            $samtools/samtools view -H $i 1>$i.igv.header 2> $i.fix.igv.log
+			if [ `cat $i.fix.igv.log | wc -l` -gt 0 ]
 			then
 				echo "$i : bam is truncated or corrupt"
 				exit 1;
 			else
-				rm $i.fix.log
-			fi	
+				rm $i.fix.igv.log
+			fi
+			rm $i.igv.header	
 			$samtools/samtools view -H $i > $output/$sample.header.sam
         done
         # only merge if there is more than 1 chr

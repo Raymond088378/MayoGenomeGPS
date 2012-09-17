@@ -6,7 +6,6 @@ then
 else
     set -x
     echo `date`
-    
     sample=$1
     bam=`echo $2 |  sed -e '/-I/s///g' | sed -e "s/^ *//"`
     output=$3
