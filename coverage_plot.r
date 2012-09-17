@@ -37,22 +37,9 @@ if(length(stdin) > 1){
 		sd1 <- c(sd1, row.sd1) 
 		sd2 <- c(sd2, row.sd2)
 	}
-	samplenames <- cbind(samplenames, "Mean", "Mean-3SD", "Mean+3SD")
-	linecolor <- sp.max + 1 
-	sym <- sp.max + 1
 	linecolors <- seq(1:sp.max)
 	symbol <- seq(1:sp.max) 
-	linecolors <- c(linecolors, linecolor)
-	symbol <- c(symbol, sym)
-	lines(mean.percent,col=linecolor,pch=sym,type="o",cex=0.6,lwd=2)
-	linecolor <- sp.max + 2 
-	sym <- sp.max + 2 
-	lines(sd1,col=linecolor,pch=sym,type="o",cex=0.6,lwd=2)
-	lines(sd2,col=linecolor,pch=sym,type="o",cex=0.6,lwd=2)
-	linecolors <- c(linecolors, linecolor)
-	linecolors <- c(linecolors, linecolor)
-	symbol <- c(symbol, sym)
-	symbol <- c(symbol, sym)
+	
 	legend(x="bottomleft",samplenames,inset=0.02,cex=0.7,col=linecolors,pch=symbol,lty=1,lwd=2)
 	dev.off()
 	

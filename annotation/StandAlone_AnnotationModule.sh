@@ -15,6 +15,8 @@ else
 	script_path=$7
 	## paths
 	mkdir -p $output
+	cp $tool_info $output/$sample.tool_info.txt
+	tool_info=$output/$sample.tool_info.txt
 	snpeff=$( cat $tool_info | grep -w '^SNPEFF' | cut -d '=' -f2)
 	sift=$( cat $tool_info | grep -w '^SIFT' | cut -d '=' -f2)
 	pph=$(cat $tool_info | grep -w '^POLYPHEN' |  cut -d '=' -f2)
