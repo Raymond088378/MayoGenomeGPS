@@ -42,7 +42,7 @@ DISEASE=disease type (free text)
 READLENGTH=100 (should be a number)
 PAIRED=1 (1 for paired end data and 0 for Single read data)
 ANALYSIS=variant/external/mayo/annotation/alignment (For Sequnecing core run specify mayo to update secondary dashboard)
-PI=baheti_saurabh (lastname_firstname_lanid)
+PI=baheti_saurabh_m078940 (lastname_firstname_lanid)
 MULTISAMPLE=NO (NO for single sample ; YES for paired analysis)
 INPUT_DIR=/data2/bsi/RandD/WG_test/random/ (/path/to/input directory)
 BASE_OUTPUT_DIR=/data2/bsi/RandD/WG_test/random/ (/path/to/output dirrectory) 
@@ -60,10 +60,10 @@ ALIGNER=NOVOALIGN/BWA
 FASTQC=YES/NO
 FOLDER_FASTQC=NA or /path/to/fastqc results/
 VARIANT_TYPE=BOTH/SNV/INDEL
-SNV_CALLER=GATK/SNVMIX
-SOAMTIC_CALLER=SOMATICSNIPER/JOINTSNVMIX/MUTECT
+SNV_CALLER=GATK/SNVMIX/BEAUTY_EXOME
+SOAMTIC_CALLER=SOMATICSNIPER/JOINTSNVMIX/MUTECT/BEAUTY_EXOME
 SAMPLEINFORMATION=test run (free text )
-DELIVERY_FOLDER=NA or /path/to/delivery folder to transfer realigned bams 
+DELIVERY_FOLDER=NA or /path/to/delivery folder to transfer realigned bams for visualization
 TERTIARY_FOLDER=NA or /path/to/tertiary folder for Biostats
 
 ### TOOL info file
@@ -98,7 +98,7 @@ JOINTSNVMIX_params=
 NOVO_params=-g 60 -x 2 -i PE 425,80 -r Random --hdrhd off -v 120
 BWA_params=-l 32 -t 4
 VQSR_params_SNV=--maxGaussians 4 --percentBadVariants 0.05
-VQSR_params_INDEL=--maxGaussians 4 --percentBadVariants 0.05
+VQSR_params_INDEL=--maxGaussians 4 --percentBadVariants 0.12
 PICARD_ReadGroup_params=PL=illumina CN=mayo LB=hg19 CREATE_INDEX=true
 
 

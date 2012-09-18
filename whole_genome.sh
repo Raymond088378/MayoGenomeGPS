@@ -166,7 +166,7 @@ else
 	###########################################################
 	#### sge paramters
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
-	args="-V -wd $output_dir/logs -q $queue -m a -M $TO -l h_stack=10M"
+	args="-V -wd $output_dir/logs -q $queue -m abe -M $TO -l h_stack=10M"
 	#############################################################
 	
 	if [ $multi_sample != "YES" ]
@@ -247,9 +247,13 @@ else
 				then
 					echo "sample info file is not properly configured"
 					exit 1;
+				fi
+				if [ $analysis == "realign-mayo" ]
+				then
+					$script_path/dashboard.sh $sample $run_info Beginning started 
 				fi	
 				for ((i=1; i <=$num_bams; i++));
-				do
+				do	
 					bam=`echo $infile | awk -v num=$i '{print $num}'`
 					$samtools/samtools view -H $input/$bam 1>$align_dir/$sample.$i.sorted.header 2> $align_dir/$sample.$i.sorted.bam.log
 					if [ `cat $align_dir/$sample.$i.sorted.bam.log | wc -l` -gt 0 ]
@@ -793,6 +797,16 @@ else
 					id=$id"$type.$version.getCoverage.$group.$run_num,$type.$version.sample_numbers.$group.$run_num,$type.$version.gene_summary.$group.$run_num,$type.$version.igv_bam.$group.$run_num,$type.$version.annotate_sample.$run_num,"
 				done    
 			fi
+			if [ $tool == "exome" ]
+			then
+				mem="-l h_vmem=5G"
+			else
+				mem="-l h_vmem=16G"
+			fi    
+			$script_path/check_qstat.sh $limit
+			qsub $args -N $type.$version.merge_sample.$run_num -hold_jid $id $mem $script_path/merge_sample.sh $output_dir $run_info
+			
+			
 			if [[ $upload_tb == "YES" ]]
 			then
 				mem="8G"
@@ -800,7 +814,7 @@ else
 				mem="2G"
 			fi	
 			$script_path/check_qstat.sh $limit
-			qsub $args -N $type.$version.generate_html.$run_num -l h_vmem=$mem -hold_jid $id $script_path/generate_html.sh $output_dir $run_info 	
+			qsub $args -N $type.$version.generate_html.$run_num -l h_vmem=$mem -hold_jid $type.$version.merge_sample.$run_num $script_path/generate_html.sh $output_dir $run_info 	
 		fi
 	fi
 	echo `date`

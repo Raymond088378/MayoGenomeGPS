@@ -101,8 +101,8 @@ else
 		## Variant Recalibrator SNP
 		if [ ! $5 ]
 		then
-			check=0
-			count=0
+			let check=0
+			let count=0
 			while [[ $check -eq 0 && $count -le 10 ]]
 			do
                 $java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
@@ -196,8 +196,8 @@ else
 	then
 		if [ ! $5 ]
 		then
-			count=0
-			check=0
+			let count=0
+			let check=0
 			while [[ $check -eq 0 && $count -le 10 ]]
 			do
 				$java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \

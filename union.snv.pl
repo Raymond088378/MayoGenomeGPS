@@ -6,19 +6,14 @@ my $list=$ARGV[0];
 my $out=$ARGV[1];
 open FH, "$list" or die "can not open $list :$!\n";
 open OUT, ">$out" or die "can not open $out :$!\n";
-
 my $IGV=0;
 my $CHR=1;
 my $POS=2;
 my $ALT=19;
 my $dbSNP=3;
 my $REF=18;
-my $START_INFO=20;
-my $STOP_INFO=25;
-my $num_col_samples=$STOP_INFO -$START_INFO +1;
-my $SIFT_START=26;
-my $SIFT_STOP=56;
-my $SNPEFF_START=57;
+my ($START_INFO,$STOP_INFO,$SNPEFF_START,$SNPEFF_STOP,$SIFT_START,$SIFT_STOP);
+my $num_col_samples;
 my %chrvalue = ("chrX"=>23,"chrY"=>24,"chrM"=>25);
 for (my $i=1; $i<23; $i++) {
 	$chrvalue{"chr".$i} = $i;
@@ -26,54 +21,87 @@ for (my $i=1; $i<23; $i++) {
 my @samples;  ## store the sample names and print in the same order
 my $i =0;
 my @annot_ref=($dbSNP .. $REF);
-my @annot_sift=($SIFT_START .. $SIFT_STOP);
-my @sample=($START_INFO .. $STOP_INFO);
+my (@annot_sift,@annot_snpeff,@sample);
 my (%igv,%ref, %sift, %snpeff, %sample_info);
 my ($head1,$head2,$head3,$head4);
-my $count=1;
+my $count=0;
 my $a3;
+my $prev_samples=0;
 while(my $l = <FH>){
     chomp $l;
     open FILE, "$l" or die "can not open $l : $!\n";
 	my $prev=0;
 	print "Reading $l\n";
+	$START_INFO=20;
+	my $num_samples=0;
 	while(my $k = <FILE>){
 		chomp $k;
 		my @a = split("\t",$k);
 		my $last_col=$#a;
-		my @annot_snpeff=($SNPEFF_START .. $last_col);
-		$a3=$last_col-$SNPEFF_START;
 		if ( $. == 1){
-			$samples[$i]=$a[$START_INFO];
-			$i++;
+			for (my $j=0; $j <= $last_col; $j++)	{
+				if ($a[$j] =~ m/^SIFT/)	{
+					last;
+				}
+				elsif ($a[$j] =~ m/^\S/ && $a[$j] !~ m/^Allele/ && $a[$j] !~ m/^-/)	{		
+					$samples[$i]=$a[$j];
+					$j++;
+					$num_samples++;
+					$i++;
+				}
+			}
 		}
 		elsif ( $. == 2){
+			my $last_col=$#a;
+			$STOP_INFO=$START_INFO+(6*$num_samples)-1;
+			$num_col_samples=$STOP_INFO -$START_INFO +1;
+			$SIFT_START=$STOP_INFO+1;
+			$SIFT_STOP=$STOP_INFO+1+30;
+			@annot_sift=($SIFT_START .. $SIFT_STOP);
+			$SNPEFF_START=$SIFT_STOP+1;
+			@annot_snpeff=($SNPEFF_START .. $last_col);
+			$a3=$last_col-$SNPEFF_START;
+			for (my $k=$START_INFO;$k<$STOP_INFO;)	{
+				@sample=($k .. $k+5);
+				$head4=join("\t",@a[@sample]);
+				$k+=6;
+			}	
 			$head1=join("\t",@a[@annot_ref]);
 			$head2=join("\t",@a[@annot_sift]);
 			$head3=join("\t",@a[@annot_snpeff]);
-			$head4=join("\t",@a[@sample]);
+			$prev_samples=$i-$num_samples;
 		}
 		else	{
+			my $last_col=$#a;
 			my $id="$a[$CHR],$a[$POS],$a[$ALT]";
 			##snpeff values	
 			my $snpeff_value=join("\t",@a[@annot_snpeff]);
 			push(@{$snpeff{$a[$CHR]}{$a[$POS]}{$a[$ALT]}},$snpeff_value);
 			if ($id ne $prev)	{
 				my $value=$#{$sample_info{$a[$CHR]}{$a[$POS]}{$a[$ALT]}};
-				$value=$value+2;
+				$value=($value+2)*$prev_samples;
 				my $sample_value;
 				my $sam;
-				if ($value == $i){
-					$sample_value=join("\t",@a[@sample]);
-					push(@{$sample_info{$a[$CHR]}{$a[$POS]}{$a[$ALT]}},$sample_value);
+				if ($value == 0){
+					for (my $k=$START_INFO;$k<$STOP_INFO;)	{
+						@sample=($k .. $k+5);
+						$sample_value=join("\t",@a[@sample]);
+						push(@{$sample_info{$a[$CHR]}{$a[$POS]}{$a[$ALT]}},$sample_value);
+						$k+=6;
+					}
 				}
 				else {
 					for(my $ll=$value; $ll <$i;$ll++){
-						$sam="n/a\tn/a\tn/a\tn/a\tn/a\tn/a";
+						$sam="n/a\tn/a\tn/a\tn/a\tn/a\tn/a\t";  
+						$sam =~ s/\s*$//;
 						push(@{$sample_info{$a[$CHR]}{$a[$POS]}{$a[$ALT]}},$sam);	
 					}
-					$sample_value=join("\t",@a[@sample]);
-					push(@{$sample_info{$a[$CHR]}{$a[$POS]}{$a[$ALT]}},$sample_value);	
+					for (my $k=$START_INFO;$k<$STOP_INFO;)	{
+						@sample=($k .. $k+5);
+						$sample_value=join("\t",@a[@sample]);
+						push(@{$sample_info{$a[$CHR]}{$a[$POS]}{$a[$ALT]}},$sample_value);	
+						$k+=6;
+					}	
 				}	
 				##refernce value
 				my $ref_value=join("\t",@a[@annot_ref]);
@@ -120,13 +148,15 @@ foreach my $c (sort {$chrvalue{$a}<=>$chrvalue{$b}} keys %ref)	{
 				my $num_samples=$#samples;
 				print OUT "$igv{$c}{$p}{$a}\t$a[0]\t$a[1]\t";
 				print OUT "$ref{$c}{$p}{$a}\t$a[2]\t";
-				my $values=$#{$sample_info{$c}{$p}{$a}};
+				my $val=join("\t",@{$sample_info{$c}{$p}{$a}});
+				my @val1=split('\s+',$val);
+				my $values=@val1;
+				$values=$values/6;
 				print OUT join ("\t", @{$sample_info{$c}{$p}{$a}});
-				if ($values != $num_samples){
-					for(my $k=$values+1; $k<$num_samples;$k++){
+				if ($values != $num_samples+1){
+					for(my $k=$values; $k<=$num_samples;$k++){
 						print OUT "\tn/a\tn/a\tn/a\tn/a\tn/a\tn/a";
 					}
-					print OUT "\tn/a\tn/a\tn/a\tn/a\tn/a\tn/a";
 				}
 				print OUT "\t$sift{$c}{$p}{$a}\t$snpeff{$c}{$p}{$a}[$rows]";	
 				print OUT "\n";

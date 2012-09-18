@@ -53,59 +53,29 @@ else
 	else
 		for group in $groups
 		do
-			for sam in `cat $sample_info | grep "^$group" | cut -f2 -d '=' | tr "\t" " "`
-			do
-				ls $group.$sam.SNV.xls >> list.snv
-				ls $group.$sam.SNV.filtered.xls >> list.filter.snv
-				ls $group.$sam.INDEL.xls >> list.indel
-				ls $group.$sam.INDEL.filtered.xls >> list.filter.indel
-			done
-			perl $script_path/union.snv.pl list.snv $output_dir/Reports/$group.SNV.xls
-			perl $script_path/union.snv.pl list.filter.snv $output_dir/Reports/$group.SNV.filtered.xls
-			perl $script_path/union.indel.pl list.indel $output_dir/Reports/$group.INDEL.xls
-			perl $script_path/union.indel.pl list.filter.indel $output_dir/Reports/$group.INDEL.filtered.xls	
-			rm list.snv list.filter.snv list.indel list.filter.indel
-		done	
-    fi
-	
-    if [ $multi_sample == "YES" ]
-    then
-		for i in $groups
+			ls $group.SNV.xls >> list.snv
+			ls $group.SNV.filtered.xls >> list.filter.snv
+			ls $group.INDEL.xls >> list.indel
+			ls $group.INDEL.filtered.xls >> list.filter.indel
+		done
+		perl $script_path/union.snv.pl list.snv $output_dir/Reports/SNV.xls
+		perl $script_path/union.snv.pl list.filter.snv $output_dir/Reports/SNV.filtered.xls
+		perl $script_path/union.indel.pl list.indel $output_dir/Reports/INDEL.xls
+		perl $script_path/union.indel.pl list.filter.indel $output_dir/Reports/INDEL.filtered.xls	
+		rm list.snv list.filter.snv list.indel list.filter.indel	
+    	### Merge the TUMOR files
+    	for group in $groups
 		do
-			sampleNames=$( cat $sample_info| grep -w "^$i" | cut -d '=' -f2 )
-			k=1
-			for sample in $sampleNames
-			do
-				sampleArray[$k]=$sample
-				let k=k+1
-			done
-			for j in $(seq 2 ${#sampleArray[@]})
-			do  
-				tumor=${sampleArray[$j]}
-				if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
-				then
-					ls TUMOR.$i.$tumor.SNV.xls >> list.snv
-					ls TUMOR.$i.$tumor.SNV.filtered.xls >> list.filter.snv
-				fi
-				if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
-				then
-					ls TUMOR.$i.$tumor.INDEL.xls >> list.indel
-					ls TUMOR.$i.$tumor.INDEL.filtered.xls >> list.filter.indel
-				fi
-			done
-		done		
-		if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
-		then
-			perl $script_path/union.snv.pl list.snv $output_dir/Reports/Paired.SNV.xls
-			perl $script_path/union.snv.pl list.filter.snv $output_dir/Reports/Paired.SNV.filtered.xls
-			rm list.snv list.filter.snv 
-		fi
-		if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
-		then
-			perl $script_path/union.indel.pl list.indel $output_dir/Reports/Paired.INDEL.xls
-			perl $script_path/union.indel.pl list.filter.indel $output_dir/Reports/Paired.INDEL.filtered.xls
-			rm list.indel list.filter.indel
-		fi
-	fi	
+			ls TUMOR.$group.SNV.xls >> list.snv
+			ls TUMOR.$group.SNV.filtered.xls >> list.filter.snv
+			ls TUMOR.$group.INDEL.xls >> list.indel
+			ls TUMOR.$group.INDEL.filtered.xls >> list.filter.indel
+		done
+		perl $script_path/union.snv.pl list.snv $output_dir/Reports/TUMOR.SNV.xls
+		perl $script_path/union.snv.pl list.filter.snv $output_dir/Reports/TUMOR.SNV.filtered.xls
+		perl $script_path/union.indel.pl list.indel $output_dir/Reports/TUMOR.INDEL.xls
+		perl $script_path/union.indel.pl list.filter.indel $output_dir/Reports/TUMOR.INDEL.filtered.xls	
+		rm list.snv list.filter.snv list.indel list.filter.indel	
+	fi
     echo `date`
 fi	

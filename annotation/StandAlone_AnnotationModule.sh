@@ -40,7 +40,7 @@ else
 	ff="$sample.vcf"
 	if [ $type == "txt" ]
 	then
-		if [ `cat $file | awk 'NR=1'| awk -F'\t' '{print NF}'` != 4 ]
+		if [[ `cat $file| awk -F'\t' '{print NF}' | sort | uniq` != 4 ]]
 		then
 			echo "txt file is not properly formatted"
 			exit 1;

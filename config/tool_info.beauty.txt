@@ -123,7 +123,7 @@ JOINTSNVMIX_params=--min_map_qual 30 --min_base_qual 30
 BWA_params=-l 32 -t 4
 NOVO_params=-g 60 -x 2 -i PE 425,80 -r Random --hdrhd off -v 120
 VQSR_params_SNV=--maxGaussians 4 --percentBadVariants 0.05
-VQSR_params_INDEL=--maxGaussians 4 --percentBadVariants 0.05
+VQSR_params_INDEL=--maxGaussians 4 --percentBadVariants 0.12 -std 10.0
 PICARD_ReadGroup_params=PL=illumina CN=mayo LB=hg19 CREATE_INDEX=true
 
 ### paramters
