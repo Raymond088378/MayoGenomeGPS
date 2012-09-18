@@ -46,7 +46,7 @@ else
     if [ $multi != "YES" ]
 	then
 		bam=$input/chr$chr.cleaned.bam
-		$samtools/samtools view -H $bam 2> $bam.fix.OnTarget_BAM.log
+		$samtools/samtools view -H $bam 1>$bam.OnTarget_BAM.header 2> $bam.fix.OnTarget_BAM.log
 		if [ `cat $bam.fix.OnTarget_BAM.log | wc -l` -gt 0 ]
 		then
 			echo "$bam : bam file is truncated or corrupt"
@@ -58,7 +58,8 @@ else
 			done
 		else
 			rm $bam.fix.OnTarget_BAM.log
-		fi	
+		fi
+		rm $bam.OnTarget_BAM.header	
 	fi
 	
     if [ $multi == "YES" ]
@@ -69,7 +70,6 @@ else
             $bed/intersectBed -abam $input/$sample.$i.chr$chr.bam -b $kit | $samtools/samtools view -  | wc -l > $output/$sample.$i.chr$chr.bam.i.out
         done 
     else   
-        #intersect with the target kit
         $bed/intersectBed -abam $bam -b $kit | $samtools/samtools view - | wc -l > $output/$sample.chr$chr.bam.i.out
     fi
     echo `date`

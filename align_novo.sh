@@ -14,7 +14,7 @@
 ######          now checking the quality scores for fastq's and using the specific paramter for illumina and sanger quality in nova align
 ########################################################
 
-if [ $# != 3 ];
+if [ $# -le 2 ]
 then
     echo -e "Usage: wrapper script to run the alignment using NOVO ALIGN \n align_split_thread.sh <sample name> <output_dir> </path/to/run_info.txt>";
 else	
@@ -23,7 +23,11 @@ else
     sample=$1
     output_dir=$2
     run_info=$3
-
+	if [ $4 ]
+	then
+		SGE_TASK_ID=$4
+	fi	
+    
 ########################################################	
 ######	Reading run_info.txt and assigning to variables
     seq_file=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
@@ -79,13 +83,13 @@ else
     ILL2SANGER1=`perl $script_path/checkFastqQualityScores.pl $fastq/$R1 10000`
 
 ########################################################	
-######		Run novoalign for PE or SR
-     if [ $ILL2SANGER1 -gt 65 ] 
-        then
-            qual="-F ILMFQ"
-        else
-            qual="-F STDFQ"
-        fi
+######		Run novoalign for PE or SR	
+	if [ $ILL2SANGER1 -gt 65 ] 
+	then
+    qual="-F ILMFQ"
+    else
+        qual="-F STDFQ"
+    fi
     if [ $paired == 1 ]
     then
         $novoalign -c $threads $paramaters -d $genome_novo $qual -f $fastq/$R1 $fastq/$R2 \
@@ -118,10 +122,9 @@ else
 	else
 		rm  $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log
 	fi	
-        rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.header
+    rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.header
 ########################################################	
 ######		Sort BAM, adds RG & remove duplicates
-
     $script_path/convert.bam.sh $output_dir_sample $sample.$SGE_TASK_ID.bam $sample.$SGE_TASK_ID $SGE_TASK_ID $run_info
 	echo `date`	
 fi

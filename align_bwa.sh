@@ -65,7 +65,7 @@ else
 	else
 		rm  $output_dir_sample/$sample.$SGE_TASK_ID.bam.log
 	fi	
-        rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.header
+	rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.header
 	########################################################	
 ######		Sort BAM, adds RG 
 	$script_path/convert.bam.sh $output_dir_sample $sample.$SGE_TASK_ID.bam $sample.$SGE_TASK_ID $SGE_TASK_ID $run_info

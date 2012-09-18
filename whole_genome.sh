@@ -4,7 +4,7 @@
 ###### 	MASTER SCRIPT FOR WHOLE GENOME ANALYSIS PIPELINE
 
 ######		Program:			whole_genome_pipeline.sh
-######		Date:				09/07/2012
+######		Date:				09/17/2012
 ######		Summary:			Master script encompassing subscripts for alignment, remove duplicates, realignment, 
 ######                          	recalibration, fastqc, variant calling and final filtering of variants.
 ######		Input files:		$1	=	/path/to/run_info.txt
@@ -14,7 +14,7 @@
 
 if [ $# != 1 ]
 then	
-	echo "Usage: <Please specify path to run_info.txt file> ";
+	echo -e "Wrapper script to submit all the jobs for dna-seq workflow\nUsage: <Please specify full path to run_info.txt file> ";
 else
 	set -x
 	echo `date`
@@ -29,26 +29,29 @@ else
 	dir_info=`dirname $run_info`
 	if [ "$dir_info" = "." ]
 	then
-		echo "ERROR : run_info=$run_info should be specified as a complete path\n";
+		echo -e "ERROR : run_info=$run_info should be specified as a complete path\n";
 		exit 1;
 	fi
 	if [ ! -s $run_info ]
 	then
-		echo "ERROR : run_info=$run_info does not exist \n";
+		echo -e "ERROR : run_info=$run_info does not exist\n";
 		exit 1;
 	fi
+	
 	## removing trailing and leading spaces from run ifno file
 	cat $run_info | sed 's/^[ \t]*//;s/[ \t]*$//' > $run_info.tmp
 	mv $run_info.tmp $run_info
+	
 	#### check for unique identification number
 	identify=$( cat $run_info | grep -w '^IDENTIFICATION_NUMBER' | cut -d '=' -f2)
 	if echo $identify | egrep -q '^[0-9]+$'
 	then
-		echo "HURRAY !!! you are good to run the workflow"
+		echo -e "HURRAY !!! you are good to run the workflow"
 	else
-		echo "ERROR : unique identification for the workflow was not generated, please run the unique_id.sh script to generate the same before running the workflow script."
+		echo -e "ERROR : unique identification for the workflow was not generated, please run the unique_id.sh script to generate the same before running the workflow script."
 		exit 1;
 	fi
+	
 	### check for tool info file
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 	if [ ! -s $tool_info ]
@@ -60,6 +63,7 @@ else
 		cat $tool_info | sed 's/^[ \t]*//;s/[ \t]*$//' > $tool_info.tmp
 		mv $tool_info.tmp $tool_info
 	fi
+	
 	### check for sample info file
 	sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
 	if [ ! -s $sample_info ]
@@ -71,6 +75,7 @@ else
 		cat $sample_info | sed 's/^[ \t]*//;s/[ \t]*$//' > $sample_info.tmp
 		mv $sample_info.tmp $sample_info
 	fi
+	
 	#### extract paths
 	input=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
 	output=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
@@ -106,6 +111,7 @@ else
 			exit 1;
 		fi    
 	fi
+	
 	#################################################
 	### validate the config file
 	$script_path/check_config.pl $run_info > $run_info.configuration_errors.log
@@ -116,6 +122,7 @@ else
 	else
 		rm $run_info.configuration_errors.log
 	fi	
+	
 	### create folders
 	$script_path/create_folder.sh $run_info
 	output_dir=$output/$PI/$tool/$run_num
@@ -124,10 +131,12 @@ else
 		echo "ERROR: folder already exist"
 		exit 1;
 	fi	
+	
 	## copy cofig files
 	$script_path/copy_config.sh $output_dir $run_info
 	run_info=$output_dir/run_info.txt
-	### todays date
+	
+	### modify the run info file to use configurations in the output folder
 	add=`date +%D`
 	cat $run_info | grep -w -v -E '^TOOL_INFO|^SAMPLE_INFO' > $run_info.tmp
 	echo -e "TOOL_INFO=$output_dir/tool_info.txt\nSAMPLE_INFO=$output_dir/sample_info.txt\nDATE=$add" | cat $run_info.tmp - > $run_info
@@ -144,6 +153,7 @@ else
 		snpeff=$output_annot/SNPEFF
 		polyphen=$output_annot/POLYPHEN
 	fi
+	
 	##########################################################
 	echo -e "${tool} analysis for ${run_num} for ${PI} " >> $output_dir/log.txt
 	START=`date`
@@ -154,11 +164,10 @@ else
 	echo -e "RUN INFO  file used : $run_info" >>  $output_dir/log.txt
 	
 	###########################################################
-	#### sge paramtersff
+	#### sge paramters
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
 	args="-V -wd $output_dir/logs -q $queue -m a -M $TO -l h_stack=10M"
 	#############################################################
-	### get the identification number for this run.
 	
 	if [ $multi_sample != "YES" ]
 	then
@@ -242,15 +251,15 @@ else
 				for ((i=1; i <=$num_bams; i++));
 				do
 					bam=`echo $infile | awk -v num=$i '{print $num}'`
-					$samtools/samtools view -H $input/$bam 1>$input/$bam.header 2> $align_dir/$sample.$i.sorted.bam.log
+					$samtools/samtools view -H $input/$bam 1>$align_dir/$sample.$i.sorted.header 2> $align_dir/$sample.$i.sorted.bam.log
 					if [ `cat $align_dir/$sample.$i.sorted.bam.log | wc -l` -gt 0 ]
 					then
-						echo "$input/$bam : bam file is truncated or corrupted" 	
+						$script_path/errorlog.sh $input/$bam whole_genome.sh ERROR "truncated or corrupted"
 						exit 1;
 					else
 						rm $align_dir/$sample.$i.sorted.bam.log
 					fi	
-					rm $input/$bam.header
+					rm $align_dir/$sample.$i.sorted.header
 					ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
 					$script_path/dashboard.sh $sample $run_info Beginning started $i
 				done  
@@ -276,18 +285,17 @@ else
 					for ((i=1; i <=$num_bams; i++));
 					do
 						bam=`echo $infile | awk -v num=$i '{print $num}'`
-						$samtools/samtools view -H $input/$bam 1>$input/$bam.header 2> $align_dir/$sample.$i.sorted.bam.fix.log
+						$samtools/samtools view -H $input/$bam 1>$align_dir/$sample.$i.sorted.bam.header 2> $align_dir/$sample.$i.sorted.bam.fix.log
 						if [ `cat $align_dir/$sample.$i.sorted.bam.fix.log | wc -l` -gt 0 ]
 						then
-							echo "$input/$bam : bam file is truncated or corrupted" 	
+							$script_path/errorlog.sh $input/$bam whole_genome.sh ERROR "truncated or corrupted"
 							exit 1;
 						else
 							rm $align_dir/$sample.$i.sorted.bam.fix.log
 						fi
-						rm $input/$bam.header
+						rm $align_dir/$sample.$i.sorted.bam.header
 						ln -s $input/$bam $realign_dir/$sample.$i.sorted.bam						
 					done
-					
 					$script_path/check_qstat.sh $limit
 					qsub $args -N $type.$version.reformat_BAM.$sample.$run_num -l h_vmem=8G $script_path/reformat_BAM.sh $realign_dir $sample $run_info	
 					$script_path/check_qstat.sh $limit
@@ -556,7 +564,7 @@ else
 				for ((i=1; i <=$num_bams; i++));
 				do
 					bam=`echo $infile | awk -v num=$i '{print $num}'`
-					$samtools/samtools view -H $input/$bam 1>$input/$bam.header 2> $align_dir/$sample.$i.sorted.bam.log
+					$samtools/samtools view -H $input/$bam 1>$align_dir/$sample.$i.sorted.header 2> $align_dir/$sample.$i.sorted.bam.log
 					if [ `cat $align_dir/$sample.$i.sorted.bam.log | wc -l` -gt 0 ]
 					then
 						echo "$input/$bam : bam file is truncated or corrupted" 	
@@ -564,7 +572,7 @@ else
 					else
 						rm $align_dir/$sample.$i.sorted.bam.log
 					fi
-					rm $input/$bam.header
+					rm $align_dir/$sample.$i.sorted.header
 					ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
 				done
 				$script_path/check_qstat.sh $limit
@@ -605,7 +613,7 @@ else
 					for ((i=1; i <=$num_bams; i++));
 					do
 						bam=`echo $infile | awk -v num=$i '{print $num}'`
-						$samtools/samtools view -H $input/$bam 1>$input/$bam.header 2> $realign_dir/$group.$i.sorted.bam.log
+						$samtools/samtools view -H $input/$bam 1>$realign_dir/$group.$i.sorted.header 2> $realign_dir/$group.$i.sorted.bam.log
 						if [ `cat $realign_dir/$group.$i.sorted.bam.log | wc -l` -gt 0 ]
 						then
 							echo "$input/$bam : bam file is truncated or corrupted" 	
@@ -613,7 +621,7 @@ else
 						else
 							rm $realign_dir/$group.$i.sorted.bam.log
 						fi	
-						rm $input/$bam.header
+						rm $realign_dir/$group.$i.sorted.header
 						ln -s $input/$bam $realign_dir/$group.$i.sorted.bam
 					done
 					$script_path/check_qstat.sh $limit

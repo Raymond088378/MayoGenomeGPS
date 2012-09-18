@@ -32,21 +32,8 @@ else
     analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
-    dup=$( cat $run_info | grep -w '^MARKDUP' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
-    reorder=$( cat $run_info | grep -w '^REORDERSAM' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
-    picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 ) 
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     ref_path=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
-    center=$( cat $run_info | grep -w '^CENTER' | cut -d '=' -f2 )
-    version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
-    platform=$( cat $run_info | grep -w '^PLATFORM' | cut -d '=' -f2 )
-    GenomeBuild=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2 )
-    output=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
-    PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
-    tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
-    run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
-    flowcell=`echo $run_num | awk -F'_' '{print $NF}' | sed 's/.\(.*\)/\1/'`
     max_files=$( cat $tool_info | grep -w '^MAX_FILE_HANDLES' | cut -d '=' -f2 )
     max_reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
     
@@ -54,7 +41,7 @@ else
 ######		PICARD to sort raw BAM file
 
     ## check if BAM is sorted
-    $samtools/samtools view -H $input/$input_bam 2> $input/$input_bam.fix.log
+    $samtools/samtools view -H $input/$input_bam 1> $input/$input_bam.header 2> $input/$input_bam.fix.log
 	if [ `cat $input/$input_bam.fix.log | wc -l` -gt 0 ]
 	then
 		echo "$input/$input_bam : bam is corruped or truncated"
@@ -62,6 +49,7 @@ else
 	else
 		rm $input/$input_bam.fix.log
 	fi	
+	rm $input/$input_bam.header
 	SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input/$input_bam -s $samtools`
     if [ $SORT_FLAG == 1 ]
     then
@@ -79,7 +67,6 @@ else
     then
         $script_path/addReadGroup.sh $input/$sample.sorted.bam $input/$sample.sorted.rg.bam $input $run_info $sample
     fi
-    
     ### flagstat on each bam file
     $samtools/samtools index $input/$sample.sorted.bam
 	$samtools/samtools flagstat $input/$sample.sorted.bam > $input/$sample.flagstat

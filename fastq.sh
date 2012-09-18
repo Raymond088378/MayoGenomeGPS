@@ -27,11 +27,11 @@ else
     ext=$(echo $read | sed 's/.*\.//')
     if [ $ext != "gz" ]
     then
-	file1=$(echo $read | sed 's/\.[^\.]*$//')
+		file1=$(echo $read | sed 's/\.[^\.]*$//')
     else
-	file1=$(echo $read | sed 's/\.[^\.]*$//'| sed 's/\.[^\.]*$//')
+		file1=$(echo $read | sed 's/\.[^\.]*$//'| sed 's/\.[^\.]*$//')
     fi	
-    ## make a soft link of teh fastq's
+    ## make a soft link fastq's
     ln -s $input/$read $output/$read	
     
     ##FASTQC

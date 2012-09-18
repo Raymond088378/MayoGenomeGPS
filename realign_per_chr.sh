@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ## this scripts work per chr and accepts an array job paramter to extract the chr information
 ## this scripts checks for sorted and rad group information for a abam and do as per found
 ## GATK version using GenomeAnalysisTK-1.2-4-gd9ea764
@@ -147,7 +147,7 @@ else
             $samtools/samtools flagstat $output/chr${chr}.cleaned.bam > $output/chr${chr}.flagstat
 		fi	
     else
-        echo "ERROR : realign_per_chr. File $output/chr${chr}.realigned.bam not created" 
+        $script_path/errorlog.sh $output/chr${chr}.realigned.bam realign_per_chr.sh ERROR "does not exist"
         exit 1;
     fi
 

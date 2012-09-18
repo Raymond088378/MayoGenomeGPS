@@ -14,7 +14,7 @@
 ######          now checking the quality scores for fastq's and using the specific paramter for illumina and sanger quality in nova align
 ########################################################
 
-if [ $# != 4 ];
+if [ $# -le 3 ]
 then
     echo -e "Usage: wrapper script to run the alignment using NOVO ALIGN \n align_split_thread.sh <sample name> <output_dir> </path/to/run_info.txt>";
 else	
@@ -24,7 +24,10 @@ else
     output_dir=$2
     read=$3
     run_info=$4
-
+	if [ $5 ]
+	then
+		SGE_TASK_ID=$5
+	fi	
     
 ########################################################	
 ######	Reading run_info.txt and assigning to variables
@@ -58,9 +61,7 @@ else
 	
     R1=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
     $script_path/fastq.sh $R1 $seq_file $fastq $run_info $fastqc
-## check if the fastqs are zipped or not
     ILL2SANGER1=`perl $script_path/checkFastqQualityScores.pl $fastq/$R1 10000`
-   
 
 ########################################################	
 ######		Run bwa alignemnt module

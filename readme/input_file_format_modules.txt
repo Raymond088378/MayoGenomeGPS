@@ -1,5 +1,5 @@
 ### Saurabh Baheti
-### Jun 11 2012
+### Sept 18 2012
 #### INPUT file format
 
 1. alignment/mayo/external module

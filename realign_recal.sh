@@ -37,7 +37,7 @@ else
 			id=`echo $samples | awk -v sample=$i -F ':' '{ for(i=1;i<=NF;i++){ if ($i == sample) {print i} } }'`
 			in=`echo $input | cut -d ":" -f "$id"`
 			bb=`echo $bam | cut -d ":" -f "$id"`
-			$script_path/filesize.sh Realignment $i $in $bb $JOB_ID $size $run_info
+			$script_path/filesize.sh Realignment $i $in $bb $JOB_ID $run_info
 		done
 	fi    
 	
@@ -91,9 +91,9 @@ else
 	rm $output_bam/chr$chr.cleaned.bam.rr.header
 	if [ `echo $samples | tr ":" "\n" | wc -l` -gt 1 ]
 	then
-		$script_path/filesize.sh Realignment multi_sample $output_bam chr$chr.cleaned.bam $JOB_ID $size $run_info
+		$script_path/filesize.sh Realignment multi_sample $output_bam chr$chr.cleaned.bam $JOB_ID $run_info
 	else
-		$script_path/filesize.sh Realignment $samples $output_bam chr$chr.cleaned.bam $JOB_ID $size $run_info
+		$script_path/filesize.sh Realignment $samples $output_bam chr$chr.cleaned.bam $JOB_ID $run_info
 	fi
 	echo `date`
 fi	

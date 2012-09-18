@@ -59,7 +59,7 @@ else
 
                 if [ ! -s $input/$bam ]
                 then
-                    echo "ERROR : recal_per_chr. File $input/$bam does not exist" 
+                    $script_path/errorlog.sh $input/$bam recal_per_chr.sh ERROR "does not exist"
                     exit 1
                 fi
                 $script_path/samplecheckBAM.sh $input $bam $output $run_info $sample $chopped $chr
@@ -138,8 +138,8 @@ else
             $samtools/samtools flagstat $output/chr${chr}.cleaned.bam > $output/chr$chr.flagstat
         fi		
     else
-        echo "ERROR : recal_per_chr. File $output/chr${chr}.recalibrated.bam not created" 
-        exit 1
+         $script_path/errorlog.sh output/chr${chr}.recalibrated.bam recal_per_chr.sh ERROR "does not exist"
+        exit 1;
     fi
     
     ## deleting internediate files

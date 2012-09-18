@@ -54,7 +54,7 @@ else
 	fi
 	
     bam=$input/chr$chr.cleaned.bam 
-	$samtools/samtools view -H $bam 2> $bam.fix.OnTarget_PILEUP.log
+	$samtools/samtools view -H $bam 1> $bam.OnTarget_PILEUP.header 2> $bam.fix.OnTarget_PILEUP.log
 	if [ `cat $bam.fix.OnTarget_PILEUP.log | wc -l` -gt 0 ]
 	then
 		echo "$bam : bam file is truncated or corrupt"
@@ -67,6 +67,7 @@ else
 	else
 		rm $bam.fix.OnTarget_PILEUP.log
 	fi	
+	rm $bam.OnTarget_PILEUP.header
     mkdir -p $output/temp
 	
     if [ $multi == "YES" ]
@@ -81,7 +82,6 @@ else
 		pair=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2 | tr "\t" " ")
 		for i in $pair
         do
-			#merge all the interscted pileup
             for((j=0; j<=99; j++))
             do
 				a=`cat $output/$sample.chr$chr.txt | grep -w "$i" | awk '$NF>'$j'' | wc -l`
@@ -96,13 +96,11 @@ else
 		-T CoverageBySample  \
 		-I $bam -R $ref \
 		-L $param -o $output/$sample.chr$chr.txt
-        #merge all the interscted pileup
         for((j=0; j<=99; j++))
         do
 			a=`cat $output/$sample.chr$chr.txt | grep -w "^$sample" | awk '$NF>'$j''  | wc -l`
 			echo $a >> $output/$sample.chr$chr.pileup.i.out
         done    
-		
 	fi
 	rm $output/$sample.chr$chr.txt $output/$sample.chr$chr.bed
     echo `date`
