@@ -46,7 +46,7 @@ else
     do
 		if [ $ped != "NA" ]
 		then
-			$java/java -Xmx6g -Xms512m -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
+			$java/java -Xmx4g -Xms512m -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
 			-R $ref \
 			-et NO_ET \
 			-K $gatk/Hossain.Asif_mayo.edu.key \
@@ -59,7 +59,7 @@ else
 			--ped $ped \
 			--out $vcf $command_line_params
 		else
-			$java/java -Xmx6g -Xms512m -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
+			$java/java -Xmx4g -Xms512m -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
 			-R $ref \
 			-et NO_ET \
 			-K $gatk/Hossain.Asif_mayo.edu.key \

@@ -19,7 +19,7 @@ else
     reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
 	
-    $java/java -Xmx6g -Xms512m \
+    $java/java -Xmx3g -Xms512m \
     -jar $picard/MergeSamFiles.jar \
     $inbam \
     MAX_RECORDS_IN_RAM=$reads \
