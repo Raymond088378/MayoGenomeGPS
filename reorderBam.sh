@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# != 4 ]
 then
@@ -16,6 +16,7 @@ else
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
     
     $java/java -Xmx6g -Xms512m \
     -jar $picard/ReorderSam.jar \
@@ -23,14 +24,15 @@ else
     O=$outbam \
     R=$ref \
     TMP_DIR=$tmp_dir \
-    VALIDATION_STRINGENCY=SILENT
-    
+    CREATE_INDEX=true VALIDATION_STRINGENCY=SILENT
+    file=`echo $outbam | sed -e 's/\(.*\)..../\1/'`
+    mv $file.bai $file.bam.bai
     if [ -s $outbam ]
     then
         mv $outbam $inbam
-        $samtools/samtools index $inbam
     else
-        echo "ERROR: reordering bam failed for $inbam"
+        $script_path/errorlog.sh $outbam reorderBam.sh ERROR "failed to reorder"
+        exit 1;
     fi
     echo `date`
 fi	

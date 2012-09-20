@@ -50,7 +50,7 @@ else
 		rm $input/$input_bam.fix.log
 	fi	
 	rm $input/$input_bam.header
-	SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input/$input_bam -s $samtools`
+	SORT_FLAG=`$script_path/checkBAMsorted.pl -i $input/$input_bam -s $samtools`
     if [ $SORT_FLAG == 1 ]
     then
         ln -s $input/$input_bam $input/$sample.sorted.bam

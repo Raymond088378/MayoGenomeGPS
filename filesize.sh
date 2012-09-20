@@ -30,8 +30,7 @@ else
 		file=$out/size/filesize.$job.$id.csv
 	else
 		file=$out/size/filesize.$job.csv
-	fi
-			
-	$java/java -Xmx1g -jar $script_path/AddGPSMetadata.jar -p $script_path/AddGPSMetadata.properties -S $identify -t $type -a $analysis -b $size -j $job -r $run_num -s $sample -n $filename -u $TO -F $file
+	fi	
+	$java/java -Xmx32M -jar $script_path/AddGPSMetadata.jar -p $script_path/AddGPSMetadata.properties -S $identify -t $type -a $analysis -b $size -j $job -r $run_num -s $sample -n $filename -u $TO -F $file
 	echo `date`
 fi

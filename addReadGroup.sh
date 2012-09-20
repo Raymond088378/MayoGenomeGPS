@@ -23,7 +23,7 @@ else
 	export JAVA_HOME=$javahome
 	export PATH=$JAVA_HOME/bin:$PATH
                     
-    $java/java -Xmx6g -Xms512m \
+    $java/java -Xmx3g -Xms512m \
     -jar $picard/AddOrReplaceReadGroups.jar \
     INPUT=$inbam \
     OUTPUT=$outbam \
@@ -37,17 +37,17 @@ else
     
     if [ -s $outbam ]
     then
-        $samtools/samtools view -H $outbam 1> $outbam.header 2> $outbam.fix.log
-		if [ `cat $outbam.fix.log | wc -l` -gt 0 ]
+        $samtools/samtools view -H $outbam 1> $outbam.rg.header 2> $outbam.fix.rg.log
+		if [ `cat $outbam.fix.rg.log | wc -l` -gt 0 ]
 		then
 			$script_path/errorlog.sh $outbam addReadGroup.sh ERROR "truncated or corrupted "
 			exit 1;
 		else
-			rm $outbam.fix.log
+			rm $outbam.fix.rg.log
 			mv $outbam $inbam
 			mv $outbam.bai $inbam.bai
 		fi	
-		rm $outbam.header
+		rm $outbam.rg.header
     else
         $script_path/errorlog.sh $outbam convert.bam.sh ERROR empty
 		exit 1;

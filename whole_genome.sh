@@ -162,11 +162,11 @@ else
 	echo -e "TOOL INFO file used : $tool_info" >>  $output_dir/log.txt
 	echo -e "SAMPLE INFO file used : $sample_info" >>  $output_dir/log.txt
 	echo -e "RUN INFO  file used : $run_info" >>  $output_dir/log.txt
-	
 	###########################################################
 	#### sge paramters
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
 	args="-V -wd $output_dir/logs -q $queue -m abe -M $TO -l h_stack=10M"
+	echo -e "RCF arguments used : $args" >> $output_dir/log.txt
 	#############################################################
 	
 	if [ $multi_sample != "YES" ]
@@ -315,15 +315,15 @@ else
 				$script_path/check_qstat.sh $limit
 				qsub $args -N $type.$version.igv_bam.$sample.$run_num -l h_vmem=2G -hold_jid $variant_id,$type.$version.extract_reads_bam.$sample.$run_num $script_path/igv_bam.sh $output_dir/realign $output_dir/IGV_BAM $sample $output_dir/alignment $run_info
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.variants.$sample.$run_num -hold_jid $variant_id -pe threaded $threads -l h_vmem=4G -t 1-$numchrs:1 $script_path/variants.sh $realign_dir $sample $variant_dir 1 $run_info
+				qsub $args -N $type.$version.variants.$sample.$run_num -hold_jid $variant_id -pe threaded $threads -l h_vmem=3G -t 1-$numchrs:1 $script_path/variants.sh $realign_dir $sample $variant_dir 1 $run_info
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.merge_variant_single.$sample.$run_num -l h_vmem=4G -pe threaded $threads -hold_jid $type.$version.variants.$sample.$run_num $script_path/merge_variant_single.sh $output_dir/variants $sample $output_dir/Reports_per_Sample/ $run_info
+				qsub $args -N $type.$version.merge_variant_single.$sample.$run_num -l h_vmem=3G -pe threaded $threads -hold_jid $type.$version.variants.$sample.$run_num $script_path/merge_variant_single.sh $output_dir/variants $sample $output_dir/Reports_per_Sample/ $run_info
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.OnTarget_BAM.$sample.$run_num -hold_jid $variant_id -l h_vmem=3G -t 1-$numchrs:1 $script_path/OnTarget_BAM.sh $realign_dir $output_dir/OnTarget $sample $run_info
+				qsub $args -N $type.$version.OnTarget_BAM.$sample.$run_num -hold_jid $variant_id -l h_vmem=1G -t 1-$numchrs:1 $script_path/OnTarget_BAM.sh $realign_dir $output_dir/OnTarget $sample $run_info
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.OnTarget_PILEUP.$sample.$run_num -hold_jid $variant_id -l h_vmem=6G -t 1-$numchrs:1 $script_path/OnTarget_PILEUP.sh $realign_dir $output_dir/OnTarget $sample $run_info
+				qsub $args -N $type.$version.OnTarget_PILEUP.$sample.$run_num -hold_jid $variant_id -l h_vmem=3G -t 1-$numchrs:1 $script_path/OnTarget_PILEUP.sh $realign_dir $output_dir/OnTarget $sample $run_info
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.getCoverage.$sample.$run_num -hold_jid $type.$version.OnTarget_PILEUP.$sample.$run_num -l h_vmem=2G $script_path/getCoverage.sh $output_dir/OnTarget $output_dir/numbers $sample $run_info    
+				qsub $args -N $type.$version.getCoverage.$sample.$run_num -hold_jid $type.$version.OnTarget_PILEUP.$sample.$run_num -l h_vmem=512M $script_path/getCoverage.sh $output_dir/OnTarget $output_dir/numbers $sample $run_info    
 			fi
 			if [ $analysis == "ontarget" ]
 			then
@@ -344,18 +344,18 @@ else
 			if [[ $analysis != "alignment" && $analysis != "annotation" ]]
 			then
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.OnTarget_variant.$sample.$run_num -t 1-$numchrs:1 $hold_args -l h_vmem=2G $script_path/OnTarget_variant.sh $output_dir/variants $output_dir/OnTarget $sample $run_info
+				qsub $args -N $type.$version.OnTarget_variant.$sample.$run_num -t 1-$numchrs:1 $hold_args -l h_vmem=1G $script_path/OnTarget_variant.sh $output_dir/variants $output_dir/OnTarget $sample $run_info
 			fi
 			if [ $analysis == "annotation" ]
 			then
 				if [ $variant_type == "BOTH" ]
 				then
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.reformat_VARIANTs.$sample.$run_num -l h_vmem=2G $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 2
+					qsub $args -N $type.$version.reformat_VARIANTs.$sample.$run_num -l h_vmem=3G $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 2
 				elif [ $variant_type == "SNV" -o $variant_type == "INDEL" ]
 				then
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.reformat_VARIANTs.$sample.$run_num -l h_vmem=2G $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 1
+					qsub $args -N $type.$version.reformat_VARIANTs.$sample.$run_num -l h_vmem=3G $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 1
 				fi
 				hold_args="-hold_jid $type.$version.reformat_VARIANTs.$sample.$run_num"
 			elif [ $analysis != "alignment" ]
@@ -367,12 +367,12 @@ else
 				if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
 				then
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.sift.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $sample $run_info
+					qsub $args -N $type.$version.sift.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=3G $script_path/sift.sh $sift $output_OnTarget $sample $run_info
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -pe threaded $threads -t 1-$numchrs:1 -l h_vmem=4G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info	    	
+					qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -pe threaded $threads -t 1-$numchrs:1 -l h_vmem=2G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info	    	
 				fi
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.snpeff.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info		
+				qsub $args -N $type.$version.snpeff.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=3G $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info		
 				if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
 				then
 					hold="-hold_jid $type.$version.sift.$sample.$run_num,$type.$version.polyphen.$sample.$run_num,$type.$version.snpeff.$sample.$run_num"
@@ -380,9 +380,9 @@ else
 					hold="-hold_jid $type.$version.snpeff.$sample.$run_num"
 				fi	
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.sample_reports.$sample.$run_num $hold -t 1-$numchrs:1 -l h_vmem=4G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir
+				qsub $args -N $type.$version.sample_reports.$sample.$run_num $hold -t 1-$numchrs:1 -l h_vmem=3G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.sample_report.$sample.$run_num -hold_jid $type.$version.sample_reports.$sample.$run_num -l h_vmem=2G $script_path/sample_report.sh $output_dir $TempReports $sample $run_info
+				qsub $args -N $type.$version.sample_report.$sample.$run_num -hold_jid $type.$version.sample_reports.$sample.$run_num -l h_vmem=1G $script_path/sample_report.sh $output_dir $TempReports $sample $run_info
 				if [[ $tool == "whole_genome"  && $analysis != "annotation" ]]
 				then
 					crest=$output_dir/struct/crest
@@ -447,9 +447,9 @@ else
 				id=$id"$type.$version.variants.$s.$run_num,"
 			done
 			$script_path/check_qstat.sh $limit
-			qsub $args -N $type.$version.merge_raw_variants.$run_num -t 1-$numchrs:1 -hold_jid $id -l h_vmem=2G $script_path/merge_raw_variants.sh $output_dir $run_info
+			qsub $args -N $type.$version.merge_raw_variants.$run_num -t 1-$numchrs:1 -hold_jid $id -l h_vmem=1G $script_path/merge_raw_variants.sh $output_dir $run_info
 			$script_path/check_qstat.sh $limit
-			qsub $args -N $type.$version.concat_raw_variants.$run_num -hold_jid $type.$version.merge_raw_variants.$run_num -l h_vmem=2G $script_path/concat_raw_variants.sh $output_dir $run_info	    
+			qsub $args -N $type.$version.concat_raw_variants.$run_num -hold_jid $type.$version.merge_raw_variants.$run_num -l h_vmem=1G $script_path/concat_raw_variants.sh $output_dir $run_info	    
 		fi	
 		if [ $analysis != "alignment" ]
 		then
@@ -504,7 +504,7 @@ else
 		then
 			mem="8G"
 		else
-			mem="2G"
+			mem="1G"
 		fi	
 		$script_path/check_qstat.sh $limit
 		qsub $args -l h_vmem=$mem -N $type.$version.generate_html.$run_num $hold $script_path/generate_html.sh $output_dir $run_info

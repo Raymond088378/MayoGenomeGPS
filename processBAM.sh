@@ -125,7 +125,11 @@ else
         $samtools/samtools flagstat $input/$sample.sorted.bam > $input/$sample.flagstat
     fi
     ### index the bam again to maintain the time stamp for bam and index generation for down stream tools
-    $samtools/samtools index $input/$sample.sorted.bam
+    if [ $input/$sample.sorted.bam -nt $input/$sample.sorted.bam.bai ]
+    then
+        $samtools/samtools index $input/$sample.sorted.bam
+    fi
+
     ## dashboard
     $script_path/dashboard.sh $sample $run_info Alignment complete
 	## size of the bam file

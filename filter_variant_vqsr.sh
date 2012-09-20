@@ -147,7 +147,7 @@ else
 			## Apply Recalibrator
 			if [[ `cat $output/temp/$input_name.recal | wc -l` -gt 2  && -s $output/temp/$input_name.tranches ]]
 			then
-				$java/java -Xmx6g -XX:-UseGCOverheadLimit -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+				$java/java -Xmx3g -XX:-UseGCOverheadLimit -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
 				-R $ref \
 				-et NO_ET \
 				-K $gatk/Hossain.Asif_mayo.edu.key \
@@ -238,7 +238,7 @@ else
 			## Apply Recalibrator
 			if [[ `cat $output/temp/$input_name.recal | wc -l` -gt 2  && -s $output/temp/$input_name.tranches ]]
 			then
-				$java/java -Xmx6g -XX:-UseGCOverheadLimit -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+				$java/java -Xmx3g -XX:-UseGCOverheadLimit -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
 				-R $ref \
 				-et NO_ET \
 				-K $gatk/Hossain.Asif_mayo.edu.key \
