@@ -22,7 +22,7 @@ else
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
     script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
 	
-    $java/java -Xmx6g -Xms512m \
+    $java/java -Xmx5g -Xms512m \
     -jar $picard/MarkDuplicates.jar \
     INPUT=$inbam \
     OUTPUT=$outbam \
