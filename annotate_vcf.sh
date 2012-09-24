@@ -6,7 +6,6 @@ then
 else
     set -x
     echo `date`
-    
     vcf=$1
     run_info=$2
     input=$3
@@ -17,18 +16,16 @@ else
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
-    javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
-    
+    params=$( cat $tool_info | grep -w '^VCF_annotation_params' | cut -d '=' -f2)
     out=`dirname $vcf`
     if [ ! -d $out/temp ]
     then
-        mkdir $out/temp
+        mkdir -p $out/temp
     fi
     
-    export JAVA_HOME=$javahome
-    export PATH=$javahome/bin:$PATH
+    export PATH=$java:$PATH
     # ## annotate SNVs or INDELs
-    $java/java -Xmx6g -Xms512m -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
+    $java/java -Xmx4g -Xms512m -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
     -R $ref \
     -et NO_ET \
     -K $gatk/Hossain.Asif_mayo.edu.key \
@@ -36,11 +33,8 @@ else
     $input \
     -V $vcf \
     --dbsnp $dbSNP \
-    -L $vcf \
-    -A QualByDepth -A MappingQualityRankSumTest -A ReadPosRankSumTest -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A DepthPerAlleleBySample -A RMSMappingQuality -A FisherStrand -A ForwardReverseAlleleCounts \
-    --out $vcf.temp	
-    
-
+    -L $vcf --out $vcf.temp $params
+    	
     if [ -s $vcf.temp.idx ]
     then    
         mv $vcf.temp.idx $vcf.idx

@@ -30,14 +30,14 @@ else
         ped="NA"
     fi
     
-    check=0
+    let check=0
     out=`dirname $vcf`
     
     if [ ! -d $out/temp ]
 	then
 		mkdir -p $out/temp
 	fi
-	count=0
+	let count=0
 	while [[ $check -eq 0 && $count -le 10 ]]
     do
 		if [ $ped != "NA" ]

@@ -126,7 +126,7 @@ BWA_params=-l 32 -t 4
 VQSR_params_SNV=-an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP --maxGaussians 4 --percentBadVariants 0.05
 VQSR_params_INDEL=-an QD -an FS -an HaplotypeScore -an ReadPosRankSum --maxGaussians 4 --percentBadVariants 0.12 -std 10.0
 PICARD_ReadGroup_params=PL=illumina CN=mayo LB=hg19 CREATE_INDEX=true
-
+VCF_annotation_params=-A QualByDepth -A MappingQualityRankSumTest -A ReadPosRankSumTest -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A DepthPerAlleleBySample -A RMSMappingQuality -A FisherStrand -A ForwardReverseAlleleCounts 
 
 MAX_READS_REALIGN=50000
 MAX_READS_MEM_REALIGN=150000

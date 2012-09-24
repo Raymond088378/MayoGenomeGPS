@@ -2,7 +2,7 @@
 
 if [ $# != 4 ]
 then
-    echo -e "Usage: combine vcfs <input files><output vcf ><run info><to delete input files(yes/no)"
+    echo -e "script to combine multiple vcf files\nUsage: combine vcfs <input files><output vcf ><run info><to delete input files(yes/no)"
 else
     set -x
     echo `date`
@@ -17,10 +17,8 @@ else
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
-    javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
 	
-    export JAVA_HOME=$javahome
-    export PATH=$javahome/bin:$PATH
+    export PATH=$java:$PATH
     
     num_times=`echo $input | tr " " "\n" | grep -c -w "\-V"`
     if [ $num_times == 1 ]
@@ -54,6 +52,7 @@ else
 	done			
         else
             $script_path/errorlog.sh $output combinevcf.sh ERROR "failed to create"
+            exit 1;
         fi
     else
         if [ $flag == "YES" ]
