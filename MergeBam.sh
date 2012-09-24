@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# != 5 ]
 then
@@ -35,15 +35,15 @@ else
         $script_path/errorlog.sh $outbam MergeBam.sh ERROR empty
 		exit 1;
 	else
-		$samtools/samtools view -H $outbam 1>$outbam.header 2>$outbam.fix.log
-		if [ `cat $outbam.fix.log | wc -l` -gt 0 ]
+		$samtools/samtools view -H $outbam 1>$outbam.me.header 2>$outbam.fix.me.log
+		if [ `cat $outbam.fix.me.log | wc -l` -gt 0 ]
 		then
 			$script_path/errorlog.sh $outbam MergeBam.sh ERROR "truncated or corrupt"
 			exit 1;
 		else
-			rm $outbam.fix.log
+			rm $outbam.fix.me.log
 		fi
-		rm $outbam.header
+		rm $outbam.me.header
         files=`echo $inbam | sed -e '/INPUT=/s///g'`
         indexes=`echo $inbam | sed -e '/INPUT=/s///g' | tr " " "\n" | awk '{print $0".bai"}'`
 		for i in $files 

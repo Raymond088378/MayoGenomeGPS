@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# != 9 ]
 then
@@ -39,15 +39,15 @@ else
 	
     if [ -s $outbam ]
     then
-       $samtools/samtools view -H $outbam 2> $outbam.log
-		if [ `cat $outbam.log | wc -l` -gt 0 ]
+       $samtools/samtools view -H $outbam 1>$outbam.rmdup.header 2> $outbam.rmdup.log
+		if [ `cat $outbam.rmdup.log | wc -l` -gt 0 ]
 		then
 			$script_path/errorlog.sh rmdup.sh $outbam ERROR "truncated or corrupted"
 			exit 1;
 		else
-			rm $outbam.log
+			rm $outbam.rmdup.log
 		fi	
-		
+		rm $outbam.rmdup.header
 		mv $outbam $inbam
         if [ $index == "FALSE" ]
         then
