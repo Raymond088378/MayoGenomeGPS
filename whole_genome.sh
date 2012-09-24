@@ -87,7 +87,7 @@ else
 	version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
 	queue=$( cat $tool_info | grep -w '^QUEUE' | cut -d '=' -f2)
 	run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
-	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
+	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
 	multi_sample=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
 	all_sites=$( cat $tool_info | grep -w '^EMIT_ALL_SITES' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
@@ -152,6 +152,7 @@ else
 		sift=$output_annot/SIFT
 		snpeff=$output_annot/SNPEFF
 		polyphen=$output_annot/POLYPHEN
+		igv=$output_annot/IGV_BAM
 	fi
 	
 	##########################################################
@@ -232,11 +233,11 @@ else
 					hold="-hold_jid $type.$version.align_novo.$sample.$run_num"
 				fi    
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=4G $hold $script_path/processBAM.sh $align_dir $sample $run_info 	
+				qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=12G $hold $script_path/processBAM.sh $align_dir $sample $run_info 	
 				if [ $analysis != "alignment" ]
 				then
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $output_dir/IGV_BAM
+					qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=6G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $igv
 				fi
 			elif [ $analysis == "realignment" -o $analysis == "realign-mayo" ]
 			then
@@ -268,9 +269,9 @@ else
 					$script_path/dashboard.sh $sample $run_info Beginning started $i
 				done  
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=4G $script_path/processBAM.sh $align_dir $sample $run_info
+				qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=12G $script_path/processBAM.sh $align_dir $sample $run_info
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $output_dir/IGV_BAM
+				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=6G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $igv
 			fi    
 			if [[ $analysis == "mayo" || $analysis == "external" || $analysis == "realignment" || $analysis == "variant" || $analysis == "realign-mayo" ]]
 			then
@@ -303,7 +304,7 @@ else
 					$script_path/check_qstat.sh $limit
 					qsub $args -N $type.$version.reformat_BAM.$sample.$run_num -l h_vmem=8G $script_path/reformat_BAM.sh $realign_dir $sample $run_info	
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.reformat_BAM.$sample.$run_num $script_path/extract_reads_bam.sh $realign_dir $bamfile $run_info $output_dir/IGV_BAM
+					qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=6G -hold_jid $type.$version.reformat_BAM.$sample.$run_num $script_path/extract_reads_bam.sh $realign_dir $bamfile $run_info $igv
 					$script_path/check_qstat.sh $limit
 					qsub $args -N $type.$version.split_bam_chr.$sample.$run_num -hold_jid $type.$version.reformat_BAM.$sample.$run_num -l h_vmem=2G -t 1-$numchrs:1 $script_path/split_bam_chr.sh $realign_dir $sample $run_info
 					variant_id="$type.$version.split_bam_chr.$sample.$run_num"
@@ -313,7 +314,7 @@ else
 					variant_id="$type.$version.realign_recal.$sample.$run_num"
 				fi
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.igv_bam.$sample.$run_num -l h_vmem=2G -hold_jid $variant_id,$type.$version.extract_reads_bam.$sample.$run_num $script_path/igv_bam.sh $output_dir/realign $output_dir/IGV_BAM $sample $output_dir/alignment $run_info
+				qsub $args -N $type.$version.igv_bam.$sample.$run_num -l h_vmem=2G -hold_jid $variant_id,$type.$version.extract_reads_bam.$sample.$run_num $script_path/igv_bam.sh $output_dir/realign $igv $sample $output_dir/alignment $run_info
 				$script_path/check_qstat.sh $limit
 				qsub $args -N $type.$version.variants.$sample.$run_num -hold_jid $variant_id -pe threaded $threads -l h_vmem=3G -t 1-$numchrs:1 $script_path/variants.sh $realign_dir $sample $variant_dir 1 $run_info
 				$script_path/check_qstat.sh $limit
@@ -382,7 +383,7 @@ else
 				$script_path/check_qstat.sh $limit
 				qsub $args -N $type.$version.sample_reports.$sample.$run_num $hold -t 1-$numchrs:1 -l h_vmem=3G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.sample_report.$sample.$run_num -hold_jid $type.$version.sample_reports.$sample.$run_num -l h_vmem=1G $script_path/sample_report.sh $output_dir $TempReports $sample $run_info
+				qsub $args -N $type.$version.sample_report.$sample.$run_num -hold_jid $type.$version.sample_reports.$sample.$run_num -l h_vmem=512M $script_path/sample_report.sh $output_dir $TempReports $sample $run_info
 				if [[ $tool == "whole_genome"  && $analysis != "annotation" ]]
 				then
 					crest=$output_dir/struct/crest
@@ -499,7 +500,7 @@ else
 				hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.merge_sample.$run_num,$id_reads"
 			fi
 		fi
-		## generate html page for all teh modules
+		## generate html page for all the modules
 		if [[ $upload_tb == "YES" ]]
 		then
 			mem="8G"
@@ -681,12 +682,12 @@ else
 				$script_path/check_qstat.sh $limit
 				qsub $args -N $type.$version.sample_reports.$group.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=4G $script_path/sample_reports.sh $run_info $group $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.sample_report.$sample.$run_num -l h_vmem=2G -hold_jid $type.$version.sample_reports.$group.$run_num $script_path/sample_report.sh $output_dir $TempReports $group $run_info
+				qsub $args -N $type.$version.sample_report.$sample.$run_num -l h_vmem=512M -hold_jid $type.$version.sample_reports.$group.$run_num $script_path/sample_report.sh $output_dir $TempReports $group $run_info
 				hold="$type.$version.sift.${group}.$run_num,$type.$version.snpeff.$group.$run_num,$type.$version.polyphen.$group.$run_num"
 				$script_path/check_qstat.sh $limit
 				qsub $args -N $type.$version.sample_reports.$group.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=4G $script_path/sample_reports.sh $run_info $group $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir TUMOR
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.sample_report.$group.$run_num -l h_vmem=2G -hold_jid $type.$version.sample_reports.$group.$run_num $script_path/sample_report.sh $output_dir $TempReports $group $run_info TUMOR
+				qsub $args -N $type.$version.sample_report.$group.$run_num -l h_vmem=512M -hold_jid $type.$version.sample_reports.$group.$run_num $script_path/sample_report.sh $output_dir $TempReports $group $run_info TUMOR
 				if [ $tool == "whole_genome" ]
 				then
 					crest=$output_dir/struct/crest

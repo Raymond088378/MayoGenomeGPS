@@ -36,7 +36,7 @@ else
 
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     breakdancer=$( cat $tool_info | grep -w '^BREAKDANCER' | cut -d '=' -f2 )
     perl=$( cat $tool_info | grep -w '^PERL_BREAKDANCER' | cut -d '=' -f2 )
     perllib=$( cat $tool_info | grep -w '^PERLLIB_BREAKDANCER' | cut -d '=' -f2 )

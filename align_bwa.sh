@@ -22,7 +22,7 @@ else
 	center=$( cat $tool_info | grep -w '^CENTER' | cut -d '=' -f2 )
 	platform=$( cat $tool_info | grep -w '^PLATFORM' | cut -d '=' -f2 )
 	GenomeBuild=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2 )
-	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
 	output_dir_sample=$output_dir/alignment/$sample
     fastq=$output_dir/fastq
 	paired=$( cat $run_info | grep -w '^PAIRED' | cut -d '=' -f2)

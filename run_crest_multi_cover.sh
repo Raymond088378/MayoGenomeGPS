@@ -30,7 +30,7 @@ else
     #SGE_TASK_ID=1
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
     crest=$( cat $tool_info | grep -w '^CREST' | cut -d '=' -f2 )
     perllib=$( cat $tool_info | grep -w '^PERLLIB' | cut -d '=' -f2 )

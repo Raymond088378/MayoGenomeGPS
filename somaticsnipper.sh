@@ -17,7 +17,7 @@ else
 	
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     somatic_sniper=$( cat $tool_info | grep -w '^SOMATIC_SNIPER' | cut -d '=' -f2 )
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
 	command_line_params=$( cat $tool_info | grep -w '^SOMATIC_SNIPER_params' | cut -d '=' -f2 )
     bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )

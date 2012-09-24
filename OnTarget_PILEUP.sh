@@ -32,7 +32,7 @@ else
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2 )
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     gene_body=$( cat $tool_info | grep -w '^MATER_GENE_BODY' | cut -d '=' -f2 )
 	multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)

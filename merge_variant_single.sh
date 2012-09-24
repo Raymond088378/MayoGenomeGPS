@@ -29,7 +29,7 @@ else
     chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" )
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     output=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
     PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)

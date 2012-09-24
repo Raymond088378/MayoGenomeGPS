@@ -19,12 +19,10 @@ else
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
-	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
-	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
 	command_line_params=$( cat $tool_info | grep -w '^SOMATIC_INDEL_params' | cut -d '=' -f2 )
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
-	export JAVA_HOME=$javahome
-	export PATH=$javahome/bin:$PATH
+	export PATH=$java:$PATH
 	indel_v=$tumor_sample.chr$chr.indel.txt
 	let check=0
 	let count=0
@@ -33,8 +31,8 @@ else
 		mkdir -p $output/temp
 	fi
 	
-	$samtools/samtools view -H $tumor_bam 1>$tumor_bam.header 2> $tumor_bam.fix.si.log
-	$samtools/samtools view -H $normal_bam 1>$normal_bam.header 2> $normal_bam.fix.si.log
+	$samtools/samtools view -H $tumor_bam 1>$tumor_bam.si.header 2> $tumor_bam.fix.si.log
+	$samtools/samtools view -H $normal_bam 1>$normal_bam.si.header 2> $normal_bam.fix.si.log
 	if [ `cat $tumor_bam.fix.si.log | wc -l` -gt 0 ]
 	then
 		$script_path/email.sh $tumor_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
@@ -46,7 +44,7 @@ else
 	else
 		rm $tumor_bam.fix.si.log
 	fi	
-	rm $tumor_bam.header
+	rm $tumor_bam.si.header
 	if [ `cat $normal_bam.fix.si.log | wc -l` -gt 0 ]
 	then
 		$script_path/email.sh $normal_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
@@ -58,10 +56,10 @@ else
 	else
 		rm $normal_bam.fix.si.log
 	fi	
-	rm $normal_bam.header
+	rm $normal_bam.si.header
 	while [[ $check -eq 0 && $count -le 10 ]]
     do
-		$java/java -Xmx3g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
+		$java/java -Xmx4g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
 		-R $ref \
 		-et NO_ET \
 		-K $gatk/Hossain.Asif_mayo.edu.key \
@@ -77,8 +75,11 @@ else
         then
             if [[  `find . -name '*.log'` ]]
 			then
-				rm `grep -l $output/$output_file *.log`
-				rm core.*
+				if [ `grep -l $output/$output_file *.log` ]
+				then
+					rm `grep -l $output/$output_file *.log`
+					rm core.*
+				fi	
 			fi
 		fi
 		let count=count+1	

@@ -16,7 +16,7 @@ else
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     tool_info=$(cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
-	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
 	
     $samtools/samtools view -H $bam 1> $bam.header 2> $bam.fix.log
 	if [ `cat $bam.fix.log | wc -l` -gt 0 ]

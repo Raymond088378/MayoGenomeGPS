@@ -25,7 +25,7 @@ else
 	Kgenome=$( cat $tool_info | grep -w '^KGENOME_REF' | cut -d '=' -f2)
 	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
 	picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
-	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
 	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 |tr "[A-Z]" "[a-z]")
 	sampleNames=$( echo $samples | tr ":" "\n" )
 	chr=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1 )
@@ -36,7 +36,6 @@ else
 	SNV_caller=$( cat $run_info | grep -w '^SNV_CALLER' | cut -d '=' -f2)
 	somatic_caller=$( cat $run_info | grep -w '^SOMATIC_CALLER' | cut -d '=' -f2)
 	ped=$( cat $tool_info | grep -w '^PEDIGREE' | cut -d '=' -f2 )
-	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
 	bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
 	blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
 	blat_ref=$( cat $tool_info | grep -w '^BLAT_REF' | cut -d '=' -f2 )
@@ -44,24 +43,23 @@ else
 	export PERL5LIB=$PERL5LIB:$perllib
 	export PATH=$tabix/:$PATH
 
-	export JAVA_HOME=$javahome
-	export PATH=$JAVA_HOME/bin:$PATH
+	export PATH=$java:$PATH
 	
 	#### check and validate the bam file and let user to proceed after validation
 	bam=chr${chr}.cleaned.bam
-	$samtools/samtools view -H $input/$bam 1>$input/$bam.header 2> $input/$bam.fix.log
-	if [ `cat $input/$bam.fix.log | wc -l` -gt 0 ]
+	$samtools/samtools view -H $input/$bam 1>$input/$bam.$chr.header 2> $input/$bam.$chr.fix.log
+	if [ `cat $input/$bam.$chr.fix.log | wc -l` -gt 0 ]
 	then
 		$script_path/email.sh $input/$bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-		while [ -f $input/$bam.fix.log ]
+		while [ -f $input/$bam.$chr.fix.log ]
 		do
 			echo "waiting for the $input/$bam to be fixed"
 			sleep 2m
 		done
 	else
-		rm $input/$bam.fix.log
+		rm $input/$bam.$chr.fix.log
 	fi		
-	rm $input/$bam.header	
+	rm $input/$bam.$chr.header	
 	if [ `echo $samples | tr ":" "\n" | wc -l` -gt 1 ]
 	then
 		$script_path/filesize.sh VariantCalling multi_sample $input $bam $JOB_ID $run_info

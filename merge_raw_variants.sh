@@ -22,7 +22,7 @@ else
 	perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
 	tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2)
 	chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
-	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
+	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
 	export PERL5LIB=$perllib
 	PATH=$tabix/:$PATH
 	var_dir=$output_dir/variants

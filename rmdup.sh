@@ -20,7 +20,7 @@ else
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
 	
     $java/java -Xmx5g -Xms512m \
     -jar $picard/MarkDuplicates.jar \

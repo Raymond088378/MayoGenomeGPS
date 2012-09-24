@@ -25,7 +25,7 @@ else
     fi	
 	#SGE_TASK_ID=22
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     snpeff_path=$( cat $tool_info | grep -w '^SNPEFF' | cut -d '=' -f2)
     genome_version=$(cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2)

@@ -9,7 +9,7 @@ else
 	run_info=$3
 	chr=$4
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
+	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
 	hapmap=$( cat $tool_info | grep -w '^HAPMAP' | cut -d '=' -f2)
 	kgenome=$( cat $tool_info | grep -w '^KGENOME' | cut -d '=' -f2)
 	GenomeBuild=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2)

@@ -16,7 +16,7 @@ else
     analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
     reorder=$( cat $tool_info | grep -w '^REORDERSAM' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
     ref_path=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)

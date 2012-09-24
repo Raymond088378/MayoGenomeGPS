@@ -24,7 +24,7 @@ else
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 ) 
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     max_reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
     
     $samtools/samtools view -H $input/$bam 1>$input/$bam.sc.header 2>$input/$bam.fix.sc.log

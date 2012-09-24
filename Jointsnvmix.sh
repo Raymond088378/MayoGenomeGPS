@@ -20,7 +20,7 @@ else
     python=$( cat $tool_info | grep -w '^PYTHON' | cut -d '=' -f2) 
     pythonpath=$( cat $tool_info | grep -w '^PYTHONLIB' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2) 
-	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
 	TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
 	only_ontarget=$( cat $tool_info | grep -w '^TARGETTED' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 	command_line_params=$( cat $tool_info | grep -w '^JOINTSNVMIX_params' | cut -d '=' -f2 )
@@ -35,16 +35,43 @@ else
     then
         $script_path/errorlogs.sh $normal_bam Jointsnvmix.sh ERROR "not exist"
         exit 1;
+    else
+    	$samtools/samtools view -H $normal_bam 1>$normal_bam.jsm.header 2> $normal_bam.fix.jsm.log
+    	if [ `cat $normal_bam.fix.jsm.log | wc -l` -gt 0 ]
+		then
+			$script_path/email.sh $normal_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+			while [ -f $normal_bam.fix.jsm.log ]
+			do
+				echo "waiting for the $normal_bam to be fixed"
+				sleep 2m
+			done
+		else
+			rm $normal_bam.fix.jsm.log
+		fi	
+		rm $normal_bam.jsm.header
     fi
     
     if [ ! -s $tumor_bam ]
     then
         $script_path/errorlogs.sh $tumor_bam Jointsnvmix.sh ERROR "not exist"
         exit 1;
+    else
+    	$samtools/samtools view -H $tumor_bam 1>$tumor_bam.jsm.header 2> $tumor_bam.fix.jsm.log
+		if [ `cat $tumor_bam.fix.jsm.log | wc -l` -gt 0 ]
+		then
+			$script_path/email.sh $tumor_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+			while [ -f $tumor_bam.fix.jsm.log ]
+			do
+				echo "waiting for the $tumor_bam to be fixed"
+				sleep 2m
+			done
+		else
+			rm $tumor_bam.fix.jsm.log
+		fi	
+		rm $tumor_bam.jsm.header
     fi
     
-    ### run joint snvmix classify to call teh somatic mutation
-    
+    ### run joint snvmix classify to call the somatic mutation
 	$python/python $jointsnvmix/build/scripts-2.7/jsm.py classify --model snvmix2 $command_line_params --chromosome chr$chr --out_file $output/$output_file.txt --parameters_file $jointsnvmix/config/params.cfg $ref $normal_bam $tumor_bam
 	
 	### script to convert text output to vcf output 
@@ -63,5 +90,10 @@ else
 			mv $output/$output_file.i $output/$output_file   
 		fi
 	fi
+	if [ ! -s $output/$output_file ]
+	then
+		$script_path/errorlog.sh $output/$output_file Jointsnvmix.sh ERROR "not exist"
+		exit 1;
+	fi	
     echo `date`
 fi

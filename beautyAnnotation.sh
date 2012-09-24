@@ -17,7 +17,7 @@ else
 	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
 	REF=$( cat $tool_info | grep -w '^UCSC_REF_FLAT_BED' | cut -d '=' -f2)
 	chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
-	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
 	### SNVs
 	
 	INPUT=$input/$sample.variants.chr$chr.SNV.filter.i.c.vcf

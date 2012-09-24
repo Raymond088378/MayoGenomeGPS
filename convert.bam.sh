@@ -31,7 +31,7 @@ else
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     ref_path=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     max_files=$( cat $tool_info | grep -w '^MAX_FILE_HANDLES' | cut -d '=' -f2 )

@@ -2,7 +2,7 @@
 
 if [ $# != 4 ]
 then
-	echo "Usage: script to appy hard filters \n <input vcf > <output vcf ><run info file><type SNP/INDEL>"
+	echo -e "Script to appy hard filters on vcf variant files\nUsage: script to appy hard filters \n <input vcf > <output vcf ><run info file><type SNP/INDEL>"
 else
     set -x
     echo `date`
@@ -11,14 +11,12 @@ else
     run_info=$3
     type=$4        
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)	
-    javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
-	
-	export JAVA_HOME=$javahome
-	export PATH=$javahome/bin:$PATH
+    	
+	export PATH=$java:$PATH
     
     if [ $type == "SNP" ]
 	then

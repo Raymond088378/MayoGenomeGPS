@@ -34,7 +34,7 @@ else
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 	sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
 	samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2)
-	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	segseq=$( cat $tool_info | grep -w '^SEGSEQ' | cut -d '=' -f2 )
 	matlab=$( cat $tool_info | grep -w '^MATLAB' | cut -d '=' -f2 )

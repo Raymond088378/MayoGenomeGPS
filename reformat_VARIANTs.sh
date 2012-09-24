@@ -18,7 +18,7 @@ else
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2)
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
     dbsnp_rsids_snv=$( cat $tool_info | grep -w '^dbSNP_SNV_rsIDs' | cut -d '=' -f2)
     SNV_caller=$( cat $run_info | grep -w '^SNV_CALLER' | cut -d '=' -f2)
     variant_type=`echo "$variant_type" | tr "[a-z]" "[A-Z]"`

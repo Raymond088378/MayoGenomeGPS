@@ -50,7 +50,7 @@ SNP_BUILD=/data2/bsi/reference/annotation/dbSNP/hg19/dbSNPbuild.bed
 
 
 ## tools
-WHOLEGENOME_PATH=/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/trunk/
+WORKFLOW_PATH=/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/trunk/
 NOVOALIGN=/projects/bsi/bictools/apps/alignment/novoalign/2.08.01/novoalign
 BWA=/projects/bsi/bictools/apps/alignment/bwa/0.5.9/
 JAVA=/usr/java/latest/bin
@@ -91,7 +91,6 @@ PYTHONLIB=/data2/bsi/RandD/pacbio/smrtanalysis-1.2.1/analysis/lib/python2.5/:/pr
 R_SOFT=/usr/local/biotools/r/R-2.13.0/bin/
 
 ### customized paramters
-JAVA_HOME=/usr/java/latest/bin
 HTTP_SERVER=bmidev2
 THREADS=4
 REORDERSAM=NO
@@ -122,8 +121,8 @@ JSM_Filter=-prob 0.5
 JOINTSNVMIX_params=--min_map_qual 30 --min_base_qual 30
 BWA_params=-l 32 -t 4
 NOVO_params=-g 60 -x 2 -i PE 425,80 -r Random --hdrhd off -v 120
-VQSR_params_SNV=--maxGaussians 4 --percentBadVariants 0.05
-VQSR_params_INDEL=--maxGaussians 4 --percentBadVariants 0.12 -std 10.0
+VQSR_params_SNV=-an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP --maxGaussians 4 --percentBadVariants 0.05
+VQSR_params_INDEL=-an QD -an FS -an HaplotypeScore -an ReadPosRankSum --maxGaussians 4 --percentBadVariants 0.12 -std 10.0
 PICARD_ReadGroup_params=PL=illumina CN=mayo LB=hg19 CREATE_INDEX=true
 
 ### paramters

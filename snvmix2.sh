@@ -17,7 +17,7 @@ else
     snvmix=$( cat $tool_info | grep -w '^SNVmix' | cut -d '=' -f2)
     only_ontarget=$( cat $tool_info | grep -w '^TARGETTED' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     filter=$( cat $tool_info | grep -w '^SNVMIX2_Filter' | cut -d '=' -f2)
     TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
     bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )

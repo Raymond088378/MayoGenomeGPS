@@ -26,7 +26,7 @@ else
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
     Kgenome=$( cat $tool_info | grep -w '^KGENOME_REF' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     maxreads=$( cat $tool_info | grep -w '^MAX_READS_REALIGN' | cut -d '=' -f2 ) 
     maxreadsmem=$( cat $tool_info | grep -w '^MAX_READS_MEM_REALIGN' | cut -d '=' -f2 ) 
     

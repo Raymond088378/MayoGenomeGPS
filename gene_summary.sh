@@ -42,7 +42,7 @@ else
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     email=$( cat $run_info | grep -w '^EMAIL' | cut -d '=' -f2)
     type=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2)
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
     master_gene_file=$( cat $tool_info | grep -w '^MASTER_GENE_FILE' | cut -d '=' -f2 )
     master_entrez_file=$( cat $tool_info | grep -w '^MASTER_ENTREZ_FILE' | cut -d '=' -f2 )

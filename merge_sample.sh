@@ -9,7 +9,7 @@ else
     output_dir=$1
     run_info=$2
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2 )
     genome_version=$(cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2)
     variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2)

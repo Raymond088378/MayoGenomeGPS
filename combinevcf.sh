@@ -16,7 +16,7 @@ else
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
     javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
 	
     export JAVA_HOME=$javahome

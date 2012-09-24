@@ -42,7 +42,7 @@ else
     novoalign=$( cat $tool_info | grep -w '^NOVOALIGN' | cut -d '=' -f2)
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     filenames=$(cat $sample_info | grep -w "$sample" | cut -d '=' -f2| tr "\t" "\n")
     output=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
     PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)

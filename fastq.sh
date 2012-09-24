@@ -16,7 +16,7 @@ else
     fastqc_path=$( cat $tool_info | grep -w '^FASTQC' | cut -d '=' -f2)
     FASTQC=$( cat $run_info | grep -w '^FASTQC' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
     FOLDER_FASTQC=$( cat $run_info | grep -w '^FOLDER_FASTQC' | cut -d '=' -f2 )
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     
     if [ ! -s $input/$read ]
     then

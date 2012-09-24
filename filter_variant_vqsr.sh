@@ -2,7 +2,7 @@
 
 if [ $# -le  3 ]
 then
-    echo "Usage: <raw vcf complete path><outputfile><type={BOTH,SNP,INDEL}><run info>"
+    echo -e "Script to filter the variants using VQSR\nUsage: <raw vcf complete path><outputfile><type={BOTH,SNP,INDEL}><run info>"
 else
     set -x
     echo `date`
@@ -26,13 +26,13 @@ else
     then
         echo "temp already there"
     else
-        mkdir $output/temp
+        mkdir -p $output/temp
     fi
     if [ -d $output/plot ]
     then
         echo "plot already there"
     else
-        mkdir $output/plot
+        mkdir -p $output/plot
     fi
 
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
@@ -46,19 +46,17 @@ else
     omni=$( cat $tool_info | grep -w '^OMNI_VCF' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 ) 
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2 ) 
     out=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
     PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
     r_soft=$( cat $tool_info | grep -w '^R_SOFT' | cut -d '=' -f2)
-    javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
 	vqsr_snv_param=$( cat $tool_info | grep -w '^VQSR_params_SNV' | cut -d '=' -f2 )
 	vqsr_indel_param=$( cat $tool_info | grep -w '^VQSR_params_INDEL' | cut -d '=' -f2 )
 	
-	export JAVA_HOME=$javahome
-	export PATH=$r_soft:$javahome/bin:$PATH
+	export PATH=$r_soft:$java:$PATH
 	
     ### split the vcf file for indels and snvs to appy the vqsr seperately
     perl $script_path/vcf_to_variant_vcf.pl -i $inputvcf -v $inputvcf.SNV.vcf -l $inputvcf.INDEL.vcf -t both   
@@ -116,7 +114,6 @@ else
 				-resource:hapmap,known=false,training=true,truth=true,prior=15.0 $hapmap \
 				-resource:omni,known=false,training=true,truth=false,prior=12.0 $omni \
 				-resource:dbsnp,known=true,training=false,truth=false,prior=8.0 $dbSNP \
-				-an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP \
 				-recalFile $output/temp/$input_name.recal \
 				-tranchesFile $output/temp/$input_name.tranches \
 				-rscriptFile $output/plot/$input_name.plots.R $vqsr_snv_param
@@ -127,8 +124,11 @@ else
 				then
 					if [[  `find . -name '*.log'` ]]
 					then
-						rm `grep -l $output/plot/$input_name.plots.R *.log`
-						rm core.*
+						if [ `grep -l $output/plot/$input_name.plots.R *.log` ]
+						then
+							rm `grep -l $output/plot/$input_name.plots.R *.log`
+							rm core.*
+						fi
 					fi
 				fi
 				let count=count+1
@@ -209,7 +209,6 @@ else
 				-nt $threads \
 				-input $inputvcf.INDEL.vcf \
 				-resource:mills,VCF,known=true,training=true,truth=true,prior=12.0 $mills \
-				-an QD -an FS -an HaplotypeScore -an ReadPosRankSum \
 				-recalFile $output/temp/$input_name.recal \
 				-tranchesFile $output/temp/$input_name.tranches \
 				-rscriptFile $output/plot/$input_name.plots.R $vqsr_indel_param
@@ -220,8 +219,10 @@ else
 				then
 					if [[  `find . -name '*.log'` ]]
 					then
-						rm `grep -l $output/plot/$input_name.plots.R *.log`
-						rm core.*
+						if [ `grep -l $output/plot/$input_name.plots.R *.log` ]
+							rm `grep -l $output/plot/$input_name.plots.R *.log`
+							rm core.*
+						fi
 					fi
 				fi
 				let count=count+1
@@ -281,5 +282,10 @@ else
 	### combine both the indels and SNVs
 	in="-V $outfile.INDEL.vcf -V $outfile.SNV.vcf"
 	$script_path/combinevcf.sh "$in" $outfile $run_info YES
+	if [ ! -s $outfile ]
+	then
+		$script_path/errorlog.sh $outfile filter_variant_vqsr.sh ERROR "failed to create"
+		exit 1;
+	fi	
 	echo `date`
 fi	

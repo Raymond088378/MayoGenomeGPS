@@ -21,15 +21,10 @@ else
 	dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
 	threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2)
 	TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
-	script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
 	only_ontarget=$( cat $tool_info | grep -w '^TARGETTED' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
-	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
 	command_line_params=$( cat $tool_info | grep -w '^MUTECT_params' | cut -d '=' -f2 )
-	
-	export JAVA_HOME=$javahome
-	export PATH=$javahome/bin:$PATH
-	
-        
+	export PATH=$java:$PATH  
     if [ $only_ontarget == "YES" ]
     then
 	
@@ -44,7 +39,7 @@ else
         param="-L chr$chr"
     fi
     
-    check=0
+    let check=0
     if [ ! -d $output/temp ]
 	then
 		mkdir -p $output/temp
@@ -52,7 +47,7 @@ else
 	
 	while [[ $check -eq 0 ]]
     do
-		$java/java -XX:MaxPermSize=128M -Xmx6g -Xms512m -jar $mutect/muTect-1.0.27783.jar \
+		$java/java -XX:MaxPermSize=128M -Xmx4g -Xms512m -jar $mutect/muTect-1.0.27783.jar \
         -T MuTect \
         --reference_sequence $ref \
         $param -nt $threads \
@@ -64,14 +59,17 @@ else
         if [[  `find . -name '*.log'` ]]
 		then
 			len=`cat *.log | grep $output/$output_file | wc -l`
-			check=` [ $len -gt 0 ] && echo "0" || echo "1"`
+			check=`[ $len -gt 0 ] && echo "0" || echo "1"`
 			if [ $check -eq 0 ]
 			then
-				rm `grep -l $output/$output_file *.log`
-				rm core.*
+				if [ `grep -l $output/$output_file *.log` ]
+				then
+					rm `grep -l $output/$output_file *.log`
+					rm core.*
+				fi
 			fi
 		else
-            check=1    
+            let check=1    
         fi
     done    
     

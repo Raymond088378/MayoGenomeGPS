@@ -14,7 +14,7 @@ else
     run_info=$6
     
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2)
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
     circos=$( cat $tool_info | grep -w '^CIRCOS' | cut -d '=' -f2)	
     perllib=$( cat $tool_info | grep -w '^PERLLIB_CIRCOS' | cut -d '=' -f2)	
 	perl=$( cat $tool_info | grep -w '^PERL_CIRCOS' | cut -d '=' -f2)	

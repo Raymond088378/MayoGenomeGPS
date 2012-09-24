@@ -23,7 +23,7 @@ else
     chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" " ")
     caller=$( cat $run_info | grep -w '^SNV_CALLER' | cut -d '=' -f2)
     multi_sample=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2)  
-    script_path=$( cat $tool_info | grep -w '^WHOLEGENOME_PATH' | cut -d '=' -f2 )
+    script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
     analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
 	
