@@ -81,7 +81,7 @@ else
 	$samtools/samtools view -H $output_bam/chr$chr.cleaned.bam 1>$output_bam/chr$chr.cleaned.bam.rr.$chr.header 2>$output_bam/chr$chr.cleaned.bam.fix.rr.$chr.log
 	if [ `cat $output_bam/chr$chr.cleaned.bam.fix.rr.$chr.log | wc -l` -gt 0 ]
 	then
-		echo "$output_bam/chr$chr.cleaned.bam : BAM file is truncated or corrupt"
+		$script_path/errorlog.sh $output_bam/chr$chr.cleaned.bam realign_recal.sh ERROR "is truncated or corrupt"
 		exit 1;
 	else
 		rm $output_bam/chr$chr.cleaned.bam.fix.rr.$chr.log

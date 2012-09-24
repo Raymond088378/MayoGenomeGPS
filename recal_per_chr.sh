@@ -138,7 +138,7 @@ else
             $samtools/samtools flagstat $output/chr${chr}.cleaned.bam > $output/chr$chr.flagstat
         fi		
     else
-         $script_path/errorlog.sh output/chr${chr}.recalibrated.bam recal_per_chr.sh ERROR "does not exist"
+        $script_path/errorlog.sh output/chr${chr}.recalibrated.bam recal_per_chr.sh ERROR "does not exist"
         exit 1;
     fi
     

@@ -55,8 +55,14 @@ else
 	then
 		perl $script_path/parse_siftPredictions.pl -i $file -s $sift/${sample}_chr${which_chr}_predictions.tsv -c $chr -p $pos -r $ref -a $alt -o $file.sift
 	else
-		$script_path/errorlog.sh $sift/${sample}_chr${which_chr}_predictions.tsv merge.snv.sh ERROR "not exist"
-		exit 1;
+		$script_path/email.sh $sift/${sample}_chr${which_chr}_predictions.tsv  "not found" $JOB_NAME $JOB_ID $run_info
+		touch $sift/${sample}_chr${which_chr}_predictions.tsv.fix.log
+		while [ -f $sift/${sample}_chr${which_chr}_predictions.tsv.fix.log ]
+		do
+			echo "waiting for the fix"
+			sleep 2m
+		done
+		perl $script_path/parse_siftPredictions.pl -i $file -s $sift/${sample}_chr${which_chr}_predictions.tsv -c $chr -p $pos -r $ref -a $alt -o $file.sift
 	fi
 	
 	### sort the erport using the start and position
@@ -220,7 +226,19 @@ else
 	fi
 	
 	### add polyphen
-	perl $script_path/add_polphen.pl $file.sift.codons.map.repeat.base.snp.UCSCtracks $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly
+	if [ -f $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly ]
+	then
+		perl $script_path/add_polphen.pl $file.sift.codons.map.repeat.base.snp.UCSCtracks $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly
+	else
+		$script_path/email.sh $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly  "not found" $JOB_NAME $JOB_ID $run_info
+		touch $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly.fix.log
+		while [ -f $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly.fix.log ]
+		do
+			echo "waiting for the fix"
+			sleep 2m
+		done
+		perl $script_path/add_polphen.pl $file.sift.codons.map.repeat.base.snp.UCSCtracks $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly
+	fi
 	num=`cat $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly | wc -l `
 	if [ $num == $num_a ]
 	then
