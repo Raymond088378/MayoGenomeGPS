@@ -2,7 +2,7 @@
 
 if [ $# -le 3 ]
 then
-	echo -e "Usage: script to extract reads not used for downstream preocessing \n <bam file><input directory><run info><igv folder><single/pair>"
+	echo -e "Usage: script to extract reads not used for downstream preocessing\nUsage: <bam file><input directory><run info><igv folder><single/pair>"
 else
 	set -x
 	echo `date`	
@@ -33,15 +33,15 @@ else
 		fi
 	done
 
-	$samtools/samtools view -H $output/$bam 2> $output/$bam.fix.log
-	if [ `cat $output/$bam.fix.log | wc -l` -gt 0 ]
+	$samtools/samtools view -H $output/$bam 1> $output/$bam.erb.header 2> $output/$bam.erb.fix.log
+	if [ `cat $output/$bam.erb.fix.log | wc -l` -gt 0 ]
 	then
 		echo " $output/$bam :bam is truncated or corrupted"
 		exit 1;
 	else
-		rm $output/$bam.fix.log
+		rm $output/$bam.erb.fix.log
 	fi
-	
+	rm $output/$bam.erb.header
 	## extract read for specfic chromosome
 	if [ ! -s $output/$bam.bai ]
 	then
@@ -88,7 +88,7 @@ else
 				then
 					if [ ! -d $out ]
 					then
-						mkdir $out
+						mkdir -p $out
 					fi
 					mv $output/$sample.extra.bam $out/
 					mv $output/$sample.extra.bam.bai $out/
@@ -106,7 +106,7 @@ else
 			then
 				if [ ! -d $out ]
 				then
-					mkdir $out
+					mkdir -p $out
 				fi
 				mv $output/$bam.extra.bam $out/
 				mv $output/$bam.extra.bam.bai $out/
