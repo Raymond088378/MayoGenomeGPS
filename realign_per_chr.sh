@@ -30,6 +30,17 @@ else
     maxreads=$( cat $tool_info | grep -w '^MAX_READS_REALIGN' | cut -d '=' -f2 ) 
     maxreadsmem=$( cat $tool_info | grep -w '^MAX_READS_MEM_REALIGN' | cut -d '=' -f2 ) 
     
+    if [ ${#dbSNP} -ne 0 ]
+    then
+        param="--known $dbSNP" 
+    fi
+    
+    if [ ${#Kgenome} -ne 0 ]
+    then
+        param=$param" --known $Kgenome" 
+    fi
+    
+    
 
     if [ $realign == 1 ]
     then
@@ -99,9 +110,7 @@ else
     -R $ref \
     -et NO_ET \
     -K $gatk/Hossain.Asif_mayo.edu.key \
-    --known $dbSNP \
-    --known $Kgenome \
-    -L chr${chr} \
+    $param -L chr${chr} \
     -T RealignerTargetCreator \
     $input_bam \
     -o $output/chr${chr}.forRealigner.intervals
@@ -127,9 +136,7 @@ else
         -et NO_ET \
         -T IndelRealigner \
         -K $gatk/Hossain.Asif_mayo.edu.key \
-        -known $dbSNP \
-        -known $Kgenome \
-        -L chr${chr} \
+        $param -L chr${chr} \
         $input_bam \
         --maxReadsForRealignment $maxreads \
         --maxReadsInMemory $maxreadsmem \

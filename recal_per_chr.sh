@@ -26,6 +26,17 @@ else
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     
+    if [ ${#dbSNP} -ne 0 ]
+    then
+        param="--knownSites $dbSNP" 
+    fi
+    
+    if [ ${#Kgenome} -ne 0 ]
+    then
+        param=$param" --knownSites $Kgenome" 
+    fi
+    
+    
     if [ $recal == 1 ]
     then
         inputDirs=$( echo $input | tr ":" "\n" )
@@ -90,9 +101,7 @@ else
     -R $ref \
     -et NO_ET \
     -K $gatk/Hossain.Asif_mayo.edu.key \
-    --knownSites $dbSNP \
-    --knownSites $Kgenome \
-    $input_bam \
+    $param $input_bam \
     -L chr${chr} \
     -T CountCovariates \
     -cov ReadGroupCovariate \

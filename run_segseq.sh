@@ -14,16 +14,22 @@
 ########################################################
 
 
-if [ $# != 4 ]
+if [ $# -le 3 ]
 then
 	echo -e "Usage: \n groupname </path/to/input directory> </path/to/output directory> </path/to/run_info.txt>";
 else
 	set -x
 	echo `date`
 	group=$1	#from run ifo and sample info file (default=pair)
-	input=$2	#colon separated list of full paths of bams to use
+	input=$2
+	#colon separated list of full paths of bams to use
 	output_dir=$3	#where you want it to go
 	run_info=$4	#run_info
+	if [ $5 ]
+	then
+		SGE_TASK_ID=$5
+	fi
+		
 	## This script should be run by chromosome so submit as an array job -t 1-24
 	## or else run all together and uncomment the following
 #SGE_TASK_ID=2
@@ -109,7 +115,6 @@ else
 			rm $outdir/$sample_tumor.$chr.filter.dup.vcf.fail
 		else	
 			outfile="$outdir/$sample_tumor.$chr.txt"
-
 			cat $outfile | $script_path/filter_fold_segseq.pl $sample_tumor $min_fold > $outdir/$sample_tumor.$chr.del.bed
 			cat $outfile | $script_path/filter_fold_segseq.pl $sample_tumor $max_fold > $outdir/$sample_tumor.$chr.dup.bed
 			

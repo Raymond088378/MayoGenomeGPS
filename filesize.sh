@@ -2,7 +2,7 @@
 
 if [ $# != 6 ]
 then
-	echo "usage:<analysis type><sample name><filename><job id ><size of the file><run info >"
+	echo -e"script to create a file size file to be uploaded onto the database\nusage:<analysis type><sample name><filename><job id ><size of the file><run info >"
 else
 	echo `date`
 	analysis=$1
@@ -25,7 +25,7 @@ else
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
 	size=`du -b $dirname/$filename | sed 's/\([0-9]*\).*/\1/'`
 	id=$SGE_TASK_ID
-	if [ $id ]
+	if [ ${#id} -ne 0 ]
 	then
 		file=$out/size/filesize.$job.$id.csv
 	else

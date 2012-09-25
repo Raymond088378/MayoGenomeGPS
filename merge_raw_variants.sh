@@ -43,7 +43,8 @@ else
 			inputargs="$inputfile "$inputargs
 			input_index=" $input_indexfile"$input_index 
 		else
-			$script_path/errorlog.sh $inputfile merge_raw_variants.sh WARNING "does not exist"
+			$script_path/errorlog.sh $inputfile merge_raw_variants.sh ERROR "does not exist"
+			exit 1;
 		fi			
 	done
 	

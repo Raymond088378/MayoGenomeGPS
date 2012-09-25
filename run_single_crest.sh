@@ -14,7 +14,7 @@
 ######		Output files:	BAM files. 
 ########################################################
 
-if [ $# != 4 ]
+if [ $# -le 3 ]
 then
 	echo "\nUsage: samplename </path/to/realign directory/></path/to/output directory> </path/to/run_info.txt>";
 else
@@ -24,7 +24,10 @@ else
 	input=$2
 	output_dir=$3
 	run_info=$4
-	
+	if [ $5 ]
+	then
+		SGE_TASK_ID=$5
+	fi	
 	
 ########################################################	
 ######		Reading run_info.txt and assigning to variables
@@ -60,7 +63,7 @@ else
 ########################################################	
 ######		
 	input_bam=$input/chr${chr}.cleaned.bam
-	$samtools/samtools view -H $input_bam 2>$input_bam.fix.crest.log
+	$samtools/samtools view -H $input_bam 1>$input_bam.crest.header 2>$input_bam.fix.crest.log
 	if [ `cat $input_bam.fix.crest.log | wc -l` -gt 0 ]
 	then
 		$script_path/errorlog.sh $input_bam run_cnvnator.sh ERROR "truncated or corrupt bam"
@@ -68,6 +71,7 @@ else
 	else
 		rm $input_bam.fix.crest.log
 	fi	
+	rm $input_bam.crest.header
     export PERL5LIB=$perllib:$crest
 	PATH=$PATH:$blat:$crest:$perllib
 	mkdir -p $output_dir/$sample

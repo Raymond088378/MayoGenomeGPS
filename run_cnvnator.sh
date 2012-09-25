@@ -14,7 +14,7 @@
 ######		Output files:	BAM files. 
 ########################################################
 
-if [ $# != 4 ]
+if [ $# -le 3 ]
 then
     echo "\nUsage: samplename </path/to/output directory> </path/to/run_info.txt>";
 else
@@ -24,7 +24,10 @@ else
     input=$2
     output_dir=$3
     run_info=$4
-    #SGE_TASK_ID=1
+    if [ $5 ]
+    then
+    	SGE_TASK_ID=$5
+    fi	
 
 ########################################################	
 ######		Reading run_info.txt and assigning to variables
@@ -40,10 +43,6 @@ else
     rootlib=$( cat $tool_info | grep -w '^ROOTLIB' | cut -d '=' -f2 )
     bin_size=$( cat $tool_info | grep -w '^CNVNATOR_BINSIZE' | cut -d '=' -f2 )
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
-    output=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
-    PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
-    tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
-    run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2 )
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
@@ -52,7 +51,7 @@ else
 
     input_bam=$input/chr${chr}.cleaned.bam
 	
-	$samtools/samtools view -H $input_bam 2>$input_bam.fix.cnv.log
+	$samtools/samtools view -H $input_bam 1>$input_bam.cnv.header 2>$input_bam.fix.cnv.log
 	if [ `cat $input_bam.fix.cnv.log | wc -l` -gt 0 ]
 	then
 		$script_path/errorlog.sh $input_bam run_cnvnator.sh ERROR "truncated or corrupt bam"
@@ -60,6 +59,7 @@ else
 	else
 		rm $input_bam.fix.cnv.log
 	fi	
+	rm $input_bam.cnv.header
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$rootlib
     root_file=$output_dir/$sample.$chr.root
     

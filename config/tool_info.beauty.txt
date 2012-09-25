@@ -111,10 +111,10 @@ QUEUE=ngs-rand
 #Tool Parameters
 SNVMIX2_params=-q 30 -Q 30
 SNVMIX2_Filter=-p 0.8
-UnifiedGenotyper_params=-rf MappingQuality -mmq 30 --min_base_quality_score 30 -dcov 1000 -maxAlleles 5
-SOMATIC_INDEL_params=--window_size 1000 -rf MappingQuality -mmq 30 --filter_expressions T_COV<6||N_COV<4||T_INDEL_CF<0.7||T_INDEL_F<0.1||T_CONS_CNT<2||N_CONS_CNT>0 -dcov 1000 -mnr 2000
+UnifiedGenotyper_params=-rf MappingQuality -mmq 30 --min_base_quality_score 30 -dcov 2000 -maxAlleles 5
+SOMATIC_INDEL_params=--window_size 1000 -rf MappingQuality -mmq 30 --filter_expressions T_COV<6||N_COV<4||T_INDEL_CF<0.7||T_INDEL_F<0.1||T_CONS_CNT<2||N_CONS_CNT>0 -dcov 2000 -dt BY_SAMPLE 
 SOMATIC_SNIPER_params=-q 30 -Q 40
-MUTECT_params=-dt ALL_READS -dcov 1000 --min_qscore 30
+MUTECT_params=-dt BY_SAMPLE -dcov 2000 --min_qscore 30
 BREAKDANCER_params=-c 5 -r 10
 CREST_params=--min_sclip_len 10 --min_sclip_reads 5
 JSM_Filter=-prob 0.5

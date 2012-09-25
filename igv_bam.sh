@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ##	INFO
 #	to cat all the realigned BAM for IGV visualization
 

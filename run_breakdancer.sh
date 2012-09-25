@@ -62,7 +62,7 @@ else
 		if (($SGE_TASK_ID <= $numchrs))
 		then
 			input_bam=$input/$samples/chr${chr}.cleaned.bam
-			$samtools/samtools view -H $input_bam 2>$input_bam.fix.break.log
+			$samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
 			if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
 			then
 				$script_path/errorlog.sh $input_bam run_cnvnator.sh ERROR "truncated or corrupt bam"
@@ -70,6 +70,7 @@ else
 			else
 				rm $input_bam.fix.break.log
 			fi	
+			rm $input_bam.break.header
 			out=$output_dir/$samples/
 			## extarcting bam for $sample
 			$samtools/samtools view -h $input_bam  | cut -f 1-11 | $samtools/samtools view -bS - > $out/$samples.$chr.bam
@@ -106,7 +107,7 @@ else
 		else	
 			out=$output_dir/$samples/
 			input_bam=$input/$samples.igv-sorted.bam
-			$samtools/samtools view -H $input_bam 2>$input_bam.fix.break.log
+			$samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
 			if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
 			then
 				$script_path/errorlog.sh $input_bam run_cnvnator.sh ERROR "truncated or corrupt bam"
@@ -114,6 +115,7 @@ else
 			else
 				rm $input_bam.fix.break.log
 			fi	
+			rm $input_bam.break.header
 			$samtools/samtools view -h $input_bam | head -n 10000 | cut -f 1-11 | $samtools/samtools view -bS - > $out/$samples.tmp.bam
 			if [ -s $out/$samples.tmp.bam ]
 			then
@@ -158,7 +160,7 @@ else
 	    sample=$samples
 	    mkdir -p $output_dir/$sample
 	    input_bam=$input/$group.$sample.chr${chr}.bam
-		$samtools/samtools view -H $input_bam 2>$input_bam.fix.break.log
+		$samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
 		if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
 		then
 			$script_path/errorlog.sh $input_bam run_cnvnator.sh ERROR "truncated or corrupt bam"
@@ -166,6 +168,7 @@ else
 		else
 			rm $input_bam.fix.break.log
 		fi	
+		rm $input_bam.break.header
 	    if (($SGE_TASK_ID <= $numchrs))
 	    then	
             out=$output_dir/$sample/
@@ -202,14 +205,15 @@ else
 	    else	
             out=$output_dir/$sample/
             input_bam=$input/$group/${sample}.igv-sorted.bam
-            $samtools/samtools view -H $input_bam 2>$input_bam.fix.break.log
+            $samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
 			if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
 			then
 				$script_path/errorlog.sh $input_bam run_cnvnator.sh ERROR "truncated or corrupt bam"
 				exit 1;
 			else
 				rm $input_bam.fix.break.log
-			fi	
+			fi
+			rm $input_bam.break.header	
 			$samtools/samtools view -h $input_bam | head -n 10000 | cut -f 1-11 | $samtools/samtools view -bS - > $out/$sample.tmp.bam
             if [ -s $out/$sample.tmp.bam ]
             then

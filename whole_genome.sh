@@ -152,7 +152,7 @@ else
 		sift=$output_annot/SIFT
 		snpeff=$output_annot/SNPEFF
 		polyphen=$output_annot/POLYPHEN
-		igv=$output_annot/IGV_BAM
+		igv=$output_dir/IGV_BAM
 	fi
 	
 	##########################################################
@@ -166,7 +166,7 @@ else
 	###########################################################
 	#### sge paramters
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
-	args="-V -wd $output_dir/logs -q $queue -m abe -M $TO -l h_stack=10M"
+	args="-V -wd $output_dir/logs -q $queue -m ae -M $TO -l h_stack=10M"
 	echo -e "RCF arguments used : $args" >> $output_dir/log.txt
 	#############################################################
 	
@@ -221,7 +221,7 @@ else
 						hold="-hold_jid $type.$version.align_read_bwa.R1.$sample.$run_num"
 					fi	
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.align_bwa.$sample.$run_num -l h_vmem=3G -pe threaded $threads $hold -t 1-$numfiles:1 $script_path/align_bwa.sh $sample $output_dir $run_info
+					qsub $args -N $type.$version.align_bwa.$sample.$run_num -l h_vmem=12G -t 1-$numfiles:1 $script_path/align_bwa.sh $sample $output_dir $run_info
 				else
 					echo "Doesn't support the aligner"
 				fi	
@@ -581,9 +581,9 @@ else
 					ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
 				done
 				$script_path/check_qstat.sh $limit
-				qsub $args -pe threaded $threads -N $type.$version.processBAM.$sample.$run_num -l h_vmem=4G $script_path/processBAM.sh $align_dir $sample $run_info
+				qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=12G $script_path/processBAM.sh $align_dir $sample $run_info
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $output_dir/IGV_BAM
+				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=6G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $igv
 			fi
 		done	
 		if [ $analysis != "alignment" ]
