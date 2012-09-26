@@ -20,6 +20,7 @@ else
     python=$( cat $tool_info | grep -w '^PYTHON' | cut -d '=' -f2) 
     pythonpath=$( cat $tool_info | grep -w '^PYTHONLIB' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2) 
+	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)	
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
 	TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
 	only_ontarget=$( cat $tool_info | grep -w '^TARGETTED' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
