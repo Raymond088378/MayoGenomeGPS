@@ -233,11 +233,11 @@ else
 					hold="-hold_jid $type.$version.align_novo.$sample.$run_num"
 				fi    
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=12G $hold $script_path/processBAM.sh $align_dir $sample $run_info 	
+				qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=6G $hold $script_path/processBAM.sh $align_dir $sample $run_info 	
 				if [ $analysis != "alignment" ]
 				then
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=6G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $igv
+					qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=4G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $igv
 				fi
 			elif [ $analysis == "realignment" -o $analysis == "realign-mayo" ]
 			then
@@ -269,9 +269,9 @@ else
 					$script_path/dashboard.sh $sample $run_info Beginning started $i
 				done  
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=12G $script_path/processBAM.sh $align_dir $sample $run_info
+				qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=6G $script_path/processBAM.sh $align_dir $sample $run_info
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=6G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $igv
+				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=4G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $igv
 			fi    
 			if [[ $analysis == "mayo" || $analysis == "external" || $analysis == "realignment" || $analysis == "variant" || $analysis == "realign-mayo" ]]
 			then
@@ -304,13 +304,13 @@ else
 					$script_path/check_qstat.sh $limit
 					qsub $args -N $type.$version.reformat_BAM.$sample.$run_num -l h_vmem=8G $script_path/reformat_BAM.sh $realign_dir $sample $run_info	
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=6G -hold_jid $type.$version.reformat_BAM.$sample.$run_num $script_path/extract_reads_bam.sh $realign_dir $bamfile $run_info $igv
+					qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=4G -hold_jid $type.$version.reformat_BAM.$sample.$run_num $script_path/extract_reads_bam.sh $realign_dir $bamfile $run_info $igv
 					$script_path/check_qstat.sh $limit
 					qsub $args -N $type.$version.split_bam_chr.$sample.$run_num -hold_jid $type.$version.reformat_BAM.$sample.$run_num -l h_vmem=2G -t 1-$numchrs:1 $script_path/split_bam_chr.sh $realign_dir $sample $run_info
 					variant_id="$type.$version.split_bam_chr.$sample.$run_num"
 				else
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.realign_recal.$sample.$run_num -hold_jid $type.$version.processBAM.$sample.$run_num -l h_vmem=8G -t 1-$numchrs:1 $script_path/realign_recal.sh $align_dir $bamfile $sample $realign_dir $run_info 1	
+					qsub $args -N $type.$version.realign_recal.$sample.$run_num -hold_jid $type.$version.processBAM.$sample.$run_num -l h_vmem=7G -t 1-$numchrs:1 $script_path/realign_recal.sh $align_dir $bamfile $sample $realign_dir $run_info 1	
 					variant_id="$type.$version.realign_recal.$sample.$run_num"
 				fi
 				$script_path/check_qstat.sh $limit
@@ -550,16 +550,16 @@ else
 						hold="-hold_jid $type.$version.align_read_bwa.R1.$sample.$run_num"
 					fi	
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.align_bwa.$sample.$run_num -l h_vmem=3G -pe threaded $threads $hold -t 1-$numfiles:1 $script_path/align_bwa.sh $sample $output_dir $run_info
+					qsub $args -N $type.$version.align_bwa.$sample.$run_num -l h_vmem=8G $hold -t 1-$numfiles:1 $script_path/align_bwa.sh $sample $output_dir $run_info
 					hold="$type.$version.align_bwa.$sample.$run_num"
 				fi	    
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.processBAM.$sample.$run_num -pe threaded $threads -l h_vmem=4G -hold_jid $hold $script_path/processBAM.sh $align_dir $sample $run_info   
+				qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=6G -hold_jid $hold $script_path/processBAM.sh $align_dir $sample $run_info   
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=8G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $output_dir/IGV_BAM		
+				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=4G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $igv		
 			elif [[ $analysis == "realignment" || $analysis == "realign-mayo" ]]
 			then
-				infile=`cat $sample_info | grep -w ^BAM:${sample} | cut -d '=' -f2 `
+				infile=`cat $sample_info | grep -w ^BAM:${sample} | cut -d '=' -f2`
 				num_bams=`echo $infile | tr " " "\n" | wc -l`
 				if [ $num_bams -eq 0 ]
 				then
@@ -581,9 +581,9 @@ else
 					ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
 				done
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=12G $script_path/processBAM.sh $align_dir $sample $run_info
+				qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=6G $script_path/processBAM.sh $align_dir $sample $run_info
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=6G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $igv
+				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=4G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $igv
 			fi
 		done	
 		if [ $analysis != "alignment" ]
@@ -632,7 +632,7 @@ else
 					$script_path/check_qstat.sh $limit
 					qsub $args -N $type.$version.reformat_pairBAM.$group.$run_num -l h_vmem=8G $script_path/reformat_pairBAM.sh $realign_dir $group $run_info
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.extract_reads_bam.$group.$run_num -l h_vmem=8G -hold_jid $type.$version.reformat_pairBAM.$group.$run_num $script_path/extract_reads_bam.sh $realign_dir $group.sorted.bam $run_info $output_dir/IGV_BAM $group
+					qsub $args -N $type.$version.extract_reads_bam.$group.$run_num -l h_vmem=8G -hold_jid $type.$version.reformat_pairBAM.$group.$run_num $script_path/extract_reads_bam.sh $realign_dir $group.sorted.bam $run_info $igv $group
 					$script_path/check_qstat.sh $limit
 					qsub $args -N $type.$version.split_bam_chr.$group.$run_num -hold_jid $type.$version.reformat_pairBAM.$group.$run_num -l h_vmem=2G -t 1-$numchrs:1 $script_path/split_bam_chr.sh $realign_dir $group $run_info
 					variant_id="$type.$version.split_bam_chr.$group.$run_num"
@@ -643,19 +643,19 @@ else
 						id=$id"$type.$version.processBAM.$sample.$run_num,$type.$version.extract_reads_bam.$sample.$run_num"
 					done    
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.realign_recal.$group.$run_num -hold_jid $id -l h_vmem=8G -t 1-$numchrs:1 $script_path/realign_recal.sh $input_dirs $bam_samples $names_samples $realign_dir $run_info 1
+					qsub $args -N $type.$version.realign_recal.$group.$run_num -hold_jid $id -l h_vmem=7G -t 1-$numchrs:1 $script_path/realign_recal.sh $input_dirs $bam_samples $names_samples $realign_dir $run_info 1
 					variant_id="$type.$version.realign_recal.$group.$run_num"
 				fi
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.split_sample_pair.$group.$run_num -hold_jid $variant_id -l h_vmem=2G -t 1-$numchrs:1 $script_path/split_sample_pair.sh $output_dir/realign $output_dir/IGV_BAM $group $output_dir/alignment $run_info
+				qsub $args -N $type.$version.split_sample_pair.$group.$run_num -hold_jid $variant_id -l h_vmem=2G -t 1-$numchrs:1 $script_path/split_sample_pair.sh $output_dir/realign $igv $group $output_dir/alignment $run_info
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.igv_bam.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=2G $script_path/igv_bam.sh $output_dir/realign $output_dir/IGV_BAM $group $output_dir/alignment $run_info 
+				qsub $args -N $type.$version.igv_bam.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=2G $script_path/igv_bam.sh $output_dir/realign $igv $group $output_dir/alignment $run_info 
 				$script_path/check_qstat.sh $limit
 				qsub $args -N $type.$version.variants.$group.$run_num -hold_jid $variant_id -pe threaded $threads -l h_vmem=4G -t 1-$numchrs:1 $script_path/variants.sh $realign_dir $names_samples $variant_dir 1 $run_info
 				$script_path/check_qstat.sh $limit
 				qsub $args -N $type.$version.merge_variant_group.$group.$run_num -l h_vmem=3G -pe threaded $threads -hold_jid $type.$version.variants.$group.$run_num $script_path/merge_variant_group.sh $output_dir/variants $group $output_dir/Reports_per_Sample/ $run_info 
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.OnTarget_BAM.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=2G -t 1-$numchrs:1 $script_path/OnTarget_BAM.sh $output_dir/IGV_BAM $output_dir/OnTarget $group $run_info
+				qsub $args -N $type.$version.OnTarget_BAM.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=2G -t 1-$numchrs:1 $script_path/OnTarget_BAM.sh $igv $output_dir/OnTarget $group $run_info
 				$script_path/check_qstat.sh $limit
 				qsub $args -N $type.$version.OnTarget_PILEUP.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=6G -t 1-$numchrs:1 $script_path/OnTarget_PILEUP.sh $realign_dir $output_dir/OnTarget $group $run_info
 				$script_path/check_qstat.sh $limit

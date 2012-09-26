@@ -27,16 +27,16 @@ else
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     max_reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
     
-    $samtools/samtools view -H $input/$bam 1>$input/$bam.sc.header 2>$input/$bam.fix.sc.log
+    $samtools/samtools view -H $input/$bam 1>$input/$bam.sc.$chr.header 2>$input/$bam.fix.sc.$chr.log
 	
-	if [ `cat $input/$bam.fix.sc.log | wc -l` -gt 0 ]
+	if [ `cat $input/$bam.fix.sc.$chr.log | wc -l` -gt 0 ]
 	then
-		echo "ERROR : $input/$bam is truncated or corrupted"
+		$script_path/errorlog.sh $input/$bam samplecheckBAM.sh ERROR "is truncated or corrupted"
 		exit 1;
 	else
-		rm $input/$bam.fix.sc.log
+		rm $input/$bam.fix.sc.$chr.log
 	fi
-	rm $input/$bam.sc.header	
+	rm $input/$bam.sc.$chr.header	
 	
 	check=`[ -f $input/$bam.bai ] && echo "1" || echo "0"`
     if [ $check -eq 0 ]
@@ -74,7 +74,7 @@ else
         $script_path/addReadGroup.sh $output/$sample.chr${chr}-sorted.bam $output/$sample.chr${chr}-sorted.bam.rg.bam $output/temp/ $run_info $sample   
     else
         ### after this point BAM is good to go with the GATk tool (any module)
-        $samtools/samtools index $output/$sample.chr${chr}-sorted.bam
+		$samtools/samtools index $output/$sample.chr${chr}-sorted.bam    
     fi
     echo `date`
 fi	

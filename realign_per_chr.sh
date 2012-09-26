@@ -32,12 +32,12 @@ else
     
     if [ ${#dbSNP} -ne 0 ]
     then
-        param="--known $dbSNP" 
+        param="-known $dbSNP" 
     fi
     
     if [ ${#Kgenome} -ne 0 ]
     then
-        param=$param" --known $Kgenome" 
+        param=$param" -known $Kgenome" 
     fi
     
     

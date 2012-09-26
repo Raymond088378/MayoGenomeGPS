@@ -62,7 +62,7 @@ else
 	$samtools/samtools index $output/$bam.unmapped.bam
 	input=$input" INPUT=$output/$bam.unmapped.bam"
 
-	$script_path/MergeBam.sh "$input" $output/$bam.extra.bam $output yes $run_info
+	$script_path/MergeBam.sh "$input" $output/$bam.extra.bam $output true $run_info
 	
 	if [ $5 ]
 	then

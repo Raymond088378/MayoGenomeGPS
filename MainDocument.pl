@@ -58,7 +58,7 @@ else    {
 	my $dbsnp_file=$line[$#line];chomp $dbsnp_file;
 	$dbsnp_file =~ m/.+dbSNP(\d+)/;
 	my $dbsnp_v = $1;
-	@line=split(/=/,`perl -ne "/^WHOLEGENOME_PATH/ && print" $tool_info`);
+	@line=split(/=/,`perl -ne "/^WORKFLOW_PATH/ && print" $tool_info`);
 	my $script_path=$line[$#line];chomp $script_path;
 	my ($read_length, $variant_type, $target_region, $SNV_caller, $Aligner, $ontarget, $fastqc, $fastqc_path, $server, $upload_tb );
 	@line=split(/=/,`perl -ne "/^UPLOAD_TABLEBROWSER/ && print" $run_info`);
