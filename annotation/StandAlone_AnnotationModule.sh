@@ -249,7 +249,7 @@ else
 	    rm $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i}.txt
 	    rm $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i}
 	done
-	while [[ ! -s $output/$sample.polyphen.txt ||  ! -s $output/$sample.INDEL.filtered.eff || ! -s $output/$sample.SNV.filtered.eff ]]
+	while [[ ! -f $output/$sample.polyphen.txt ||  ! -s $output/$sample.INDEL.filtered.eff || ! -s $output/$sample.SNV.filtered.eff ]]
 	do
 		echo " waiting for snpeff, polyphen annotation to complete "
 		sleep 2m
