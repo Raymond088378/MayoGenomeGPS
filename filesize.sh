@@ -2,7 +2,7 @@
 
 if [ $# != 6 ]
 then
-	echo -e"script to create a file size file to be uploaded onto the database\nusage:<analysis type><sample name><filename><job id ><size of the file><run info >"
+	echo -e "script to create a file size file to be uploaded onto the database\nusage:<analysis type><sample name><filename><job id ><size of the file><run info >"
 else
 	echo `date`
 	analysis=$1

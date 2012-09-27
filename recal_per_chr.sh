@@ -97,7 +97,7 @@ else
 	fi
 	
 	## Recal metrics file creation
-    $java/java -Xmx6g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
+    $java/java -Xmx5g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
     -R $ref \
     -et NO_ET \
     -K $gatk/Hossain.Asif_mayo.edu.key \
@@ -125,7 +125,7 @@ else
         fi
     else	
         ## recailbartion
-        $java/java -Xmx6g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
+        $java/java -Xmx5g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
         -R $ref \
         -et NO_ET \
         -K $gatk/Hossain.Asif_mayo.edu.key \

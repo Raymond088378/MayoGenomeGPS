@@ -106,7 +106,7 @@ else
 	fi
 	
     ## GATK Target Creator
-    $java/java -Xmx6g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
+    $java/java -Xmx5g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
     -R $ref \
     -et NO_ET \
     -K $gatk/Hossain.Asif_mayo.edu.key \
@@ -130,7 +130,7 @@ else
 		fi
     else
         ## Realignment
-        $java/java -XX:+UseConcMarkSweepGC -Xmx6g -Xms512m -Djava.io.tmpdir=$output/temp/ \
+        $java/java -XX:+UseConcMarkSweepGC -Xmx5g -Xms512m -Djava.io.tmpdir=$output/temp/ \
         -jar $gatk/GenomeAnalysisTK.jar \
         -R $ref \
         -et NO_ET \

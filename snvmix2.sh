@@ -26,19 +26,19 @@ else
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     temp=`echo $output | sed -e '/.vcf/s///g'`
 	
-	$samtools/samtools view -H $bam 2>$bam.fix.log
-	if [ `cat $bam.fix.log | wc -l` -gt 0 ]
+	$samtools/samtools view -H $bam 1>$bam.snvmix.header 2>$bam.snvmix.fix.log
+	if [ `cat $bam.snvmix.fix.log | wc -l` -gt 0 ]
 	then
 		$script_path/email.sh $bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-		while [ -f $bam.fix.log ]
+		while [ -f $bam.snvmix.fix.log ]
 		do
 			echo "waiting for the $bam to be fixed"
 			sleep 2m
 		done
 	else
-		rm $bam.fix.log
+		rm $bam.snvmix.fix.log
 	fi		
-	
+	rm $bam.snvmix.header
 	mkfifo $bam.pileup 
 	$samtools/samtools mpileup -A -s -f $ref $bam > $bam.pileup &
 	pileup=$bam.pileup
@@ -82,5 +82,4 @@ else
         exit 1;
     fi	
     echo `date`
-fi	
-		
+fi	    
