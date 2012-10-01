@@ -22,7 +22,7 @@ else
     genome_build=$(cat $run_info | grep -w '^GENOMEBUILD' |  cut -d '=' -f2)
     perl=$(cat $tool_info | grep -w '^PERL_CIRCOS' |  cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )	
-	threads=2   
+	threads=1   
 	if [ $5 ]
     then
 		sam=$prefix.$sample

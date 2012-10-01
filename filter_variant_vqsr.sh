@@ -28,6 +28,7 @@ else
     else
         mkdir -p $output/temp
     fi
+    
     if [ -d $output/plot ]
     then
         echo "plot already there"
@@ -220,6 +221,7 @@ else
 					if [[  `find . -name '*.log'` ]]
 					then
 						if [ `grep -l $output/plot/$input_name.plots.R *.log` ]
+						then
 							rm `grep -l $output/plot/$input_name.plots.R *.log`
 							rm core.*
 						fi

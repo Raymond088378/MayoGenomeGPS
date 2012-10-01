@@ -322,9 +322,9 @@ else
 				$script_path/check_qstat.sh $limit
 				qsub $args -N $type.$version.igv_bam.$sample.$run_num -l h_vmem=2G -hold_jid $variant_id,$type.$version.extract_reads_bam.$sample.$run_num $script_path/igv_bam.sh $output_realign $igv $sample $output_align $run_info
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.variants.$sample.$run_num -hold_jid $variant_id -pe threaded $threads -l h_vmem=2G -t 1-$numchrs:1 $script_path/variants.sh $realign_dir $sample $variant_dir 1 $run_info
+				qsub $args -N $type.$version.variants.$sample.$run_num -hold_jid $variant_id -pe threaded $threads -l h_vmem=1536M -t 1-$numchrs:1 $script_path/variants.sh $realign_dir $sample $variant_dir 1 $run_info
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.merge_variant_single.$sample.$run_num -l h_vmem=3G -pe threaded $threads -hold_jid $type.$version.variants.$sample.$run_num $script_path/merge_variant_single.sh $output_variant $sample $RSample $run_info
+				qsub $args -N $type.$version.merge_variant_single.$sample.$run_num -l h_vmem=1G -pe threaded $threads -hold_jid $type.$version.variants.$sample.$run_num $script_path/merge_variant_single.sh $output_variant $sample $RSample $run_info
 				$script_path/check_qstat.sh $limit
 				qsub $args -N $type.$version.OnTarget_BAM.$sample.$run_num -hold_jid $variant_id -l h_vmem=1G -t 1-$numchrs:1 $script_path/OnTarget_BAM.sh $realign_dir $output_OnTarget $sample $run_info
 				$script_path/check_qstat.sh $limit
@@ -376,7 +376,7 @@ else
 					$script_path/check_qstat.sh $limit
 					qsub $args -N $type.$version.sift.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=3G $script_path/sift.sh $sift $output_OnTarget $sample $run_info
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -pe threaded $threads -t 1-$numchrs:1 -l h_vmem=3G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info	    	
+					qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=8G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info	    	
 				fi
 				$script_path/check_qstat.sh $limit
 				qsub $args -N $type.$version.snpeff.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=3G $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info		
@@ -653,13 +653,13 @@ else
 					variant_id="$type.$version.realign_recal.$group.$run_num"
 				fi
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.split_sample_pair.$group.$run_num -hold_jid $variant_id -l h_vmem=2G -t 1-$numchrs:1 $script_path/split_sample_pair.sh $output_realign $igv $group $output_align $run_info
+				qsub $args -N $type.$version.split_sample_pair.$group.$run_num -hold_jid $variant_id -l h_vmem=1G -t 1-$numchrs:1 $script_path/split_sample_pair.sh $output_realign $igv $group $output_align $run_info
 				$script_path/check_qstat.sh $limit
 				qsub $args -N $type.$version.igv_bam.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=2G $script_path/igv_bam.sh $output_realign $igv $group $output_align $run_info 
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.variants.$group.$run_num -hold_jid $variant_id -pe threaded $threads -l h_vmem=2G -t 1-$numchrs:1 $script_path/variants.sh $realign_dir $names_samples $variant_dir 1 $run_info
+				qsub $args -N $type.$version.variants.$group.$run_num -hold_jid $variant_id -pe threaded $threads -l h_vmem=1536M -t 1-$numchrs:1 $script_path/variants.sh $realign_dir $names_samples $variant_dir 1 $run_info
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.merge_variant_group.$group.$run_num -l h_vmem=3G -pe threaded $threads -hold_jid $type.$version.variants.$group.$run_num $script_path/merge_variant_group.sh $output_variant $group $RSample $run_info 
+				qsub $args -N $type.$version.merge_variant_group.$group.$run_num -l h_vmem=1G -pe threaded $threads -hold_jid $type.$version.variants.$group.$run_num $script_path/merge_variant_group.sh $output_variant $group $RSample $run_info 
 				$script_path/check_qstat.sh $limit
 				qsub $args -N $type.$version.OnTarget_BAM.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=2G -t 1-$numchrs:1 $script_path/OnTarget_BAM.sh $igv $output_OnTarget $group $run_info
 				$script_path/check_qstat.sh $limit
@@ -667,23 +667,23 @@ else
 				$script_path/check_qstat.sh $limit
 				qsub $args -N $type.$version.getCoverage.$group.$run_num -hold_jid $type.$version.OnTarget_PILEUP.$group.$run_num -l h_vmem=2G $script_path/getCoverage.sh $output_OnTarget $numbers $group $run_info
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.OnTarget_variant.$group.$run_num -l h_vmem=2G -hold_jid $type.$version.merge_variant_group.$group.$run_num -t 1-$numchrs:1 $script_path/OnTarget_variant.sh $output_variant $output_OnTarget $group $run_info
+				qsub $args -N $type.$version.OnTarget_variant.$group.$run_num -l h_vmem=1G -hold_jid $type.$version.merge_variant_group.$group.$run_num -t 1-$numchrs:1 $script_path/OnTarget_variant.sh $output_variant $output_OnTarget $group $run_info
 				hold_args="-hold_jid $type.$version.OnTarget_variant.$group.$run_num"
 				## SIFT
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.sift.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $group $run_info 
+				qsub $args -N $type.$version.sift.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=3G $script_path/sift.sh $sift $output_OnTarget $group $run_info 
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.sift.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/sift.sh $sift $output_OnTarget $group $run_info TUMOR
+				qsub $args -N $type.$version.sift.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=3G $script_path/sift.sh $sift $output_OnTarget $group $run_info TUMOR
 				## SNPEFF
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.snpeff.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $group $run_info
+				qsub $args -N $type.$version.snpeff.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=3G $script_path/snpeff.sh $snpeff $output_OnTarget $group $run_info
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.snpeff.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=4G $script_path/snpeff.sh $snpeff $output_OnTarget $group $run_info TUMOR
+				qsub $args -N $type.$version.snpeff.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=3G $script_path/snpeff.sh $snpeff $output_OnTarget $group $run_info TUMOR
 				##POLYPHEN
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.polyphen.$group.$run_num $hold_args -t 1-$numchrs:1 -pe threaded $threads -l h_vmem=3G $script_path/polyphen.sh $polyphen $output_OnTarget $group $run_info  
+				qsub $args -N $type.$version.polyphen.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=8G $script_path/polyphen.sh $polyphen $output_OnTarget $group $run_info  
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.polyphen.$group.$run_num $hold_args -t 1-$numchrs:1 -pe threaded $threads -l h_vmem=3G $script_path/polyphen.sh $polyphen $output_OnTarget $group $run_info TUMOR
+				qsub $args -N $type.$version.polyphen.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=8G $script_path/polyphen.sh $polyphen $output_OnTarget $group $run_info TUMOR
 				hold="$type.$version.sift.$group.$run_num,$type.$version.snpeff.$group.$run_num,$type.$version.polyphen.$group.$run_num"
 				$script_path/check_qstat.sh $limit
 				qsub $args -N $type.$version.sample_reports.$group.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=4G $script_path/sample_reports.sh $run_info $group $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir

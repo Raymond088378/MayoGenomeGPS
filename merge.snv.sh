@@ -46,7 +46,7 @@ else
 	
 	### add sift columns
 	file=$TempReports/$var.rsIDs.allele_frequencies
-	num=`cat $file | wc -l`
+	num=`cat $file | awk '{print $1"_"$2}'| awk '!/^$/' | wc -l`
 	chr=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Chr") {print i} } }' $file`
 	pos=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Position") {print i} } }' $file`
 	ref=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Ref") {print i} } }' $file`
@@ -250,14 +250,9 @@ else
 	### add snpeff prediction
 	perl $script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $snpeff/$sample.chr${which_chr}.snv.eff -o $TempReports/$sample.chr${which_chr}.SNV.report
 	perl $script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $snpeff/$sample.chr${which_chr}.snv.filtered.eff -o $TempReports/$sample.chr${which_chr}.filtered.SNV.report
-	num_a=`cat $TempReports/$sample.chr${which_chr}.SNV.report | awk '{print $1"_"$2}' | sort | uniq | wc -l`
+	num_a=`cat $TempReports/$sample.chr${which_chr}.SNV.report | awk -F'\t' '{print $1"_"$2}' | sort | uniq | wc -l`
 	num_b=`cat $TempReports/$sample.chr${which_chr}.filtered.SNV.report | wc -l `
-        if [[ $num_a == $num  && $num_b == $num ]]
-	then
-	    rm $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly
-	else
-	    echo "ERROR : failed to add snpeff to $file"
-	fi	
+    rm $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly	
 	### add the entrez id to the report
 	for report in $TempReports/$sample.chr${which_chr}.SNV.report $TempReports/$sample.chr${which_chr}.filtered.SNV.report
 	do

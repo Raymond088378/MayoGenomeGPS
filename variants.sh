@@ -401,12 +401,12 @@ else
 			echo "ERROR : variant calling failed for ${sampleArray[1]} in variantss.h script"	
 			exit 1;
 		fi
-		cat $output/${sampleArray[1]}.variants.chr$chr.raw.vcf | awk '$0 !~ /^#/ || $5 ~ /,/' > $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.multi
+		cat $output/${sampleArray[1]}.variants.chr$chr.raw.vcf | awk '$0 !~ /^#/ && $5 ~ /,/' > $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.multi
         cat $output/${sampleArray[1]}.variants.chr$chr.raw.vcf | awk '$0 ~ /^#/ || $5 !~ /,/' > $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp
         mv $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp $output/${sampleArray[1]}.variants.chr$chr.raw.vcf
         cat $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.multi > $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp
         $script_path/vcfsort.pl $ref.fai $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp > $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf
-        rm $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp
+        rm $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.multi
         $script_path/vcf_blat_verify.pl -i $output/${sampleArray[1]}.variants.chr$chr.raw.vcf -o $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref 
 		mv $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp $output/${sampleArray[1]}.variants.chr$chr.raw.vcf
 		$script_path/vcf_blat_verify.pl -i $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf -o $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref 
@@ -428,23 +428,23 @@ else
 			echo "ERROR : variant calling failed for pair in variants.sh script"	
 			exit 1;
 		fi
-		cat $output/variants.chr$chr.raw.vcf |  awk '$0 !~ /^#/ || $5 ~ /,/' > $output/variants.chr$chr.raw.vcf.multi
+		cat $output/variants.chr$chr.raw.vcf |  awk '$0 !~ /^#/ && $5 ~ /,/' > $output/variants.chr$chr.raw.vcf.multi
 		cat $output/variants.chr$chr.raw.vcf |  awk '$0 ~ /^#/ || $5 !~ /,/' > $output/variants.chr$chr.raw.vcf.temp
 		mv $output/variants.chr$chr.raw.vcf.temp $output/variants.chr$chr.raw.vcf
 		cat $output/variants.chr$chr.raw.multi.vcf $output/variants.chr$chr.raw.vcf.multi > $output/variants.chr$chr.raw.multi.vcf.temp
 		$script_path/vcfsort.pl $ref.fai $output/variants.chr$chr.raw.multi.vcf.temp > $output/variants.chr$chr.raw.multi.vcf
-		rm $output/variants.chr$chr.raw.multi.vcf.temp
+		rm $output/variants.chr$chr.raw.multi.vcf.temp $output/variants.chr$chr.raw.vcf.multi
 		$script_path/vcf_blat_verify.pl -i $output/variants.chr$chr.raw.vcf -o $output/variants.chr$chr.raw.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
 		mv $output/variants.chr$chr.raw.vcf.temp $output/variants.chr$chr.raw.vcf
 		$script_path/vcf_blat_verify.pl -i $output/variants.chr$chr.raw.multi.vcf -o $output/variants.chr$chr.raw.multi.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
 		mv $output/variants.chr$chr.raw.multi.vcf.temp $output/variants.chr$chr.raw.multi.vcf
 		
-		cat $output/MergeAllSamples.chr$chr.raw.vcf |  awk '$0 !~ /^#/ || $5 ~ /,/' > $output/MergeAllSamples.chr$chr.raw.vcf.multi
+		cat $output/MergeAllSamples.chr$chr.raw.vcf |  awk '$0 !~ /^#/ && $5 ~ /,/' > $output/MergeAllSamples.chr$chr.raw.vcf.multi
 		cat $output/MergeAllSamples.chr$chr.raw.vcf |  awk '$0 ~ /^#/ || $5 !~ /,/' > $output/MergeAllSamples.chr$chr.raw.vcf.temp
 		mv $output/MergeAllSamples.chr$chr.raw.vcf.temp $output/MergeAllSamples.chr$chr.raw.vcf
 		cat $output/MergeAllSamples.chr$chr.raw.multi.vcf $output/MergeAllSamples.chr$chr.raw.vcf.multi > $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp
 		$script_path/vcfsort.pl $ref.fai $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp > $output/MergeAllSamples.chr$chr.raw.multi.vcf
-		rm $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp
+		rm $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp $output/MergeAllSamples.chr$chr.raw.vcf.multi
 		$script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.vcf -o $output/MergeAllSamples.chr$chr.raw.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
 		mv $output/MergeAllSamples.chr$chr.raw.vcf.temp $output/MergeAllSamples.chr$chr.raw.vcf
 		$script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.multi.vcf -o $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref

@@ -24,19 +24,18 @@ else
     pair=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2 | tr "\t" " ")
     if [ -f $input/$sample/chr$chr.cleaned.bam ]
     then
-        $samtools/samtools view -H chr$chr.cleaned.bam 1> $output/$sample.chr$chr.header.sam 2> chr$chr.cleaned.bam.fix.ssp.log
- 		if [ `cat chr$chr.cleaned.bam.fix.ssp.log | wc -l` -gt 0 ]
+        $samtools/samtools view -H chr$chr.cleaned.bam 1>$output/$sample.chr$chr.header.sam 2>$output/$sample.chr$chr.cleaned.bam.fix.ssp.log
+ 		if [ `cat $output/$sample.chr$chr.cleaned.bam.fix.ssp.log | wc -l` -gt 0 ]
 		then
 			$script_path/email.sh $input/$sample/chr$chr.cleaned.bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-			while [ -f chr$chr.cleaned.bam.fix.ssp.log ]
+			while [ -f $output/$sample.chr$chr.cleaned.bam.fix.ssp.log ]
 			do
 				echo "waiting for the $input/$sample/chr$chr.cleaned.bam to be fixed"
 				sleep 2m
 			done
 		else
-			rm chr$chr.cleaned.bam.fix.ssp.log
+			rm $output/$sample.chr$chr.cleaned.bam.fix.ssp.log
 		fi
-		rm $output/$sample.chr$chr.header.sam
         for i in $pair
         do
             sam=`echo $pair | tr " " "\n" | grep -v $i | tr "\n" " "`
@@ -53,6 +52,7 @@ else
             mv $output/$sample.$i.chr$chr.re.bam $output/$sample.$i.chr$chr.bam
             rm $output/$sample.chr$chr.$i.header.sam
         done
+        rm $output/$sample.chr$chr.header.sam
     fi
     echo `date`
 fi
