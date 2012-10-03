@@ -97,7 +97,14 @@ else
 		rm -Rf $secondary/struct
 		rm -Rf $secondary/cnv
     fi
-
+	
+    ### copy the config files
+    for i in sample_info.txt run_info.txt tool_info.txt 
+    do
+    	cp $secondary/$i $delivery
+    done
+    
+    	 
 
     mv $secondary/Reports_per_Sample/*.xls $delivery/Reports_per_Sample/
     mv $secondary/Reports_per_Sample/ANNOT/*.txt $delivery/Reports_per_Sample/ANNOT/
@@ -136,6 +143,7 @@ else
     rm -Rf $secondary/logs
     tar -cvzf numbers.tar.gz numbers
     rm -Rf $secondary/numbers
+    cp $secondary/numbers.tar.gz $delivery/
 
     ##### transfer files to tertiary folder
     mkdir -p $tertiary/variants

@@ -66,7 +66,7 @@ else
     done
     
 	$script_path/concatvcf.sh "$inputargs" $out/$group.somatic.variants.raw.vcf $run_info no
-	# $script_path/concatvcf.sh "$inputargs_multi" $out/$group.somatic.variants.raw.multi.vcf $run_info yes
+	$script_path/concatvcf.sh "$inputargs_multi" $out/$group.somatic.variants.raw.multi.vcf $run_info yes
     
 	
 	if [ $somatic_filter_variants == "YES" ]
@@ -104,7 +104,7 @@ else
     done
 
 	$script_path/concatvcf.sh "$inputargs" $out/$group.variants.raw.vcf $run_info no
-	# $script_path/concatvcf.sh "$inputargs_multi" $out/$group.variants.raw.multi.vcf $run_info yes
+	$script_path/concatvcf.sh "$inputargs_multi" $out/$group.variants.raw.multi.vcf $run_info yes
 	
     if [ $filter_variants == "YES" ]
     then

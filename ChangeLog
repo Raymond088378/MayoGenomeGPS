@@ -1,3 +1,14 @@
+#### Version 1.2
+
+1. Optimized memory parameters for GATK and Picard
+2. Added somtic support for the excel worksheet, will have normal calls to for somatic variants
+3. Coverage plot will show the coverage from 1 to 100X
+4. updated the tools used in the workflow
+5. Added more QC steps so that if one script failed then the hext will wait for the first one to finish properly
+6. Added Support for beauty samples and if any investigator wants to use consensus calling then use callers are BEAUTY_EXOME
+7. Added a readme file for all the files we deliver to the PI
+
+
 ### Version 1.1.1
 
 1. added path to R in the tool info file
