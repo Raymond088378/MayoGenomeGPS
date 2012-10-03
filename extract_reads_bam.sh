@@ -89,6 +89,7 @@ else
 					if [ ! -d $out ]
 					then
 						mkdir -p $out
+						chmod -Rf 777 $out
 					fi
 					mv $output/$sample.extra.bam $out/
 					mv $output/$sample.extra.bam.bai $out/
@@ -107,6 +108,7 @@ else
 				if [ ! -d $out ]
 				then
 					mkdir -p $out
+					chmod -Rf 777 $out
 				fi
 				mv $output/$bam.extra.bam $out/
 				mv $output/$bam.extra.bam.bai $out/

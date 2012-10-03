@@ -46,7 +46,7 @@ else
 	
 	### add sift columns
 	file=$TempReports/$var.rsIDs.allele_frequencies
-	num=`cat $file | awk '{print $1"_"$2}'| awk '!/^$/' | wc -l`
+	num=`cat $file | awk '{print $1"_"$2}'| wc -l`
 	chr=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Chr") {print i} } }' $file`
 	pos=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Position") {print i} } }' $file`
 	ref=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Ref") {print i} } }' $file`
