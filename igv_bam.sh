@@ -48,8 +48,8 @@ else
 			$samtools/samtools view -H $i 1>$i.igv.header 2> $i.fix.igv.log
 			if [ `cat $i.fix.igv.log | wc -l` -gt 0 ]
 			then
-				echo "$i : bam is truncated or corrupt"
-				exit 1;
+				$script_path/email.sh $i "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+				$script_path/wait.sh $i.fix.igv.log
 			else
 				rm $i.fix.igv.log
 			fi	
@@ -109,8 +109,8 @@ else
             $samtools/samtools view -H $i 1>$i.igv.header 2> $i.fix.igv.log
 			if [ `cat $i.fix.igv.log | wc -l` -gt 0 ]
 			then
-				echo "$i : bam is truncated or corrupt"
-				exit 1;
+				$script_path/email.sh $i "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+				$script_path/wait.sh $i.fix.igv.log
 			else
 				rm $i.fix.igv.log
 			fi

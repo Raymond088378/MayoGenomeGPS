@@ -58,7 +58,7 @@ else
 	########################################################	
 	######		
 
-	echo `date`
+	pid=""
 	export PERL5LIB=$perllib
 	PATH=$PATH:$blat:$crest:$perllib
 	mkdir -p $output_dir/$group $output_dir/$group/log
@@ -68,6 +68,7 @@ else
 	if [ "$status" -eq 0 ]
 	then
 		$blat/gfServer start $blat_server $blat_port -log=$output_dir/$group/log/blat.$group.$chr.txt $blat_ref  &
+		pid=$!
 		sleep 5m
 	fi
 
@@ -101,6 +102,8 @@ else
 			then
 				rm $output_dir/$sample/log/blat.$sample.$chr.txt
 				$blat/gfServer start $blat_server $blat_port -log=$output_dir/$group/log/blat.$group.$chr.txt $blat_ref  &
+				pi=$!
+				pid=$pid" $pi"
 				sleep 5m
 			fi
 			status=`$blat/gfServer status $blat_server $blat_port | wc -l`;
@@ -151,5 +154,6 @@ else
 	done
     rm $output_dir/$group/${normal_sample}.chr$chr.bam $output_dir/$group/${normal_sample}.chr$chr.bam.bai
     rm $output_dir/$group/${normal_sample}.chr$chr.sclip.txt $output_dir/$group/${normal_sample}.chr$chr.cover
-	echo `date`
+	`kill -9 $pid`
+    echo `date`
 fi

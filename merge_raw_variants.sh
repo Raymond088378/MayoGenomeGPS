@@ -1,17 +1,17 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# -le 1 ]
 then
-	echo "Usage : </path/to/output folder> </path/to/run info file>"
+	echo -e "script to merge per chr per sample file to merge file per chr\nUsage : </path/to/output folder> </path/to/run info file>"
 else
 	set -x
 	echo `date`
 	output_dir=$1
 	run_info=$2
-        if [ $3 ]
-        then
-            SGE_TASK_ID=$3
-        fi    
+    if [ $3 ]
+    then
+    	SGE_TASK_ID=$3
+    fi    
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 	samples=$(cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2| tr ":" " ")
 	chrs=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2| tr ":" " ")	

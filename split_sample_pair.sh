@@ -28,11 +28,7 @@ else
  		if [ `cat $output/$sample.chr$chr.cleaned.bam.fix.ssp.log | wc -l` -gt 0 ]
 		then
 			$script_path/email.sh $input/$sample/chr$chr.cleaned.bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-			while [ -f $output/$sample.chr$chr.cleaned.bam.fix.ssp.log ]
-			do
-				echo "waiting for the $input/$sample/chr$chr.cleaned.bam to be fixed"
-				sleep 2m
-			done
+			$script_path/wait.sh $output/$sample.chr$chr.cleaned.bam.fix.ssp.log
 		else
 			rm $output/$sample.chr$chr.cleaned.bam.fix.ssp.log
 		fi
@@ -53,6 +49,9 @@ else
             rm $output/$sample.chr$chr.$i.header.sam
         done
         rm $output/$sample.chr$chr.header.sam
+    else
+    	$script_path/errorlog.sh $input/$sample/chr$chr.cleaned.bam split_sample_pair.sh ERROR "not exist"
+    	exit 1;
     fi
     echo `date`
 fi

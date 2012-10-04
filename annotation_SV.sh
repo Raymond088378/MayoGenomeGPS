@@ -61,7 +61,6 @@ else
             touch $report_dir/$sample.SV.annotated.txt
 			rm $crest/$sample.crest.tmp $break/$sample.break.tmp $break/$sample.breakdancer.txt $crest/$sample.crest.txt 
         else
-
             ### concatenating & formatting crest and breakdancer files
             touch $SV_dir/$sample.SV.tmp
             # cat $break/$sample.breakdancer.txt $crest/$sample.crest.bed > $SV_dir/$sample.tmp
@@ -117,15 +116,13 @@ else
 		tumor_list=`echo $samples | tr " " "\n" | tail -$num_tumor`
         break=$SV_dir/SV
         crest=$SV_dir/SV
-        
 		for tumor in $tumor_list
 		do
 			if [ ! -s $break/$group.$tumor.somatic.break.vcf ]
 			then
 				$script_path/errorlog.sh $break/$group.$tumor.somatic.break.vcf annotation_SV.sh ERROR "not exist"
-				exit 1
+				exit 1;
 			fi
-        
 			cat $crest/$group.$tumor.somatic.filter.crest.vcf | awk '$0 !~ /#/' | tr ";" "\t" | tr "=" "\t" | awk '{ print $1"\t"$2"\t"$1"\t"$12"\t"$10"\t"$16}' > $crest/$group.$tumor.crest.tmp
 			cat $crest/$group.$tumor.crest.tmp | awk 'gsub($5, "crest_"$5,$5)1' | tr " " "\t" > $crest/$group.$tumor.crest.txt
 			cat $break/$group.$tumor.somatic.break.vcf | awk '$0 !~ /#/' | tr ";" "\t" | tr "=" "\t" | awk '{ print $1"\t"$2"\t"$1"\t"$12"\t"$10"\t"$16}' > $break/$group.$tumor.break.tmp
@@ -140,7 +137,6 @@ else
 				### concatenating & formatting crest and breakdancer files
                 touch $SV_dir/$group.$tumor.SV.tmp
                 cat $break/$group.$tumor.breakdancer.txt $crest/$group.$tumor.crest.txt > $SV_dir/$group.$tumor.tmp
-
                 cat -n $SV_dir/$group.$tumor.tmp > $SV_dir/$group.$tumor.tmp1
                 cat $SV_dir/$group.$tumor.tmp1 | awk '{print $1"\t"$2"\t"$3"\t"$1"\t"$4"\t"$5"\t"$6"\t"$7}' >> $SV_dir/$group.$tumor.SV.tmp
                 cat $SV_dir/$group.$tumor.SV.tmp |  awk '{if ($3>10000) print $0}' > $SV_dir/$group.$tumor.SV.tmp1

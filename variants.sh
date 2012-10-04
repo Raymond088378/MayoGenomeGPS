@@ -51,11 +51,7 @@ else
 	if [ `cat $input/$bam.$chr.fix.log | wc -l` -gt 0 ]
 	then
 		$script_path/email.sh $input/$bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-		while [ -f $input/$bam.$chr.fix.log ]
-		do
-			echo "waiting for the $input/$bam to be fixed"
-			sleep 2m
-		done
+		$script_path/wait.sh $input/$bam.$chr.fix.log
 	else
 		rm $input/$bam.$chr.fix.log
 	fi		

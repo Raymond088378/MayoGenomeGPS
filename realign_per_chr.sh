@@ -27,9 +27,9 @@ else
     Kgenome=$( cat $tool_info | grep -w '^KGENOME_REF' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
-    maxreads=$( cat $tool_info | grep -w '^MAX_READS_REALIGN' | cut -d '=' -f2 ) 
-    maxreadsmem=$( cat $tool_info | grep -w '^MAX_READS_MEM_REALIGN' | cut -d '=' -f2 ) 
-    
+    realign_param=$( cat $tool_info | grep -w '^REALIGN_params' | cut -d '=' -f2 )
+    tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[a-z]" "[A-Z]")
+    TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
     if [ ${#dbSNP} -ne 0 ]
     then
         param="-known $dbSNP" 
@@ -105,16 +105,23 @@ else
 		mkdir -p $output/temp/
 	fi
 	
-    ## GATK Target Creator
+    if [ $tool == "whole_genome" ]
+    then
+    	region="-L chr${chr}"
+    else
+    	cat $TargetKit | grep -w chr$chr > $output/chr$chr.bed
+    	region="-L $output/chr$chr.bed"
+    fi		
+	## GATK Target Creator
     $java/java -Xmx5g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
     -R $ref \
     -et NO_ET \
     -K $gatk/Hossain.Asif_mayo.edu.key \
-    $param -L chr${chr} \
+    $param $region \
     -T RealignerTargetCreator \
     $input_bam \
     -o $output/chr${chr}.forRealigner.intervals
-
+    
     if [ ! -s $output/chr${chr}.forRealigner.intervals ]
     then
         echo "WARNING : realign_per_chr. File $output/chr${chr}.forRealigner.intervals not created"
@@ -129,6 +136,7 @@ else
             $script_path/MergeBam.sh $INPUTARGS $output/chr${chr}.realigned.bam $output true $run_info 
 		fi
     else
+        rm $output/chr$chr.bed
         ## Realignment
         $java/java -XX:+UseConcMarkSweepGC -Xmx5g -Xms512m -Djava.io.tmpdir=$output/temp/ \
         -jar $gatk/GenomeAnalysisTK.jar \
@@ -138,10 +146,8 @@ else
         -K $gatk/Hossain.Asif_mayo.edu.key \
         $param -L chr${chr} \
         $input_bam \
-        --maxReadsForRealignment $maxreads \
-        --maxReadsInMemory $maxreadsmem \
         --out $output/chr${chr}.realigned.bam  \
-        -targetIntervals $output/chr${chr}.forRealigner.intervals
+        -targetIntervals $output/chr${chr}.forRealigner.intervals $realign_param
         mv $output/chr${chr}.realigned.bai $output/chr${chr}.realigned.bam.bai
     fi
 

@@ -2,7 +2,7 @@
 
 if [ $# != 2 ]
 then
-	echo "Usage : </path/to/output folder> </path/to/run info file>"
+	echo -e "script to conct per chr file to a merged file\nUsage : </path/to/output folder> </path/to/run info file>"
 else
 	set -x
 	echo `date`

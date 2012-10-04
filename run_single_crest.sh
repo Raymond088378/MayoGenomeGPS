@@ -62,6 +62,7 @@ else
 	
 ########################################################	
 ######		
+	pid=""
 	input_bam=$input/chr${chr}.cleaned.bam
 	$samtools/samtools view -H $input_bam 1>$input_bam.crest.header 2>$input_bam.fix.crest.log
 	if [ `cat $input_bam.fix.crest.log | wc -l` -gt 0 ]
@@ -99,6 +100,7 @@ else
 	if [ "$status" -le 1 ]
 	then
 		$blat/gfServer start localhost $blat_port -log=$output_dir/$sample/log/blat.$sample.$chr.txt $blat_ref  &
+		pid=$!
 		sleep 5m
 	fi
 	$crest/extractSClip.pl -i $input_bam -r chr$chr --ref_genome $ref_genome -o $output_dir/$sample -p $sample
@@ -113,7 +115,9 @@ else
 		then
 			rm $output_dir/$sample/log/blat.$sample.$chr.txt
 			$blat/gfServer start localhost $blat_port -log=$output_dir/$sample/log/blat.$sample.$chr.txt $blat_ref  &
-			sleep 4m
+			pi=$!
+			pid=$pid" $pi"
+			sleep 5m
 		fi
 		status=`$blat/gfServer status localhost $blat_port | wc -l`;
     done 	
@@ -159,5 +163,6 @@ else
 		$script_path/CREST2VCF.pl -i $output_dir/$sample/$sample.$chr.filter.predSV.txt -f $ref_genome -o $output_dir/$sample/$sample.$chr.filter.vcf -s $sample -t $samtools
 		rm $output_dir/$sample/$sample.$chr.filter.vcf.fail
 	fi
+	`kill -9 $pid`
     echo `date`
 fi

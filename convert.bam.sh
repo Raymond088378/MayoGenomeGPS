@@ -34,7 +34,6 @@ else
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     ref_path=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
-    max_files=$( cat $tool_info | grep -w '^MAX_FILE_HANDLES' | cut -d '=' -f2 )
     max_reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
     
 ########################################################	
@@ -44,8 +43,8 @@ else
     $samtools/samtools view -H $input/$input_bam 1> $input/$input_bam.header 2> $input/$input_bam.fix.log
 	if [ `cat $input/$input_bam.fix.log | wc -l` -gt 0 ]
 	then
-		echo "$input/$input_bam : bam is corruped or truncated"
-		exit 1;
+		$script_path/email.sh $input/$input_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+		$script_path/wait.sh $input/$input_bam.fix.log
 	else
 		rm $input/$input_bam.fix.log
 	fi	

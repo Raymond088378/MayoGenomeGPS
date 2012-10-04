@@ -41,6 +41,8 @@ else
 	
 	## create tsv file for sample statistcs
 	perl $script_path/SampleStatistics.pl -r $run_info -p $output_dir
+	### generate readme file
+	$script_path/generate_readme.sh $output_dir $run_info
 	## TableBrowser upload
 	if [[ $upload_tb == "YES"  && $analysis != "alignment" ]]
 	then

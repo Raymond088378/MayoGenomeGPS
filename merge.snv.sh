@@ -51,19 +51,13 @@ else
 	pos=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Position") {print i} } }' $file`
 	ref=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Ref") {print i} } }' $file`
 	alt=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Alt") {print i} } }' $file`
-	if [ -s $sift/${sample}_chr${which_chr}_predictions.tsv ]
+	if [ ! -s $sift/${sample}_chr${which_chr}_predictions.tsv ]
 	then
-		perl $script_path/parse_siftPredictions.pl -i $file -s $sift/${sample}_chr${which_chr}_predictions.tsv -c $chr -p $pos -r $ref -a $alt -o $file.sift
-	else
-		$script_path/email.sh $sift/${sample}_chr${which_chr}_predictions.tsv  "not found" $JOB_NAME $JOB_ID $run_info
+		$script_path/email.sh $sift/${sample}_chr${which_chr}_predictions.tsv "not found" $JOB_NAME $JOB_ID $run_info
 		touch $sift/${sample}_chr${which_chr}_predictions.tsv.fix.log
-		while [ -f $sift/${sample}_chr${which_chr}_predictions.tsv.fix.log ]
-		do
-			echo "waiting for the fix"
-			sleep 2m
-		done
-		perl $script_path/parse_siftPredictions.pl -i $file -s $sift/${sample}_chr${which_chr}_predictions.tsv -c $chr -p $pos -r $ref -a $alt -o $file.sift
-	fi
+		$script_path/wait.sh $sift/${sample}_chr${which_chr}_predictions.tsv.fix.log
+	fi		
+	perl $script_path/parse_siftPredictions.pl -i $file -s $sift/${sample}_chr${which_chr}_predictions.tsv -c $chr -p $pos -r $ref -a $alt -o $file.sift
 	
 	### sort the erport using the start and position
 	perl $script_path/sort.variantReport.pl -i $file.sift -o $file.sift.sort -f Position
@@ -232,11 +226,7 @@ else
 	else
 		$script_path/email.sh $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly  "not found" $JOB_NAME $JOB_ID $run_info
 		touch $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly.fix.log
-		while [ -f $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly.fix.log ]
-		do
-			echo "waiting for the fix"
-			sleep 2m
-		done
+		$script_path/wait.sh $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly.fix.log
 		perl $script_path/add_polphen.pl $file.sift.codons.map.repeat.base.snp.UCSCtracks $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly
 	fi
 	num=`cat $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly | wc -l `

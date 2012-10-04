@@ -18,7 +18,12 @@ else
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
 	SUB="$tool workflow In error State for RunID: ${run_num}"
 	date=`date`
-	MESG="Date: $date\nFilename: $file\nError: $message from the predecessor job\njobname: $job_name\njobid: $job_id\nPlease fix the error and delete the $file.fix.log file so that job can resume properly\n\nCourtesy: $workflow $version"
+	SGE=$SGE_TASK_ID
+	if [ ! $SGE ]
+	then
+		SGE="-"
+	fi	
+	MESG="Date: $date\nFilename: $file\nError: $message from the predecessor job\njobname: $job_name\njobid: $job_id\nArrayjobid: $SGE\nPlease fix the error and delete the $file.fix.log file so that job can resume properly\n\nCourtesy: $workflow $version"
 	## send the completion email
 	echo -e "$MESG" | mailx -v -s "$SUB" "$TO" 
 	echo `date`

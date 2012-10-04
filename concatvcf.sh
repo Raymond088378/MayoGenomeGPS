@@ -2,7 +2,7 @@
 
 if [ $# != 4 ]
 then
-    echo -e "Usage: combine vcfs <input files><output vcf ><run info><to delete input files(yes/no)"
+    echo -e "script to concat the vcf files uisng vcftools\nUsage: combine vcfs <input files><output vcf ><run info><to delete input files(yes/no)"
 else
     set -x
     echo `date`
@@ -36,6 +36,7 @@ else
     if [ ! -s $output ]
     then
         $script_path/errorlog.sh $output concatvcf.sh ERROR "failed to create"
+        exit 1;
     else
         perl $script_path/vcfsort.pl $ref.fai $output > $output.temp
         mv $output.temp $output

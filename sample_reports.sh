@@ -32,11 +32,7 @@ else
 		then
 			touch $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf.fix.log
 			$script_path/email.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf  "not found" $JOB_NAME $JOB_ID $run_info
-			while [ -f $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf.fix.log ]
-			do
-				echo "waiting for the fix"
-				sleep 2m
-			done
+			$script_path/wait.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf.fix.log
 		fi			
 		$script_path/parse.vcf.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf $TempReports/$gr.$sample.chr${which_chr}.snv $run_info SNV
 		##INDEL
@@ -44,11 +40,7 @@ else
 		then
 			touch $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf.fix.log
 			$script_path/email.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf  "not found" $JOB_NAME $JOB_ID $run_info
-			while [ -f $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf.fix.log ]
-			do
-				echo "waiting for the fix"
-				sleep 2m
-			done
+			$script_path/wait.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf.fix.log
 		fi	
 		$script_path/parse.vcf.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf $TempReports/$gr.$sample.chr${which_chr}.indel $run_info INDEL
 		sam=$gr.$sample
@@ -57,11 +49,7 @@ else
 		then
 			touch $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf.fix.log
 			$script_path/email.sh $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf  "not found" $JOB_NAME $JOB_ID $run_info
-			while [ -f $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf.fix.log ]
-			do
-				echo "waiting for the fix"
-				sleep 2m
-			done
+			$script_path/wait.sh $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf.fix.log
 		fi		
 		$script_path/parse.vcf.sh $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf $TempReports/$sample.chr${which_chr}.snv $run_info SNV
 		##INDEL
@@ -69,11 +57,7 @@ else
 		then
 			touch $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf.fix.log
 			$script_path/email.sh $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf  "not found" $JOB_NAME $JOB_ID $run_info
-			while [ -f $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf.fix.log ]
-			do
-				echo "waiting for the fix"
-				sleep 2m
-			done
+			$script_path/wait.sh $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf.fix.log
 		fi	
 		$script_path/parse.vcf.sh $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf $TempReports/$sample.chr${which_chr}.indel $run_info INDEL	
 		sam=$sample

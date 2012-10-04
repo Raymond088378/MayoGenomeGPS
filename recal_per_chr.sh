@@ -25,6 +25,8 @@ else
     Kgenome=$( cat $tool_info | grep -w '^KGENOME_REF' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
+    tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[a-z]" "[A-Z]")
+    TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
     
     if [ ${#dbSNP} -ne 0 ]
     then
@@ -96,13 +98,21 @@ else
 		mkdir -p $output/temp/
 	fi
 	
-	## Recal metrics file creation
+	if [ $tool == "whole_genome" ]
+    then
+    	region="-L chr${chr}"
+    else
+    	cat $TargetKit | grep -w chr$chr > $output/chr$chr.bed
+    	region="-L $output/chr$chr.bed"
+    fi	
+    
+    ## Recal metrics file creation
     $java/java -Xmx5g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
     -R $ref \
     -et NO_ET \
     -K $gatk/Hossain.Asif_mayo.edu.key \
     $param $input_bam \
-    -L chr${chr} \
+    $region \
     -T CountCovariates \
     -cov ReadGroupCovariate \
     -cov QualityScoreCovariate \
@@ -124,7 +134,8 @@ else
             $script_path/MergeBam.sh $INPUTARGS $output/chr${chr}.recalibrated.bam $output true $run_info 
         fi
     else	
-        ## recailbartion
+        rm $output/chr$chr.bed
+    	## recailbartion
         $java/java -Xmx5g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
         -R $ref \
         -et NO_ET \

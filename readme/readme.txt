@@ -100,10 +100,9 @@ BWA_params=-l 32 -t 4
 VQSR_params_SNV=--maxGaussians 4 --percentBadVariants 0.05
 VQSR_params_INDEL=--maxGaussians 4 --percentBadVariants 0.12
 PICARD_ReadGroup_params=PL=illumina CN=mayo LB=hg19 CREATE_INDEX=true
+REALIGN_params=--maxReadsForRealignment 50000 --maxReadsInMemory 150000
 
 
-MAX_READS_REALIGN=50000
-MAX_READS_MEM_REALIGN=150000
 CNVNATOR_BINSIZE=1000
 PCT_READS_SEGSEQ=0.05
 MINFOLD=0.5

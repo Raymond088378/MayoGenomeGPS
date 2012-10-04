@@ -140,12 +140,13 @@ else
 
 			if [ -s $report_dir/$group.$tumor.CNV.annotated.txt ]
 			then
-			### removing intermediate files
+				### removing intermediate files
 				rm $cnvnator/$group.$tumor.del.bed $cnvnator/$group.$tumor.dup.bed 
 				rm $cnvnator/$group.$tumor.cnvnator.bed $cnvnator/$group.$tumor.cnvnator.intersect.bed $cnvnator/$group.$tumor.cnvnator.intersect.annotated.bed $cnvnator/$group.$tumor.cnvnator.intersect.annotated.sorted.bed 
 				rm $cnvnator/$group.$tumor.cnv.raw.del.vcf $cnvnator/$group.$tumor.cnv.raw.dup.vcf $cnvnator/$group.$tumor.cnv.filter.del.vcf $cnvnator/$group.$tumor.cnv.filter.dup.vcf $cnvnator/$group.$tumor.del.bed $cnvnator/$group.$tumor.dup.bed 
 			else
 				$script_path/errorlog.sh $report_dir/$group.$tumor.CNV.annotated.txt annotation_CNV.sh ERROR "failed to create"
+				exit 1;
 			fi  
 		done
 	fi

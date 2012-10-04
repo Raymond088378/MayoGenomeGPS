@@ -36,16 +36,11 @@ else
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
     filter_variants=$( cat $tool_info | grep -w '^VARIANT_FILTER' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
-    all_sites=$( cat $tool_info | grep -w '^EMIT_ALL_SITES' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
-    javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
-    threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2 )
-    samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
     depth=$( cat $tool_info | grep -w '^T_DEPTH_FILTER' | cut -d '=' -f2 )
     perllib=$( cat $tool_info | grep -w '^PERLLIB' | cut -d '=' -f2)
     export PERL5LIB=$perllib:$PERL5LIB
     export PATH=$PERL5LIB:$PATH
-    export JAVA_HOME=$javahome
-    export PATH=$javahome/bin:$PATH
+    export PATH=$java:$PATH
 	
     
     inputargs=""
@@ -56,12 +51,12 @@ else
 		multi=$input/$sample/$sample.variants.chr$i.raw.multi.vcf 
 		if [ ! -s $inputfile ]
 		then	
-			$script_path/errorlog.sh $inputfile merge_variant_single.sh ERROR "not exist"
-			exit 1;
-		else
-			inputargs=$inputargs"$inputfile "
-			inputargs_multi=$inputargs_multi"$multi "
+			touch $inputfile.fix.log
+			$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+			$script_path/wait.sh $inputfile.fix.log
 		fi
+		inputargs=$inputargs"$inputfile "
+		inputargs_multi=$inputargs_multi"$multi "
     done
 	
     $script_path/concatvcf.sh "$inputargs" $out/$sample.variants.raw.vcf $run_info no
@@ -75,6 +70,12 @@ else
     else
         cp $out/$sample.variants.raw.vcf $out/$sample.variants.filter.vcf
     fi
+	if [ ! -s $out/$sample.variants.filter.vcf ]
+    then
+    	touch $out/$sample.variants.filter.vcf.fix.log
+    	$script_path/email.sh $out/$sample.variants.filter.vcf "vqsr failed" $JOB_NAME $JOB_ID $run_info
+		$script_path/wait.sh $out/$sample.variants.filter.vcf.fix.log
+	fi	
 	
 	### Filter the variants using total depth 
 	### use GATK variant filter to filter using DP

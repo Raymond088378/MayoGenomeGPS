@@ -1,5 +1,6 @@
 #!/bin/bash
-if [ $# -le 2 ];
+
+if [ $# -le 2 ]
 then
     echo -e "Usage: wrapper to merge bam files and validate the bam for downstream analysis \n merge_align.bam.sh </path/to/input directory> <name of BAM to sort> <sample name> </path/to/run_info.txt>";
 else
@@ -22,12 +23,7 @@ else
 	if [ `cat $bam.fix.log | wc -l` -gt 0 ]
 	then
 		$script_path/email.sh $bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-		while [ -f $bam.fix.log ]
-		do
-			echo "waiting for the $bam to be fixed"
-			sleep 2m
-		done
-		
+		$script_path/wait.sh $bam.fix.log
 	else
 		rm $bam.fix.log
 	fi	
@@ -37,7 +33,7 @@ else
     $samtools/samtools flagstat $input/chr${chr}.cleaned.bam > $input/chr${chr}.flagstat
     if [ ! -s $input/chr${chr}.cleaned.bam.bai ]
 	then
-		echo "ERROR : $input/chr${chr}.cleaned.bam file not found"
+		$script_path/errorlog.sh $input/chr${chr}.cleaned.bam split_bam_chr.sh ERROR "not created"  
 		exit 1;
 	fi	
 	echo `date`

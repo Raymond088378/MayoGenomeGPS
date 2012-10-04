@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #	INFO
 #	script to make per sample indel report
 
@@ -40,12 +40,6 @@ else
 	
 	num=`cat $TempReports/$sample.chr${which_chr}.INDEL.report | awk '{print $1"_"$2"_"$3"_"$9"_"$10}' | sort | uniq | wc -l`
 	num_b=`cat $TempReports/$sample.chr${which_chr}.filtered.INDEL.report  | wc -l `
-	if [[ $num == $num_a  && $num_a == $num_b ]]
-	then
-	    rm $TempReports/$indel_file.rsIDs.frequencies
-	else
-	    $script_path/errorlog.sh $TempReports/$sample.chr${which_chr}.filtered.INDEL.report merge.indel.sh ERROR "failed to create" 
-	fi	
 	for report in $TempReports/$sample.chr${which_chr}.INDEL.report $TempReports/$sample.chr${which_chr}.filtered.INDEL.report
 	do
 		perl $script_path/add_entrezID.pl -i $report -m $GeneIdMap -o $report.entrezid

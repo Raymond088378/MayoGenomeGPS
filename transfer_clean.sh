@@ -137,6 +137,7 @@ else
 	fi
 
     mv $secondary/ColumnDescription_Reports.xls $delivery/
+    mv $secondary/README $delivery/
     ### make tar balls
     cd $secondary
     tar -cvzf logs.tar.gz logs

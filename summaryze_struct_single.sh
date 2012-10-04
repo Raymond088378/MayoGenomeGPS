@@ -37,7 +37,12 @@ else
 		input=$basedir/cnv/$sample/$sample.$chr.del.bed
 		if [ ! -f $inputfile ]
 		then
-			echo "WARNING :summaryze_struct. CNV: File $inputfile does not exist "
+			touch $inputfile.fix.log
+			$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+			$script_path/wait.sh $inputfile.fix.log 
+			inputargs="-V $inputfile "$inputargs  
+			cat $input >> $basedir/cnv/$sample/$sample.cnv.bed
+			rm $input
 		else
 			inputargs="-V $inputfile "$inputargs  
 			cat $input >> $basedir/cnv/$sample/$sample.cnv.bed
@@ -48,7 +53,12 @@ else
 		input=$basedir/cnv/$sample/$sample.$chr.dup.bed
 		if [ ! -f $inputfile ]
 		then	
-			echo "WARNING :summaryze_struct. CNV: File $inputfile does not exist "
+			touch $inputfile.fix.log
+			$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+			$script_path/wait.sh $inputfile.fix.log 
+			inputargs="-V $inputfile "$inputargs  
+			cat $input >> $basedir/cnv/$sample/$sample.cnv.bed
+			rm $input
 		else
 			inputargs="-V $inputfile "$inputargs  
 			cat $input >> $basedir/cnv/$sample/$sample.cnv.bed
@@ -59,7 +69,12 @@ else
 		input=$basedir/cnv/$sample/$sample.$chr.filter.del.bed
 		if [ ! -f $inputfile ]
 		then	
-			echo "WARNING :summaryze_struct. CNV: File $inputfile does not exist "
+			touch $inputfile.fix.log
+			$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+			$script_path/wait.sh $inputfile.fix.log 
+			cat $input >> $basedir/cnv/$sample/$sample.cnv.filter.bed
+			rm $input
+			inputargs_filter="-V $inputfile "$inputargs_filter  
 		else
 			cat $input >> $basedir/cnv/$sample/$sample.cnv.filter.bed
 			rm $input
@@ -70,7 +85,12 @@ else
 		input=$basedir/cnv/$sample/$sample.$chr.filter.dup.bed
 		if [ ! -f $inputfile ]
 		then
-			echo "WARNING :summaryze_struct. CNV: File $inputfile does not exist "
+			touch $inputfile.fix.log
+			$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+			$script_path/wait.sh $inputfile.fix.log 
+			cat $input >> $basedir/cnv/$sample/$sample.cnv.filter.bed
+			rm $input
+			inputargs_filter="-V $inputfile "$inputargs_filter 
 		else
 			cat $input >> $basedir/cnv/$sample/$sample.cnv.filter.bed
 			rm $input
@@ -79,7 +99,6 @@ else
 	done
 
 	$script_path/combinevcf.sh "$inputargs" $output/SV/$sample.cnv.vcf $run_info yes
-	
 	$script_path/combinevcf.sh "$inputargs_filter" $output/SV/$sample.cnv.filter.vcf $run_info yes
 
 	
@@ -92,7 +111,14 @@ else
 		input=$basedir/struct/break/$sample/$sample.$chr.break
 		if [ ! -s $inputfile ]
 		then      
-			echo "WARNING : summaryze_struct_single.sh SV file for sample $sample, chromosome $i: $inputfile does not exist "
+			touch $inputfile.fix.log
+			$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+			$script_path/wait.sh $inputfile.fix.log 
+			cat $inputfile | awk '$0 ~/^#/' > $basedir/struct/break/$sample/$sample.header.break
+			cat $inputfile | awk '$0 !~ /^#/' >> $output/SV/$sample.break.vcf
+			cat $input | awk '$0 !~ /^#/' >> $basedir/struct/break/$sample/$sample.break
+			rm $input
+			rm $inputfile
 		else
 			#inputargs="-V $inputfile "$inputargs
 			cat $inputfile | awk '$0 ~/^#/' > $basedir/struct/break/$sample/$sample.header.break
@@ -113,10 +139,10 @@ else
 
 	if [ ! -s $output/SV/$sample.break.vcf ]
 	then
-		echo "ERROR : summaryze_struct_single.sh  file $output/$sample.break.vcf not created"
+		$script_path/errorlog.sh $output/$sample.break.vcf summaryze_struct_single.sh ERROR "not created"
+		exit 1;
 	else
 		file=`echo $inputargs | sed -e '/-V/s///g'`
-		#rm $file
 	fi    
 	#Summaryzing Crest
 
@@ -132,11 +158,20 @@ else
         input_filter=$basedir/struct/crest/$sample/$sample.$chr.filter.predSV.txt
         if [ ! -s $inputfile ]
         then      
-            echo "WARNING : summaryze_struct_single.sh SV file for sample $sample, chromosome $i: $inputfile does not exist "
+            touch $inputfile.fix.log
+			$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+			$script_path/wait.sh $inputfile.fix.log 
+			cat $inputfile | awk '$0 ~/^#/' > $basedir/struct/crest/$sample/vcf.header.$sample.crest
+            cat $inputfile | awk '$0 !~ /^#/' >> $output/SV/$sample.raw.crest.vcf
+            cat $inputfile_filter | awk '$0 !~ /^#/' >> $output/SV/$sample.filter.crest.vcf
+            cat $input >> $basedir/struct/crest/$sample/$sample.raw.crest
+            cat $input_filter >> $basedir/struct/crest/$sample/$sample.filter.crest
+            rm $input
+            rm $input_filter    
+            rm $inputfile_filter
+            rm $inputfile
         else
-			#inputargs="-V $inputfile "$inputargs
-			#inputargs_filter="-V $inputfile_filter "$inputargs_filter
-            cat $inputfile | awk '$0 ~/^#/' > $basedir/struct/crest/$sample/vcf.header.$sample.crest
+			cat $inputfile | awk '$0 ~/^#/' > $basedir/struct/crest/$sample/vcf.header.$sample.crest
             cat $inputfile | awk '$0 !~ /^#/' >> $output/SV/$sample.raw.crest.vcf
             cat $inputfile_filter | awk '$0 !~ /^#/' >> $output/SV/$sample.filter.crest.vcf
             cat $input >> $basedir/struct/crest/$sample/$sample.raw.crest
@@ -154,13 +189,11 @@ else
     mv $output/SV/$sample.filter.crest.vcf.temp $output/SV/$sample.filter.crest.vcf
 	rm $basedir/struct/crest/$sample/vcf.header.$sample.crest
 
-
-
-
     if [ ! -s $output/SV/$sample.raw.crest.vcf ]
     then
-        echo "ERROR : summaryze_struct_single.sh  file $output/SV/$sample.raw.crest.vcf not created"
-    else
+        $script_path/errorlog.sh $output/SV/$sample.raw.crest.vcf summaryze_struct_single.sh ERROR "not created"
+    	exit 1;
+   	else
         file=`echo $inputargs | sed -e '/-V/s///g'`
         file=`echo $inputargs_filter | sed -e '/-V/s///g'`
     fi    

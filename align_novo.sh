@@ -120,7 +120,7 @@ else
 		$script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.bam align_novo.sh ERROR "truncated or corrupt"
 		exit 1;
 	else
-		rm  $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log
+		rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log $output_dir_sample/$sample.$SGE_TASK_ID.sam
 	fi	
     rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.header
 ########################################################	

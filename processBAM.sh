@@ -54,11 +54,7 @@ else
 		if [ `cat $file.fix.log | wc -l` -gt 0 ]
 		then
 			$script_path/email.sh $file "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-			while [ -f $file.fix.log ]
-			do
-				echo "waiting for the file to be fixed"
-				sleep 2m
-			done
+			$script_path/wait.sh $file.fix.log
 		else
 			rm $file.fix.log 
 		fi	

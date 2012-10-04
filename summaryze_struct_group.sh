@@ -47,7 +47,12 @@ else
 			## deltion files
 			if [ ! -f $inputfile ]
 			then
-				echo "WARNING:summaryze_struct. CNV: File $inputfile does not exist "
+				touch $inputfile.fix.log
+				$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+				$script_path/wait.sh $inputfile.fix.log 
+				inputargs="-V $inputfile "$inputargs  
+				cat $input >> $basedir/cnv/$group/$sample.cnv.bed
+				rm $input
 			else
 				inputargs="-V $inputfile "$inputargs  
 				cat $input >> $basedir/cnv/$group/$sample.cnv.bed
@@ -57,7 +62,12 @@ else
 			input=$basedir/cnv/$group/$sample.$chr.dup.bed
 			if [ ! -f $inputfile ]
 			then	
-				echo "WARNING :summaryze_struct. CNV: File $inputfile does not exist "
+				touch $inputfile.fix.log
+				$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+				$script_path/wait.sh $inputfile.fix.log 
+				inputargs="-V $inputfile "$inputargs  
+				cat $input >> $basedir/cnv/$group/$sample.cnv.bed
+				rm $input
 			else
 				inputargs="-V $inputfile "$inputargs  
 				cat $input >> $basedir/cnv/$group/$sample.cnv.bed
@@ -67,18 +77,27 @@ else
 			input=$basedir/cnv/$group/$sample.$chr.filter.del.bed
 			if [ ! -f $inputfile ]
 			then	
-				echo "WARNING :summaryze_struct. CNV: File $inputfile does not exist "
+				touch $inputfile.fix.log
+				$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+				$script_path/wait.sh $inputfile.fix.log 
+				cat $input >> $basedir/cnv/$group/$sample.cnv.filter.bed
+				rm $input
+				inputargs_filter="-V $inputfile "$inputargs_filter  
 			else
 				cat $input >> $basedir/cnv/$group/$sample.cnv.filter.bed
 				rm $input
 				inputargs_filter="-V $inputfile "$inputargs_filter  
 			fi
-			
 			inputfile=$basedir/cnv/$group/$sample.$chr.filter.dup.vcf
 			input=$basedir/cnv/$group/$sample.$chr.filter.dup.bed
 			if [ ! -f $inputfile ]
 			then
-				echo "WARNING :summaryze_struct. CNV: File $inputfile does not exist "
+				touch $inputfile.fix.log
+				$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+				$script_path/wait.sh $inputfile.fix.log 
+				cat $input >> $basedir/cnv/$group/$sample.cnv.filter.bed
+				rm $input
+				inputargs_filter="-V $inputfile "$inputargs_filter 
 			else
 				cat $input >> $basedir/cnv/$group/$sample.cnv.filter.bed
 				rm $input
@@ -87,7 +106,6 @@ else
 		done
 		
 		$script_path/combinevcf.sh "$inputargs" $output/SV/$group.$sample.cnv.vcf $run_info yes
-		
 		$script_path/combinevcf.sh "$inputargs_filter" $output/SV/$group.$sample.cnv.filter.vcf $run_info yes
 	done
 
@@ -102,7 +120,13 @@ else
 			input_vcf=$basedir/struct/break/$group/$sample/$sample.$chr.break.vcf
 			if [ ! -f $inputfile ]
 			then
-				echo "WARNING:summaryze_struct. Breakdancer: File $inputfile does not exist "
+				touch $inputfile.fix.log
+				$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+				$script_path/wait.sh $inputfile.fix.log 
+				cat $inputfile >> $basedir/struct/$group.$sample.break  
+				cat $input_vcf | awk '$0 ~ /^#/' > $basedir/struct/$group.$sample.break.header
+	            cat $input_vcf | awk '$0 !~ /^#/' >> $output/SV/$group.$sample.break.vcf
+	            rm $inputfile $input_vcf 
 			fi
 			cat $inputfile >> $basedir/struct/$group.$sample.break  
 			cat $input_vcf | awk '$0 ~ /^#/' > $basedir/struct/$group.$sample.break.header
@@ -136,7 +160,6 @@ else
 		fi
 	done	
 	
-	
 	#Summaryzing Crest
 	for tumor in $tumor_list
 	do
@@ -146,15 +169,18 @@ else
 			inputvcf=$basedir/struct/crest/$group/$tumor.$chr.raw.vcf
 			if [ ! -s $inputvcf ]
 			then
-				echo "WARNING: $inputvcf not exist"
+				touch $inputvcf.fix.log
+				$script_path/email.sh $inputvcf "not exist" $JOB_NAME $JOB_ID $run_info
+				$script_path/wait.sh $inputvcf.fix.log 
 			fi			
 			inputfile_filter=$basedir/struct/crest/$group/$tumor.$chr.filter.predSV.txt
 			inputvcf_filter=$basedir/struct/crest/$group/$tumor.$chr.filter.vcf
 			if [ ! -s $inputvcf_filter ]
 			then
-				echo "WARNING: $inputvcf_filter not exist"
+				touch $inputvcf_filter.fix.log
+				$script_path/email.sh $inputvcf_filter "not exist" $JOB_NAME $JOB_ID $run_info
+				$script_path/wait.sh $inputvcf_filter.fix.log
 			fi	
-			
 			cat $inputfile >> $basedir/struct/$group.$tumor.somatic.raw.crest
 			rm $inputfile
 			cat $inputfile_filter >> $basedir/struct/$group.$tumor.somatic.filter.crest

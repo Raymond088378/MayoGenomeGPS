@@ -49,13 +49,8 @@ else
 		$samtools/samtools view -H $bam 1>$bam.OnTarget_BAM.header 2> $bam.fix.OnTarget_BAM.log
 		if [ `cat $bam.fix.OnTarget_BAM.log | wc -l` -gt 0 ]
 		then
-			echo "$bam : bam file is truncated or corrupt"
 			$script_path/email.sh $bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-			while [ -f $bam.fix.OnTarget_BAM.log ]
-			do
-				echo "waiting for the new and fixed bam file"
-				sleep 2m
-			done
+			$script_path/wait.sh $bam.fix.OnTarget_BAM.log
 		else
 			rm $bam.fix.OnTarget_BAM.log
 		fi
