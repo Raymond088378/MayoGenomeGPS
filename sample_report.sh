@@ -33,12 +33,24 @@ else
 	
 	if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
 	then
+		if [ ! -s $TempReports/$sam.chr${chrArray[1]}.SNV.xls ]
+		then
+			touch $TempReports/$sam.chr${chrArray[1]}.SNV.xls.fix.log
+			$script_path/email.sh $TempReports/$sam.chr${chrArray[1]}.SNV.xls "not exist" $JOB_NAME $JOB_ID $run_info
+			$script_path/wait.sh $TempReports/$sam.chr${chrArray[1]}.SNV.xls.fix.log
+		fi	
 		cat $TempReports/$sam.chr${chrArray[1]}.SNV.xls > $output_dir/Reports_per_Sample/$sam.SNV.xls
 		cat $TempReports/$sam.chr${chrArray[1]}.filtered.SNV.xls > $output_dir/Reports_per_Sample/$sam.SNV.filtered.xls
 		if [ ${#chrArray[@]} -gt 1 ]
 		then
 			for j in $(seq 2 ${#chrArray[@]})
 			do
+				if [ ! -s $TempReports/$sam.chr${chrArray[$j]}.SNV.xls ]
+				then
+					touch $TempReports/$sam.chr${chrArray[$j]}.SNV.xls.fix.log
+					$script_path/email.sh $TempReports/$sam.chr${chrArray[$j]}.SNV.xls "not exist" $JOB_NAME $JOB_ID $run_info
+					$script_path/wait.sh $TempReports/$sam.chr${chrArray[$j]}.SNV.xls.fix.log
+				fi	
 				cat $TempReports/$sam.chr${chrArray[$j]}.SNV.xls | awk 'NR>2' >> $output_dir/Reports_per_Sample/$sam.SNV.xls
 				cat $TempReports/$sam.chr${chrArray[$j]}.filtered.SNV.xls | awk 'NR>2' >> $output_dir/Reports_per_Sample/$sam.SNV.filtered.xls
 			done
@@ -47,6 +59,12 @@ else
 	
 	if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
 	then
+		if [ ! -s $TempReports/$sam.chr${chrArray[1]}.INDEL.xls ]
+		then
+			touch $TempReports/$sam.chr${chrArray[1]}.INDEL.xls.fix.log
+			$script_path/email.sh $TempReports/$sam.chr${chrArray[1]}.INDEL.xls "not exist" $JOB_NAME $JOB_ID $run_info
+			$script_path/wait.sh $TempReports/$sam.chr${chrArray[1]}.INDEL.xls.fix.log
+		fi	
 		cat $TempReports/$sam.chr${chrArray[1]}.INDEL.xls > $output_dir/Reports_per_Sample/$sam.INDEL.xls
 		cat $TempReports/$sam.chr${chrArray[1]}.filtered.INDEL.xls > $output_dir/Reports_per_Sample/$sam.INDEL.filtered.xls
 
@@ -54,6 +72,12 @@ else
 		then
 			for j in $(seq 2 ${#chrArray[@]})
 			do
+				if [ ! -s $TempReports/$sam.chr${chrArray[$j]}.INDEL.xls ]
+				then
+					touch $TempReports/$sam.chr${chrArray[$j]}.v.xls.fix.log
+					$script_path/email.sh $TempReports/$sam.chr${chrArray[$j]}.INDEL.xls "not exist" $JOB_NAME $JOB_ID $run_info
+					$script_path/wait.sh $TempReports/$sam.chr${chrArray[$j]}.INDEL.xls.fix.log
+				fi
 				cat $TempReports/$sam.chr${chrArray[$j]}.INDEL.xls | awk 'NR>2' >> $output_dir/Reports_per_Sample/$sam.INDEL.xls
 				cat $TempReports/$sam.chr${chrArray[$j]}.filtered.INDEL.xls | awk 'NR>2' >> $output_dir/Reports_per_Sample/$sam.INDEL.filtered.xls
 			done

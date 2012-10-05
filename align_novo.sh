@@ -71,7 +71,7 @@ else
         for i in $R1 $R2
         do
             $script_path/fastq.sh $i $seq_file $fastq $run_info $fastqc
-	    $script_path/filesize.sh alignment $sample $fastq $i $JOB_ID $run_info
+	    	$script_path/filesize.sh alignment $sample $fastq $i $JOB_ID $run_info
         done
     elif [ $paired == 0 ]
     then

@@ -94,6 +94,7 @@ else
 		status=`$blat/gfServer status $blat_server $blat_port | wc -l`;
 		while [ "$status" -le 1 ]
 		do
+			`kill -9 $pid`
 			blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
 			range=20000
 			let blat_port+=$RANDOM%range
@@ -102,8 +103,7 @@ else
 			then
 				rm $output_dir/$sample/log/blat.$sample.$chr.txt
 				$blat/gfServer start $blat_server $blat_port -log=$output_dir/$group/log/blat.$group.$chr.txt $blat_ref  &
-				pi=$!
-				pid=$pid" $pi"
+				pid=$!
 				sleep 5m
 			fi
 			status=`$blat/gfServer status $blat_server $blat_port | wc -l`;
@@ -146,7 +146,7 @@ else
 		if [ ! -f $output_dir/$group/${file}.$chr.filter.predSV.txt ]
 		then
 			$script_path/errorlog.sh $output_dir/$group/${file}.$chr.filter.predSV.txt run_crest_multi.sh ERROR "failed to create" 
-			exit 1
+			exit 1;
 		else
 			rm $output_dir/$group/$file.chr$chr.sclip.txt $output_dir/$group/$file.chr$chr.cover
 		fi

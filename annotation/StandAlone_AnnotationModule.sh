@@ -33,6 +33,7 @@ else
 	tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2 )
     vcftools=$( cat $tool_info | grep -w '^VCFTOOLS' | cut -d '=' -f2 )
 	perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
+	blat_params=$( cat $tool_info | grep -w '^BLAT_params' | cut -d '=' -f2 )
 	export PERL5LIB=$perllib:$PERL5LIB
 	PATH=$tabix/:$PATH
 	echo " vcf validation step "
@@ -69,8 +70,7 @@ else
 		echo " Adding Blat column to the vcf file"
                 blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
 		blat_ref=$( cat $tool_info | grep -w '^BLAT_REF' | cut -d '=' -f2 )
-		blat_window=$( cat $tool_info | grep -w '^WINDOW_BLAT' | cut -d '=' -f2 )
-		$script_path/vcf_blat_verify.pl -i $output/$ff -o $output/$ff.tmp -w $blat_window -b $blat -r $ref -sam $samtools -br $blat_ref
+		$script_path/vcf_blat_verify.pl -i $output/$ff -o $output/$ff.tmp -b $blat -r $ref -sam $samtools -br $blat_ref $blat_params
 		mv $output/$ff.tmp $output/$ff
 	fi
 	$script_path/vcfsort.pl $ref.fai $output/$ff > $output/$ff.sort

@@ -39,11 +39,10 @@ else
 	bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
 	blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
 	blat_ref=$( cat $tool_info | grep -w '^BLAT_REF' | cut -d '=' -f2 )
-	window_blat=$( cat $tool_info | grep -w '^WINDOW_BLAT' | cut -d '=' -f2 )
-	export PERL5LIB=$PERL5LIB:$perllib
-	export PATH=$tabix/:$PATH
-
-	export PATH=$java:$PATH
+	blat_params=$( cat $tool_info | grep -w '^BLAT_params' | cut -d '=' -f2 )
+	perlblat=$( cat $tool_info | grep -w '^PERLLIB_BLAT' | cut -d '=' -f2 )
+	export PERL5LIB=$PERL5LIB:$perllib:$perlblat
+	export PATH=$java:$tabix/:$PATH
 	
 	#### check and validate the bam file and let user to proceed after validation
 	bam=chr${chr}.cleaned.bam
@@ -403,9 +402,9 @@ else
         cat $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.multi > $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp
         $script_path/vcfsort.pl $ref.fai $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp > $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf
         rm $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.multi
-        $script_path/vcf_blat_verify.pl -i $output/${sampleArray[1]}.variants.chr$chr.raw.vcf -o $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref 
+        $script_path/vcf_blat_verify.pl -i $output/${sampleArray[1]}.variants.chr$chr.raw.vcf -o $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 		mv $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp $output/${sampleArray[1]}.variants.chr$chr.raw.vcf
-		$script_path/vcf_blat_verify.pl -i $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf -o $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref 
+		$script_path/vcf_blat_verify.pl -i $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf -o $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params 
 		mv $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf
 		bam=chr${chr}.cleaned.bam
 		rm $output/$bam.$chr.bam
@@ -430,9 +429,9 @@ else
 		cat $output/variants.chr$chr.raw.multi.vcf $output/variants.chr$chr.raw.vcf.multi > $output/variants.chr$chr.raw.multi.vcf.temp
 		$script_path/vcfsort.pl $ref.fai $output/variants.chr$chr.raw.multi.vcf.temp > $output/variants.chr$chr.raw.multi.vcf
 		rm $output/variants.chr$chr.raw.multi.vcf.temp $output/variants.chr$chr.raw.vcf.multi
-		$script_path/vcf_blat_verify.pl -i $output/variants.chr$chr.raw.vcf -o $output/variants.chr$chr.raw.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
+		$script_path/vcf_blat_verify.pl -i $output/variants.chr$chr.raw.vcf -o $output/variants.chr$chr.raw.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 		mv $output/variants.chr$chr.raw.vcf.temp $output/variants.chr$chr.raw.vcf
-		$script_path/vcf_blat_verify.pl -i $output/variants.chr$chr.raw.multi.vcf -o $output/variants.chr$chr.raw.multi.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
+		$script_path/vcf_blat_verify.pl -i $output/variants.chr$chr.raw.multi.vcf -o $output/variants.chr$chr.raw.multi.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 		mv $output/variants.chr$chr.raw.multi.vcf.temp $output/variants.chr$chr.raw.multi.vcf
 		
 		cat $output/MergeAllSamples.chr$chr.raw.vcf |  awk '$0 !~ /^#/ && $5 ~ /,/' > $output/MergeAllSamples.chr$chr.raw.vcf.multi
@@ -441,10 +440,10 @@ else
 		cat $output/MergeAllSamples.chr$chr.raw.multi.vcf $output/MergeAllSamples.chr$chr.raw.vcf.multi > $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp
 		$script_path/vcfsort.pl $ref.fai $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp > $output/MergeAllSamples.chr$chr.raw.multi.vcf
 		rm $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp $output/MergeAllSamples.chr$chr.raw.vcf.multi
-		$script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.vcf -o $output/MergeAllSamples.chr$chr.raw.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
+		$script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.vcf -o $output/MergeAllSamples.chr$chr.raw.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 		mv $output/MergeAllSamples.chr$chr.raw.vcf.temp $output/MergeAllSamples.chr$chr.raw.vcf
-		$script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.multi.vcf -o $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
-		mv $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp $output/MergeAllSamples.chr$chr.raw.multi.vcf
+		$script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.multi.vcf -o $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
+		mv $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp $output/MergeAllSamples.chr$chr.raw.multi.vcf 
 		for i in $(seq 1 ${#sampleArray[@]})
 		do	
 			rm $output/${sampleArray[$i]}.chr$chr.rg.bam

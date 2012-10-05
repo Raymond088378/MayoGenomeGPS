@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ########################################################
 ###### 	SV CALLER FOR WHOLE GENOME ANALYSIS PIPELINE
@@ -45,7 +45,6 @@ else
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     ref_genome=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2 )
     multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
-
     blacklist_sv=$( cat $tool_info | grep -w '^BLACKLIST_SV' | cut -d '=' -f2 )
     bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
 	
@@ -65,8 +64,8 @@ else
 			$samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
 			if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
 			then
-				$script_path/errorlog.sh $input_bam run_cnvnator.sh ERROR "truncated or corrupt bam"
-				exit 1;
+				$script_path/email.sh $input_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+				$script_path/wait.sh $input_bam.fix.break.log 
 			else
 				rm $input_bam.fix.break.log
 			fi	
@@ -110,8 +109,8 @@ else
 			$samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
 			if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
 			then
-				$script_path/errorlog.sh $input_bam run_cnvnator.sh ERROR "truncated or corrupt bam"
-				exit 1;
+				$script_path/email.sh $input_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+				$script_path/wait.sh $input_bam.fix.break.log
 			else
 				rm $input_bam.fix.break.log
 			fi	
@@ -153,7 +152,7 @@ else
 				fi
 			else
 				$script_path/errorlog.sh $output_dir/$samples/$samples.tmp.bam run_cnvnator.sh ERROR "not created"
-				exit 1
+				exit 1;
 			fi
 		fi
 	else
@@ -163,8 +162,8 @@ else
 		$samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
 		if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
 		then
-			$script_path/errorlog.sh $input_bam run_cnvnator.sh ERROR "truncated or corrupt bam"
-			exit 1;
+			$script_path/email.sh $input_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+			$script_path/wait.sh $input_bam.fix.break.log
 		else
 			rm $input_bam.fix.break.log
 		fi	
@@ -208,8 +207,8 @@ else
             $samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
 			if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
 			then
-				$script_path/errorlog.sh $input_bam run_cnvnator.sh ERROR "truncated or corrupt bam"
-				exit 1;
+				$script_path/email.sh $input_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+				$script_path/wait.sh $input_bam.fix.break.log
 			else
 				rm $input_bam.fix.break.log
 			fi

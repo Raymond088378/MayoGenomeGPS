@@ -76,6 +76,18 @@ else
 		mv $sample_info.tmp $sample_info
 	fi
 	
+	### check for sample info file
+	memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
+	if [ ! -s $memory_info ]
+	then
+		echo "ERROR : memory_info=$memory_info does not exist \n";
+		exit 1;
+	else
+		dos2unix $memory_info
+		cat $memory_info | sed 's/^[ \t]*//;s/[ \t]*$//' > $memory_info.tmp
+		mv $memory_info.tmp $memory_info
+	fi
+	
 	#### extract paths
 	input=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
 	output=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
@@ -138,8 +150,8 @@ else
 	
 	### modify the run info file to use configurations in the output folder
 	add=`date +%D`
-	cat $run_info | grep -w -v -E '^TOOL_INFO|^SAMPLE_INFO' > $run_info.tmp
-	echo -e "TOOL_INFO=$output_dir/tool_info.txt\nSAMPLE_INFO=$output_dir/sample_info.txt\nDATE=$add" | cat $run_info.tmp - > $run_info
+	cat $run_info | grep -w -v -E '^TOOL_INFO|^SAMPLE_INFO|^MEMORY_INFO' > $run_info.tmp
+	echo -e "TOOL_INFO=$output_dir/tool_info.txt\nSAMPLE_INFO=$output_dir/sample_info.txt\nMEMORY_INFO=$output_dir/memory_info\nDATE=$add" | cat $run_info.tmp - > $run_info
 	rm $run_info.tmp
 	tool_info=$output_dir/tool_info.txt
 	sample_info=$output_dir/sample_info.txt
@@ -308,7 +320,7 @@ else
 						ln -s $input/$bam $realign_dir/$sample.$i.sorted.bam						
 					done
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.reformat_BAM.$sample.$run_num -l h_vmem=8G $script_path/reformat_BAM.sh $realign_dir $sample $run_info	
+					qsub $args -N $type.$version.reformat_BAM.$sample.$run_num -l h_vmem=6G $script_path/reformat_BAM.sh $realign_dir $sample $run_info	
 					$script_path/check_qstat.sh $limit
 					qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=4G -hold_jid $type.$version.reformat_BAM.$sample.$run_num $script_path/extract_reads_bam.sh $realign_dir $bamfile $run_info $igv
 					$script_path/check_qstat.sh $limit
@@ -704,13 +716,13 @@ else
 					for sam in `cat $sample_info| grep -w "^$group" | cut -d '=' -f2`
 					do
 						$script_path/check_qstat.sh $limit
-						qsub $args -N $type.$version.run_crest_multi_cover.$group.$sam.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=8G -t 1-$numchrs:1 $script_path/run_crest_multi_cover.sh $sam $group $igv $crest $run_info
+						qsub $args -N $type.$version.run_crest_multi_cover.$group.$sam.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=6G -t 1-$numchrs:1 $script_path/run_crest_multi_cover.sh $sam $group $igv $crest $run_info
 						id=$id"$type.$version.run_crest_multi_cover.$group.$sam.$run_num,"
 					done
 					$script_path/check_qstat.sh $limit
 					qsub $args -N $type.$version.run_crest_multi.$group.$run_num -hold_jid $id -l h_vmem=6G -t 1-$numchrs:1 $script_path/run_crest_multi.sh $group $igv $crest $run_info
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.run_segseq.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=16G -t 1-$numchrs:1 -l matlab_lic=1 $script_path/run_segseq.sh $group $igv $output_dir/cnv $run_info    
+					qsub $args -N $type.$version.run_segseq.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=3G -t 1-$numchrs:1 -l matlab_lic=1 $script_path/run_segseq.sh $group $igv $output_dir/cnv $run_info    
 					let nump=$numchrs+1;    
 					mkdir -p $break/$group
 					id=""

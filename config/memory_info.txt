@@ -1,0 +1,65 @@
+#### SCRIPTS MEMORY ARGUMENTS
+
+align_novo=4G
+align_read_bwa=1G
+align_bwa=8G
+processBAM=6G
+extract_reads_bam=4G
+reformat_BAM=6G
+split_bam_chr=2G
+split_sample_pair=1G
+realign_recal=7G
+igv_bam=2G
+variants=1536M
+merge_variant_single=1G
+merge_variant_group=1G
+OnTarget_BAM=1G 
+OnTarget_PILEUP=3G 
+getCoverage=512M
+reformat_VARIANTs_OnTarget=4G
+OnTarget_variant=1G
+reformat_VARIANTs=3G
+sift=3G
+polyphen=8G
+snpeff=3G
+sample_reports=3G
+sample_report=512M
+run_single_crest=6G
+run_crest_multi_cover=6G
+run_crest_multi=6G
+run_cnvnator=3G
+run_segseq=3G
+run_breakdancer=4G
+plot_circos_cnv_sv=2G
+summaryze_struct_single=3G
+summaryze_struct_group=3G
+annotation_CNV=2G
+annotation_SV=2G
+sample_numbers=2G
+gene_summary=2G
+merge_raw_variants=1G
+concat_raw_variants=1G
+merge_sample=16G
+generate_html=8G
+
+
+
+#### JAVA VIRTUAL MACHINE ARGUMENTS
+
+SORT_JVM=-Xmx4g -Xms512m
+RMDUP_JVM=-Xmx5g -Xms512m
+MERGE_JVM=-Xmx3g -Xms512m
+COMBINE_JVM=-Xmx2g -Xms512m
+REORDER_JVM=-Xmx4g -Xms512m
+UnifiedGenotyper_JVM=-Xmx4g -Xms512m
+MuTecT_JVM=-XX:MaxPermSize=128M -Xmx4g -Xms512m
+SomaticIndelDetector_JVM=4g
+RealignerTargetCreator_JVM=5g
+IndelRealigner_JVM=5g
+CountCovariates_JVM=-Xmx5g -Xms512m
+TableRecalibration_JVM=-Xmx5g -Xms512m
+VariantAnnotator_JVM=-Xmx4g -Xms512m
+VariantFiltration_JVM=-Xmx1g -Xms512m
+VariantRecalibrator=-Xmx3g -Xms512m
+ApplyRecalibration_JVM=-Xmx3g -XX:-UseGCOverheadLimit -Xms512m
+snpEff_JVM=-Xmx2g -Xms512m

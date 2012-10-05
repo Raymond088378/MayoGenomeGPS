@@ -90,6 +90,7 @@ PERLLIB_BREAKDANCER=/projects/bsi/bictools/apps/sv/breakdancer/breakdancer-1.1_2
 PYTHON=/usr/local/biotools/python/2.7/bin/
 PYTHONLIB=/data2/bsi/RandD/pacbio/smrtanalysis-1.2.1/analysis/lib/python2.5/:/projects/bsi/bictools/apps/metadata/genomedata/arch/Linux-x86_64/lib/python2.5/:/projects/bsi/bictools/apps/metadata/genomedata/arch/Linux-x86_64/lib/python2.7/
 R_SOFT=/usr/local/biotools/r/R-2.13.0/bin/
+PERLLIB_BLAT=/usr/lib64/perl5/5.8.8/x86_64-linux-thread-multi/
 ### customized paramters
 
 
@@ -128,9 +129,9 @@ VQSR_params_INDEL=-an QD -an FS -an HaplotypeScore -an ReadPosRankSum --maxGauss
 PICARD_ReadGroup_params=PL=illumina CN=mayo LB=hg19 CREATE_INDEX=true
 VCF_annotation_params=-A QualByDepth -A MappingQualityRankSumTest -A ReadPosRankSumTest -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A DepthPerAlleleBySample -A RMSMappingQuality -A FisherStrand -A ForwardReverseAlleleCounts 
 REALIGN_params=--maxReadsForRealignment 50000 --maxReadsInMemory 150000
+BLAT_params=-w 50 -m 70 -t 90 
 
 ### paramters
-
 CNVNATOR_BINSIZE=1000
 PCT_READS_SEGSEQ=0.05
 MINFOLD=0.5
@@ -145,7 +146,6 @@ STRUCT_PCT_BLACKLIST=1
 SNP_DISTANCE_INDEL=10
 MAX_FILE_HANDLES=100
 MAX_READS_MEM_SORT=2000000
-WINDOW_BLAT=50
 TB_PORT=8886
 TB_HOST=charlotte
 JOB_LIMIT=3000

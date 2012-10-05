@@ -43,7 +43,7 @@ else
     $samtools/samtools view -H $input/$input_bam 1> $input/$input_bam.header 2> $input/$input_bam.fix.log
 	if [ `cat $input/$input_bam.fix.log | wc -l` -gt 0 ]
 	then
-		$script_path/email.sh $input/$input_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+		$script_path/email.sh $input/$input_bam "bam is truncated or corrupt" $run_info
 		$script_path/wait.sh $input/$input_bam.fix.log
 	else
 		rm $input/$input_bam.fix.log
