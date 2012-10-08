@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ########################################################
 ###### 	SV CALLER FOR TUMOR/NORMAL PAIR WHOLE GENOME ANALYSIS PIPELINE
@@ -16,7 +16,7 @@
 
 if [ $# -le 3 ]
 then
-	echo -e "Usage: Script to run crest on a paired sample \n <group name> </path/to/input directory> </path/to/output directory> </path/to/run_info.txt>";
+	echo -e "Script to run crest on a paired sample\nUsage: <group name> </path/to/input directory> </path/to/output directory> </path/to/run_info.txt>";
 else
 	set -x
 	echo `date`

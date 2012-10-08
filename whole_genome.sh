@@ -699,11 +699,11 @@ else
 					id=""
 					for sample in $samples
 					do
-						id=$id"$type.$version.processBAM.$sample.$run_num,$type.$version.extract_reads_bam.$sample.$run_num"
+						vvid=$id"$type.$version.processBAM.$sample.$run_num,$type.$version.extract_reads_bam.$sample.$run_num"
 					done    
 					$script_path/check_qstat.sh $limit
 					mem=$( cat $memory_info | grep -w '^realign_recal' | cut -d '=' -f2)
-					qsub $args -N $type.$version.realign_recal.$group.$run_num -hold_jid $id -l h_vmem=$mem -t 1-$numchrs:1 $script_path/realign_recal.sh $input_dirs $bam_samples $names_samples $realign_dir $run_info 1
+					qsub $args -N $type.$version.realign_recal.$group.$run_num -hold_jid $vvid -l h_vmem=$mem -t 1-$numchrs:1 $script_path/realign_recal.sh $input_dirs $bam_samples $names_samples $realign_dir $run_info 1
 					variant_id="$type.$version.realign_recal.$group.$run_num"
 				fi
 				$script_path/check_qstat.sh $limit
@@ -774,7 +774,7 @@ else
 					do
 						$script_path/check_qstat.sh $limit
 						mem=$( cat $memory_info | grep -w '^run_crest_multi_cover' | cut -d '=' -f2)
-						qsub $args -N $type.$version.run_crest_multi_cover.$group.$sam.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=$mem -t 1-$numchrs:1 $script_path/run_crest_multi_cover.sh $sam $group $igv $crest $run_info
+						qsub $args -N $type.$version.run_crest_multi_cover.$group.$sam.$run_num -hold_jid $vvid -l h_vmem=$mem -t 1-$numchrs:1 $script_path/run_crest_multi_cover.sh $sam $group $output_dir/alignment/$sam/ $crest $run_info
 						id=$id"$type.$version.run_crest_multi_cover.$group.$sam.$run_num,"
 					done
 					$script_path/check_qstat.sh $limit

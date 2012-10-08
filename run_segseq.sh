@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ########################################################
 ###### 	CV CALLER FOR TUMOR/NORMAL PAIR WHOLE GENOME ANALYSIS PIPELINE
@@ -16,7 +16,7 @@
 
 if [ $# -le 3 ]
 then
-	echo -e "Usage: \n groupname </path/to/input directory> </path/to/output directory> </path/to/run_info.txt>";
+	echo -e "script to run seg seq on tumor normal bam file\nUsage: <groupname> </path/to/input directory> </path/to/output directory> </path/to/run_info.txt>";
 else
 	set -x
 	echo `date`

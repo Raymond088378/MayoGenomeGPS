@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ########################################################
 ###### 	SV CALLER FOR TUMOR/NORMAL PAIR WHOLE GENOME ANALYSIS PIPELINE
@@ -16,7 +16,7 @@
 
 if [ $# != 5 ]
 then
-    echo -e "Usage: Script to run crest on a paired sample \n <sample name> <group name> </path/to/input directory> </path/to/output directory> </path/to/run_info.txt>";
+    echo -e "Script to run crest on a paired sample\nUsage: <sample name> <group name> </path/to/input directory> </path/to/output directory> </path/to/run_info.txt>";
 else
     set -x
     echo `date`
@@ -41,9 +41,10 @@ else
     export PERL5LIB=$perllib:$crest
     PATH=$PATH:$blat:$crest:$perllib
 	mkdir -p $output_dir/$group $output_dir/$group/log
-	ln -s $input/$group.$sample.chr$chr.bam $output_dir/$group/$sample.chr$chr.bam
+	$samtools/samtools view -b $input/$sam.sorted.bam chr$chr >  $output_dir/$group/$sample.chr$chr.bam
+	$samtools/samtools index $output_dir/$group/$sample.chr$chr.bam
     file=$output_dir/$group/$sample.chr$chr.bam
-    SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $file -s $samtools`
+    SORT_FLAG=`$script_path/checkBAMsorted.pl -i $file -s $samtools`
     if [ $SORT_FLAG == 0 ]
     then
         echo "ERROR : run_crest_multi $file should be sorted"
