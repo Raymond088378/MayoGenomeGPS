@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ########################################################
 ###### 	ALIGNMENT SCRIPT FOR WHOLE GENOME ANALYSIS PIPELINE
@@ -16,7 +16,7 @@
 
 if [ $# -le 3 ]
 then
-    echo -e "Usage: wrapper script to run the alignment using NOVO ALIGN \n align_split_thread.sh <sample name> <output_dir> </path/to/run_info.txt>";
+    echo -e "Usage: wrapper script to run the alignment using NOVO ALIGN \n align_split_thread.sh <sample name> </path/to/output_dir> </path/to/run_info.txt> <SGE TASK ID (optional)>";
 else	
     set -x 
     echo `date`
@@ -60,7 +60,12 @@ else
     fi	
 	
     R1=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
-    $script_path/fastq.sh $R1 $seq_file $fastq $run_info $fastqc
+    if [ ! -s $seq_file/$fastq ]
+	then
+		$script_path/errorlog.sh align_read_bwa.sh $seq_file/$fastq ERROR "not found"
+		exit 1;
+	fi	
+	$script_path/fastq.sh $R1 $seq_file $fastq $run_info $fastqc
     ILL2SANGER1=`perl $script_path/checkFastqQualityScores.pl $fastq/$R1 10000`
 
 ########################################################	

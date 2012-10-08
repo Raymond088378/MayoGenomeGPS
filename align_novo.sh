@@ -16,7 +16,7 @@
 
 if [ $# -le 2 ]
 then
-    echo -e "Usage: wrapper script to run the alignment using NOVO ALIGN \n align_split_thread.sh <sample name> <output_dir> </path/to/run_info.txt>";
+    echo -e "Usage: wrapper script to run the alignment using NOVO ALIGN \n align_split_thread.sh <sample name> <output_dir> </path/to/run_info.txt> <SGE TASK ID (optional)>";
 else	
     set -x 
     echo `date`
@@ -32,7 +32,6 @@ else
 ######	Reading run_info.txt and assigning to variables
     seq_file=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
-    analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     center=$( cat $tool_info | grep -w '^CENTER' | cut -d '=' -f2 )
     platform=$( cat $tool_info | grep -w '^PLATFORM' | cut -d '=' -f2 )
@@ -43,16 +42,8 @@ else
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
-    filenames=$(cat $sample_info | grep -w "$sample" | cut -d '=' -f2| tr "\t" "\n")
-    output=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
-    PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
-    tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
-    run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
-    flowcell=`echo $run_num | awk -F'_' '{print $NF}' | sed 's/.\(.*\)/\1/'`
-	threads=$( cat $tool_info | grep -w '^THREADS'| cut -d '=' -f2)
     paired=$( cat $run_info | grep -w '^PAIRED' | cut -d '=' -f2)
 	paramaters=$( cat $tool_info | grep -w '^NOVO_params' | cut -d '=' -f2)
-	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
 ########################################################	
 ######		Check FASTQ for Illumina or Sanger quality scrore
     
@@ -70,15 +61,25 @@ else
         R2=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" | head -n $sidx | tail -n 1`
         for i in $R1 $R2
         do
-            $script_path/fastq.sh $i $seq_file $fastq $run_info $fastqc
+			if [ ! -s $seq_file/$i ]
+			then
+				$script_path/errorlog.sh align_novo.sh $seq_file/$i ERROR "not found"
+				exit 1;
+			fi	
+			$script_path/fastq.sh $i $seq_file $fastq $run_info $fastqc
 	    	$script_path/filesize.sh alignment $sample $fastq $i $JOB_ID $run_info
         done
     elif [ $paired == 0 ]
     then
         let fidx=$SGE_TASK_ID
         R1=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
-        $script_path/fastq.sh $R1 $seq_file $fastq $run_info $fastqc
-	$script_path/filesize.sh alignment $sample $fastq $R1 $JOB_ID $run_info
+        if [ ! -s $seq_file/$R1 ]
+		then
+			$script_path/errorlog.sh align_novo.sh $seq_file/$R1 ERROR "not found"
+			exit 1;
+		fi	
+		$script_path/fastq.sh $R1 $seq_file $fastq $run_info $fastqc
+		$script_path/filesize.sh alignment $sample $fastq $R1 $JOB_ID $run_info
     fi  
     ILL2SANGER1=`perl $script_path/checkFastqQualityScores.pl $fastq/$R1 10000`
 
@@ -92,10 +93,10 @@ else
     fi
     if [ $paired == 1 ]
     then
-        $novoalign -c $threads $paramaters -d $genome_novo $qual -f $fastq/$R1 $fastq/$R2 \
+        $novoalign $paramaters -d $genome_novo $qual -f $fastq/$R1 $fastq/$R2 \
             -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$sample\tPL:$platform\tCN:$center" > $output_dir_sample/$sample.$SGE_TASK_ID.sam
     else
-        $novoalign -c $threads $paramaters -d $genome_novo $qual -f $fastq/$R1 \
+        $novoalign $paramaters -d $genome_novo $qual -f $fastq/$R1 \
             -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" > $output_dir_sample/$sample.$SGE_TASK_ID.sam      
     fi    
     
@@ -125,6 +126,11 @@ else
     rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.header
 ########################################################	
 ######		Sort BAM, adds RG & remove duplicates
-    $script_path/convert.bam.sh $output_dir_sample $sample.$SGE_TASK_ID.bam $sample.$SGE_TASK_ID $SGE_TASK_ID $run_info
+    $script_path/convert_bam.sh $output_dir_sample $sample.$SGE_TASK_ID.bam $sample.$SGE_TASK_ID $SGE_TASK_ID $run_info
+	if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.flagstat ]
+    then
+        $script_path/errorlog.sh align_novo.sh $output_dir_sample/$sample.$SGE_TASK_ID.flagstat ERROR "empty"
+		exit 1;
+	fi
 	echo `date`	
 fi

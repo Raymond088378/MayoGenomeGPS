@@ -99,9 +99,9 @@ else
     fi
 	
     ### copy the config files
-    for i in sample_info.txt run_info.txt tool_info.txt 
+    for i in sample_info.txt run_info.txt tool_info.txt memory_info.txt
     do
-    	cp $secondary/$i $delivery
+    	cp $secondary/$i $delivery/
     done
     
     	 

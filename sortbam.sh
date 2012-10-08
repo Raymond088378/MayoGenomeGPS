@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $# != 7 ]
+if [ $# != 5 ]
 then
-    echo "Usage: <input bam> <outputbam><temp dir><sorting order><# of reads in RAM<run info>"
+    echo -e "Script to sort the bam file using picard samtools\nUsage: <input bam> <outputbam></path/to/temp dir><sorting order><flag for indexing(true/false)></path/to/run info>"
 else
     set -x
     echo `date`
@@ -10,18 +10,19 @@ else
     outbam=$2
     tmp_dir=$3
     order=$4
-    reads=$5
-    index=`echo $6 | tr "[A-Z]" "[a-z]"`
-    run_info=$7
+    index=`echo $5 | tr "[A-Z]" "[a-z]"`
+    run_info=$6
     
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
+    memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
+	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )	
-    
-    $java/java -Xmx4g -Xms512m \
-    -jar $picard/SortSam.jar \
+    reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
+    mem=$( cat $memory_info | grep -w '^SORT_JVM' | cut -d '=' -f2)
+	
+	$java/java $mem -jar $picard/SortSam.jar \
     INPUT=$inbam \
     OUTPUT=$outbam \
     MAX_RECORDS_IN_RAM=$reads \

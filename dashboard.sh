@@ -2,7 +2,7 @@
 
 if [ $# -le 3 ]
 then
-    echo "Usage : script to update secondary dashboard \n <sample ><runinfo ><stage of the workflow> <status of the stage> <id>"
+    echo -e "Usage : script to update secondary dashboard\nUsage:<sample ><runinfo ><stage of the workflow> <status of the stage> <SGE TASK ID(optional)>"
 else
     echo `date`	
     sample=$1
@@ -15,15 +15,16 @@ else
     fi
     analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 |tr "[A-Z]" "[a-z]")
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
+	memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
     flowcell=`echo $run_num | awk -F'_' '{print $NF}' | sed 's/.\(.*\)/\1/'`
     version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
-	
-    
-	##tool is hard coded
+	mem=$( cat $memory_info | grep -w '^AddSecondaryAnalysis_JVM' | cut -d '=' -f2)
+    ##tool is hard coded
 	type=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
+	
 	if [ $type == "exome" ]
 	then
 		tool=Exome
@@ -42,16 +43,16 @@ else
             then
                 if [ $status == "complete" ]
                 then
-                    $java/java -Xmx32M -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -r $run_num -s $stage -a $tool
+                    $java/java $mem -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -r $run_num -s $stage -a $tool
                 else
-                    $java/java -Xmx32M -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -r $run_num -s $stage -a $tool
+                    $java/java $mem -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -r $run_num -s $stage -a $tool
                 fi
             else
                 if [ $status == "complete" ]
                 then
-                    $java/java -Xmx32M -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
+                    $java/java $mem -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
                 else
-                    $java/java -Xmx32M -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
+                    $java/java $mem -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
                 fi		
             fi
         else
@@ -68,16 +69,16 @@ else
                     then
                         if [ $status == "complete" ]
                         then
-                            $java/java -Xmx32M -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -r $run_num -s $stage -a $tool
+                            $java/java $mem -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -r $run_num -s $stage -a $tool
                         else
-                            $java/java -Xmx32M -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -r $run_num -s $stage -a $tool
+                            $java/java $mem -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -r $run_num -s $stage -a $tool
                         fi		
                     else
                         if [ $status == "complete" ]
                         then
-                            $java/java -Xmx32M -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
+                            $java/java $mem -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
                         else
-                            $java/java -Xmx32M -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
+                            $java/java $mem -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -l $lane -f $flowcell -i $index -r $run_num -s $stage -a $tool
                         fi		
                     fi
                     let i=i+1

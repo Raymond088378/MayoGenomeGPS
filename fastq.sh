@@ -2,7 +2,7 @@
 
 if [ $# != 5 ]
 then
-    echo -e "Usage: SCRIPT unzip and run fastqc\n fastq.sh <input fastq> <input dir> <output dir> <run info> <FASTQC directory>"
+    echo -e "Usage: SCRIPT  to run fastqc\n fastq.sh <input fastq file> </path/to/input dir> </path/to/output dir> </path/to/run info> </path/to/FASTQC directory>"
 else
     set -x
     echo `date`

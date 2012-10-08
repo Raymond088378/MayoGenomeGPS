@@ -58,7 +58,7 @@ SAMTOOLS=/projects/bsi/bictools/apps/alignment/samtools/samtools-0.1.18/
 GATK=/projects/bsi/bictools/apps/alignment/GenomeAnalysisTK/1.7/
 SOMATIC_SNIPER=/projects/bsi/bictools/apps/variant_detection/somatic_sniper/1.0.0.1-19/bin/
 BEDTOOLS=/projects/bsi/bictools/apps/misc/BEDTools/2.16.2/bin/
-PICARD=/projects/bsi/bictools/apps/alignment/picard/1.67/
+PICARD=/projects/bsi/bictools/apps/alignment/picard/1.77/
 FASTQC=/projects/bsi/bictools/apps/qc/FastQC/0.10/FastQC/
 SNVmix=/projects/bsi/bictools/apps/variant_detection/SNVMix/0.11.8-r3/
 JOINTSNVMIX=/projects/bsi/bictools/apps/variant_detection/jointsnvmix/0.8-b2/
@@ -120,7 +120,7 @@ CREST_params=--min_sclip_len 10 --min_sclip_reads 5
 JSM_Filter=-prob 0.5
 JOINTSNVMIX_params=--min_map_qual 30 --min_base_qual 30
 BWA_params=-l 32 -t 4
-NOVO_params=-g 60 -x 2 -i PE 425,80 -r Random --hdrhd off -v 120
+NOVO_params=-g 60 -x 2 -i PE 425,80 -r Random --hdrhd off -v 120 -c 4
 VQSR_params_SNV=-an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP --maxGaussians 4 --percentBadVariants 0.05
 VQSR_params_INDEL=-an QD -an FS -an HaplotypeScore -an ReadPosRankSum --maxGaussians 4 --percentBadVariants 0.12 -std 10.0
 PICARD_ReadGroup_params=PL=illumina CN=mayo LB=hg19 CREATE_INDEX=true

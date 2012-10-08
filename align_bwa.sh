@@ -2,7 +2,7 @@
 
 if [ $# -le 2 ];
 then
-    echo -e "Usage: wrapper script to run the alignment using NOVO ALIGN \n align_split_thread.sh <sample name> <output_dir> </path/to/run_info.txt>";
+    echo -e "Usage: wrapper script to run the alignment using NOVO ALIGN \n align_bwa.sh <sample name> </path/to/output_dir> </path/to/run_info.txt> <SGE TASK ID (optional)";
 else	
     set -x 
     echo `date`
@@ -14,7 +14,6 @@ else
         SGE_TASK_ID=$4
     fi    
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
 	sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
 	genome_bwa=$( cat $tool_info | grep -w '^BWA_REF' | cut -d '=' -f2)
@@ -23,10 +22,11 @@ else
 	platform=$( cat $tool_info | grep -w '^PLATFORM' | cut -d '=' -f2 )
 	GenomeBuild=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2 )
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
-	output_dir_sample=$output_dir/alignment/$sample
-    fastq=$output_dir/fastq
 	paired=$( cat $run_info | grep -w '^PAIRED' | cut -d '=' -f2)
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
+	output_dir_sample=$output_dir/alignment/$sample
+    fastq=$output_dir/fastq
+	
 	if [ $paired == 1 ]
 	then
 		let fidx=($SGE_TASK_ID*2)-1 
@@ -60,14 +60,19 @@ else
 	$samtools/samtools view -H $output_dir_sample/$sample.$SGE_TASK_ID.bam 1>$output_dir_sample/$sample.$SGE_TASK_ID.bam.header 2> $output_dir_sample/$sample.$SGE_TASK_ID.bam.log
 	if [ `cat $output_dir_sample/$sample.$SGE_TASK_ID.bam.log | wc -l` -gt 0 ]	
 	then
-		$script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.bam align_novo.sh ERROR "truncated or corrupt"
+		$script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.bam align_bwa.sh ERROR "truncated or corrupt"
 		exit 1;
 	else
-		rm  $output_dir_sample/$sample.$SGE_TASK_ID.sam $output_dir_sample/$sample.$SGE_TASK_ID.bam.log
+		rm $output_dir_sample/$sample.$SGE_TASK_ID.sam $output_dir_sample/$sample.$SGE_TASK_ID.bam.log
 	fi	
 	rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.header
 	########################################################	
 ######		Sort BAM, adds RG 
-	$script_path/convert.bam.sh $output_dir_sample $sample.$SGE_TASK_ID.bam $sample.$SGE_TASK_ID $SGE_TASK_ID $run_info
+	$script_path/convert_bam.sh $output_dir_sample $sample.$SGE_TASK_ID.bam $sample.$SGE_TASK_ID $SGE_TASK_ID $run_info
+	if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.flagstat ]
+    then
+        $script_path/errorlog.sh align_bwa.sh $output_dir_sample/$sample.$SGE_TASK_ID.flagstat ERROR "empty"
+		exit 1;
+	fi
     echo `date`
 fi	

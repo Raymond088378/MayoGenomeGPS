@@ -15,7 +15,7 @@
 
 if [ $# != 3 ];
 then
-    echo -e "Usage: wrapper to merge bam files and validate the bam for downstream analysis \n merge_align.bam.sh </path/to/input directory> <name of BAM to sort> <sample name> </path/to/run_info.txt>";
+    echo -e "Usage: wrapper to merge bam files and validate the bam for downstream analysis\nmerge_align.bam.sh </path/to/input directory><sample name> </path/to/run_info.txt>";
 else
     set -x
     echo `date`
@@ -30,8 +30,6 @@ else
     reorder=$( cat $tool_info | grep -w '^REORDERSAM' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
-	max_reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
-	max_files=$( cat $tool_info | grep -w '^MAX_FILE_HANDLES' | cut -d '=' -f2 )
 	dup_flag=$( cat $tool_info | grep -w '^REMOVE_DUP' | cut -d '=' -f2 )
 	dup=$( cat $tool_info | grep -w '^MARKDUP' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 ########################################################	
@@ -79,7 +77,7 @@ else
 			mv $input/$sample.bam $input/$sample.sorted.bam
 			$samtools/samtools index $input/$sample.sorted.bam
 		else
-			$script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate $max_reads true $run_info
+			$script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate true $run_info
 		fi
 	else	
 	    $script_path/MergeBam.sh "$INPUTARGS" $input/$sample.sorted.bam $input true $run_info
@@ -107,9 +105,8 @@ else
 		DUP_STATUS=`$samtools/samtools view -H $input/$sample.sorted.bam | grep "^@CO" | grep "MarkDuplicates" | wc -l`
 		if [ "$DUP_STATUS" -eq 0 ] 
 		then
-		    $script_path/rmdup.sh $input/$sample.sorted.bam $input/$sample.sorted.rmdup.bam $input/$sample.dup.metrics $input $max_files $dup_flag true true $run_info   
+		    $script_path/rmdup.sh $input/$sample.sorted.bam $input/$sample.sorted.rmdup.bam $input/$sample.dup.metrics $input $dup_flag true true $run_info   
 		fi
-
     fi
     ## reorder if required
     if [ $reorder == "YES" ]
@@ -125,7 +122,6 @@ else
     then
         $samtools/samtools index $input/$sample.sorted.bam
     fi
-
     ## dashboard
     $script_path/dashboard.sh $sample $run_info Alignment complete
 	## size of the bam file

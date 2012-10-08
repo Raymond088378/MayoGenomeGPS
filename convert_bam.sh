@@ -16,7 +16,7 @@
 
 if [ $# != 5 ];
 then
-    echo -e "Usage: wrapper to add read group and sort the bam </path/to/input directory> <name of BAM to sort> <sample name> <sge task id> </path/to/run_info.txt>";
+    echo -e "Usage: wrapper to add read group and sort and reorder the bam </path/to/input directory> <name of BAM > <sample name> <sge task id> </path/to/run_info.txt>";
 else
     set -x
     echo `date`
@@ -34,7 +34,7 @@ else
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     ref_path=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
-    max_reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
+   
     
 ########################################################	
 ######		PICARD to sort raw BAM file
@@ -54,7 +54,7 @@ else
     then
         ln -s $input/$input_bam $input/$sample.sorted.bam
     else
-        $script_path/sortbam.sh $input/$input_bam $input/$sample.sorted.bam $input coordinate $max_reads true $run_info
+        $script_path/sortbam.sh $input/$input_bam $input/$sample.sorted.bam $input coordinate true $run_info
     fi
 
 #############################################################	
@@ -71,7 +71,7 @@ else
 	$samtools/samtools flagstat $input/$sample.sorted.bam > $input/$sample.flagstat
     if [ ! -s $input/$sample.flagstat ]
     then
-        $script_path/errorlog.sh convert.bam.sh $input/$sample.flagstat ERROR empty
+        $script_path/errorlog.sh convert.bam.sh $input/$sample.flagstat ERROR "empty"
 		exit 1;
 	else
 		## update secondary dahboard

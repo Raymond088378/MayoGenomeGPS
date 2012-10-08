@@ -224,22 +224,26 @@ else
 				then
 					echo "novoalign is used as aligner"
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.align_novo.$sample.$run_num -l h_vmem=4G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_novo.sh $sample $output_dir $run_info
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
+					qsub $args -N $type.$version.align_novo.$sample.$run_num -l h_vmem=$mem -pe threaded $threads -t 1-$numfiles:1 $script_path/align_novo.sh $sample $output_dir $run_info
 				elif [ $aligner == "bwa" ]
 				then
 					echo "bwa is used as aligner"
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.align_read_bwa.R1.$sample.$run_num -l h_vmem=1G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_read_bwa.sh $sample $output_dir 1 $run_info
+					mem=$( cat $memory_info | grep -w '^align_read_bwa' | cut -d '=' -f2)
+					qsub $args -N $type.$version.align_read_bwa.R1.$sample.$run_num -l h_vmem=$mem -pe threaded $threads -t 1-$numfiles:1 $script_path/align_read_bwa.sh $sample $output_dir 1 $run_info
 					if [ $paired == 1 ]
 					then
 						$script_path/check_qstat.sh $limit
-						qsub $args -N $type.$version.align_read_bwa.R2.$sample.$run_num -l h_vmem=1G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_read_bwa.sh $sample $output_dir 2 $run_info
+						mem=$( cat $memory_info | grep -w '^align_read_bwa' | cut -d '=' -f2)
+						qsub $args -N $type.$version.align_read_bwa.R2.$sample.$run_num -l h_vmem=$mem -pe threaded $threads -t 1-$numfiles:1 $script_path/align_read_bwa.sh $sample $output_dir 2 $run_info
 						hold="-hold_jid $type.$version.align_read_bwa.R1.$sample.$run_num,$type.$version.align_read_bwa.R2.$sample.$run_num"
 					else
 						hold="-hold_jid $type.$version.align_read_bwa.R1.$sample.$run_num"
 					fi	
 					$script_path/check_qstat.sh $limit
-					qsub $args -N $type.$version.align_bwa.$sample.$run_num -l h_vmem=8G -t 1-$numfiles:1 $script_path/align_bwa.sh $sample $output_dir $run_info
+					mem=$( cat $memory_info | grep -w '^align_bwa' | cut -d '=' -f2)
+					qsub $args -N $type.$version.align_bwa.$sample.$run_num -l h_vmem=$mem -t 1-$numfiles:1 $script_path/align_bwa.sh $sample $output_dir $run_info
 				else
 					echo "Doesn't support the aligner"
 				fi	
@@ -251,10 +255,12 @@ else
 					hold="-hold_jid $type.$version.align_novo.$sample.$run_num"
 				fi    
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=6G $hold $script_path/processBAM.sh $align_dir $sample $run_info 	
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
+				qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=$mem $hold $script_path/processBAM.sh $align_dir $sample $run_info 	
 				if [ $analysis != "alignment" ]
 				then
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=4G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $igv
 				fi
 			elif [ $analysis == "realignment" -o $analysis == "realign-mayo" ]
@@ -287,8 +293,10 @@ else
 					$script_path/dashboard.sh $sample $run_info Beginning started $i
 				done  
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=6G $script_path/processBAM.sh $align_dir $sample $run_info
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=4G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $igv
 			fi    
 			if [[ $analysis == "mayo" || $analysis == "external" || $analysis == "realignment" || $analysis == "variant" || $analysis == "realign-mayo" ]]
@@ -320,28 +328,38 @@ else
 						ln -s $input/$bam $realign_dir/$sample.$i.sorted.bam						
 					done
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.reformat_BAM.$sample.$run_num -l h_vmem=6G $script_path/reformat_BAM.sh $realign_dir $sample $run_info	
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=4G -hold_jid $type.$version.reformat_BAM.$sample.$run_num $script_path/extract_reads_bam.sh $realign_dir $bamfile $run_info $igv
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.split_bam_chr.$sample.$run_num -hold_jid $type.$version.reformat_BAM.$sample.$run_num -l h_vmem=2G -t 1-$numchrs:1 $script_path/split_bam_chr.sh $realign_dir $sample $run_info
 					variant_id="$type.$version.split_bam_chr.$sample.$run_num"
 				else
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.realign_recal.$sample.$run_num -hold_jid $type.$version.processBAM.$sample.$run_num -l h_vmem=7G -t 1-$numchrs:1 $script_path/realign_recal.sh $align_dir $bamfile $sample $realign_dir $run_info 1	
 					variant_id="$type.$version.realign_recal.$sample.$run_num"
 				fi
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.igv_bam.$sample.$run_num -l h_vmem=2G -hold_jid $variant_id,$type.$version.extract_reads_bam.$sample.$run_num $script_path/igv_bam.sh $output_realign $igv $sample $output_align $run_info
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.variants.$sample.$run_num -hold_jid $variant_id -pe threaded $threads -l h_vmem=1536M -t 1-$numchrs:1 $script_path/variants.sh $realign_dir $sample $variant_dir 1 $run_info
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.merge_variant_single.$sample.$run_num -l h_vmem=1G -pe threaded $threads -hold_jid $type.$version.variants.$sample.$run_num $script_path/merge_variant_single.sh $output_variant $sample $RSample $run_info
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.OnTarget_BAM.$sample.$run_num -hold_jid $variant_id -l h_vmem=1G -t 1-$numchrs:1 $script_path/OnTarget_BAM.sh $realign_dir $output_OnTarget $sample $run_info
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.OnTarget_PILEUP.$sample.$run_num -hold_jid $variant_id -l h_vmem=3G -t 1-$numchrs:1 $script_path/OnTarget_PILEUP.sh $realign_dir $output_OnTarget $sample $run_info
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.getCoverage.$sample.$run_num -hold_jid $type.$version.OnTarget_PILEUP.$sample.$run_num -l h_vmem=512M $script_path/getCoverage.sh $output_OnTarget $numbers $sample $run_info    
 			fi
 			if [ $analysis == "ontarget" ]
@@ -349,10 +367,12 @@ else
 				if [ $variant_type == "BOTH" ]
 				then
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.reformat_VARIANTs_OnTarget.$sample.$run_num -l h_vmem=4G $script_path/reformat_VARIANTs_OnTarget.sh $output_variant $RSample $sample $run_info 2
 				elif [ $variant_type == "SNV" -o $variant_type == "INDEL" ]
 				then
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.reformat_VARIANTs_OnTarget.$sample.$run_num -l h_vmem=4G $script_path/reformat_VARIANTs_OnTarget.sh $output_variant $RSample $sample $run_info 1
 				fi
 				hold_args="-hold_jid $type.$version.reformat_VARIANTs_OnTarget.$sample.$run_num"				
@@ -363,6 +383,7 @@ else
 			if [[ $analysis != "alignment" && $analysis != "annotation" ]]
 			then
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.OnTarget_variant.$sample.$run_num -t 1-$numchrs:1 $hold_args -l h_vmem=1G $script_path/OnTarget_variant.sh $output_variant $output_OnTarget $sample $run_info
 			fi
 			if [ $analysis == "annotation" ]
@@ -370,10 +391,12 @@ else
 				if [ $variant_type == "BOTH" ]
 				then
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.reformat_VARIANTs.$sample.$run_num -l h_vmem=3G $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 2
 				elif [ $variant_type == "SNV" -o $variant_type == "INDEL" ]
 				then
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.reformat_VARIANTs.$sample.$run_num -l h_vmem=3G $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 1
 				fi
 				hold_args="-hold_jid $type.$version.reformat_VARIANTs.$sample.$run_num"
@@ -386,11 +409,14 @@ else
 				if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
 				then
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.sift.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=3G $script_path/sift.sh $sift $output_OnTarget $sample $run_info
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.polyphen.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=8G $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info	    	
 				fi
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.snpeff.$sample.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=3G $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info		
 				if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
 				then
@@ -399,8 +425,10 @@ else
 					hold="-hold_jid $type.$version.snpeff.$sample.$run_num"
 				fi	
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.sample_reports.$sample.$run_num $hold -t 1-$numchrs:1 -l h_vmem=3G $script_path/sample_reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.sample_report.$sample.$run_num -hold_jid $type.$version.sample_reports.$sample.$run_num -l h_vmem=512M $script_path/sample_report.sh $output_dir $TempReports $sample $run_info
 				if [[ $tool == "whole_genome"  && $analysis != "annotation" ]]
 				then
@@ -409,28 +437,36 @@ else
 					cnv=$output_dir/cnv/$sample
 					mkdir -p $break $crest $cnv
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.run_single_crest.sh.$sample.$run_num -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=6G $script_path/run_single_crest.sh $sample $realign_dir $crest $run_info
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.run_cnvnator.$sample.$run_num -hold_jid $variant_id -l h_vmem=3G -t 1-$numchrs:1 $script_path/run_cnvnator.sh $sample $realign_dir $cnv $run_info
 					let nump=$numchrs+1;
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.run_breakdancer.$sample.$run_num -hold_jid $variant_id -l h_vmem=4G -t 1-$numchrs:1 $script_path/run_breakdancer.sh $sample $output_realign $break $run_info
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.run_breakdancer_in.$sample.$run_num -hold_jid $type.$version.igv_bam.$sample.$run_num -l h_vmem=4G -t $nump-$nump:$nump $script_path/run_breakdancer.sh $sample $igv $break $run_info
 					### merge the structural variants
 					hold="-hold_jid $type.$version.run_single_crest.sh.$sample.$run_num,$type.$version.run_cnvnator.$sample.$run_num,$type.$version.run_breakdancer.$sample.$run_num,$type.$version.run_breakdancer_in.$sample.$run_num"
 					mkdir -p $output_dir/Reports_per_Sample/SV
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.summaryze_struct_single.$sample.$run_num -l h_vmem=3G $hold $script_path/summaryze_struct_single.sh $sample $output_dir $run_info
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.plot_circos_cnv_sv.$sample.$run_num -hold_jid $type.$version.summaryze_struct_single.$sample.$run_num -l h_vmem=2G $script_path/plot_circos_cnv_sv.sh $break/$sample/$sample.break $crest/$sample/$sample.filter.crest $cnv/$sample.cnv.filter.bed $sample $output_dir/circos $run_info	
 				fi
 				if [[ $tool == "whole_genome" && $analysis != "alignment" && $analysis != "annotation" && $analysis != "ontarget" ]]
 				then
 					mkdir -p $output_dir/Reports_per_Sample/ANNOT
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.annotation_CNV.$sample.$run_num -l h_vmem=2G -hold_jid $type.$version.plot_circos_cnv_sv.$sample.$run_num $script_path/annotation_CNV.sh $sv $run_info $annot $sample
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.annotation_SV.sh.$sample.$run_num -l h_vmem=2G -hold_jid $type.$version.plot_circos_cnv_sv.$sample.$run_num $script_path/annotation_SV.sh $output_dir $run_info $annot $sample
 				fi	
 			fi
@@ -450,10 +486,12 @@ else
 				hold_args="-hold_jid $type.$version.processBAM.$sample.$run_num"
 			fi	
 			$script_path/check_qstat.sh $limit
+			mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 			qsub $args -N $type.$version.sample_numbers.$sample.$run_num $hold_args -l h_vmem=2G $script_path/sample_numbers.sh $output_dir $sample $run_info $numbers
 			if [ $analysis != "alignment" ]
 			then
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.gene_summary.$sample.$run_num $hold_args -l h_vmem=2G $script_path/gene_summary.sh $output_dir $sample $run_info $RSample		
 			fi
 		done
@@ -466,8 +504,10 @@ else
 				id=$id"$type.$version.variants.$s.$run_num,"
 			done
 			$script_path/check_qstat.sh $limit
+			mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 			qsub $args -N $type.$version.merge_raw_variants.$run_num -t 1-$numchrs:1 -hold_jid $id -l h_vmem=1G $script_path/merge_raw_variants.sh $output_dir $run_info
 			$script_path/check_qstat.sh $limit
+			mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 			qsub $args -N $type.$version.concat_raw_variants.$run_num -hold_jid $type.$version.merge_raw_variants.$run_num -l h_vmem=1G $script_path/concat_raw_variants.sh $output_dir $run_info	    
 		fi	
 		if [ $analysis != "alignment" ]
@@ -476,14 +516,9 @@ else
 			for s in `echo $samples | tr ":" "\n"`
 			do
 				id=$id"$type.$version.sample_report.$s.$run_num,"
-			done
-			if [ $tool == "exome" ]
-			then
-				mem="-l h_vmem=5G"
-			else
-				mem="-l h_vmem=16G"
-			fi    
+			done 
 			$script_path/check_qstat.sh $limit
+			mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 			qsub $args -N $type.$version.merge_sample.$run_num -hold_jid $id $mem $script_path/merge_sample.sh $output_dir $run_info    
 		fi
 		id_igv=""
@@ -518,14 +553,9 @@ else
 				hold="-hold_jid $id_coverage,$id_igv,$id_numbers,$id_gene_summary,$type.$version.merge_sample.$run_num,$id_reads"
 			fi
 		fi
-		## generate html page for all the modules
-		if [[ $upload_tb == "YES" ]]
-		then
-			mem="8G"
-		else
-			mem="1G"
-		fi	
+		## generate html page for all the module
 		$script_path/check_qstat.sh $limit
+		mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 		qsub $args -l h_vmem=$mem -N $type.$version.generate_html.$run_num $hold $script_path/generate_html.sh $output_dir $run_info
 	else
 		echo "Multi-sample"
@@ -552,28 +582,33 @@ else
 				then
 					echo "novoalign is used as aligner"
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.align_novo.$sample.$run_num -l h_vmem=4G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_novo.sh $sample $output_dir $run_info
 					hold="$type.$version.align_novo.$sample.$run_num"
 				elif [ $aligner == "bwa" ]
 				then
 					echo "bwa is used as aligner"
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.align_read_bwa.R1.$sample.$run_num -l h_vmem=1G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_read_bwa.sh $sample $output_dir 1 $run_info
 					if [ $paired == 1 ]
 					then
 						$script_path/check_qstat.sh $limit
+						mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 						qsub $args -N $type.$version.align_read_bwa.R2.$sample.$run_num -l h_vmem=1G -pe threaded $threads -t 1-$numfiles:1 $script_path/align_read_bwa.sh $sample $output_dir 2 $run_info	
 						hold="-hold_jid $type.$version.align_read_bwa.R2.$sample.$run_num,$type.$version.align_read_bwa.R1.$sample.$run_num"
 					else
 						hold="-hold_jid $type.$version.align_read_bwa.R1.$sample.$run_num"
 					fi	
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.align_bwa.$sample.$run_num -l h_vmem=8G $hold -t 1-$numfiles:1 $script_path/align_bwa.sh $sample $output_dir $run_info
 					hold="$type.$version.align_bwa.$sample.$run_num"
 				fi	    
 				$script_path/check_qstat.sh $limit
-				qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=6G -hold_jid $hold $script_path/processBAM.sh $align_dir $sample $run_info   
-				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
+				qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=6G -hold_jid $hold $script_path/processBAM.sh $align_dir $sample $run_info $script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=4G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $igv		
 			elif [[ $analysis == "realignment" || $analysis == "realign-mayo" ]]
 			then
@@ -599,8 +634,10 @@ else
 					ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
 				done
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.processBAM.$sample.$run_num -l h_vmem=6G $script_path/processBAM.sh $align_dir $sample $run_info
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.extract_reads_bam.$sample.$run_num -l h_vmem=4G -hold_jid $type.$version.processBAM.$sample.$run_num $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $igv
 			fi
 		done	
@@ -648,10 +685,13 @@ else
 						ln -s $input/$bam $realign_dir/$group.$i.sorted.bam
 					done
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.reformat_pairBAM.$group.$run_num -l h_vmem=6G $script_path/reformat_pairBAM.sh $realign_dir $group $run_info
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.extract_reads_bam.$group.$run_num -l h_vmem=4G -hold_jid $type.$version.reformat_pairBAM.$group.$run_num $script_path/extract_reads_bam.sh $realign_dir $group.sorted.bam $run_info $igv $group
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.split_bam_chr.$group.$run_num -hold_jid $type.$version.reformat_pairBAM.$group.$run_num -l h_vmem=2G -t 1-$numchrs:1 $script_path/split_bam_chr.sh $realign_dir $group $run_info
 					variant_id="$type.$version.split_bam_chr.$group.$run_num"
 				else        
@@ -661,50 +701,69 @@ else
 						id=$id"$type.$version.processBAM.$sample.$run_num,$type.$version.extract_reads_bam.$sample.$run_num"
 					done    
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.realign_recal.$group.$run_num -hold_jid $id -l h_vmem=7G -t 1-$numchrs:1 $script_path/realign_recal.sh $input_dirs $bam_samples $names_samples $realign_dir $run_info 1
 					variant_id="$type.$version.realign_recal.$group.$run_num"
 				fi
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.split_sample_pair.$group.$run_num -hold_jid $variant_id -l h_vmem=1G -t 1-$numchrs:1 $script_path/split_sample_pair.sh $output_realign $igv $group $output_align $run_info
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.igv_bam.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=2G $script_path/igv_bam.sh $output_realign $igv $group $output_align $run_info 
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.variants.$group.$run_num -hold_jid $variant_id -pe threaded $threads -l h_vmem=1536M -t 1-$numchrs:1 $script_path/variants.sh $realign_dir $names_samples $variant_dir 1 $run_info
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.merge_variant_group.$group.$run_num -l h_vmem=1G -pe threaded $threads -hold_jid $type.$version.variants.$group.$run_num $script_path/merge_variant_group.sh $output_variant $group $RSample $run_info 
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.OnTarget_BAM.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=2G -t 1-$numchrs:1 $script_path/OnTarget_BAM.sh $igv $output_OnTarget $group $run_info
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.OnTarget_PILEUP.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=3G -t 1-$numchrs:1 $script_path/OnTarget_PILEUP.sh $realign_dir $output_OnTarget $group $run_info
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.getCoverage.$group.$run_num -hold_jid $type.$version.OnTarget_PILEUP.$group.$run_num -l h_vmem=2G $script_path/getCoverage.sh $output_OnTarget $numbers $group $run_info
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.OnTarget_variant.$group.$run_num -l h_vmem=1G -hold_jid $type.$version.merge_variant_group.$group.$run_num -t 1-$numchrs:1 $script_path/OnTarget_variant.sh $output_variant $output_OnTarget $group $run_info
 				hold_args="-hold_jid $type.$version.OnTarget_variant.$group.$run_num"
 				## SIFT
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.sift.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=3G $script_path/sift.sh $sift $output_OnTarget $group $run_info 
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.sift.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=3G $script_path/sift.sh $sift $output_OnTarget $group $run_info TUMOR
 				## SNPEFF
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.snpeff.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=3G $script_path/snpeff.sh $snpeff $output_OnTarget $group $run_info
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.snpeff.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=3G $script_path/snpeff.sh $snpeff $output_OnTarget $group $run_info TUMOR
 				##POLYPHEN
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.polyphen.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=8G $script_path/polyphen.sh $polyphen $output_OnTarget $group $run_info  
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.polyphen.$group.$run_num $hold_args -t 1-$numchrs:1 -l h_vmem=8G $script_path/polyphen.sh $polyphen $output_OnTarget $group $run_info TUMOR
 				hold="$type.$version.sift.$group.$run_num,$type.$version.snpeff.$group.$run_num,$type.$version.polyphen.$group.$run_num"
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.sample_reports.$group.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=4G $script_path/sample_reports.sh $run_info $group $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.sample_report.$sample.$run_num -l h_vmem=512M -hold_jid $type.$version.sample_reports.$group.$run_num $script_path/sample_report.sh $output_dir $TempReports $group $run_info
 				hold="$type.$version.sift.${group}.$run_num,$type.$version.snpeff.$group.$run_num,$type.$version.polyphen.$group.$run_num"
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.sample_reports.$group.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=4G $script_path/sample_reports.sh $run_info $group $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir TUMOR
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.sample_report.$group.$run_num -l h_vmem=512M -hold_jid $type.$version.sample_reports.$group.$run_num $script_path/sample_report.sh $output_dir $TempReports $group $run_info TUMOR
 				if [ $tool == "whole_genome" ]
 				then
@@ -716,12 +775,15 @@ else
 					for sam in `cat $sample_info| grep -w "^$group" | cut -d '=' -f2`
 					do
 						$script_path/check_qstat.sh $limit
+						mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 						qsub $args -N $type.$version.run_crest_multi_cover.$group.$sam.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=6G -t 1-$numchrs:1 $script_path/run_crest_multi_cover.sh $sam $group $igv $crest $run_info
 						id=$id"$type.$version.run_crest_multi_cover.$group.$sam.$run_num,"
 					done
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.run_crest_multi.$group.$run_num -hold_jid $id -l h_vmem=6G -t 1-$numchrs:1 $script_path/run_crest_multi.sh $group $igv $crest $run_info
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.run_segseq.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=3G -t 1-$numchrs:1 -l matlab_lic=1 $script_path/run_segseq.sh $group $igv $output_dir/cnv $run_info    
 					let nump=$numchrs+1;    
 					mkdir -p $break/$group
@@ -729,19 +791,23 @@ else
 					for sam in `cat $sample_info| grep -w "^$group" | cut -d '=' -f2`
 					do
 						$script_path/check_qstat.sh $limit
+						mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 						qsub $args -N $type.$version.run_breakdancer.$group.$sam.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=4G -t 1-$numchrs:1 $script_path/run_breakdancer.sh $sam $igv $break/$group $run_info $group
 						$script_path/check_qstat.sh $limit
+						mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 						qsub $args -N $type.$version.run_breakdancer_in.$group.$sam.$run_num -hold_jid $type.$version.igv_bam.$group.$run_num -l h_vmem=3G -t $nump-$nump:$nump $script_path/run_breakdancer.sh $sam $igv $break/$group $run_info $group
 						id=$id"$type.$version.run_breakdancer.$group.$sam.$run_num,$type.$version.run_breakdancer_in.$group.$sam.$run_num,"
 					done
 					hhold="$id,$type.$version.run_segseq.$group.$run_num,$type.$version.run_crest_multi.$group.$run_num"
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.summaryze_struct_group.$group.$run_num -l h_vmem=3G -hold_jid $hhold $script_path/summaryze_struct_group.sh $group $output_dir $run_info
 					mkdir -p $output_dir/circos;
 					for i in $(seq 2 ${#sampleArray[@]})
 					do  
 						tumor=${sampleArray[$i]}
 						$script_path/check_qstat.sh $limit
+						mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 						qsub $args -N $type.$version.plot_circos_cnv_sv.$group.$tumor.$i.$run_num -hold_jid $type.$version.summaryze_struct_group.$group.$run_num -l h_vmem=2G $script_path/plot_circos_cnv_sv.sh $output_dir/struct/$group.$tumor.somatic.break $output_dir/struct/$group.$tumor.somatic.filter.crest $output_dir/cnv/$group/$tumor.cnv.filter.bed $group.$tumor $output_dir/circos $run_info
 					done
 				fi
@@ -766,8 +832,10 @@ else
 						id=$id"$type.$version.plot_circos_cnv_sv.$group.$tumor.$i.$run_num,"
 					done
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.annotation_CNV.$group.$run_num -l h_vmem=2G -hold_jid $id $script_path/annotation_CNV.sh $sv $run_info $annot $group
 					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 					qsub $args -N $type.$version.annotation_SV.$group.$run_num -l h_vmem=2G -hold_jid $id $script_path/annotation_SV.sh $output_dir $run_info $annot $group
 				done
 			fi
@@ -796,8 +864,10 @@ else
 			for group in `echo $groups | tr ":" "\n"`
 			do
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.sample_numbers.$group.$run_num -l h_vmem=2G -hold_jid $id $script_path/sample_numbers.sh $output_dir $group $run_info $numbers
 				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub $args -N $type.$version.gene_summary.$group.$run_num -l h_vmem=2G -hold_jid $id $script_path/gene_summary.sh $output_dir $group $run_info $RSample
 			done
 
@@ -816,22 +886,11 @@ else
 					id=$id"$type.$version.getCoverage.$group.$run_num,$type.$version.sample_numbers.$group.$run_num,$type.$version.gene_summary.$group.$run_num,$type.$version.igv_bam.$group.$run_num,$type.$version.annotate_sample.$run_num,"
 				done    
 			fi
-			if [ $tool == "exome" ]
-			then
-				mem="-l h_vmem=5G"
-			else
-				mem="-l h_vmem=16G"
-			fi    
 			$script_path/check_qstat.sh $limit
-			qsub $args -N $type.$version.merge_sample.$run_num -hold_jid $id $mem $script_path/merge_sample.sh $output_dir $run_info
-			
-			if [[ $upload_tb == "YES" ]]
-			then
-				mem="8G"
-			else
-				mem="2G"
-			fi	
+			mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
+			qsub $args -N $type.$version.merge_sample.$run_num -hold_jid $id $mem $script_path/merge_sample.sh $output_dir $run_info	
 			$script_path/check_qstat.sh $limit
+			mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 			qsub $args -N $type.$version.generate_html.$run_num -l h_vmem=$mem -hold_jid $type.$version.merge_sample.$run_num $script_path/generate_html.sh $output_dir $run_info 	
 		fi
 	fi

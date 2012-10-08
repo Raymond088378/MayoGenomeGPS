@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ $# != 9 ]
+if [ $# != 8 ]
 then
     echo "Usage: <input bam> <outputbam><temp dir><max files to split><remove of flag dupluicate(true/false)><assume file is aorted or not(true/false)><do indexing or not(true/false)<run info>"
 else
@@ -10,18 +10,17 @@ else
     outbam=$2
     metrics=$3
     tmp_dir=$4
-    files=$5
-    remove=$6
-    sorted=$7
-    index=`echo $8 | tr "[a-z]" "[A-Z]"`
-    run_info=$9
+    remove=$5
+    sorted=$6
+    index=`echo $7 | tr "[a-z]" "[A-Z]"`
+    run_info=$8
     
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
-	
+	max_files=$( cat $tool_info | grep -w '^MAX_FILE_HANDLES' | cut -d '=' -f2 )
     $java/java -Xmx5g -Xms512m \
     -jar $picard/MarkDuplicates.jar \
     INPUT=$inbam \
@@ -29,7 +28,7 @@ else
     METRICS_FILE=$metrics \
     ASSUME_SORTED=$sorted \
     REMOVE_DUPLICATES=$remove \
-    MAX_FILE_HANDLES=$files \
+    MAX_FILE_HANDLES=$max_files \
     CREATE_INDEX=true \
 	VALIDATION_STRINGENCY=SILENT \
     CO=MarkDuplicates \

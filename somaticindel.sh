@@ -35,7 +35,7 @@ else
 	$samtools/samtools view -H $normal_bam 1>$normal_bam.si.header 2> $normal_bam.fix.si.log
 	if [ `cat $tumor_bam.fix.si.log | wc -l` -gt 0 ]
 	then
-		$script_path/email.sh $tumor_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+		$script_path/email.sh $tumor_bam "bam is truncated or corrupt" $run_info
 		while [ -f $tumor_bam.fix.si.log ]
 		do
 			echo "waiting for the $tumor_bam to be fixed"
@@ -47,7 +47,7 @@ else
 	rm $tumor_bam.si.header
 	if [ `cat $normal_bam.fix.si.log | wc -l` -gt 0 ]
 	then
-		$script_path/email.sh $normal_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+		$script_path/email.sh $normal_bam "bam is truncated or corrupt" $run_info
 		while [ -f $normal_bam.fix.si.log ]
 		do
 			echo "waiting for the $normal_bam to be fixed"

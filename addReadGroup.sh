@@ -2,7 +2,7 @@
 
 if [ $# != 5 ]
 then
-    echo "Usage: <input bam> <outputbam><temp dir><run info><sample>"
+    echo -e "script to add read group and paltform information to a BAM file\nUsage: <input bam> <outputbam><temp dir><run info><sample name>"
 else
     set -x
     echo `date`
@@ -13,16 +13,16 @@ else
     sample=$5
     
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
+    memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
+	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
 	params=$( cat $tool_info | grep -w '^PICARD_ReadGroup_params' |sed -e '/PICARD_ReadGroup_params=/s///g')
-	
+	mem=$( cat $memory_info | grep -w '^READGROUP_JVM' | cut -d '=' -f2)
 	export PATH=$java:$PATH
-                    
-    $java/java -Xmx3g -Xms512m \
-    -jar $picard/AddOrReplaceReadGroups.jar \
+	
+    $java/java $mem -jar $picard/AddOrReplaceReadGroups.jar \
     INPUT=$inbam \
     OUTPUT=$outbam \
     SM=$sample ID=$sample PU=$sample \
@@ -46,7 +46,7 @@ else
 		fi	
 		rm $outbam.rg.header
     else
-        $script_path/errorlog.sh $outbam convert.bam.sh ERROR empty
+        $script_path/errorlog.sh $outbam convert.bam.sh ERROR "empty"
 		exit 1;
 	fi
     echo `date`
