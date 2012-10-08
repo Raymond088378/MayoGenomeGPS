@@ -28,7 +28,6 @@ else
     SM=$sample ID=$sample PU=$sample \
     TMP_DIR=$tmp_dir \
     VALIDATION_STRINGENCY=SILENT $params
-	
     file=`echo $outbam | sed -e 's/\(.*\)..../\1/'`
 	mv $file.bai $file.bam.bai
     

@@ -22,6 +22,9 @@ else
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
 	command_line_params=$( cat $tool_info | grep -w '^SOMATIC_INDEL_params' | cut -d '=' -f2 )
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
+	memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
+	mem=$( cat $memory_info | grep -w '^SomaticIndelDetector_JVM' | cut -d '=' -f2)
+	
 	export PATH=$java:$PATH
 	indel_v=$tumor_sample.chr$chr.indel.txt
 	let check=0
@@ -36,11 +39,7 @@ else
 	if [ `cat $tumor_bam.fix.si.log | wc -l` -gt 0 ]
 	then
 		$script_path/email.sh $tumor_bam "bam is truncated or corrupt" $run_info
-		while [ -f $tumor_bam.fix.si.log ]
-		do
-			echo "waiting for the $tumor_bam to be fixed"
-			sleep 2m
-		done
+		$script_path/wait.sh $tumor_bam.fix.si.log 
 	else
 		rm $tumor_bam.fix.si.log
 	fi	
@@ -48,18 +47,14 @@ else
 	if [ `cat $normal_bam.fix.si.log | wc -l` -gt 0 ]
 	then
 		$script_path/email.sh $normal_bam "bam is truncated or corrupt" $run_info
-		while [ -f $normal_bam.fix.si.log ]
-		do
-			echo "waiting for the $normal_bam to be fixed"
-			sleep 2m
-		done
+		$script_path/wait.sh $normal_bam.fix.si.log 
 	else
 		rm $normal_bam.fix.si.log
 	fi	
 	rm $normal_bam.si.header
 	while [[ $check -eq 0 && $count -le 10 ]]
     do
-		$java/java -Xmx4g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
+		$java/java $mem -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
 		-R $ref \
 		-et NO_ET \
 		-K $gatk/Hossain.Asif_mayo.edu.key \
@@ -69,7 +64,7 @@ else
 		-verbose $output/$indel_v \
 		-I:normal $normal_bam \
 		-I:tumor $tumor_bam $command_line_params
-		sleep 15
+		sleep 5
 		check=`[ -s $output/$output_file.idx ] && echo "1" || echo "0"`
         if [ $check -eq 0 ]
         then
@@ -101,7 +96,7 @@ else
         rm $output/$indel_v
         if [ `cat $output/$output_file |  awk '$0 ~ /^##FORMAT=<ID=GT/' | wc -l` == 0 ]
         then
-            perl $script_path/add.gt.to.vcf.pl $output/$output_file | awk '$0 ~ /^#/ || $8 ~ /SOMATIC/' > $output/$output_file.tmp
+            $script_path/add.gt.to.vcf.pl $output/$output_file | awk '$0 ~ /^#/ || $8 ~ /SOMATIC/' > $output/$output_file.tmp
         else
             cat $output/$output_file | awk '$0 ~ /^#/ || $8 ~ /SOMATIC/' > $output/$output_file.tmp
 		fi

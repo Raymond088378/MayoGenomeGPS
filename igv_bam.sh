@@ -11,7 +11,7 @@
 
 if [ $# != 5 ];
 then
-    echo -e "Usage: SCRIPT to create IGV BAM \n</path/to/realign dir> </path/to/output folder> <sample> </path/to/alignment folder><run ifno>";
+    echo -e "SCRIPT to create IGV BAM\nUsage: igv_bam.sh </path/to/realign dir> </path/to/output folder> <sample> </path/to/alignment folder><run ifno>";
 else	
     set -x
     echo `date`
@@ -48,7 +48,7 @@ else
 			$samtools/samtools view -H $i 1>$i.igv.header 2> $i.fix.igv.log
 			if [ `cat $i.fix.igv.log | wc -l` -gt 0 ]
 			then
-				$script_path/email.sh $i "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+				$script_path/email.sh $i "bam is truncated or corrupt" $run_info
 				$script_path/wait.sh $i.fix.igv.log
 			else
 				rm $i.fix.igv.log
@@ -109,7 +109,7 @@ else
             $samtools/samtools view -H $i 1>$i.igv.header 2> $i.fix.igv.log
 			if [ `cat $i.fix.igv.log | wc -l` -gt 0 ]
 			then
-				$script_path/email.sh $i "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+				$script_path/email.sh $i "bam is truncated or corrupt" $run_info
 				$script_path/wait.sh $i.fix.igv.log
 			else
 				rm $i.fix.igv.log

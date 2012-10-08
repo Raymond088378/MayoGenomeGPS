@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# != 3 ]
 then
-    echo -e "Usage: to annotate vcf files \n <input vcf file><chromosome><run info file></path/to/tumor bam> </path/to/normal bam> "
+    echo -e "script to annotate vcf files using GATK\nUsage:  <input vcf file><run info file></path/to/input directroy> "
 else
     set -x
     echo `date`
@@ -17,7 +17,10 @@ else
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
     params=$( cat $tool_info | grep -w '^VCF_annotation_params' | cut -d '=' -f2)
-    out=`dirname $vcf`
+    memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
+	mem=$( cat $memory_info | grep -w '^VariantAnnotator_JVM' | cut -d '=' -f2)
+	 
+	out=`dirname $vcf`
     if [ ! -d $out/temp ]
     then
         mkdir -p $out/temp
@@ -25,7 +28,7 @@ else
     
     export PATH=$java:$PATH
     # ## annotate SNVs or INDELs
-    $java/java -Xmx4g -Xms512m -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
+    $java/java $mem -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
     -R $ref \
     -et NO_ET \
     -K $gatk/Hossain.Asif_mayo.edu.key \

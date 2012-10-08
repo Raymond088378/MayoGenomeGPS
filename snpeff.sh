@@ -11,7 +11,7 @@
 
 if [ $# -le 3 ];
 then
-    echo "Usage:<snpeff dir> <input dir><sample><run_info> ";
+    echo -e "script to run snpeff on a vcf file in a folder\nUsage:<snpeff dir> <input dir><sample><run_info><TUMOR (if somatic calling)> ";
 else
     set -x
     echo `date`

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
     
 ########################################################
 ###### 	SV ANNOTATION FOR TUMOR/NORMAL PAIR WHOLE GENOME ANALYSIS PIPELINE
@@ -13,7 +13,7 @@
 
 if [ $# != 4 ]
 then
-    echo "\nUsage: </path/to/output dir> </path/to/run_info.txt>c < output folder> <smaple/group name>";
+    echo -e "script to get annotated report for SNV reported for a sample\nUsage: </path/to/output dir> </path/to/run_info.txt>c < output folder> <smaple/group name>";
 else
     set -x
     echo `date`
@@ -33,6 +33,8 @@ else
     master_gene_file=$( cat $tool_info | grep -w '^MASTER_GENE_FILE' | cut -d '=' -f2 )
     multi_sample=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
+	Rsoft=$( cat $tool_info | grep -w '^R_SOFT' | cut -d '=' -f2 )
+	export PATH=$Rsoft:$PATH
 ##############################################################		
         
     SV_dir=$output_dir/Reports_per_Sample/
@@ -65,21 +67,19 @@ else
             touch $SV_dir/$sample.SV.tmp
             # cat $break/$sample.breakdancer.txt $crest/$sample.crest.bed > $SV_dir/$sample.tmp
             cat $break/$sample.breakdancer.txt $crest/$sample.crest.txt > $SV_dir/$sample.tmp
-
             cat -n $SV_dir/$sample.tmp > $SV_dir/$sample.tmp1
             cat $SV_dir/$sample.tmp1 | awk '{print $1"\t"$2"\t"$3"\t"$1"\t"$4"\t"$5"\t"$6"\t"$7}' >> $SV_dir/$sample.SV.tmp
             cat $SV_dir/$sample.SV.tmp |  awk '{if ($3>10000) print $0}' > $SV_dir/$sample.SV.tmp1
             cat $SV_dir/$sample.SV.tmp1 | awk '{print $2"\t"$3"\t"($3+10000)"\t"$1}' > $SV_dir/$sample.SV.leftend.bed
-            cat $SV_dir/$sample.SV.tmp1 | awk '{print $5"\t"($6-10000)"\t"$6"\t"$4}' > $SV_dir/$sample.SV.rightend.bed
-                                            
+            cat $SV_dir/$sample.SV.tmp1 | awk '{print $5"\t"($6-10000)"\t"$6"\t"$4}' > $SV_dir/$sample.SV.rightend.bed                            
             $bedtools/intersectBed -b $SV_dir/$sample.SV.leftend.bed -a $master_gene_file -wb > $SV_dir/$sample.SV.leftend.intersect.bed
             $bedtools/intersectBed -b $SV_dir/$sample.SV.rightend.bed -a $master_gene_file -wb > $SV_dir/$sample.SV.rightend.intersect.bed
-            perl $script_path/GeneAnnotation.SV.pl $SV_dir/$sample.SV.tmp $SV_dir/$sample.SV.leftend.intersect.bed $SV_dir/$sample.SV.rightend.intersect.bed $SV_dir/$sample.SV.leftend.annotation.tmp $SV_dir/$sample.SV.rightend.annotation.tmp
+            $script_path/GeneAnnotation.SV.pl $SV_dir/$sample.SV.tmp $SV_dir/$sample.SV.leftend.intersect.bed $SV_dir/$sample.SV.rightend.intersect.bed $SV_dir/$sample.SV.leftend.annotation.tmp $SV_dir/$sample.SV.rightend.annotation.tmp
             cat $SV_dir/$sample.SV.leftend.annotation.tmp | tr "^" "\t" | sort -n > $SV_dir/$sample.SV.leftend.annotation.txt
             cat $SV_dir/$sample.SV.rightend.annotation.tmp | tr "^" "\t" | sort -n > $SV_dir/$sample.SV.rightend.annotation.txt
             cat $SV_dir/$sample.SV.rightend.annotation.txt | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$6"\t"$5}' > $SV_dir/$sample.SV.rightend.annotation.final.txt
             paste $SV_dir/$sample.SV.leftend.annotation.txt $SV_dir/$sample.SV.rightend.annotation.final.txt > $SV_dir/$sample.SV.annotated.tmp
-            Rscript $script_path/format_SV_annotation.r $SV_dir/$sample.SV.annotated.tmp $SV_dir/$sample.SV.annot.txt
+            $Rsoft/Rscript $script_path/format_SV_annotation.r $SV_dir/$sample.SV.annotated.tmp $SV_dir/$sample.SV.annot.txt
             cat $SV_dir/$sample.SV.annot.txt | sed '/NOGENE/s//NA/g' > $SV_dir/$sample.SV.annot.tmp1
             cat $SV_dir/$sample.SV.annot.tmp1 | cut -f2,3,4,6,7,8,9,10 > $SV_dir/$sample.SV.txt
             cat $SV_dir/$sample.SV.txt | awk '{print $1"\t"$2"\t"$4"\t"$5"\t"$6"\t"$8"\t"$3"_"$7}' > $SV_dir/$sample.SV.temp
@@ -141,16 +141,15 @@ else
                 cat $SV_dir/$group.$tumor.tmp1 | awk '{print $1"\t"$2"\t"$3"\t"$1"\t"$4"\t"$5"\t"$6"\t"$7}' >> $SV_dir/$group.$tumor.SV.tmp
                 cat $SV_dir/$group.$tumor.SV.tmp |  awk '{if ($3>10000) print $0}' > $SV_dir/$group.$tumor.SV.tmp1
                 cat $SV_dir/$group.$tumor.SV.tmp1 | awk '{print $2"\t"$3"\t"($3+10000)"\t"$1}' > $SV_dir/$group.$tumor.SV.leftend.bed
-                cat $SV_dir/$group.$tumor.SV.tmp1 | awk '{print $5"\t"($6-10000)"\t"$6"\t"$4}' > $SV_dir/$group.$tumor.SV.rightend.bed
-                                                
+                cat $SV_dir/$group.$tumor.SV.tmp1 | awk '{print $5"\t"($6-10000)"\t"$6"\t"$4}' > $SV_dir/$group.$tumor.SV.rightend.bed                             
                 $bedtools/intersectBed -b $SV_dir/$group.$tumor.SV.leftend.bed -a $master_gene_file -wb > $SV_dir/$group.$tumor.SV.leftend.intersect.bed
                 $bedtools/intersectBed -b $SV_dir/$group.$tumor.SV.rightend.bed -a $master_gene_file -wb > $SV_dir/$group.$tumor.SV.rightend.intersect.bed
-                perl $script_path/GeneAnnotation.SV.pl $SV_dir/$group.$tumor.SV.tmp $SV_dir/$group.$tumor.SV.leftend.intersect.bed $SV_dir/$group.$tumor.SV.rightend.intersect.bed $SV_dir/$group.$tumor.SV.leftend.annotation.tmp $SV_dir/$group.$tumor.SV.rightend.annotation.tmp
+                $script_path/GeneAnnotation.SV.pl $SV_dir/$group.$tumor.SV.tmp $SV_dir/$group.$tumor.SV.leftend.intersect.bed $SV_dir/$group.$tumor.SV.rightend.intersect.bed $SV_dir/$group.$tumor.SV.leftend.annotation.tmp $SV_dir/$group.$tumor.SV.rightend.annotation.tmp
                 cat $SV_dir/$group.$tumor.SV.leftend.annotation.tmp | tr "^" "\t" | sort -n > $SV_dir/$group.$tumor.SV.leftend.annotation.txt
                 cat $SV_dir/$group.$tumor.SV.rightend.annotation.tmp | tr "^" "\t" | sort -n > $SV_dir/$group.$tumor.SV.rightend.annotation.txt
                 cat $SV_dir/$group.$tumor.SV.rightend.annotation.txt | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$6"\t"$5}' > $SV_dir/$group.$tumor.SV.rightend.annotation.final.txt
                 paste $SV_dir/$group.$tumor.SV.leftend.annotation.txt $SV_dir/$group.$tumor.SV.rightend.annotation.final.txt > $SV_dir/$group.$tumor.SV.annotated.tmp
-                Rscript $script_path/format_SV_annotation.r $SV_dir/$group.$tumor.SV.annotated.tmp $SV_dir/$group.$tumor.SV.annot.txt
+                $Rsoft/Rscript $script_path/format_SV_annotation.r $SV_dir/$group.$tumor.SV.annotated.tmp $SV_dir/$group.$tumor.SV.annot.txt
                 cat $SV_dir/$group.$tumor.SV.annot.txt | sed '/NOGENE/s//NA/g' > $SV_dir/$group.$tumor.SV.annot.tmp1
                 cat $SV_dir/$group.$tumor.SV.annot.tmp1 | cut -f2,3,4,6,7,8,9,10 > $SV_dir/$group.$tumor.SV.txt
                 cat $SV_dir/$group.$tumor.SV.txt | awk '{print $1"\t"$2"\t"$4"\t"$5"\t"$6"\t"$8"\t"$3"_"$7}' > $SV_dir/$group.$tumor.SV.temp

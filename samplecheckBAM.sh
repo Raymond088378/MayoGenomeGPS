@@ -1,6 +1,8 @@
+#!/bin/bash
+
 if [ $# != 7 ]
 then
-    echo -e "Usage: wrapper to validate bam file\n samplecheckBAM.sh <input dir><input bam><outputdir><run_info><sample><1 or 0 if bam is per chr><which _chr>";
+    echo -e "wrapper to validate bam file\nUsage: samplecheckBAM.sh <input dir><input bam><outputdir><run_info><sample><1 or 0 if bam is per chr><which _chr>";
 else	
     set -x
     echo `date`
@@ -21,11 +23,7 @@ else
     
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)	
-    ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
-    java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
-    picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 ) 
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
-    max_reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
     
     $samtools/samtools view -H $input/$bam 1>$input/$bam.sc.$chr.header 2>$input/$bam.fix.sc.$chr.log
 	
@@ -64,7 +62,7 @@ else
     then
         ln -s $output/$sample.chr${chr}.bam $output/$sample.chr${chr}-sorted.bam
     else
-        $script_path/sortbam.sh $output/$sample.chr${chr}.bam $output/$sample.chr${chr}-sorted.bam $output/temp/ coordinate $max_reads true $run_info
+        $script_path/sortbam.sh $output/$sample.chr${chr}.bam $output/$sample.chr${chr}-sorted.bam $output/temp/ coordinate true $run_info
     fi
     
     ## check if read group and platform is availbale in BAM

@@ -15,9 +15,10 @@ else
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
-    dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
-	
+	memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
+	mem=$( cat $memory_info | grep -w '^COMBINE_JVM' | cut -d '=' -f2)
+	 
     export PATH=$java:$PATH
     
     num_times=`echo $input | tr " " "\n" | grep -c -w "\-V"`
@@ -30,7 +31,7 @@ else
             cp $file.idx $output.idx
         fi
     else    
-        $java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+        $java/java $mem -jar $gatk/GenomeAnalysisTK.jar \
         -R $ref \
         -et NO_ET \
         -K $gatk/Hossain.Asif_mayo.edu.key \

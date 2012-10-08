@@ -6,7 +6,7 @@
  
 if [ $# != 8 ]
 then
-    echo -e "Usage:\nIf user wants to do realignment fist \n<input dir ':' sep><input bam ':' sep><outputdir><run_info><1 or 0 if bam is per chr><1 for realign first><sample ':' sep>\nelse\n<input dir><input bam><output dir><run_info> <1 or 0 if bam is per chr> < 0 for realign second><sample(add a dummy sample name as we dont care about the sample name (example:multi))>  ";
+    echo -e "script to realign the bam file uisng paramters from tool info file\nUsage:\nIf user wants to do realignment fist \n<input dir ':' sep><input bam ':' sep><outputdir><run_info><1 or 0 if bam is per chr><1 for realign first><sample ':' sep>\nelse\n<input dir><input bam><output dir><run_info> <1 or 0 if bam is per chr> < 0 for realign second><sample(add a dummy sample name as we dont care about the sample name (example:multi))>  ";
 else	
     set -x
     echo `date`
@@ -20,7 +20,8 @@ else
     chr=$8
     # get job array ID
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)	
+    memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
+	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)	
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
@@ -113,14 +114,15 @@ else
     	region="-L $output/chr$chr.bed"
     fi		
 	## GATK Target Creator
-    $java/java -Xmx5g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
+    
+	mem=$( cat $memory_info | grep -w '^RealignerTargetCreator_JVM' | cut -d '=' -f2)
+	$java/java $mem -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
     -R $ref \
     -et NO_ET \
     -K $gatk/Hossain.Asif_mayo.edu.key \
-    $param $region \
     -T RealignerTargetCreator \
     $input_bam \
-    -o $output/chr${chr}.forRealigner.intervals
+    -o $output/chr${chr}.forRealigner.intervals $param $region 
     
     if [ ! -s $output/chr${chr}.forRealigner.intervals ]
     then
@@ -136,21 +138,20 @@ else
             $script_path/MergeBam.sh $INPUTARGS $output/chr${chr}.realigned.bam $output true $run_info 
 		fi
     else
-        rm $output/chr$chr.bed
         ## Realignment
-        $java/java -XX:+UseConcMarkSweepGC -Xmx5g -Xms512m -Djava.io.tmpdir=$output/temp/ \
-        -jar $gatk/GenomeAnalysisTK.jar \
+        mem=$( cat $memory_info | grep -w '^IndelRealigner_JVM' | cut -d '=' -f2)
+		$java/java $mem -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
         -R $ref \
         -et NO_ET \
         -T IndelRealigner \
         -K $gatk/Hossain.Asif_mayo.edu.key \
-        $param -L chr${chr} \
+        -L chr${chr} \
         $input_bam \
         --out $output/chr${chr}.realigned.bam  \
-        -targetIntervals $output/chr${chr}.forRealigner.intervals $realign_param
+        -targetIntervals $output/chr${chr}.forRealigner.intervals $realign_param $param
         mv $output/chr${chr}.realigned.bai $output/chr${chr}.realigned.bam.bai
     fi
-
+	
     if [ -s $output/chr${chr}.realigned.bam ]
     then
         if [ $realign == 0 ]
@@ -185,5 +186,9 @@ else
         rm $output/$samples.chr${chr}-sorted.bam.bai
     fi		
     rm $output/chr${chr}.forRealigner.intervals
+	if [ -f $output/chr$chr.bed	]
+	then
+		rm $output/chr$chr.bed	
+    fi
     echo  `date`	
 fi

@@ -13,7 +13,7 @@
 
 if [ $# != 4 ]
 then
-    echo "\nUsage: </path/to/output dir> </path/to/run_info.txt> <sample/group>";
+    echo -e "script to create a annotated report for all teh CNV reported for a sample\nUsage: </path/to/output dir> </path/to/run_info.txt> <sample/group>";
 else
     set -x
     echo `date`
@@ -37,7 +37,8 @@ else
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2)
     chrIndexes=$( echo $chrs | tr ":" "\n" )
-
+	Rsoft=$( cat $tool_info | grep -w '^R_SOFT' | cut -d '=' -f2 )
+	export PATH=$Rsoft:$PATH
 ##############################################################		
     CNV_dir=$output_dir
             

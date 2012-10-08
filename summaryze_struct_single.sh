@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# != 3 ]
 then	
-	echo "Usage: <sample name> <base dir> <path to run_info file> ";
+	echo -e "script to merge the structural varaints from multiple tools\nUsage: <sample name> <base dir> <path to run_info file> ";
 	exit 1
 else
 	set -x

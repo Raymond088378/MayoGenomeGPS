@@ -18,7 +18,7 @@
 
 if [ $# != 4 ]
 then
-    echo "\nUsage: </path/to/output directory> <sample name> </path/to/run_info.txt> </path/yo/Reports_per_Sample>";
+    echo "script to get the gene summary file with information about the vaianats and SVs\nUsage: </path/to/output directory> <sample name> </path/to/run_info.txt> </path/yo/Reports_per_Sample>";
 else
     set -x
     echo `date`
@@ -49,7 +49,8 @@ else
     email=$( cat $run_info | grep -w '^EMAIL' | cut -d '=' -f2)
     queue=$( cat $run_info | grep -w '^QUEUE' | cut -d '=' -f2)
     multi_sample=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2)
-
+	Rsoft=$( cat $tool_info | grep -w '^R_SOFT' | cut -d '=' -f2 )
+	export PATH=$Rsoft:$PATH
 ##############################################################		
 
 		
@@ -74,7 +75,6 @@ else
 					echo "NOGENE"  >> $SNV_dir/in.$sample.$snv.tmp
 				fi	
 			done    
-			
 			Rscript $script_path/summary.SNV.r $report_dir/$sample.gene.temp $SNV_dir/in.$sample.SPLICE_SITE_ACCEPTOR.tmp $SNV_dir/in.$sample.SPLICE_SITE_DONOR.tmp $SNV_dir/in.$sample.START_LOST.tmp $SNV_dir/in.$sample.STOP_GAINED.tmp $SNV_dir/in.$sample.STOP_LOST.tmp $SNV_dir/in.$sample.RARE_AMINO_ACID.tmp $SNV_dir/in.$sample.NON_SYNONYMOUS_CODING.tmp $SNV_dir/in.$sample.SYNONYMOUS_START.tmp $SNV_dir/in.$sample.NON_SYNONYMOUS_START.tmp $SNV_dir/in.$sample.START_GAINED.tmp $SNV_dir/in.$sample.SYNONYMOUS_CODING.tmp $SNV_dir/in.$sample.SYNONYMOUS_STOP.tmp $SNV_dir/in.$sample.NON_SYNONYMOUS_STOP.tmp $SNV_dir/in.$sample.UTR_5_PRIME.tmp $SNV_dir/in.$sample.UTR_3_PRIME.tmp $SNV_dir/$sample.SPLICE_SITE_ACCEPTOR.tmp $SNV_dir/$sample.SPLICE_SITE_DONOR.tmp $SNV_dir/$sample.START_LOST.tmp $SNV_dir/$sample.STOP_GAINED.tmp $SNV_dir/$sample.STOP_LOST.tmp $SNV_dir/$sample.RARE_AMINO_ACID.tmp $SNV_dir/$sample.NON_SYNONYMOUS_CODING.tmp $SNV_dir/$sample.SYNONYMOUS_START.tmp $SNV_dir/$sample.NON_SYNONYMOUS_START.tmp $SNV_dir/$sample.START_GAINED.tmp $SNV_dir/$sample.SYNONYMOUS_CODING.tmp $SNV_dir/$sample.SYNONYMOUS_STOP.tmp $SNV_dir/$sample.NON_SYNONYMOUS_STOP.tmp $SNV_dir/$sample.UTR_5_PRIME.tmp $SNV_dir/$sample.UTR_3_PRIME.tmp
 			
 			join $SNV_dir/$sample.SPLICE_SITE_ACCEPTOR.tmp $SNV_dir/$sample.SPLICE_SITE_DONOR.tmp > $SNV_dir/$sample.join1.txt

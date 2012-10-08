@@ -2,7 +2,7 @@
 
 if [ $# -le 3 ]
 then
-    echo "Usage: wrapper to run polyphen \n <polphen dir> <input directory><sample><run info>"
+    echo -e "script to run polyphen on a vcf file\nUsage: <polphen dir> <input directory><sample><run info><TUMOR (if somatic calling)>"
 else
     set -x
     echo `date`

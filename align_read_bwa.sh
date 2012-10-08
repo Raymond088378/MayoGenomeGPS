@@ -16,7 +16,7 @@
 
 if [ $# -le 3 ]
 then
-    echo -e "Usage: wrapper script to run the alignment using NOVO ALIGN \n align_split_thread.sh <sample name> </path/to/output_dir> </path/to/run_info.txt> <SGE TASK ID (optional)>";
+    echo -e "wrapper script to run the alignment using NOVO ALIGN\nUsage:align_read_bwa.sh <sample name> </path/to/output_dir> </path/to/run_info.txt> <SGE TASK ID (optional)>";
 else	
     set -x 
     echo `date`
@@ -34,11 +34,9 @@ else
     seq_file=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    GenomeBuild=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2 )
     genome_bwa=$( cat $tool_info | grep -w '^BWA_REF' | cut -d '=' -f2)
     bwa=$( cat $tool_info | grep -w '^BWA' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
-    paired=$( cat $run_info | grep -w '^PAIRED' | cut -d '=' -f2)
     parameters=$( cat $tool_info | grep -w '^BWA_params' | cut -d '=' -f2 )
 ########################################################	
 ######		Check FASTQ for Illumina or Sanger quality scrore

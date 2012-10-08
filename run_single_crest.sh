@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ########################################################
 ###### 	SV CALLER FOR WHOLE GENOME ANALYSIS PIPELINE
@@ -14,19 +14,20 @@
 ######		Output files:	BAM files. 
 ########################################################
 
-if [ $# -le 3 ]
+if [ $# -le 4 ]
 then
-	echo "\nUsage: samplename </path/to/realign directory/></path/to/output directory> </path/to/run_info.txt>";
+	echo -e "script to run CREST on a bam file\nUsage: <samplename> </path/to/align directory/> <bam file name> </path/to/output directory> </path/to/run_info.txt><SGE_TASK_ID(optional)>";
 else
 	set -x
 	echo `date`
 	sample=$1
 	input=$2
-	output_dir=$3
-	run_info=$4
-	if [ $5 ]
+	input_bam=$3
+	output_dir=$4
+	run_info=$5
+	if [ $6 ]
 	then
-		SGE_TASK_ID=$5
+		SGE_TASK_ID=$6
 	fi	
 	
 ########################################################	
@@ -48,11 +49,6 @@ else
 	blat_server=$( cat $tool_info | grep -w '^BLAT_SERVER' | cut -d '=' -f2 )
 	chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
 	ref_genome=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2 )
-	output=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
-	PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
-	tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
-	run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
-
 	min_read=$( cat $tool_info | grep -w '^STRUCT_MIN_SUPPORT' | cut -d '=' -f2)
 	min_id=$( cat $tool_info | grep -w '^STRUCT_MIN_IDENTITY' | cut -d '=' -f2)
 	blacklist_sv=$( cat $tool_info | grep -w '^BLACKLIST_SV' | cut -d '=' -f2 )
@@ -63,39 +59,38 @@ else
 ########################################################	
 ######		
 	pid=""
-	input_bam=$input/chr${chr}.cleaned.bam
-	$samtools/samtools view -H $input_bam 1>$input_bam.crest.header 2>$input_bam.fix.crest.log
-	if [ `cat $input_bam.fix.crest.log | wc -l` -gt 0 ]
+	$samtools/samtools view -H $input/$input_bam 1>$input/$input_bam.crest.$chr.header 2>$input/$input_bam.$chr.fix.crest.log
+	if [ `cat $input/$input_bam.$chr.fix.crest.log | wc -l` -gt 0 ]
 	then
-		$script_path/errorlog.sh $input_bam run_cnvnator.sh ERROR "truncated or corrupt bam"
-		exit 1;
+		$script_path/email.sh $input/$input_bam "truncated or corrupt bam" $run_info
+		$script_path/wait.sh $input/$input_bam.$chr.fix.crest.log
 	else
-		rm $input_bam.fix.crest.log
+		rm $input/$input_bam.$chr.fix.crest.log
 	fi	
-	rm $input_bam.crest.header
+	rm $input/$input_bam.crest.$chr.header
+	SORT_FLAG=`$script_path/checkBAMsorted.pl -i $input/$input_bam -s $samtools`
+	if [ $SORT_FLAG == 0 ]
+	then
+		$script_path/errorlog.sh $input/$input_bam run_single_crest.sh ERROR "bam is not sorted"
+		exit 1;
+	fi
+    if [ ! -s $input/$input_bam.bai ]
+	then
+	    $samtools/samtools index $input/$input_bam 
+	fi
+
     export PERL5LIB=$perllib:$crest
 	PATH=$PATH:$blat:$crest:$perllib
 	mkdir -p $output_dir/$sample
-	SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input_bam -s $samtools`
-	if [ $SORT_FLAG == 0 ]
-	then
-		echo "ERROR : run_crest_multi $input_bam should be sorted"
-		exit 1;
-	fi
-    if [ ! -s $input_bam.bai ]
-	then
-	    $samtools/samtools index $input_bam 
-	fi
-
+	$samtools/samtools view -b $input/$input_bam chr$chr > $output_dir/$sample/$sample.chr${chr}.cleaned.bam
+	$samtools/samtools index $output_dir/$sample/$sample.chr${chr}.cleaned.bam
+	
 	mkdir -p $output_dir/$sample/log
     export TMPDIR=$output_dir/$sample/log
 	range=20000
 	let blat_port+=$RANDOM%range
 	status=`$blat/gfServer status localhost $blat_port | wc -l`;
-    
-    ln -s $input_bam $output_dir/$sample/$sample.chr${chr}.cleaned.bam
-    ln -s $input_bam.bai $output_dir/$sample/$sample.chr${chr}.cleaned.bam.bai
-    input_bam=$output_dir/$sample/$sample.chr${chr}.cleaned.bam
+	input_bam=$output_dir/$sample/$sample.chr${chr}.cleaned.bam
     
 	if [ "$status" -le 1 ]
 	then
@@ -129,9 +124,7 @@ else
 		--blatport $blat_port -blatserver localhost \
 		--cap3 $cap3/cap3 \
 		-o $output_dir/$sample -p $sample.$chr
-		
         rm $input_bam $input_bam.bai
-        
 		$script_path/CREST2VCF.pl -i $output_dir/$sample/$sample.$chr.predSV.txt -f $ref_genome -o $output_dir/$sample/$sample.$chr.raw.vcf -s $sample -t $samtools
 		if [ ! -s $output_dir/$sample/$sample.$chr.raw.vcf.fail ]
         then

@@ -2,7 +2,7 @@
 
 if [ $# != 2 ]
 then
-    echo "Usage : <output_dir> <run_info>";
+    echo -e "script to merge the per sample report\nUsage : <output_dir> <run_info>";
 else
     set -x
     echo `date`

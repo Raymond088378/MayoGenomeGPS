@@ -3,7 +3,7 @@
 ##	to merge the scripts to call in one script to control sapnning jobs
 if [ $# -le 7 ]
 then
-	echo "Usage: <run info> <sample> <Temp reports> <Output OnTarget> <sift> <snpeff> <polyphen> <output dir><group optional>";
+	echo -e "script to merge per chromosome report to a single merged report for delivery\nUsage: <run info> <sample> <Temp reports> <Output OnTarget> <sift> <snpeff> <polyphen> <output dir><group optional>";
 else
 	set -x
 	echo `date`			
@@ -31,7 +31,7 @@ else
 		if [ ! -s $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf  ]
 		then
 			touch $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf.fix.log
-			$script_path/email.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf  "not found" $JOB_NAME $JOB_ID $run_info
+			$script_path/email.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf  "not found" $run_info
 			$script_path/wait.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf.fix.log
 		fi			
 		$script_path/parse.vcf.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf $TempReports/$gr.$sample.chr${which_chr}.snv $run_info SNV
@@ -39,7 +39,7 @@ else
 		if [ ! -s $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf  ]
 		then
 			touch $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf.fix.log
-			$script_path/email.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf  "not found" $JOB_NAME $JOB_ID $run_info
+			$script_path/email.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf  "not found" $run_info
 			$script_path/wait.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf.fix.log
 		fi	
 		$script_path/parse.vcf.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf $TempReports/$gr.$sample.chr${which_chr}.indel $run_info INDEL
@@ -48,7 +48,7 @@ else
 		if [ ! -s $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf  ]
 		then
 			touch $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf.fix.log
-			$script_path/email.sh $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf  "not found" $JOB_NAME $JOB_ID $run_info
+			$script_path/email.sh $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf  "not found" $run_info
 			$script_path/wait.sh $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf.fix.log
 		fi		
 		$script_path/parse.vcf.sh $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf $TempReports/$sample.chr${which_chr}.snv $run_info SNV
@@ -56,7 +56,7 @@ else
 		if [ ! -s $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf  ]
 		then
 			touch $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf.fix.log
-			$script_path/email.sh $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf  "not found" $JOB_NAME $JOB_ID $run_info
+			$script_path/email.sh $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf  "not found" $run_info
 			$script_path/wait.sh $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf.fix.log
 		fi	
 		$script_path/parse.vcf.sh $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf $TempReports/$sample.chr${which_chr}.indel $run_info INDEL	

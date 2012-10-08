@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ########################################################
 ###### 	CNV CALLER FOR WHOLE GENOME ANALYSIS PIPELINE
@@ -16,7 +16,7 @@
 
 if [ $# -le 3 ]
 then
-    echo "\nUsage: samplename </path/to/output directory> </path/to/run_info.txt>";
+    echo -e "script to run cnvnator on a bam file\nUsage: <samplename> <input folder> </path/to/output directory> </path/to/run_info.txt>";
 else
     set -x
     echo `date`
@@ -54,8 +54,8 @@ else
 	$samtools/samtools view -H $input_bam 1>$input_bam.cnv.header 2>$input_bam.fix.cnv.log
 	if [ `cat $input_bam.fix.cnv.log | wc -l` -gt 0 ]
 	then
-		$script_path/errorlog.sh $input_bam run_cnvnator.sh ERROR "truncated or corrupt bam"
-		exit 1;
+		$script_path/email.sh $input_bam "truncated or corrupt bam" $run_info
+		$script_path/wait.sh $input_bam.fix.cnv.log
 	else
 		rm $input_bam.fix.cnv.log
 	fi	
@@ -95,7 +95,6 @@ else
             then
                 rm $output_dir/$sample.$chr.dup.vcf.fail
             fi   
-
             if [ -s $output_dir/$sample.$chr.del.bed ]
 			then
 				$bedtools/closestBed -a $output_dir/$sample.$chr.del.bed -b $gap -d | awk "\$13>$distgap" | cut -f 1-6 |\

@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# != 8 ]
 then
-    echo "Usage: <normal bam> <tumor bam > <output dir> <chromosome> <tumor sample name> <normal sample name ><output file> <run info>"
+    echo "script to run joint snvmix on a set of tumor normal bam files\nUsage: <normal bam> <tumor bam > <output dir> <chromosome> <tumor sample name> <normal sample name ><output file> <run info>"
 else
     set -x
     echo `date`
@@ -27,8 +27,7 @@ else
 	command_line_params=$( cat $tool_info | grep -w '^JOINTSNVMIX_params' | cut -d '=' -f2 )
 	bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
 	JSM_Filter=$( cat $tool_info|grep -w 'JSM_Filter'|cut -d  '=' -f2 )
-        
-
+    
     export PYTHONPATH=$pythonpath:$PYTHONPATH
     export PATH=$python:$PYTHONPATH:$PATH
     
@@ -40,12 +39,8 @@ else
     	$samtools/samtools view -H $normal_bam 1>$normal_bam.jsm.header 2> $normal_bam.fix.jsm.log
     	if [ `cat $normal_bam.fix.jsm.log | wc -l` -gt 0 ]
 		then
-			$script_path/email.sh $normal_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-			while [ -f $normal_bam.fix.jsm.log ]
-			do
-				echo "waiting for the $normal_bam to be fixed"
-				sleep 2m
-			done
+			$script_path/email.sh $normal_bam "bam is truncated or corrupt" $run_info
+			$script_path/wait.sh $normal_bam.fix.jsm.log 
 		else
 			rm $normal_bam.fix.jsm.log
 		fi	
@@ -60,12 +55,8 @@ else
     	$samtools/samtools view -H $tumor_bam 1>$tumor_bam.jsm.header 2> $tumor_bam.fix.jsm.log
 		if [ `cat $tumor_bam.fix.jsm.log | wc -l` -gt 0 ]
 		then
-			$script_path/email.sh $tumor_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-			while [ -f $tumor_bam.fix.jsm.log ]
-			do
-				echo "waiting for the $tumor_bam to be fixed"
-				sleep 2m
-			done
+			$script_path/email.sh $tumor_bam "bam is truncated or corrupt" $run_info
+			$script_path/wait.sh $tumor_bam.fix.jsm.log 
 		else
 			rm $tumor_bam.fix.jsm.log
 		fi	
@@ -76,7 +67,7 @@ else
 	$python/python $jointsnvmix/build/scripts-2.7/jsm.py classify --model snvmix2 $command_line_params --chromosome chr$chr --out_file $output/$output_file.txt --parameters_file $jointsnvmix/config/params.cfg $ref $normal_bam $tumor_bam
 	
 	### script to convert text output to vcf output 
-	perl $script_path/jsm2vcf.pl -i $output/$output_file.txt -o $output/$output_file -ns $normal_sample -ts $tumor_sample $JSM_Filter
+	$script_path/jsm2vcf.pl -i $output/$output_file.txt -o $output/$output_file -ns $normal_sample -ts $tumor_sample $JSM_Filter
 	cat $output/$output_file | awk '$0 ~ /^#/ || $5 ~ /,/' > $output/$output_file.multi.vcf
 	cat $output/$output_file | awk '$0 ~ /^#/ || $5 !~ /,/' > $output/$output_file.tmp
 	mv $output/$output_file.tmp $output/$output_file

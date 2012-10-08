@@ -2,7 +2,7 @@
 
 if [ $# -le 2 ]
 then
-    echo -e "Usage: wrapper to merge bam files and validate the bam for downstream analysis \n merge_align.bam.sh </path/to/input directory> <name of BAM to sort> <sample name> </path/to/run_info.txt>";
+    echo -e "script to split the bam file per chromosome (assuimg the file name as <sample>.sorted.bam)\nUsage: split_bam_chr.sh </path/to/input directory> <sample name> </path/to/run_info.txt><SGE_TASK_ID(optional)>";
 else
     set -x
     echo `date`
@@ -22,7 +22,7 @@ else
     $samtools/samtools view -H $bam 1> $bam.header 2> $bam.fix.log
 	if [ `cat $bam.fix.log | wc -l` -gt 0 ]
 	then
-		$script_path/email.sh $bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+		$script_path/email.sh $bam "bam is truncated or corrupt" $run_info
 		$script_path/wait.sh $bam.fix.log
 	else
 		rm $bam.fix.log

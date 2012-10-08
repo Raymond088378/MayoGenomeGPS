@@ -56,11 +56,10 @@ else
     r_soft=$( cat $tool_info | grep -w '^R_SOFT' | cut -d '=' -f2)
 	vqsr_snv_param=$( cat $tool_info | grep -w '^VQSR_params_SNV' | cut -d '=' -f2 )
 	vqsr_indel_param=$( cat $tool_info | grep -w '^VQSR_params_INDEL' | cut -d '=' -f2 )
-	
+	memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
 	export PATH=$r_soft:$java:$PATH
-	
-    ### split the vcf file for indels and snvs to appy the vqsr seperately
-    perl $script_path/vcf_to_variant_vcf.pl -i $inputvcf -v $inputvcf.SNV.vcf -l $inputvcf.INDEL.vcf -t both   
+	### split the vcf file for indels and snvs to appy the vqsr seperately
+    $script_path/vcf_to_variant_vcf.pl -i $inputvcf -v $inputvcf.SNV.vcf -l $inputvcf.INDEL.vcf -t both   
 
 	raw_calls_snvs=`cat $inputvcf.SNV.vcf | awk '$0 !~ /#/' | wc -l`
 	raw_calls_indels=`cat $inputvcf.INDEL.vcf | awk '$0 !~ /#/' | wc -l`
@@ -104,7 +103,8 @@ else
 			let count=0
 			while [[ $check -eq 0 && $count -le 10 ]]
 			do
-                $java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+                mem=$( cat $memory_info | grep -w '^VariantRecalibrator_JVM' | cut -d '=' -f2)
+				$java/java $mem -jar $gatk/GenomeAnalysisTK.jar \
 				-R $ref \
 				-et NO_ET \
 				-K $gatk/Hossain.Asif_mayo.edu.key \
@@ -118,8 +118,7 @@ else
 				-recalFile $output/temp/$input_name.recal \
 				-tranchesFile $output/temp/$input_name.tranches \
 				-rscriptFile $output/plot/$input_name.plots.R $vqsr_snv_param
-				
-				sleep 15
+				sleep 5
 				check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
 				if [ $check -eq 0 ]
 				then
@@ -148,7 +147,8 @@ else
 			## Apply Recalibrator
 			if [[ `cat $output/temp/$input_name.recal | wc -l` -gt 2  && -s $output/temp/$input_name.tranches ]]
 			then
-				$java/java -Xmx3g -XX:-UseGCOverheadLimit -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+				mem=$( cat $memory_info | grep -w '^ApplyRecalibration_JVM' | cut -d '=' -f2)
+				$java/java $mem -jar $gatk/GenomeAnalysisTK.jar \
 				-R $ref \
 				-et NO_ET \
 				-K $gatk/Hossain.Asif_mayo.edu.key \
@@ -159,7 +159,7 @@ else
 				-recalFile $output/temp/$input_name.recal \
 				-tranchesFile $output/temp/$input_name.tranches \
 				-o $outfile.SNV.vcf
-				sleep 15
+				sleep 5
 			fi
 			
 			filter_calls_snvs=`cat $outfile.SNV.vcf | awk '$0 !~ /#/' | wc -l`
@@ -201,7 +201,8 @@ else
 			let check=0
 			while [[ $check -eq 0 && $count -le 10 ]]
 			do
-				$java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+				mem=$( cat $memory_info | grep -w '^VariantRecalibrator_JVM' | cut -d '=' -f2)
+				$java/java $mem -jar $gatk/GenomeAnalysisTK.jar \
 				-R $ref \
 				-et NO_ET \
 				-K $gatk/Hossain.Asif_mayo.edu.key \
@@ -213,8 +214,7 @@ else
 				-recalFile $output/temp/$input_name.recal \
 				-tranchesFile $output/temp/$input_name.tranches \
 				-rscriptFile $output/plot/$input_name.plots.R $vqsr_indel_param
-				
-				sleep 15 
+				sleep 5 
 				check=`[ -s $output/temp/$input_name.tranches.pdf ] && echo "1" || echo "0"`
 				if [ $check -eq 0 ]
 				then
@@ -241,7 +241,8 @@ else
 			## Apply Recalibrator
 			if [[ `cat $output/temp/$input_name.recal | wc -l` -gt 2  && -s $output/temp/$input_name.tranches ]]
 			then
-				$java/java -Xmx3g -XX:-UseGCOverheadLimit -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+				mem=$( cat $memory_info | grep -w '^ApplyRecalibration_JVM' | cut -d '=' -f2)
+				$java/java $mem -jar $gatk/GenomeAnalysisTK.jar \
 				-R $ref \
 				-et NO_ET \
 				-K $gatk/Hossain.Asif_mayo.edu.key \
@@ -252,7 +253,7 @@ else
 				-recalFile $output/temp/$input_name.recal \
 				-tranchesFile $output/temp/$input_name.tranches \
 				-o $outfile.INDEL.vcf
-				sleep 15 
+				sleep 5 
 			fi
 		
 			filter_calls_indels=`cat $outfile.INDEL.vcf | awk '$0 !~ /#/' | wc -l`

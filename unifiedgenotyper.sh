@@ -23,7 +23,9 @@ else
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
 	qual=$( cat $tool_info | grep -w '^BASE_QUALITY' | cut -d '=' -f2 )
 	command_line_params=$( cat $tool_info | grep -w '^UnifiedGenotyper_params' | cut -d '=' -f2 )
-	
+	memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
+	mem=$( cat $memory_info | grep -w '^UnifiedGenotyper_JVM' | cut -d '=' -f2)
+	 
 	export PATH=$java:$PATH
     if [ ${#ped} -eq 0 ]
     then
@@ -42,7 +44,7 @@ else
     do
 		if [ $ped != "NA" ]
 		then
-			$java/java -Xmx4g -Xms512m -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
+			$java/java $mem -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
 			-R $ref \
 			-et NO_ET \
 			-K $gatk/Hossain.Asif_mayo.edu.key \
@@ -55,7 +57,7 @@ else
 			--ped $ped \
 			--out $vcf $command_line_params
 		else
-			$java/java -Xmx4g -Xms512m -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
+			$java/java $mem -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
 			-R $ref \
 			-et NO_ET \
 			-K $gatk/Hossain.Asif_mayo.edu.key \
@@ -67,7 +69,7 @@ else
 			$bam \
 			--out $vcf $command_line_params
 		fi
-		sleep 15
+		sleep 5
         check=`[ -s $vcf.idx ] && echo "1" || echo "0"`
         if [ $check -eq 0 ]
         then

@@ -24,10 +24,12 @@ else
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
 	only_ontarget=$( cat $tool_info | grep -w '^TARGETTED' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 	command_line_params=$( cat $tool_info | grep -w '^MUTECT_params' | cut -d '=' -f2 )
+	memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
+	mem=$( cat $memory_info | grep -w '^MuTecT_JVM' | cut -d '=' -f2)
+	 
 	export PATH=$java:$PATH  
     if [ $only_ontarget == "YES" ]
     then
-	
         len=`cat $output/chr$chr.target.bed |wc -l`
         if [ $len -gt 0 ]
         then
@@ -47,7 +49,7 @@ else
 	
 	while [[ $check -eq 0 ]]
     do
-		$java/java -XX:MaxPermSize=128M -Xmx4g -Xms512m -jar $mutect/muTect-1.0.27783.jar \
+		$java/java $mem -jar $mutect/muTect-1.0.27783.jar \
         -T MuTect \
         --reference_sequence $ref \
         $param -nt $threads \
@@ -73,7 +75,7 @@ else
         fi
     done    
     
-	perl $script_path/mutect2vcf.pl -i $output/$output_file -o $output/$output_file.temp -ns $normal_sample -ts $tumor_sample
+	$script_path/mutect2vcf.pl -i $output/$output_file -o $output/$output_file.temp -ns $normal_sample -ts $tumor_sample
 	mv $output/$output_file.temp  $output/$output_file
 	cat $output/$output_file | awk '$0 ~ /^#/ || $5 ~ /,/' > $output/$output_file.multi.vcf
 	cat $output/$output_file | awk '$0 ~ /^#/ || $5 !~ /,/' > $output/$output_file.tmp

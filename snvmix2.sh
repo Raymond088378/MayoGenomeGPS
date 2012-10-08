@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# != 6 ]
 then
-	echo -e "Usage: script to run snvmix \n <sample> <pileup file><output vcf> <mode><chr><run info> "
+	echo -e "script to run snvmix\nUsage: <sample> <bam file><output vcf> <mode><bed file><run info> "
 else
     set -x
     echo `date`
@@ -29,7 +29,7 @@ else
 	$samtools/samtools view -H $bam 1>$bam.snvmix.header 2>$bam.snvmix.fix.log
 	if [ `cat $bam.snvmix.fix.log | wc -l` -gt 0 ]
 	then
-		$script_path/email.sh $bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+		$script_path/email.sh $bam "bam is truncated or corrupt" $run_info
 		while [ -f $bam.snvmix.fix.log ]
 		do
 			echo "waiting for the $bam to be fixed"
@@ -52,7 +52,7 @@ else
 
     if [[ $only_ontarget == "YES" && $tool == "exome" ]]
     then
-        perl $script_path/snvmix_to_vcf.pl -i $temp -o $output -s $sample $filter
+        $script_path/snvmix_to_vcf.pl -i $temp -o $output -s $sample $filter
         if [ -s $temp_kit ]
 		then
             $bedtools/intersectBed -a $output -b $TargetKit -wa -header > $output.i
@@ -61,7 +61,7 @@ else
         fi	
         mv $output.i $output
     else
-        perl $script_path/snvmix_to_vcf.pl -i $temp -o $output -s $sample
+        $script_path/snvmix_to_vcf.pl -i $temp -o $output -s $sample
     fi
     if [ $mode != "all" ]
     then

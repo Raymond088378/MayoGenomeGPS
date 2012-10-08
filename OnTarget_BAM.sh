@@ -12,7 +12,7 @@
 
 if [ $# -le 3 ];
 then
-    echo -e "Usage : SCRIPT to get Ontaget reads  \n<input sample realignment><chromsome><output Ontarget><sample><run info>";
+    echo -e "Usage : SCRIPT to get Ontaget reads\nUsage: <input sample realignment><chromsome><output Ontarget><sample><run info>";
 else	
     set -x 
     echo `date`
@@ -49,7 +49,7 @@ else
 		$samtools/samtools view -H $bam 1>$bam.OnTarget_BAM.header 2> $bam.fix.OnTarget_BAM.log
 		if [ `cat $bam.fix.OnTarget_BAM.log | wc -l` -gt 0 ]
 		then
-			$script_path/email.sh $bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+			$script_path/email.sh $bam "bam is truncated or corrupt" $run_info
 			$script_path/wait.sh $bam.fix.OnTarget_BAM.log
 		else
 			rm $bam.fix.OnTarget_BAM.log

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ## script to get statistical numbers for each sample or pair
 
 if [ $# != 4 ]
@@ -29,9 +29,7 @@ else
 	
 ##############################################################		
 ##############################################################		
-    #variant_type=SNV
-    #numbers=$input_dir/numbers
-    
+  
 	
     if [ $multi_sample != "YES" ]
     then

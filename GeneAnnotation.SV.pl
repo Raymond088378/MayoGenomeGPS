@@ -1,3 +1,5 @@
+#!/usr/local/biotools/perl/5.10.0/bin/perl
+
 ## Perl script to add gene annotation for the right and left chromosomal positions for SV. The key used here is the line number, chromosome and position. Line number used due to redundancy found in using just chr_position pair.
 
 use strict;

@@ -2,7 +2,7 @@
 
 if [ $# != 4 ]
 then
-    echo -e " Usage: script to merge the covergae pileup \n <input dir><output dir><sample><run info >"
+    echo -e "script to merge the coverage numbers per sample from per chromosome\nUsage: <input dir><output dir><sample><run info >"
 else
     set -x
     echo `date`

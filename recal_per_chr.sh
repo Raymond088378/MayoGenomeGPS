@@ -4,7 +4,7 @@
 ## GATK version using GenomeAnalysisTK-1.2-4-gd9ea764
 if [ $# != 8 ]
 then
-    echo -e "Usage:\nIf user wants to do recalibration fist \n<input dir ':' sep><input bam ':' sep><outputdir><run_info><1 or 0 if bam is per chr><1 for recalibrate first ><sample ':' sep>\nelse\n<input dir><input bam><output dir><run_info> <1 or 0 if bam is per chr> < 0 for recal second><sample (a dummy sampel name i would say just type multi as sample>  ";
+    echo -e "script to run recalibration on a bam file uisng tool info paramters\nUsage:\nIf user wants to do recalibration fist \n<input dir ':' sep><input bam ':' sep><outputdir><run_info><1 or 0 if bam is per chr><1 for recalibrate first ><sample ':' sep>\nelse\n<input dir><input bam><output dir><run_info> <1 or 0 if bam is per chr> < 0 for recal second><sample (a dummy sampel name i would say just type multi as sample>  ";
 else	
     set -x
     echo `date`
@@ -18,7 +18,8 @@ else
     chr=$8
 
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)	
+    memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
+	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)	
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
@@ -107,13 +108,14 @@ else
     fi	
     
     ## Recal metrics file creation
-    $java/java -Xmx5g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
+    
+	mem=$( cat $memory_info | grep -w '^CountCovariates_JVM' | cut -d '=' -f2)
+	$java/java $mem -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
     -R $ref \
     -et NO_ET \
     -K $gatk/Hossain.Asif_mayo.edu.key \
     $param $input_bam \
-    $region \
-    -T CountCovariates \
+    $region -T CountCovariates \
     -cov ReadGroupCovariate \
     -cov QualityScoreCovariate \
     -cov CycleCovariate \
@@ -134,9 +136,9 @@ else
             $script_path/MergeBam.sh $INPUTARGS $output/chr${chr}.recalibrated.bam $output true $run_info 
         fi
     else	
-        rm $output/chr$chr.bed
     	## recailbartion
-        $java/java -Xmx5g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
+        mem=$( cat $memory_info | grep -w '^TableRecalibration_JVM' | cut -d '=' -f2)
+		$java/java $mem -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
         -R $ref \
         -et NO_ET \
         -K $gatk/Hossain.Asif_mayo.edu.key \
@@ -182,6 +184,10 @@ else
         rm $output/$samples.chr${chr}-sorted.bam
         rm $output/$samples.chr${chr}-sorted.bam.bai
     fi
-    rm $output/chr${chr}.recal_data.csv 		
-    echo `date`	
+    rm $output/chr${chr}.recal_data.csv 
+	if [ -f $output/chr$chr.bed	]
+	then
+		rm $output/chr$chr.bed	
+    fi
+	echo `date`	
 fi

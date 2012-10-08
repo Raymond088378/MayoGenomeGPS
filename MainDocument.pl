@@ -1227,20 +1227,19 @@ else    {
 					print OUT "<br>";
 				}
 				else	{
-					for (my $i = 0; $i < $num_groups; $i++) {
-						if ($variant_type eq 'BOTH' || $variant_type eq 'SNV')	{
-							print OUT "<u> <a href= \"Reports/$groupArray[$i].SNV.xls\"target=\"_blank\">SNV Report  for $groupArray[$i]</a></u> <br>";
-						}
-						if ($variant_type eq 'BOTH' || $variant_type eq 'INDEL')	{
-							print OUT "<u> <a href= \"Reports/$groupArray[$i].INDEL.xls\"target=\"_blank\">INDEL Report  for $groupArray[$i]</a></u> <br>";
-						}	
+					if ($variant_type eq 'BOTH' || $variant_type eq 'SNV')	{
+						print OUT "<u> <a href= \"Reports/SNV.xls\"target=\"_blank\">Multi sample SNV Report</a></u> <br>";
 					}
-					print OUT "<br>";
+					if ($variant_type eq 'BOTH' || $variant_type eq 'INDEL')	{
+						print OUT "<u> <a href= \"Reports/INDEL.xls\"target=\"_blank\">Multi sample INDEL Report</a></u> <br>";
+					}
+					if ($variant_type eq 'BOTH' || $variant_type eq 'SNV')	{
+						print OUT "<u> <a href= \"Reports/TUMOR.SNV.xls\"target=\"_blank\">Somatic SNV Report</a></u> <br>";
+					}
+					if ($variant_type eq 'BOTH' || $variant_type eq 'INDEL')	{
+						print OUT "<u> <a href= \"Reports/TUMOR.INDEL.xls\"target=\"_blank\">Somatic INDEL Report</a></u> <br>";
+					}
 				}		
-				if ($multi eq "YES")	{
-					print OUT "<u> <a href= \"Reports/Paired.SNV.xls\"target=\"_blank\">Paired SNV Report</a></u> <br>";
-					print OUT "<u> <a href= \"Reports/Paired.INDEL.xls\"target=\"_blank\">Paired INDEL Report</a></u> <br><br>";
-				}	
 				print OUT "</ul>";
 			
 		print OUT "<ul>

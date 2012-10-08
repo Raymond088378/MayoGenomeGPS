@@ -2,7 +2,7 @@
 
 if [ $# -le 4 ]
 then
-	echo -e "Usage:\n<input dir><samples ':' sep[normal:tumor1:tumor2:tumorN]> <output directory> <1 or 0 chopped or not ><run info>\nNOTE: first sample is considered as normal and others are considered as tumor[Assumption]\n";
+	echo -e "script to run variant calling on set of BAM files\nUsage:\n<input dir><samples ':' sep[normal:tumor1:tumor2:tumorN]> <output directory> <1 or 0 chopped or not ><run info><SGE_TASK_ID(optional)>\nNOTE: first sample is considered as normal and others are considered as tumor[Assumption]\n";
 else
 	set -x
 	echo `date`
@@ -49,7 +49,7 @@ else
 	$samtools/samtools view -H $input/$bam 1>$input/$bam.$chr.header 2> $input/$bam.$chr.fix.log
 	if [ `cat $input/$bam.$chr.fix.log | wc -l` -gt 0 ]
 	then
-		$script_path/email.sh $input/$bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+		$script_path/email.sh $input/$bam "bam is truncated or corrupt" $run_info
 		$script_path/wait.sh $input/$bam.$chr.fix.log
 	else
 		rm $input/$bam.$chr.fix.log
@@ -457,8 +457,6 @@ else
 		$script_path/filesize.sh VariantCalling multi_sample $output variants.chr$chr.raw.vcf $JOB_ID $run_info
 		$script_path/filesize.sh VariantCalling multi_sample $output MergeAllSamples.chr$chr.raw.vcf $JOB_ID $run_info
 	fi
-	
-	
 	## update dash board
 	if [ $SGE_TASK_ID == 1 ]
 	then

@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# != 2 ]
 then
-    echo -e "Usage: script to run phaseByTransmission \n <vcf input> <vcf output> <run info file>"
+    echo -e "script to run phaseByTransmission\nUsage: phaseByTransmission.sh <vcf input> <vcf output> <run info file>"
 else
     set -x
     echo `date`
@@ -16,16 +16,13 @@ else
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     ped=$( cat $tool_info | grep -w '^PEDIGREE' | cut -d '=' -f2)
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
-	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
-	
-	export JAVA_HOME=$javahome
-	export PATH=$javahome/bin:$PATH
-	
-	
+	memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
+	mem=$( cat $memory_info | grep -w '^PhaseByTransmission_JVM' | cut -d '=' -f2)
+	export PATH=$java:$PATH
     check=`[ -s $output_vcf.idx ] && echo "1" || echo "0"`
     while [ $check -eq 0 ]
     do
-		$java/java -Xmx3g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+		$java/java $mem -jar $gatk/GenomeAnalysisTK.jar \
 		-R $ref \
 		-T PhaseByTransmission \
 		-v $input_vcf \

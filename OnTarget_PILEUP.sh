@@ -37,8 +37,9 @@ else
 	multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
 	gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
-    
-    #cd $output
+    memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
+	mem=$( cat $memory_info | grep -w '^CoverageBySample_JVM' | cut -d '=' -f2)
+   
     if [ $tool == "whole_genome" ]
     then
         kit=$gene_body
@@ -57,7 +58,7 @@ else
 	$samtools/samtools view -H $bam 1> $bam.OnTarget_PILEUP.header 2> $bam.fix.OnTarget_PILEUP.log
 	if [ `cat $bam.fix.OnTarget_PILEUP.log | wc -l` -gt 0 ]
 	then
-		$script_path/email.sh $bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+		$script_path/email.sh $bam "bam is truncated or corrupt" $run_info
 		$script_path/wait.sh $bam.fix.OnTarget_PILEUP.log
 	else
 		rm $bam.fix.OnTarget_PILEUP.log
@@ -67,7 +68,7 @@ else
 	
     if [ $multi == "YES" ]
     then
-        $java/java -Xmx2g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar \
+        $java/java $mem -Djava.io.tmpdir=$output/temp/ -jar \
 		$gatk/GenomeAnalysisTK.jar \
 		-et NO_ET \
 		-K $gatk/Hossain.Asif_mayo.edu.key \
@@ -84,7 +85,7 @@ else
 			done	
         done    
     else	
-		$java/java -Xmx2g -Xms512m -Djava.io.tmpdir=$output/temp/ -jar \
+		$java/java $mem -Djava.io.tmpdir=$output/temp/ -jar \
 		$gatk/GenomeAnalysisTK.jar \
 		-et NO_ET \
 		-K $gatk/Hossain.Asif_mayo.edu.key \

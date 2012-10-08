@@ -14,7 +14,7 @@
 
 if [ $# -le 3 ];
 then
-    echo "Usage:<sift dir> <input dir><sample><run info>";
+    echo -e "script to run SIFT annotation tool on a vcf file\nUsage:<sift dir> <input dir><sample><run info><TUMOR (if somatic calling)>";
 else
     set -x
     echo `date` 

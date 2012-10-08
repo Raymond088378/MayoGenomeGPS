@@ -17,7 +17,7 @@
 
 if [ $# -le 3 ]
 then
-    echo -e "Usage: script to run break dancer for single or multiple samples \n samplenames input_bams </path/to/output directory> </path/to/run_info.txt> <group name>";
+    echo -e "script to run break dancer for single or multiple samples\nUsage: samplenames input_bams </path/to/output directory> </path/to/run_info.txt> <group name>";
 else
     set -x
     echo `date`
@@ -64,7 +64,7 @@ else
 			$samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
 			if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
 			then
-				$script_path/email.sh $input_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+				$script_path/email.sh $input_bam "bam is truncated or corrupt" $run_info
 				$script_path/wait.sh $input_bam.fix.break.log 
 			else
 				rm $input_bam.fix.break.log
@@ -109,7 +109,7 @@ else
 			$samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
 			if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
 			then
-				$script_path/email.sh $input_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+				$script_path/email.sh $input_bam "bam is truncated or corrupt" $run_info
 				$script_path/wait.sh $input_bam.fix.break.log
 			else
 				rm $input_bam.fix.break.log
@@ -162,7 +162,7 @@ else
 		$samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
 		if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
 		then
-			$script_path/email.sh $input_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+			$script_path/email.sh $input_bam "bam is truncated or corrupt" $run_info
 			$script_path/wait.sh $input_bam.fix.break.log
 		else
 			rm $input_bam.fix.break.log
@@ -207,7 +207,7 @@ else
             $samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
 			if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
 			then
-				$script_path/email.sh $input_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+				$script_path/email.sh $input_bam "bam is truncated or corrupt" $run_info
 				$script_path/wait.sh $input_bam.fix.break.log
 			else
 				rm $input_bam.fix.break.log

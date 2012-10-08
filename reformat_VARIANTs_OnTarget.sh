@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# != 5 ]
 then
-    echo "usage: <output><sample><run_info><marker>";
+    echo "script to reformat the input vcf to run the ontarget module of the worflow\nusage: <input folder>>/path/to/output folder><sample><run_info><marker>";
 else	
     set -x
     echo `date`
@@ -17,19 +17,17 @@ else
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
-    dbsnp_rsids_indel=$( cat $tool_info | grep -w '^dbSNP_INDEL_rsIDs' | cut -d '=' -f2)
     chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" " " )
-    threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
     vcftools=$( cat $tool_info | grep -w '^VCFTOOLS' | cut -d '=' -f2)
     perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
     blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
     blat_ref=$( cat $tool_info | grep -w '^BLAT_REF' | cut -d '=' -f2 )
-    window_blat=$( cat $tool_info | grep -w '^WINDOW_BLAT' | cut -d '=' -f2 )
-    threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2 )
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     perllib=$( cat $tool_info | grep -w '^PERLLIB' | cut -d '=' -f2)
-	export PERL5LIB=$perllib:$PERL5LIB
+	perlblat=$( cat $tool_info | grep -w '^PERLLIB_BLAT' | cut -d '=' -f2 )
+	blat_params=$( cat $tool_info | grep -w '^BLAT_params' | cut -d '=' -f2 )
+	export PERL5LIB=$perlblat:$perllib:$PERL5LIB
 	export PATH=$PERL5LIB:$PATH
 	
 	mkdir -p $output/$sample/
@@ -44,7 +42,7 @@ else
 			n=`cat $input/$snv_file |  awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
 			if [ $n == 0 ]
 			then
-				$script_path/vcf_blat_verify.pl -i $input/$snv_file -o $reports/$sample.variants.raw.vcf -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
+				$script_path/vcf_blat_verify.pl -i $input/$snv_file -o $reports/$sample.variants.raw.vcf -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 			else
 				cp $input/$snv_file $reports/$sample.variants.raw.vcf
 			fi
@@ -58,14 +56,14 @@ else
 			snv=`cat $input/$snv_file | awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
 			if [ $snv == 0 ]
 			then
-				$script_path/vcf_blat_verify.pl -i $input/$snv_file -o $reports/$sample.variants.SNV.raw.vcf -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
+				$script_path/vcf_blat_verify.pl -i $input/$snv_file -o $reports/$sample.variants.SNV.raw.vcf -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 			else
 				cp $input/$snv_file $reports/$sample.variants.SNV.raw.vcf
 			fi
 			indel=`cat $input/$indel_file | awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
 			if [ $indel == 0 ]
 			then
-				$script_path/vcf_blat_verify.pl -i $input/$indel_file -o $reports/$sample.variants.INDEL.raw.vcf -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
+				$script_path/vcf_blat_verify.pl -i $input/$indel_file -o $reports/$sample.variants.INDEL.raw.vcf -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 			else
 				cp $input/$indel_file $reports/$sample.variants.INDEL.raw.vcf
 			fi	
@@ -84,7 +82,7 @@ else
             snv=`cat $input/$snv_file | awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
 			if [ $snv == 0 ]
 			then
-				$script_path/vcf_blat_verify.pl -i $input/$snv_file -o $reports/$sample.variants.raw.vcf -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
+				$script_path/vcf_blat_verify.pl -i $input/$snv_file -o $reports/$sample.variants.raw.vcf -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 			else
 				cp $input/$snv_file $reports/$sample.variants.raw.vcf
 			fi
@@ -99,7 +97,7 @@ else
             indel=`cat $input/$indel_file | awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
 			if [ $indel == 0 ]
 			then
-				$script_path/vcf_blat_verify.pl -i $input/$indel_file -o $reports/$sample.variants.raw.vcf -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
+				$script_path/vcf_blat_verify.pl -i $input/$indel_file -o $reports/$sample.variants.raw.vcf -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 			else
 				cp $input/$indel_file $reports/$sample.variants.raw.vcf
 			fi
@@ -111,5 +109,4 @@ else
         fi
     fi
     echo `date`
-fi    
-            
+fi             

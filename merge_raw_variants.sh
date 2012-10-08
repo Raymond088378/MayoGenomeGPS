@@ -51,7 +51,7 @@ else
 	$vcftools/bin/vcf-merge -s $inputargs > $var_dir/raw.chr$chr.vcf
 	
 	### raw SNV
-	perl $script_path/vcf_to_variant_vcf.pl -i $var_dir/raw.chr$chr.vcf -v $var_dir/raw.chr$chr.SNV.vcf -l $var_dir/raw.chr$chr.INDEL.vcf -t both 
+	$script_path/vcf_to_variant_vcf.pl -i $var_dir/raw.chr$chr.vcf -v $var_dir/raw.chr$chr.SNV.vcf -l $var_dir/raw.chr$chr.INDEL.vcf -t both 
 	$tabix/bgzip $var_dir/raw.chr$chr.SNV.vcf  
 	$tabix/tabix -p vcf $var_dir/raw.chr$chr.SNV.vcf.gz	
 	### raw INDEL

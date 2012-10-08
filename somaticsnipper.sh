@@ -2,7 +2,7 @@
 
 if [ $# != 8 ]
 then
-    echo "Usage: <normal bam> <tumor bam > <output dir> <chromosome> <tumor sample name> <normal sample name> <output vcf file name> <run info>"
+    echo -e "script to run somatic snipper on the tumor normal bam file and outputs a vcf file\nUsage: <normal bam> <tumor bam > <output dir> <chromosome> <tumor sample name> <normal sample name> <output vcf file name> <run info>"
 else
     set -x
     echo `date`
@@ -28,24 +28,16 @@ else
 	$samtools/samtools view -H $normal_bam 1>$normal_bam.header 2> $normal_bam.fix.ss.log
 	if [ `cat $tumor_bam.fix.ss.log | wc -l` -gt 0 ]
 	then
-		$script_path/email.sh $tumor_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-		while [ -f $tumor_bam.fix.ss.log ]
-		do
-			echo "waiting for the $tumor_bam to be fixed"
-			sleep 2m
-		done
+		$script_path/email.sh $tumor_bam "bam is truncated or corrupt" $run_info
+		$script_path/wait.sh $tumor_bam.fix.ss.log
 	else
 		rm $tumor_bam.fix.ss.log
 	fi	
 	rm $tumor_bam.header
 	if [ `cat $normal_bam.fix.ss.log | wc -l` -gt 0 ]
 	then
-		$script_path/email.sh $normal_bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-		while [ -f $normal_bam.fix.ss.log ]
-		do
-			echo "waiting for the $normal_bam to be fixed"
-			sleep 2m
-		done
+		$script_path/email.sh $normal_bam "bam is truncated or corrupt" $run_info
+		$script_path/wait.sh $normal_bam.fix.ss.log
 	else
 		rm $normal_bam.fix.ss.log
 	fi	

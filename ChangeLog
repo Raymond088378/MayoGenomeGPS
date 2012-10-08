@@ -7,6 +7,10 @@
 5. Added more QC steps so that if one script failed then the hext will wait for the first one to finish properly
 6. Added Support for beauty samples and if any investigator wants to use consensus calling then use callers are BEAUTY_EXOME
 7. Added a readme file for all the files we deliver to the PI
+8. Changed the paramters of Novoalign to get more soft clipping and not to affect the variant calling
+9. Added all the tool paramter to the tool info file and depending on the tool the paramters can be paramterized.
+10. Run CREST on aligned bam (changed from realigned to aliged)
+11. 
 
 
 ### Version 1.1.1

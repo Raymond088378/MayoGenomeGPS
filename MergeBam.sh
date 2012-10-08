@@ -2,7 +2,7 @@
 
 if [ $# != 5 ]
 then
-    echo "Usage: <input bam> <outputbam><temp dir><indexing flag (true/false)><run info>"
+    echo -e "script to merge multiple BAm files and outputs a sorted BAM\nUsage: <input bam> <outputbam><temp dir><indexing flag (true/false)><run info>"
 else
     set -x
     echo `date`
@@ -13,16 +13,16 @@ else
     run_info=$5
     
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
+    memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
+	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
     reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
+	mem=$( cat $memory_info | grep -w '^MERGE_JVM' | cut -d '=' -f2)
 	
-    $java/java -Xmx3g -Xms512m \
-    -jar $picard/MergeSamFiles.jar \
-    $inbam \
-    MAX_RECORDS_IN_RAM=$reads \
+    $java/java $mem -jar $picard/MergeSamFiles.jar \
+    $inbam MAX_RECORDS_IN_RAM=$reads \
     OUTPUT=$outbam \
     TMP_DIR=$tmp_dir \
     CREATE_INDEX=$index \

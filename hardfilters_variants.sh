@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# != 4 ]
 then
@@ -15,7 +15,8 @@ else
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)	
-    	
+    memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
+	mem=$( cat $memory_info | grep -w '^VariantFiltration_JVM' | cut -d '=' -f2)	
 	export PATH=$java:$PATH
     
     if [ $type == "SNP" ]
@@ -25,7 +26,7 @@ else
 		if [ $num_snvs -ge 1 ]
 		then
 			### apply filters for SNV
-			$java/java -Xmx1g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+			$java/java $mem -jar $gatk/GenomeAnalysisTK.jar \
 			-R $ref \
 			-et NO_ET \
 			-K $gatk/Hossain.Asif_mayo.edu.key \
@@ -57,7 +58,7 @@ else
 		if [ $num_indels -ge 1 ]
 		then
 			#### apply filters for INDEL
-			$java/java -Xmx1g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+			$java/java $mem -jar $gatk/GenomeAnalysisTK.jar \
 			-R $ref \
 			-et NO_ET \
 			-K $gatk/Hossain.Asif_mayo.edu.key \

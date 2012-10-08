@@ -4,7 +4,7 @@
 
 if [ $# -le 5 ]
 then
-    echo -e "Usage: wrapper script to do realignment and variant calling \nMulti-Samples\n<input ':' sep> <bam ':' sep[normal:tumor1:tumor2:tumorN]> <samples ':' sep[normal:tumor1:tumor2:tumorN]> <outputdir bams> <run_info><1 for realign-recal or 0 for recal-realign>\nelse\n<input> <bam > <samples> <outputdir bams><run_info><1 for realign-recal or 0 for recal-realign>\n"
+    echo -e "wrapper script to do realignment and variant calling\nUsage: realign_recal.sh Multi-Samples\n<input ':' sep> <bam ':' sep[normal:tumor1:tumor2:tumorN]> <samples ':' sep[normal:tumor1:tumor2:tumorN]> <outputdir bams> <run_info><1 for realign-recal or 0 for recal-realign><SGE_TASK_ID (optional)>\nelse\n<input> <bam > <samples> <outputdir bams><run_info><1 for realign-recal or 0 for recal-realign><SGE_TASK_ID (optional)>\n"
 else
     set -x
     echo `date`
@@ -48,7 +48,7 @@ else
 		$samtools/samtools view -H $in/$bb 1>$in/$bb.rr.$chr.header 2> $in/$bb.fix.rr.$chr.log
 		if [ `cat $in/$bb.fix.rr.$chr.log | wc -l` -gt 0 ]
 		then
-			$script_path/email.sh $in/$bb "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+			$script_path/email.sh $in/$bb "bam is truncated or corrupt" $run_info
 			$script_path/wait.sh $in/$bb.fix.rr.$chr.log
 		else
 			rm $in/$bb.fix.rr.$chr.log

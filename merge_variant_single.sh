@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ########################################################
 ###### 	Merges variants from vcf files by chromosome
@@ -13,7 +13,7 @@
 
 if [ $# != 4 ];
 then
-    echo "Usage: </path/to/input directory> <sample name> </path/to/run_info.txt>";
+    echo -e "script to merge the varaiants and then apply filters to the vcf file\nUsage: </path/to/input directory> <sample name> <output folder> </path/to/run_info.txt>";
 else
     set -x
     echo `date`
@@ -52,7 +52,7 @@ else
 		if [ ! -s $inputfile ]
 		then	
 			touch $inputfile.fix.log
-			$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+			$script_path/email.sh $inputfile "not exist" $run_info
 			$script_path/wait.sh $inputfile.fix.log
 		fi
 		inputargs=$inputargs"$inputfile "
@@ -73,7 +73,7 @@ else
 	if [ ! -s $out/$sample.variants.filter.vcf ]
     then
     	touch $out/$sample.variants.filter.vcf.fix.log
-    	$script_path/email.sh $out/$sample.variants.filter.vcf "vqsr failed" $JOB_NAME $JOB_ID $run_info
+    	$script_path/email.sh $out/$sample.variants.filter.vcf "vqsr failed" $run_info
 		$script_path/wait.sh $out/$sample.variants.filter.vcf.fix.log
 	fi	
 	
@@ -81,7 +81,9 @@ else
 	### use GATK variant filter to filter using DP
 	if [[ $tool == "exome" && $filter_variants == "YES" ]]
 	then
-		$java/java -Xmx1g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+		memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
+		mem=$( cat $memory_info | grep -w '^VariantFiltration_JVM' | cut -d '=' -f2)
+		$java/java $mem -jar $gatk/GenomeAnalysisTK.jar \
 		-R $ref \
 		-et NO_ET \
 		-K $gatk/Hossain.Asif_mayo.edu.key \

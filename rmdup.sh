@@ -2,7 +2,7 @@
 
 if [ $# != 8 ]
 then
-    echo "Usage: <input bam> <outputbam><temp dir><max files to split><remove of flag dupluicate(true/false)><assume file is aorted or not(true/false)><do indexing or not(true/false)<run info>"
+    echo -e "script to remove or flag the duplicates from a BAM file dending on the flag passed\nUsage: <input bam> <outputbam><temp dir><max files to split><remove of flag dupluicate(true/false)><assume file is aorted or not(true/false)><do indexing or not(true/false)<run info>"
 else
     set -x
     echo `date`
@@ -12,27 +12,28 @@ else
     tmp_dir=$4
     remove=$5
     sorted=$6
-    index=`echo $7 | tr "[a-z]" "[A-Z]"`
+    index=`echo $7 | tr "[A-Z]" "[a-z]"`
     run_info=$8
     
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
+    memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
+	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
 	max_files=$( cat $tool_info | grep -w '^MAX_FILE_HANDLES' | cut -d '=' -f2 )
-    $java/java -Xmx5g -Xms512m \
-    -jar $picard/MarkDuplicates.jar \
+    mem=$( cat $memory_info | grep -w '^RMDUP_JVM' | cut -d '=' -f2)
+	
+	$java/java $mem -jar $picard/MarkDuplicates.jar \
     INPUT=$inbam \
     OUTPUT=$outbam \
     METRICS_FILE=$metrics \
     ASSUME_SORTED=$sorted \
     REMOVE_DUPLICATES=$remove \
     MAX_FILE_HANDLES=$max_files \
-    CREATE_INDEX=true \
+    CREATE_INDEX=$index \
 	VALIDATION_STRINGENCY=SILENT \
-    CO=MarkDuplicates \
-    TMP_DIR=$tmp_dir
+    CO=MarkDuplicates TMP_DIR=$tmp_dir
 	file=`echo $outbam | sed -e 's/\(.*\)..../\1/'`
 	mv $file.bai $file.bam.bai
 	
@@ -48,14 +49,14 @@ else
 		fi	
 		rm $outbam.rmdup.header
 		mv $outbam $inbam
-        if [ $index == "FALSE" ]
+        if [ $index == "false" ]
         then
             rm $file.bam.bai
         else
 			mv $outbam.bai $inbam.bai
 		fi
     else
-        $script_path/errorlog.sh rmdup.sh $outbam ERROR empty
+        $script_path/errorlog.sh rmdup.sh $outbam ERROR "empty"
 		exit 1;
     fi
     echo `date`

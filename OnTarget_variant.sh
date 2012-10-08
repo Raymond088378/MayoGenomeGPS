@@ -12,7 +12,7 @@
 
 if [ $# -le 3 ]
 then
-    echo -e "\nUsage: </path/to/output directory for variants> </path/to/output directory for OnTarget> <sample name> </path/to/run_info.txt>";
+    echo -e "script to get ontarget varaints uisng the capture kit specified\nUsage: </path/to/output directory for variants> </path/to/output directory for OnTarget> <sample name> </path/to/run_info.txt><SGE_TASK_ID(optional)>";
 else
     set -x
     echo `date`
@@ -59,10 +59,11 @@ else
 		input=$variants/$sample
 		if [ ! -s $input/$sample.variants.chr$chr.filter.vcf ]
 		then
-			$script_path/errorlog.sh $input/$sample.variants.chr$chr.filter.vcf OnTarget_variants.sh ERROR "not exist"
-			exit 1;
+			$script_path/email.sh $input/$sample.variants.chr$chr.filter.vcf "doesn't exist" $run_info
+			touch $input/$sample.variants.chr$chr.filter.vcf.fix.log
+			$script_path/wait.sh $input/$sample.variants.chr$chr.filter.vcf.fix.log
 		fi    
-		perl $script_path/vcf_to_variant_vcf.pl -i $input/$sample.variants.chr$chr.filter.vcf -v $input/$sample.variants.chr$chr.SNV.filter.vcf -l $input/$sample.variants.chr$chr.INDEL.filter.vcf -t both -f 
+		$script_path/vcf_to_variant_vcf.pl -i $input/$sample.variants.chr$chr.filter.vcf -v $input/$sample.variants.chr$chr.SNV.filter.vcf -l $input/$sample.variants.chr$chr.INDEL.filter.vcf -t both -f 
 		$bedtools/intersectBed -header -a $input/$sample.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf
 		rm $input/$sample.variants.chr$chr.SNV.filter.vcf 
 		$bedtools/intersectBed -header -a $input/$sample.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf
@@ -93,7 +94,7 @@ else
 			cp $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
 			cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
 		else
-			perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
+			$script_path/markSnv_IndelnPos.pl -s $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
 			cat $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.vcf
 		fi
 		rm $OnTarget/$sample.variants.chr$chr.SNV.filter.i.c.pos.vcf
@@ -112,7 +113,13 @@ else
 		### multi sample calling
 		group=$sample 
 		input=$variants/$group 
-		perl $script_path/vcf_to_variant_vcf.pl -i $input/$group.variants.chr$chr.filter.vcf -v $input/$group.variants.chr$chr.SNV.filter.vcf -l $input/$group.variants.chr$chr.INDEL.filter.vcf -t both -f
+		if [ ! -s $input/$group.variants.chr$chr.filter.vcf ]
+		then
+			$script_path/email.sh $input/$group.variants.chr$chr.filter.vcf "doesn't exist" $run_info
+			touch $input/$group.variants.chr$chr.filter.vcf.fix.log
+			$script_path/wait.sh $input/$group.variants.chr$chr.filter.vcf.fix.log
+		fi   
+		$script_path/vcf_to_variant_vcf.pl -i $input/$group.variants.chr$chr.filter.vcf -v $input/$group.variants.chr$chr.SNV.filter.vcf -l $input/$group.variants.chr$chr.INDEL.filter.vcf -t both -f
 		$bedtools/intersectBed -header -a $input/$group.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/$group.variants.chr$chr.SNV.filter.i.vcf
 		rm $input/$group.variants.chr$chr.SNV.filter.vcf 
 		$bedtools/intersectBed -header -a $input/$group.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/$group.variants.chr$chr.INDEL.filter.i.vcf
@@ -139,7 +146,7 @@ else
 			cp $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.pos.vcf 
 			cat $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf
 		else
-			perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/$group.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
+			$script_path/markSnv_IndelnPos.pl -s $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/$group.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
 			cat $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf
 		fi
 		rm $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
@@ -155,7 +162,13 @@ else
 		fi	
 		
 		### for somatic calls
-		perl $script_path/vcf_to_variant_vcf.pl -i $input/$group.somatic.variants.chr$chr.filter.vcf -v $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf -l $input/TUMOR.$group.variants.chr$chr.INDEL.filter.vcf -t both -f
+		if [ ! -s $input/$group.somatic.variants.chr$chr.filter.vcf ]
+		then
+			$script_path/email.sh $input/$group.somatic.variants.chr$chr.filter.vcf "doesn't exist" $run_info
+			touch $input/$group.somatic.variants.chr$chr.filter.vcf.fix.log
+			$script_path/wait.sh $input/$group.somatic.variants.chr$chr.filter.vcf.fix.log
+		fi   
+		$script_path/vcf_to_variant_vcf.pl -i $input/$group.somatic.variants.chr$chr.filter.vcf -v $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf -l $input/TUMOR.$group.variants.chr$chr.INDEL.filter.vcf -t both -f
 		$bedtools/intersectBed -header -a $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.vcf
 		rm $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf
 		$bedtools/intersectBed -header -a $input/TUMOR.$group.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.vcf
@@ -182,7 +195,7 @@ else
 			cp $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
 			cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf
 		else   
-			perl $script_path/markSnv_IndelnPos.pl -s $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
+			$script_path/markSnv_IndelnPos.pl -s $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
 			cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf
 		fi
 		rm $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf

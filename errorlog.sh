@@ -2,7 +2,7 @@
 
 if [ $# != 4 ]
 then
-	echo -e "srcipt to report error in recommnended format \n <file name><script_name><ERROR/WARNING> <free tesxt>"
+	echo -e "script to report error in recommnended format\nUsage: errorlog.sh <file name><script_name><ERROR/WARNING> <free tesxt>"
 else
 	file=$1
 	script=$2

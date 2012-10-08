@@ -1,11 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 
 #	INFO
 #	reformat the inputs to chop into chromsome to make it faster fro vraiant module
 
 if [ $# != 4 ]
 then
-    echo "usage: <output><sample><run_info><marker>";
+    echo -e "script to reformat the vcf files for the annotation module of the workflow\nusage: </path/to/output><sample><run_info><marker>";
 else	
     set -x
     echo `date`
@@ -17,26 +17,19 @@ else
     input=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
-    variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2)
+    variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
-    dbsnp_rsids_snv=$( cat $tool_info | grep -w '^dbSNP_SNV_rsIDs' | cut -d '=' -f2)
-    SNV_caller=$( cat $run_info | grep -w '^SNV_CALLER' | cut -d '=' -f2)
-    variant_type=`echo "$variant_type" | tr "[a-z]" "[A-Z]"`
-    dbsnp_rsids_indel=$( cat $tool_info | grep -w '^dbSNP_INDEL_rsIDs' | cut -d '=' -f2)
     chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" " " )
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     distance=$( cat $tool_info | grep -w '^SNP_DISTANCE_INDEL' | cut -d '=' -f2 )
 	blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
-    blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
     blat_ref=$( cat $tool_info | grep -w '^BLAT_REF' | cut -d '=' -f2 )
-    blat_server=$( cat $tool_info | grep -w '^BLAT_SERVER' | cut -d '=' -f2 )
-    window_blat=$( cat $tool_info | grep -w '^WINDOW_BLAT' | cut -d '=' -f2 )
-	javahome=$( cat $tool_info | grep -w '^JAVA_HOME' | cut -d '=' -f2 )
-	threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2 )
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
 	perllib=$( cat $tool_info | grep -w '^PERLLIB' | cut -d '=' -f2)
-	export PERL5LIB=$perllib:$PERL5LIB
+	perlblat=$( cat $tool_info | grep -w '^PERLLIB_BLAT' | cut -d '=' -f2 )
+	blat_params=$( cat $tool_info | grep -w '^BLAT_params' | cut -d '=' -f2 )
+	export PERL5LIB=$perlblat:$perllib:$PERL5LIB
 	export PATH=$PERL5LIB:$PATH
 	
     if [ $marker -eq 2 ]
@@ -60,7 +53,7 @@ else
 			n=`cat $output/$sample.SNV.vcf |  awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
 			if [ $n == 0 ]
 			then
-				$script_path/vcf_blat_verify.pl -i $output/$sample.SNV.vcf -o $output/$sample.SNV.vcf.tmp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
+				$script_path/vcf_blat_verify.pl -i $output/$sample.SNV.vcf -o $output/$sample.SNV.vcf.tmp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 				$script_path/vcfsort.pl $ref.fai $output/$sample.SNV.vcf.tmp > $output/$sample.SNV.vcf
 				rm $output/$sample.SNV.vcf.tmp
 			else
@@ -70,7 +63,7 @@ else
 			n=`cat $output/$sample.INDEL.vcf |  awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
 			if [ $n == 0 ]
 			then
-				$script_path/vcf_blat_verify.pl -i $output/$sample.INDEL.vcf -o $output/$sample.INDEL.vcf.tmp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
+				$script_path/vcf_blat_verify.pl -i $output/$sample.INDEL.vcf -o $output/$sample.INDEL.vcf.tmp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 				$script_path/vcfsort.pl $ref.fai $output/$sample.INDEL.vcf.tmp > $output/$sample.INDEL.vcf
 				rm $output/$sample.INDEL.vcf.tmp 
 			else
@@ -88,7 +81,7 @@ else
 			n=`cat $output/$sample.vcf |  awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
 			if [ $n == 0 ]
 			then
-				$script_path/vcf_blat_verify.pl -i $output/$sample.vcf -o $output/$sample.vcf.tmp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
+				$script_path/vcf_blat_verify.pl -i $output/$sample.vcf -o $output/$sample.vcf.tmp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 				$script_path/vcfsort.pl $ref.fai $output/$sample.vcf.tmp > $output/$sample.vcf
 				rm $output/$sample.vcf.tmp
 			else
@@ -130,7 +123,7 @@ else
 			n=`cat $output/$sample.SNV.vcf |  awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
 			if [ $n == 0 ]
 			then
-				$script_path/vcf_blat_verify.pl -i $output/$sample.SNV.vcf -o $output/$sample.SNV.vcf.tmp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
+				$script_path/vcf_blat_verify.pl -i $output/$sample.SNV.vcf -o $output/$sample.SNV.vcf.tmp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 				$script_path/vcfsort.pl $ref.fai $output/$sample.SNV.vcf.tmp > $output/$sample.SNV.vcf
 				rm $output/$sample.SNV.vcf.tmp
 			else
@@ -157,7 +150,7 @@ else
             n=`cat $output/$sample.INDEL.vcf |  awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
 			if [ $n == 0 ]
 			then
-				$script_path/vcf_blat_verify.pl -i $output/$sample.INDEL.vcf -o $output/$sample.INDEL.vcf.tmp -r $ref -w $window_blat -b $blat -sam $samtools -br $blat_ref
+				$script_path/vcf_blat_verify.pl -i $output/$sample.INDEL.vcf -o $output/$sample.INDEL.vcf.tmp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 				$script_path/vcfsort.pl $ref.fai $output/$sample.INDEL.vcf.tmp > $output/$sample.INDEL.vcf
 				rm $output/$sample.INDEL.vcf.tmp 
 			else

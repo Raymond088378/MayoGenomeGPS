@@ -16,7 +16,7 @@
 
 if [ $# != 5 ];
 then
-    echo -e "Usage: wrapper to add read group and sort and reorder the bam </path/to/input directory> <name of BAM > <sample name> <sge task id> </path/to/run_info.txt>";
+    echo -e "wrapper to add read group and sort and reorder the bam\nUsage: convert_bam.sh </path/to/input directory> <name of BAM > <sample name> <sge task id> </path/to/run_info.txt>";
 else
     set -x
     echo `date`
@@ -74,7 +74,7 @@ else
         $script_path/errorlog.sh convert.bam.sh $input/$sample.flagstat ERROR "empty"
 		exit 1;
 	else
-		## update secondary dahboard
+		## update secondary dashboard
 		$script_path/filesize.sh alignment $sam $input $sample.sorted.bam $JOB_ID $size $run_info
 		$script_path/dashboard.sh $sample $run_info Alignment complete $id
     fi

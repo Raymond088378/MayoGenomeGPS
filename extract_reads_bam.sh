@@ -2,7 +2,7 @@
 
 if [ $# -le 3 ]
 then
-	echo -e "Usage: script to extract reads not used for downstream preocessing\nUsage: <bam file><input directory><run info><igv folder><single/pair>"
+	echo -e "script to extract reads not used for downstream processing\nUsage: </path/to/input diretcory><bam file><run info><igv folder><single/pair>"
 else
 	set -x
 	echo `date`	
@@ -22,6 +22,7 @@ else
 	delivery_folder=$( cat $run_info | grep -w '^DELIVERY_FOLDER' | cut -d '=' -f2)
 	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]" )
 	out=$delivery_folder/IGV_BAM
+	
 	chrs=`cat $ref.fai | cut -f1 | tr ":" "\n"`
 	i=1
 	for chr in $chrs
@@ -36,7 +37,7 @@ else
 	$samtools/samtools view -H $output/$bam 1> $output/$bam.erb.header 2> $output/$bam.erb.fix.log
 	if [ `cat $output/$bam.erb.fix.log | wc -l` -gt 0 ]
 	then
-		$script_path/email.sh $output/$bam "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
+		$script_path/email.sh $output/$bam "bam is truncated or corrupt" $run_info
 		$script_path/wait.sh $output/$bam.erb.fix.log
 	else
 		rm $output/$bam.erb.fix.log
@@ -61,7 +62,6 @@ else
 	$samtools/samtools view -b -f 12 $output/$bam > $output/$bam.unmapped.bam
 	$samtools/samtools index $output/$bam.unmapped.bam
 	input=$input" INPUT=$output/$bam.unmapped.bam"
-
 	$script_path/MergeBam.sh "$input" $output/$bam.extra.bam $output true $run_info
 	
 	if [ $5 ]

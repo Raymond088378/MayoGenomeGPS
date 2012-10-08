@@ -16,7 +16,7 @@
 
 if [ $# -le 2 ]
 then
-    echo -e "Usage: wrapper script to run the alignment using NOVO ALIGN \n align_split_thread.sh <sample name> <output_dir> </path/to/run_info.txt> <SGE TASK ID (optional)>";
+    echo -e "Usage: wrapper script to run the alignment using NOVO ALIGN\nUsage:align_novo.sh <sample name> <output_dir> </path/to/run_info.txt> <SGE TASK ID (optional)>";
 else	
     set -x 
     echo `date`
@@ -87,7 +87,7 @@ else
 ######		Run novoalign for PE or SR	
 	if [ $ILL2SANGER1 -gt 65 ] 
 	then
-    qual="-F ILMFQ"
+		qual="-F ILMFQ"
     else
         qual="-F STDFQ"
     fi

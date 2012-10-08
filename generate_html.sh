@@ -4,7 +4,7 @@
 
 if [ $# != 2 ]
 then
-	echo "Usage: <output dir> <run info file>";
+	echo -e "script to generate html and send an email to the user of workflow completion\nUsage: <output dir> <run info file>";
 else
 	set -x
 	echo `date`

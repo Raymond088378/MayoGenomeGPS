@@ -15,7 +15,7 @@
 
 if [ $# != 3 ];
 then
-    echo -e "Usage: wrapper to merge bam files and validate the bam for downstream analysis\nmerge_align.bam.sh </path/to/input directory><sample name> </path/to/run_info.txt>";
+    echo -e "wrapper to merge bam files and validate the bam for downstream analysis\nprocessBAM.sh </path/to/input directory><sample name> </path/to/run_info.txt>";
 else
     set -x
     echo `date`
