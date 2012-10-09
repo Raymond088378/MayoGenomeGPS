@@ -63,6 +63,11 @@ else
 			echo "Exome Analysis"
 			### summarizing SNV files
 			file=$SNV_dir/$sample.SNV.filtered.xls
+			if [ ! -f $file ]
+			then
+				$script_path/errorlog.sh $file gene_summary.sh ERROR "not found"
+				exit 1;
+			fi	
 			function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 			gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
 			
@@ -102,6 +107,11 @@ else
 			#################################################################################################	
 			### summarizing INDEL files
 			file=$INDEL_dir/$sample.INDEL.filtered.xls
+			if [ ! -f $file ]
+			then
+				$script_path/errorlog.sh $file gene_summary.sh ERROR "not found"
+				exit 1;
+			fi	
 			function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 			gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
 			cat $file | awk 'NR>2' | cut -f "$function","$gene" > $INDEL_dir/$sample.INDEL.tmp
@@ -158,9 +168,13 @@ else
 			#################################################################################################	
 		else
 			echo "Whole Genome Anlaysis"
-			
 			### summarizing SNV files
 			file=$SNV_dir/$sample.SNV.filtered.xls
+			if [ ! -f $file ]
+			then
+				$script_path/errorlog.sh $file gene_summary.sh ERROR "not found"
+				exit 1;
+			fi	
 			function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 			gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
 			cat $file | awk 'NR>2' | cut -f "$function","$gene" > $SNV_dir/$sample.SNV.tmp	
@@ -201,6 +215,11 @@ else
 			#################################################################################################	
 				### summarizing INDEL files
 			file=$INDEL_dir/$sample.INDEL.filtered.xls
+			if [ ! -f $file ]
+			then
+				$script_path/errorlog.sh $file gene_summary.sh ERROR "not found"
+				exit 1;
+			fi	
 			function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 			gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
 			cat $file | awk 'NR>2' | cut -f "$function","$gene" > $INDEL_dir/$sample.INDEL.tmp
@@ -240,6 +259,11 @@ else
 				#################################################################################################	
 				### summarizing CNV files
 			file=$INDEL_dir/$sample.INDEL.filtered.xls
+			if [ ! -f $file ]
+			then
+				$script_path/errorlog.sh $file gene_summary.sh ERROR "not found"
+				exit 1;
+			fi	
 			function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 			gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
 			cat $file | awk 'NR>2' | cut -f "$function","$gene" > $SNV_dir/$sample.SNV.tmp	
@@ -344,6 +368,11 @@ else
 			do
 				cat $master_gene_file | cut -f4 > $report_dir/$group.$sample.gene.temp
 				file=$SNV_dir/TUMOR.$group.SNV.filtered.xls
+				if [ ! -f $file ]
+				then
+					$script_path/errorlog.sh $file gene_summary.sh ERROR "not found"
+					exit 1;
+				fi	
 				function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 				gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
                                 sam=`awk -v sam=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == sam) {print i} } }' $file`
@@ -386,6 +415,11 @@ else
 				#################################################################################################	
 				### summarizing INDEL files           
 				file=$INDEL_dir/TUMOR.$group.INDEL.filtered.xls
+				if [ ! -f $file ]
+				then
+					$script_path/errorlog.sh $file gene_summary.sh ERROR "not found"
+					exit 1;
+				fi	
 				function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 				gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
                                 sam=`awk -v sam=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == sam) {print i} } }' $file`
@@ -451,9 +485,14 @@ else
 			do
 				cat $master_gene_file | cut -f4 > $report_dir/$group.$sample.gene.temp
 				file=$SNV_dir/TUMOR.$group.SNV.filtered.xls
+				if [ ! -f $file ]
+				then
+					$script_path/errorlog.sh $file gene_summary.sh ERROR "not found"
+					exit 1;
+				fi	
 				function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 				gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
-                                sam=`awk -v sam=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == sam) {print i} } }' $file`
+				sam=`awk -v sam=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == sam) {print i} } }' $file`
 				cat $file | awk 'NR>2' |  awk -v sam=$sam '$sam !~ /n\/a/'| cut -f "$function","$gene" > $SNV_dir/$group.$sample.SNV.tmp
 				
 				for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
@@ -493,11 +532,15 @@ else
 				#################################################################################################	
 				### summarizing INDEL files           
 				file=$INDEL_dir/TUMOR.$group.INDEL.filtered.xls
+				if [ ! -f $file ]
+				then
+					$script_path/errorlog.sh $file gene_summary.sh ERROR "not found"
+					exit 1;
+				fi	
 				function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 				gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
 				sam=`awk -v sam=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == sam) {print i} } }' $file`
-                                cat $file | awk 'NR>2' |  awk -v sam=$sam '$sam !~ /n\/a/' | cut -f "$function","$gene" > $INDEL_dir/$group.$sample.INDEL.tmp
-
+				cat $file | awk 'NR>2' |  awk -v sam=$sam '$sam !~ /n\/a/' | cut -f "$function","$gene" > $INDEL_dir/$group.$sample.INDEL.tmp
 				for indel in EXON_DELETED FRAME_SHIFT CODON_CHANGE UTR_5_DELETED UTR_3_DELETED CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR UTR_5_PRIME UTR_3_PRIME		
 				do
 					cat $INDEL_dir/$group.$sample.INDEL.tmp | grep "$indel" | cut -f2 | tr "," "\n" > $INDEL_dir/in.$group.$sample.$indel.tmp

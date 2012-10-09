@@ -2,7 +2,7 @@
 
 if [ $# -le  3 ]
 then
-    echo -e "Script to filter the variants using VQSR\nUsage: <raw vcf complete path><outputfile><type={BOTH,SNP,INDEL}><run info>"
+    echo -e "Script to filter the variants using VQSR\nUsage: ./filter_variant_vqsr.sh <raw vcf complete path><outputfile><type={BOTH,SNP,INDEL}><run info>"
 else
     set -x
     echo `date`
@@ -101,7 +101,7 @@ else
 		then
 			let check=0
 			let count=0
-			while [[ $check -eq 0 && $count -le 10 ]]
+			while [[ $check -eq 0 && $count -le 2 ]]
 			do
                 mem=$( cat $memory_info | grep -w '^VariantRecalibrator_JVM' | cut -d '=' -f2)
 				$java/java $mem -jar $gatk/GenomeAnalysisTK.jar \
@@ -110,7 +110,6 @@ else
 				-K $gatk/Hossain.Asif_mayo.edu.key \
 				-T VariantRecalibrator \
 				-mode SNP  \
-				-nt $threads \
 				-input $inputvcf.SNV.vcf \
 				-resource:hapmap,known=false,training=true,truth=true,prior=15.0 $hapmap \
 				-resource:omni,known=false,training=true,truth=false,prior=12.0 $omni \
@@ -133,16 +132,6 @@ else
 				fi
 				let count=count+1
 			done
-                
-			if [ `cat $output/temp/$input_name.recal | wc -l` -le 2 ]
-			then
-				$script_path/errorlog.sh $output/temp/$input_name.recal filter_variant_vqsr.sh WARNING "failed to create"
-			fi
-
-			if [ ! -s $output/temp/$input_name.tranches ]
-			then
-				$script_path/errorlog.sh $output/temp/$input_name.tranches filter_variant_vqsr.sh WARNING "failed to create"
-			fi
 
 			## Apply Recalibrator
 			if [[ `cat $output/temp/$input_name.recal | wc -l` -gt 2  && -s $output/temp/$input_name.tranches ]]
@@ -161,9 +150,12 @@ else
 				-o $outfile.SNV.vcf
 				sleep 5
 			fi
-			
-			filter_calls_snvs=`cat $outfile.SNV.vcf | awk '$0 !~ /#/' | wc -l`
-			
+			if [ -s $outfile.SNV.vcf ]
+			then
+				filter_calls_snvs=`cat $outfile.SNV.vcf | awk '$0 !~ /#/' | wc -l`
+			else
+				let filter_calls_snvs=0
+			fi	
 			if [[ ! -s $outfile.SNV.vcf || ! -s ${outfile}.SNV.vcf.idx || $raw_calls_snv != $filter_calls_snv ]]
 			then
 				$script_path/errorlog.sh $outfile.SNV.vcf filter_variant_vqsr.sh WARNING "failed to appy VQSR"
@@ -199,7 +191,7 @@ else
 		then
 			let count=0
 			let check=0
-			while [[ $check -eq 0 && $count -le 10 ]]
+			while [[ $check -eq 0 && $count -le 2 ]]
 			do
 				mem=$( cat $memory_info | grep -w '^VariantRecalibrator_JVM' | cut -d '=' -f2)
 				$java/java $mem -jar $gatk/GenomeAnalysisTK.jar \
@@ -208,7 +200,6 @@ else
 				-K $gatk/Hossain.Asif_mayo.edu.key \
 				-T VariantRecalibrator \
 				-mode INDEL  \
-				-nt $threads \
 				-input $inputvcf.INDEL.vcf \
 				-resource:mills,VCF,known=true,training=true,truth=true,prior=12.0 $mills \
 				-recalFile $output/temp/$input_name.recal \
@@ -229,15 +220,6 @@ else
 				fi
 				let count=count+1
 			done	
-			if [ `cat $output/temp/$input_name.recal | wc -l` -le 2 ]
-			then
-				$script_path/errorlog.sh $output/temp/$input_name.recal filter_variant_vqsr.sh WARNING "failed to create"
-			fi
-
-			if [ ! -s $output/temp/$input_name.tranches ]
-			then
-				$script_path/errorlog.sh $output/temp/$input_name.tranches filter_variant_vqsr.sh WARNING "failed to create"
-			fi
 			## Apply Recalibrator
 			if [[ `cat $output/temp/$input_name.recal | wc -l` -gt 2  && -s $output/temp/$input_name.tranches ]]
 			then
@@ -255,16 +237,20 @@ else
 				-o $outfile.INDEL.vcf
 				sleep 5 
 			fi
-		
-			filter_calls_indels=`cat $outfile.INDEL.vcf | awk '$0 !~ /#/' | wc -l`
+			if [ -s $outfile.INDEL.vcf ]
+			then
+				filter_calls_indels=`cat $outfile.INDEL.vcf | awk '$0 !~ /#/' | wc -l`
+			else
+				let filter_calls_indels=0
+			fi
 			if [[ ! -s $outfile.INDEL.vcf || ! -s ${outfile}.INDEL.vcf.idx || $raw_calls_indels != $filter_calls_indels ]]
 			then
 				$script_path/errorlog.sh $outfile.INDEL.vcf filter_variant_vqsr.sh WARNING "failed to create"
 				### V3 best practice from GATK
 				$script_path/hardfilters_variants.sh $inputvcf.INDEL.vcf $outfile.INDEL.vcf $run_info INDEL
-			fi
-			rm $inputvcf.INDEL.vcf $inputvcf.INDEL.vcf.idx        
-				
+			else
+				rm $inputvcf.INDEL.vcf $inputvcf.INDEL.vcf.idx        
+			fi	
 			## remove the file
 			if [ -s $output/temp/$input_name.recal ]
 			then

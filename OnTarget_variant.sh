@@ -12,7 +12,7 @@
 
 if [ $# -le 3 ]
 then
-    echo -e "script to get ontarget varaints uisng the capture kit specified\nUsage: </path/to/output directory for variants> </path/to/output directory for OnTarget> <sample name> </path/to/run_info.txt><SGE_TASK_ID(optional)>";
+    echo -e "script to get ontarget varaints uisng the capture kit specified\nUsage: ./OnTarget_variants.sh </path/to/output directory for variants> </path/to/output directory for OnTarget> <sample name> </path/to/run_info.txt><SGE_TASK_ID(optional)>";
 else
     set -x
     echo `date`

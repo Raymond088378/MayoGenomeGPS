@@ -4,7 +4,7 @@
 
 if [ $# != 6 ]; 
 then
-	echo "Usage <TempReports> <sample> <which_chr> <sseq> <indel_file><run info>";
+	echo -e "script to add annotations to the indel file\nUsage: ./merge.indel.sh </path/to/TempReports> <sample> <which_chr> </path/to/snpeff> <indel_file></path/to/run info>";
 else
 	set -x
 	echo `date`
@@ -21,7 +21,7 @@ else
 	cosmic=$( cat $tool_info | grep -w '^COSMIC_INDEL_REF' | cut -d '=' -f2) 
 	## add cosmic data
 	num=`cat $TempReports/$indel_file.rsIDs |wc -l `
-	cat $TempReports/$indel_file.rsIDs | awk 'NR>1' | cut -f 1,2,3,4,5 > $TempReports/$indel_file.rsIDs.forfrequencies.temp
+	cat $TempReports/$indel_file.rsIDs | awk 'NR>1' | cut -f 1-5 > $TempReports/$indel_file.rsIDs.forfrequencies.temp
 	perl $script_path/add.cosmic.pl $TempReports/$indel_file.rsIDs.forfrequencies.temp 0 $cosmic $GenomeBuild 1 $TempReports/$indel_file.cosmic.txt
 	rm $TempReports/$indel_file.rsIDs.forfrequencies.temp
 	perl $script_path/extract.allele_freq.pl -i $TempReports/$indel_file.rsIDs -f $TempReports/$indel_file.cosmic.txt -o $TempReports/$indel_file.rsIDs.frequencies -v INDEL
@@ -37,7 +37,6 @@ else
 	## add snpeff prediction
 	perl $script_path/add_snpeff_indel.pl -i $TempReports/$indel_file.rsIDs.frequencies -s $snpeff/$sample.chr${which_chr}.indel.eff -o $TempReports/$sample.chr${which_chr}.INDEL.report 
 	perl $script_path/add_snpeff_indel_filter.pl -i $TempReports/$indel_file.rsIDs.frequencies -s $snpeff/$sample.chr${which_chr}.indel.filtered.eff -o $TempReports/$sample.chr${which_chr}.filtered.INDEL.report 
-	
 	num=`cat $TempReports/$sample.chr${which_chr}.INDEL.report | awk '{print $1"_"$2"_"$3"_"$9"_"$10}' | sort | uniq | wc -l`
 	num_b=`cat $TempReports/$sample.chr${which_chr}.filtered.INDEL.report  | wc -l `
 	for report in $TempReports/$sample.chr${which_chr}.INDEL.report $TempReports/$sample.chr${which_chr}.filtered.INDEL.report

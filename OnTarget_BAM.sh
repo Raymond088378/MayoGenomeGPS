@@ -12,7 +12,7 @@
 
 if [ $# -le 3 ];
 then
-    echo -e "Usage : SCRIPT to get Ontaget reads\nUsage: <input sample realignment><chromsome><output Ontarget><sample><run info>";
+    echo -e "Usage : SCRIPT to get Ontaget reads\nUsage: ./OnTarget_BAM.sh </path/to/input sample realignment></path/to/output Ontarget><sample></path/to/run info><SGE_TASK_ID(optional)>";
 else	
     set -x 
     echo `date`

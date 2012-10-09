@@ -11,7 +11,7 @@
 
 if [ $# != 5 ];
 then
-    echo -e "SCRIPT to create IGV BAM\nUsage: igv_bam.sh </path/to/realign dir> </path/to/output folder> <sample> </path/to/alignment folder><run ifno>";
+    echo -e "SCRIPT to create IGV BAM\nUsage: ./igv_bam.sh </path/to/realign dir> </path/to/output folder> <sample> </path/to/alignment folder></path/to/run ifno>";
 else	
     set -x
     echo `date`

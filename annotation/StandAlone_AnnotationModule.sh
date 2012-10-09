@@ -68,7 +68,7 @@ else
 	if [ $n == 0 ]
 	then
 		echo " Adding Blat column to the vcf file"
-                blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
+        blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
 		blat_ref=$( cat $tool_info | grep -w '^BLAT_REF' | cut -d '=' -f2 )
 		$script_path/vcf_blat_verify.pl -i $output/$ff -o $output/$ff.tmp -b $blat -r $ref -sam $samtools -br $blat_ref $blat_params
 		mv $output/$ff.tmp $output/$ff
@@ -82,7 +82,7 @@ else
 	if [ $n == 0 ]
 	then
 		echo " Adding CloseToIndel column to the vcf file"
-                $script_path/markSnv_IndelnPos.pl -s $output/$ff.SNV.vcf -i $output/$ff.INDEL.vcf -n 10 -o $output/$ff.SNV.vcf.pos
+		$script_path/markSnv_IndelnPos.pl -s $output/$ff.SNV.vcf -i $output/$ff.INDEL.vcf -n 10 -o $output/$ff.SNV.vcf.pos
 		cat $output/$ff.SNV.vcf.pos | $script_path/add.info.close2indel.vcf.pl | $script_path/add.info.capture.vcf.pl > $output/$ff.SNV.vcf
 		rm $output/$ff.SNV.vcf.pos
 	fi

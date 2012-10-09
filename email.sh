@@ -2,7 +2,7 @@
 
 if [ $# != 3 ]
 then
-	echo -e "Usage: In buit QC script \n <filename> <error message><job name><job id><runinfo>"
+	echo -e "Usage: In buit QC script \n <filename> <error message><runinfo>"
 else	
 	echo `date`
 	file=$1

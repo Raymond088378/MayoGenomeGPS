@@ -3,7 +3,7 @@
 
 if [ $# != 4 ]
 then
-    echo -e "Usage: scrip to get statistical numbers for a sample\n <input dir> <sample> <run info>"
+    echo -e "script to get statistical numbers for a sample/group\nUsage: </path/to/input dir> <sample> </path/to/run info></path/to/number folder>"
 else 
     set -x
     echo `date`
@@ -17,9 +17,7 @@ else
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     aligner=$( cat $run_info | grep -w '^ALIGNER' | cut -d '=' -f2)
     variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2)
-    run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
-    flowcell=`echo $run_num | awk -F'_' '{print $NF}' | sed 's/.\(.*\)/\1/'`
-    markdup=$( cat $run_info | grep -w '^MARKDUP' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
+    markdup=$( cat $tool_info | grep -w '^MARKDUP' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
     chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" " ")
     caller=$( cat $run_info | grep -w '^SNV_CALLER' | cut -d '=' -f2)
     multi_sample=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2)  
@@ -29,8 +27,6 @@ else
 	
 ##############################################################		
 ##############################################################		
-  
-	
     if [ $multi_sample != "YES" ]
     then
         echo "Single sample"

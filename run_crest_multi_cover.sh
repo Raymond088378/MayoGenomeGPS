@@ -16,7 +16,7 @@
 
 if [ $# != 5 ]
 then
-    echo -e "Script to run crest on a paired sample\nUsage: <sample name> <group name> </path/to/input directory> </path/to/output directory> </path/to/run_info.txt>";
+    echo -e "Script to run crest on a paired sample\nUsage: ./run_crest_multi_cover.sh <sample name> <group name> </path/to/input directory> </path/to/output directory> </path/to/run_info.txt>"
 else
     set -x
     echo `date`
@@ -36,19 +36,27 @@ else
     perllib=$( cat $tool_info | grep -w '^PERLLIB' | cut -d '=' -f2 )
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     ref_genome=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2 )
-    samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2)
 
     export PERL5LIB=$perllib:$crest
     PATH=$PATH:$blat:$crest:$perllib
-	mkdir -p $output_dir/$group $output_dir/$group/log
-	$samtools/samtools view -b $input/$sam.sorted.bam chr$chr >  $output_dir/$group/$sample.chr$chr.bam
+	mkdir -p $output_dir/$group/log
+	$samtools/samtools view -H $input/$sample.sorted.bam 1>$input/$sample.sorted.bam.$chr.header 2>$input/$sample.sorted.bam.$chr.crest.fix.log
+	if [ `cat $input/$sample.sorted.bam.$chr.crest.fix.log | wc -l` -gt 0 ]
+	then
+		$script_path/email.sh $input/$sample.sorted.bam "bam is truncated or corrupt" $run_info
+		$script_path/wait.sh $input/$sample.sorted.bam.$chr.crest.fix.log
+	else
+		rm $input/$sample.sorted.bam.$chr.crest.fix.log
+	fi
+	rm $input/$sample.sorted.bam.$chr.header
+	$samtools/samtools view -b $input/$sample.sorted.bam chr$chr >  $output_dir/$group/$sample.chr$chr.bam
 	$samtools/samtools index $output_dir/$group/$sample.chr$chr.bam
     file=$output_dir/$group/$sample.chr$chr.bam
     SORT_FLAG=`$script_path/checkBAMsorted.pl -i $file -s $samtools`
     if [ $SORT_FLAG == 0 ]
     then
-        echo "ERROR : run_crest_multi $file should be sorted"
-        exit 1;
+        $script_path/errorlog.sh $file run_crest_multi_cover.sh ERROR "is not sorted"
+		exit 1;
     fi
     # check if BAM has an index
     if [ ! -s $file.bai ]

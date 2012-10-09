@@ -1,9 +1,9 @@
 #!/bin/bash
 ##	INFO
 ##	to merge the scripts to call in one script to control sapnning jobs
-if [ $# -le 7 ]
+if [ $# -le 8 ]
 then
-	echo -e "script to merge per chromosome report to a single merged report for delivery\nUsage: <run info> <sample> <Temp reports> <Output OnTarget> <sift> <snpeff> <polyphen> <output dir><group optional>";
+	echo -e "script to merge per chromosome report to a single merged report for delivery\nUsage: ./reports.sh <run info> <sample> </path/to/Temp reports> </path/to/Output OnTarget> </path/to/sift> </path/to/snpeff> </path/to/polyphen> </path/to/output dir><somatic/germline><SGE_TASK_ID(optional)>";
 else
 	set -x
 	echo `date`			
@@ -15,18 +15,22 @@ else
 	snpeff=$6
 	poly=$7
 	output_dir=$8
-	if [ $9 ]
+	type=`echo $9 | tr "[A-Z]" "[a-z]"`	
+	if [ $9 == "somatic" ]
 	then
-		gr=$9
+		gr="TUMOR"
 	fi	
-	#SGE_TASK_ID=22
+	if [ ${10} ]
+	then
+		SGE_TASK_ID=${10}
+	fi
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 	variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
 	which_chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
 	
 	## prepocessing the input file from variant module or user added 
-	if [[ $9 ]]
+	if [[ $9 == "somatic" ]]
 	then
 		if [ ! -s $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf  ]
 		then

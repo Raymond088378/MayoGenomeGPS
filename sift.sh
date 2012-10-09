@@ -12,9 +12,9 @@
 #	$6		=		run_info file
 #################################
 
-if [ $# -le 3 ];
+if [ $# -le 4 ];
 then
-    echo -e "script to run SIFT annotation tool on a vcf file\nUsage:<sift dir> <input dir><sample><run info><TUMOR (if somatic calling)>";
+    echo -e "script to run SIFT annotation tool on a vcf file\nUsage:<sift dir> <input dir><sample><run info><somatic/germline><SGE_TASK_ID(optional)>";
 else
     set -x
     echo `date` 
@@ -22,11 +22,18 @@ else
     input=$2
     sample=$3
     run_info=$4
-    if [ $5 ]
+    type=`echo $5 | tr "[A-Z]" "[a-z]"`	
+	if [ $type == "somatic" ]
+	then
+		prefix="TUMOR"
+		sam=$prefix.$sample
+	else
+		sam=$sample
+	fi	
+	if [ $6 ]
     then
-		prefix=$5
+        SGE_TASK_ID=$6
     fi	
-    #SGE_TASK_ID=22
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     sift_ref=$( cat $tool_info | grep -w '^SIFT_REF' | cut -d '=' -f2) 
     sift_path=$( cat $tool_info | grep -w '^SIFT' | cut -d '=' -f2) 
@@ -45,12 +52,6 @@ else
 	else
 		$script_path/dashboard.sh $sample $run_info Annotation started
 	fi	
-    if [ $5 ]
-    then
-        sam=$prefix.$sample
-    else
-        sam=$sample
-    fi	
     ### hard coded
     snv_file=$sam.variants.chr$chr.SNV.filter.i.c.vcf
     if [ ! -s $input/$snv_file ]

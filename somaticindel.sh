@@ -2,7 +2,7 @@
 
 if [ $# != 7 ]
 then
-    echo -e "Usage: script to run somtic indel caller \n <normal bam ><tumor bam><chromosome><tumor sample><output dir><output file vcf><run info>"
+    echo -e "script to run somtic indel caller\nUsage: <normal bam ><tumor bam><chromosome><tumor sample><output dir><output file vcf><run info>"
 else
     set -x
     echo `date`

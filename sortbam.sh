@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $# != 5 ]
+if [ $# != 6 ]
 then
-    echo -e "Script to sort the bam file using picard samtools\nUsage: <input bam> <outputbam></path/to/temp dir><sorting order><flag for indexing(true/false)></path/to/run info>"
+    echo -e "Script to sort the bam file using picard samtools\nUsage: ./sortbam.sh <input bam> <outputbam></path/to/temp dir><sorting order><flag for indexing(true/false)></path/to/run info>"
 else
     set -x
     echo `date`

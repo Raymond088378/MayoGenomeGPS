@@ -1,6 +1,6 @@
 #!/bin/bash
 ## baheti.saurabh@mayo.edu
-## Sept 17 2012
+## Oct 10th 2012
 shopt -s nocasematch
 
 echo -e "\nPlease answer all the question in (yes/no) else directed {case insensitive}\n"
@@ -18,7 +18,7 @@ done
 if [[ $workflow == "1" ]]
 then
 	echo -e "\nCopy the configuration files from the config folder of the current workflow version and make the changes according to the run and study"
-	echo -e "\nCreate the threee configuration files namely\n 1. Sample info file \n 2. Tool info file \n 3. Run info file"
+	echo -e "\nCreate the four configuration files namely\n 1. Sample info file \n 2. Tool info file \n 3. Run info file \n 4. Memory info file \n"
 	
 	read -p "What kind of samples are you analyzing exome or whole_genome (exome/whole_genome) : " type
 	while [[ $type != "exome" && $type != "whole_genome" ]]
@@ -58,7 +58,7 @@ then
 	if [[ $kind == "paired" ]]
 	then
 		read -p "SOMATIC_CALLER : " somatic_caller
-		if [[ $somatic_caller == "SOMATICSNIPER" || $somatic_caller == "JOINTSNVMIX" || $soamtic_caller == "MUTECT"  || $soamtic_caller == "BEAUTY_EXOME" ]]
+		if [[ $somatic_caller == "SOMATICSNIPER" || $somatic_caller == "JOINTSNVMIX" || $somatic_caller == "MUTECT"  || $somatic_caller == "BEAUTY_EXOME" ]]
 		then
 			echo -e "\n SOMATIC CALLER is set right"
 		else
@@ -117,7 +117,7 @@ then
 	do
 		read -p "Do you want to know how to create sample info file ? : " sample_info
 	done
-	if [[ $sample_info == "YES" ]]
+	if [[ $sample_info == "yes" ]]
 	then
 		echo -e "\nAll the example sample info files are located in the config folder of the workflow\n"
 		read -p "what type of input files you have (FASTQ, BAM, VCF, TXT) : " file
@@ -179,7 +179,7 @@ then
 	if [[ $run_info == "YES" ]]
 	then
 		echo -e "\nAll the example run info files are located in the config folder of the workflow\n"
-		echo -e "Important Paramters: \nANALYSIS\nFor Runs from upstairs lab you should specify realign-mayo if you are starting with bams  or mayo if you are starting with fastq's as we want to populate seconday dashboard data base \nFor Single sample exome/whole_genome: alignment,mayo,realign-mayo,external,realignment,ontarget,variant,annotation\nFor Paired Sample exome/whole_genome: alignment, mayo, external,realign-mayo,realignment,variant \nMULTISAMPLE\nYES if paired analsyis\nNO if single sample analsyis\nLABINDEXES\nIf its  multiplexing run then user should provide the index (index is always a 6 letter code for illumina data (don't include I in the index name)\nSNV_CALLER\nThere are three callers which user can use GATK, SNVMIX or BEAUTY_EXOME\nSOMATIC_CALLER\nIf you are doing Paired anlysis then user needs to specify the the caller from one of SOMATICSNIPER, JOINTSNVMIX, MUTECT or BEAUTY_EXOME\nALIGNER\nIf you are starting with FASTQ then user has an option to align the data uisng BWA or NOVOALIGN.\n"
+		echo -e "Important Paramters: \nANALYSIS\nFor Runs from upstairs lab you should specify realign-mayo if you are starting with bams  or mayo if you are starting with fastq's as we want to populate seconday dashboard data base \nFor Single sample exome/whole_genome: alignment,mayo,realign-mayo,external,realignment,ontarget,variant,annotation\nFor Paired Sample exome/whole_genome: alignment, mayo, external,realign-mayo,realignment,variant \nMULTISAMPLE\nYES if paired analsyis\nNO if single sample analsyis\nLABINDEXES\nIf its  multiplexing run then user should provide the index (index is always a 6 letter code for illumina data (don't include I in the index name)\nSNV_CALLER\nThere are three callers which user can use GATK, SNVMIX or BEAUTY_EXOME\nSOMATIC_CALLER\nIf you are doing Paired anlysis then user needs to specify the the caller from one of SOMATICSNIPER, JOINTSNVMIX, MUTECT or BEAUTY_EXOME\nALIGNER\nIf you are starting with FASTQ then user has an option to align the data uisng BWA or NOVOALIGN\nTOOL_INFO\nfull path to the tool info file\nSAMPLE_INFO\nFull path to the sample info file\nMEMORY_INFO\nFull path to the memory info file\n."
 	else
 		echo -e "\nOk, fine"
 	fi	
@@ -220,11 +220,13 @@ then
 				\nJOINTSNVMIX_params\t\tspecify commandline Joint SNVMIX paramters
 				\nNOVO_params\t\tspecify the comamndline novolalign paramters (-g 60 -x 2 -i PE 425,80 -r Random --hdrhd off -v 120)
 				\nBWA_params\t\tspecify commandline BWA paramters (-l 32 -t 4)
-				\nVQSR_params_SNV\t\tspecify commandline VQSR for SNV paramters (--maxGaussians 4 --percentBadVariants 0.05)
-				\nVQSR_params_INDEL\t\tspecify commandline VQSR for INDEL paramters (--maxGaussians 4 --percentBadVariants 0.05)
+				\nVQSR_params_SNV\t\tspecify commandline VQSR for SNV paramters (-an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP --maxGaussians 4 --percentBadVariants 0.05)
+				\nVQSR_params_INDEL\t\tspecify commandline VQSR for INDEL paramters (-an QD -an FS -an HaplotypeScore -an ReadPosRankSum --maxGaussians 4 --percentBadVariants 0.12 -std 10.0)
 				\nPICARD_ReadGroup_params\t\tspecify commandline picard read group function paramters (PL=illumina CN=mayo LB=hg19 CREATE_INDEX=true)
 				\nSNP_DISTANCE_INDEL\t\twindow size to look for a indel close to snp (10)
 				\nREALIGN_params\t\tto skip the region if the reads are more than this (--maxReadsForRealignment 50000 --maxReadsInMemory 150000)	
+				\nVCF_annotation_params\t\t features to annotate the vcf file (-A QualByDepth -A MappingQualityRankSumTest -A ReadPosRankSumTest -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A DepthPerAlleleBySample -A RMSMappingQuality -A FisherStrand -A ForwardReverseAlleleCounts )
+				\nBLAT_params\t\tparameters used for blat queryingof variant position (-w 50 -m 70 -t 90)
 				\nCNVNATOR_BINSIZE\t\tbin size in CNVnator (1000)
 				\nPCT_READS_SEGSEQ\t\tmin percent of reads for CNV (0.05)
 				\nMINFOLD\t\tmin. fold (0.5)
@@ -238,11 +240,23 @@ then
 				\nSTRUCT_PCT_BLACKLIST\t\tpercent overlap of a cnv (1)
 				\nMAX_FILE_HANDLE\t\tmax. intermediate/temporary files in a given instance of a script(100)
 				\nMAX_READS_MEM_SORT\t\tmax. reads to keep in memory while sorting a bam file (2000000)
-				\nWINDOW_BLAT\t\t#of Bases to use to blat the variant (50)
 				\nTB_PORT\t\tport for Table Browser (8886)
 				\nTB_HOST\t\thost for Table Browser (charlotte)
 				\nJOB_LIMIT\t\tjob limit per user from RCF (3000)
 				"
+	else
+		echo -e "\nOk, fine"
+	fi	
+	read -p "Do you want to know how to create memory info file ? : " memory_info
+	while [[ $tool_info != "yes" && $tool_info != "no" ]]
+	do
+		read -p "Do you want to know how to create memory info file ? : " memory_info
+	done
+	if [[ $memory_info == "YES" ]]
+	then
+		echo ""
+	else
+		echo -e "\nOk, fine"
 	fi	
 	read -p "Do you have any other questions ? : " ques
 	while [[ $ques != "yes" && $ques != "no" ]]

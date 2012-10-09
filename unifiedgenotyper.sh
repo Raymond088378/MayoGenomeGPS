@@ -2,7 +2,7 @@
 
 if [ $# != 6 ]
 then
-    echo -e "Usage: script to run unified genotyper \n <bams><vcf output><type of varint> <range of positions> <output mode><run info file>"
+    echo -e "script to run unified genotyper\nUsage: ./unifiedgenotyper.sh <bams><vcf output><type of varint> <range of positions> <output mode><run info file>"
 else
     set -x
     echo `date`
@@ -85,7 +85,7 @@ else
 		let count=count+1	
     done 
 	
-	perl $script_path/convertvcf.pl $vcf > $vcf.tmp
+	$script_path/convertvcf.pl $vcf > $vcf.tmp
 	mv $vcf.tmp $vcf
 	
 	cat $vcf | awk '$0 ~ /^#/ || $5 ~ /,/' > $vcf.multi.vcf

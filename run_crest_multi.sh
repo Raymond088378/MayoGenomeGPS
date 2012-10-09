@@ -16,7 +16,7 @@
 
 if [ $# -le 3 ]
 then
-	echo -e "Script to run crest on a paired sample\nUsage: <group name> </path/to/input directory> </path/to/output directory> </path/to/run_info.txt>";
+	echo -e "Script to run crest on a paired sample\nUsage: ./run_crest_multi.sh <group name> </path/to/input directory> </path/to/output directory> </path/to/run_info.txt><SGE_TASK_ID (optional)>"
 else
 	set -x
 	echo `date`
@@ -28,13 +28,10 @@ else
 	then
 		SGE_TASK_ID=$5
 	fi	
-	
-
 	########################################################	
 	######		Reading run_info.txt and assigning to variables
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 	sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
-	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	crest=$( cat $tool_info | grep -w '^CREST' | cut -d '=' -f2 )
@@ -61,7 +58,7 @@ else
 	pid=""
 	export PERL5LIB=$perllib
 	PATH=$PATH:$blat:$crest:$perllib
-	mkdir -p $output_dir/$group $output_dir/$group/log
+	mkdir -p $output_dir/$group/log
 	range=20000
 	let blat_port+=$RANDOM%range
 	status=`$blat/gfServer status localhost $blat_port | wc -l`;
@@ -133,7 +130,6 @@ else
 		else
             touch $output_dir/$group/${file}.$chr.filter.predSV.txt
         fi
-		
 		$script_path/CREST2VCF.pl -i $output_dir/$group/${file}.$chr.filter.predSV.txt -f $ref_genome -o $output_dir/$group/${file}.$chr.filter.vcf -s $file -t $samtools
 		if [ ! -s $output_dir/$group/${file}.$chr.filter.vcf.fail ]
         then
@@ -141,7 +137,6 @@ else
         fi  
 		$script_path/vcfsort.pl ${ref_genome}.fai $output_dir/$group/${file}.$chr.filter.vcf > $output_dir/$group/${file}.$chr.filter.vcf.sort
 		mv $output_dir/$group/${file}.$chr.filter.vcf.sort $output_dir/$group/${file}.$chr.filter.vcf
-		
 		### vcf converter for CREST output to VCF
 		if [ ! -f $output_dir/$group/${file}.$chr.filter.predSV.txt ]
 		then

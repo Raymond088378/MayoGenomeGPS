@@ -2,7 +2,7 @@
 
 if [ $# != 3 ]
 then
-    echo -e "script to annotate vcf files using GATK\nUsage:  <input vcf file><run info file></path/to/input directroy> "
+    echo -e "script to annotate vcf files using GATK\nUsage: ./annotate_vcf.sh <input vcf file><run info file></path/to/input directroy> "
 else
     set -x
     echo `date`

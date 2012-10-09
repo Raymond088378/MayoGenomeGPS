@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $# -le 3 ]
+if [ $# -le 4 ]
 then
-    echo -e "script to run polyphen on a vcf file\nUsage: <polphen dir> <input directory><sample><run info><TUMOR (if somatic calling)>"
+    echo -e "script to run polyphen on a vcf file\nUsage: </path/to/polphen dir> <path/to/ontarget directory><sample><run info><somatic/germline><SGE_TASK_ID(optional)>"
 else
     set -x
     echo `date`
@@ -10,11 +10,18 @@ else
     input=$2
     sample=$3
     run_info=$4
-    if [ $5 ]
+	type=`echo $5 | tr "[A-Z]" "[a-z]"`	
+	if [ $type == "somatic" ]
+	then
+		prefix="TUMOR"
+		sam=$prefix.$sample
+	else
+		sam=$sample
+	fi	
+	if [ $6 ]
     then
-        prefix=$5
+        SGE_TASK_ID=$6
     fi	
-	#SGE_TASK_ID=22
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     tool_info=$(cat $run_info | grep -w '^TOOL_INFO' |  cut -d '=' -f2)
     pph=$(cat $tool_info | grep -w '^POLYPHEN' |  cut -d '=' -f2)
@@ -23,13 +30,6 @@ else
     perl=$(cat $tool_info | grep -w '^PERL_CIRCOS' |  cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )	
 	threads=1   
-	if [ $5 ]
-    then
-		sam=$prefix.$sample
-    else
-		sam=$sample
-    fi
-    
     export PERL5LIB=$perl_lib:${PERL5LIB}
     
     snv_file=$sam.variants.chr$chr.SNV.filter.i.c.vcf

@@ -57,7 +57,7 @@ else
     fi
     
     ## check if BAM is sorted
-    SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $output/$sample.chr${chr}.bam -s $samtools`
+    SORT_FLAG=`$script_path/checkBAMsorted.pl -i $output/$sample.chr${chr}.bam -s $samtools`
     if [ $SORT_FLAG == 1 ]
     then
         ln -s $output/$sample.chr${chr}.bam $output/$sample.chr${chr}-sorted.bam

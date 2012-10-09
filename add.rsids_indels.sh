@@ -13,7 +13,7 @@
 
 if [ $# != 4 ];
 then
-	echo "Usage<TempReportDir> <indel file><chromosome> <run info>";
+	echo -e "script to add rsids to the indel report\nUsage: ./add.rsids_indels.sh </path/to/TempReportDir> <indel file><chromosome> </path/to/run info>";
 else	
 	set -x
 	echo `date`

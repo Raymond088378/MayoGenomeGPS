@@ -4,7 +4,7 @@ if [ $# -le 3 ]
 then
     echo -e "Usage : script to update secondary dashboard\nUsage:<sample ><runinfo ><stage of the workflow> <status of the stage> <SGE TASK ID(optional)>"
 else
-    echo `date`	
+	echo `date`	
     sample=$1
     run_info=$2
     stage=$3

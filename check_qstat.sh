@@ -1,14 +1,14 @@
 #!/bin/bash
+
 if [ $# != 1 ]
 then
-	echo -e "script to check the number of jobs a user can submit\nUsage: <limit of jobs>"
+	echo -e "script to check the number of jobs a user can submit\nUsage: ./check_qstat.sh <limit of jobs>"
 else
-	limit=$1
+        limit=$1
 	sleep 10
 	let count=1
-	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
-	num=`qstat -u $TO | awk '{print $1}' | grep -E '^[1-9]+$'` 
-	if [[ $num ]]
+	num=`qstat | awk '{ if ($1>0) print $1;}'` 
+	if [[ "$num" ]]
 	then
 		num_jobs=`echo $num | tr " " "\n" | wc -l `
 	else
@@ -23,8 +23,8 @@ else
 		let wait=`expr 60 "*" $count`
 		echo "waiting for slot on cluster"
 		sleep $wait
-		num=`qstat | awk '{print $1}' | grep -E '^[0-9]+$'`
-		if [[ $num ]]
+		num=`qstat | awk '{ if ($1>0) print $1;}'`
+		if [[ "$num" ]]
 		then
 			num_jobs=`echo $num | tr " " "\n" | wc -l `
 		else

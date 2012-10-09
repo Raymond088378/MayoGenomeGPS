@@ -2,7 +2,7 @@
 
 if [ $# -le 3 ]
 then
-	echo -e "script to extract reads not used for downstream processing\nUsage: </path/to/input diretcory><bam file><run info><igv folder><single/pair>"
+	echo -e "script to extract reads not used for downstream processing\nUsage: ./extract_read_bam.sh </path/to/input diretcory><bam file></path/to/run info></path/to/igv folder><single/pair>"
 else
 	set -x
 	echo `date`	

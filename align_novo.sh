@@ -16,7 +16,7 @@
 
 if [ $# -le 2 ]
 then
-    echo -e "Usage: wrapper script to run the alignment using NOVO ALIGN\nUsage:align_novo.sh <sample name> <output_dir> </path/to/run_info.txt> <SGE TASK ID (optional)>";
+    echo -e "wrapper script to run the alignment using NOVO ALIGN\nUsage: ./align_novo.sh <sample name> </path/to/output_dir> </path/to/run_info.txt> <SGE TASK ID (optional)>";
 else	
     set -x 
     echo `date`

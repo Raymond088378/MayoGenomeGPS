@@ -2,7 +2,7 @@
 
 if [ $# -le 2 ]
 then
-    echo -e "script to split the bam file per chromosome (assuimg the file name as <sample>.sorted.bam)\nUsage: split_bam_chr.sh </path/to/input directory> <sample name> </path/to/run_info.txt><SGE_TASK_ID(optional)>";
+    echo -e "script to split the bam file per chromosome (assuimg the file name as <sample>.sorted.bam)\nUsage: ./split_bam_chr.sh </path/to/input directory> <sample name> </path/to/run_info.txt><SGE_TASK_ID(optional)>";
 else
     set -x
     echo `date`

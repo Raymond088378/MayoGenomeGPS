@@ -2,7 +2,7 @@
 
 if [ $# != 8 ]
 then
-    echo -e "script to run somatic snipper on the tumor normal bam file and outputs a vcf file\nUsage: <normal bam> <tumor bam > <output dir> <chromosome> <tumor sample name> <normal sample name> <output vcf file name> <run info>"
+    echo -e "script to run somatic snipper on the tumor normal bam file and outputs a vcf file\nUsage: ./somaticsipper.sh <normal bam> <tumor bam > <output dir> <chromosome> <tumor sample name> <normal sample name> <output vcf file name> <run info>"
 else
     set -x
     echo `date`

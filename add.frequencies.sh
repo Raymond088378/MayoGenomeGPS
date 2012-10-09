@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ##	INFO
 ##	to add rsids to per sample report
@@ -12,7 +12,7 @@
 
 if [ $# != 4 ];
 then
-    echo "Usage<TempReportDir><variant file with rsids ><chromosome><run info> ";
+    echo -e "script to add allele frequencies to the reported variantcalls\nUsage: ./add.frequencies.sh </path/to/TempReportDir><variant file with rsids ><chromosome></path/to/run info>";
 else	
     set -x
     echo `date`

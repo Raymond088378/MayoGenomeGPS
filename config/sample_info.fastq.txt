@@ -1,5 +1,4 @@
-FASTQ:s_normal=s_normal_R1.fastq	s_normal_R2.fastq
-FASTQ:s_tumor=s_tumor_R1.fastq	s_tumor_R2.fastq
+FASTQ:s_normal=sampleA_R1.fastq.gz	sampleA_R2.fastq.gz
+FASTQ:s_tumor=sampleB_R1.fastq.gz	sampleB_R2.fastq.gz
 
-
-pair1=s_normal	s_tumor
+pair_test=s_normal	s_tumor

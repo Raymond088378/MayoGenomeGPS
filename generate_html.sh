@@ -12,6 +12,7 @@ else
 	run_info=$2
 	
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
+	memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
 	PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
 	run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
 	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
@@ -47,7 +48,8 @@ else
 	if [[ $upload_tb == "YES"  && $analysis != "alignment" ]]
 	then
 		PI_LANID=$( echo $PI | cut -d '_' -f 3 )
-		$java/java -Xmx7g -Xms512m -jar $script_path/TREATUploader.jar -n $PI_LANID -u $run_num -i $output_dir/Reports/INDEL.xls -s $output_dir/Reports/SNV.xls -r $run_num
+		mem=$( cat $memory_info | grep -w '^TREATUploader_JVM' | cut -d '=' -f2)
+		$java/java $mem -jar $script_path/TREATUploader.jar -n $PI_LANID -u $run_num -i $output_dir/Reports/INDEL.xls -s $output_dir/Reports/SNV.xls -r $run_num
 		echo -e "Variants uploaded to TableBrowser" >> $output_dir/log.txt
 	else
 		echo -e "Variants Not uploaded to TableBrowser" >> $output_dir/log.txt

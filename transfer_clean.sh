@@ -2,7 +2,7 @@
 
 if [ $# != 2 ]
 then
-    echo -e "Usage: wrapper to clean intermediate files and tansfer the data to tertiary, delivery folder \n <secondary folder> < run_info >"
+    echo -e "wrapper to clean intermediate files and tansfer the data to tertiary, delivery folder\nUsage: ./transfer_clean.sh </path/to/secondary folder> <path/to/run_info>"
 else
     echo `date`
 	echo "Started transferring the file"
@@ -58,6 +58,7 @@ else
     if [ ! -d $tertiary ]
     then
 		mkdir -p $tertiary
+		chmod -Rf 777 $tertiary
 		echo "$tertiary tertiary folder created"
     fi
 
@@ -139,13 +140,16 @@ else
     ### make tar balls
     cd $secondary
     tar -cvzf logs.tar.gz logs
-    rm -Rf $secondary/logs
+    chmod -Rf 777 logs.tar.gz
+	rm -Rf $secondary/logs
     tar -cvzf numbers.tar.gz numbers
-    rm -Rf $secondary/numbers
+    chmod -Rf 777 numbers.tar.gz
+	rm -Rf $secondary/numbers
     cp $secondary/numbers.tar.gz $delivery/
 
     ##### transfer files to tertiary folder
     mkdir -p $tertiary/variants
+	chmod -Rf 777 $tertiary/variants
     if [ $sites == "yes" ]
     then
         mv $secondary/variants/*.gz $tertiary/variants/
@@ -170,17 +174,15 @@ else
 		then
 			if [ "$(ls -A $delivery/IGV_BAM)" ]
 			then
+				rm -Rf $secondary/IGV_BAM
+			else
 				echo "ERROR: there are no files in the IGV bam folder for delivery location : $delivery/IGV_BAM "
 				exit 1;
-			else
-				rm -Rf $secondary/IGV_BAM
 			fi
 		fi
 	fi
-    echo "data is transfered and intermediate files are deleted"
+    $java/java -Xmx2g -Xms512m -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -f $flowcell -r $run_num -s Delivered -a $tool
+	echo "data is transfered and intermediate files are deleted"
     echo "User needs to transfer the data to the windows share"
-
-	$java/java -Xmx2g -Xms512m -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -f $flowcell -r $run_num -s Delivered -a $tool
-
-    echo `date`
+	echo `date`
 fi

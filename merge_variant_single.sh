@@ -13,7 +13,7 @@
 
 if [ $# != 4 ];
 then
-    echo -e "script to merge the varaiants and then apply filters to the vcf file\nUsage: </path/to/input directory> <sample name> <output folder> </path/to/run_info.txt>";
+    echo -e "script to merge the varaiants and then apply filters to the vcf file\nUsage: ./merge_variant_single.sh </path/to/input directory> <sample name> </path/to/output folder> </path/to/run_info.txt>";
 else
     set -x
     echo `date`

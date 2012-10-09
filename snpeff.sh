@@ -9,9 +9,9 @@
 #	$4		=		run_innfo
 ################################# 
 
-if [ $# -le 3 ];
+if [ $# -le 4 ];
 then
-    echo -e "script to run snpeff on a vcf file in a folder\nUsage:<snpeff dir> <input dir><sample><run_info><TUMOR (if somatic calling)> ";
+    echo -e "script to run snpeff on a vcf file in a folder\nUsage:<snpeff dir> <input dir><sample><run_info><somatic/germline><SGE_TASK_ID(optional)>";
 else
     set -x
     echo `date`
@@ -19,11 +19,18 @@ else
     input=$2
     sample=$3
     run_info=$4
-    if [ $5 ]
+    type=`echo $5 | tr "[A-Z]" "[a-z]"`	
+	if [ $type == "somatic" ]
+	then
+		prefix="TUMOR"
+		sam=$prefix.$sample
+	else
+		sam=$sample
+	fi	
+	if [ $6 ]
     then
-        prefix=$5
+        SGE_TASK_ID=$6
     fi	
-	#SGE_TASK_ID=22
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
@@ -37,14 +44,7 @@ else
     vcftools=$( cat $tool_info | grep -w '^VCFTOOLS' | cut -d '=' -f2)
     perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
     export PERL5LIB=$perllib:$PERL5LIB
-	
-    if [ $5 ]
-    then
-		sam=$prefix.$sample
-    else
-		sam=$sample
-    fi	
-	
+
     if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
     then
         snv_file=$sam.variants.chr$chr.SNV.filter.i.c.vcf

@@ -2,7 +2,7 @@
 
 if [ $# != 4 ]
 then
-    echo -e "script to combine multiple vcf files\nUsage: combine vcfs <input files><output vcf ><run info><to delete input files(yes/no)"
+    echo -e "script to combine multiple vcf files\nUsage: ./combinevcf.sh <input files><output vcf ><run info><to delete input files(yes/no)"
 else
     set -x
     echo `date`
@@ -45,12 +45,12 @@ else
         then
             echo -e "\njust copied the files as there was only one file.\n"
             for i in `echo $input | sed -e '/-V/s///g'`
-	    do
-		if [ -s $i ]
-		then
-			rm $i
-		fi
-	done			
+			do
+				if [ -s $i ]
+				then
+					rm $i
+				fi
+			done			
         else
             $script_path/errorlog.sh $output combinevcf.sh ERROR "failed to create"
             exit 1;
@@ -59,12 +59,12 @@ else
         if [ $flag == "YES" ]
         then
             for i in `echo $input | tr " " "\n" | awk '$0 !~ /-V/ && $0 !~ /-priority/' | tr "\n" " "`
-	    do
-		if [ -s $i ]
-		then
-			rm $i
-		fi
-	done		
+			do
+				if [ -s $i ]
+				then
+					rm $i
+				fi
+			done		
             sample=`echo $input | tr " " "\n" | awk '$0 !~ /-V/ && $0 !~ /-priority/' | awk '{print $0".idx"}'`
 			for i in $sample
 			do

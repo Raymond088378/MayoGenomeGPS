@@ -2,7 +2,7 @@
 
 if [ $# -le 4 ]
 then
-	echo -e "Usage: SCRIPT to split the bam uisng read group information \n</path/to/realign dir> </path/to/output folder> <sample> </path/to/alignment folder></path/to/run info>";
+	echo -e "SCRIPT to split the bam uisng read group information\nUsage: ./split_sample_pair.sh </path/to/realign dir> </path/to/output folder> <sample> </path/to/alignment folder></path/to/run info>";
 else
     set -x
     echo `date`

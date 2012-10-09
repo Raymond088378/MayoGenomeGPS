@@ -2,7 +2,7 @@
 
 if [ $# != 1 ]
 then
-	echo "Usage: <run info file>"
+	echo -e "script to get the unique id for execution of the workflow\nUsage: ./unique_id.sh </path/to/run info file>"
 else
 	echo `date`	
 	run_info=$1

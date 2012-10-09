@@ -12,7 +12,7 @@
 
 if [ $# -le 3 ];
 then
-    echo -e "Usage: SCRIPT to get Ontarget pileup \n<input dir> <pileup> <chromsome> <output Ontarget> <sample> <run ifno>";
+    echo -e "SCRIPT to get Ontarget pileup\nUsage: ./OnTarget_PILEUP.sh </path/to/input dir> </path/to/output Ontarget> <sample> </path/to/run ifno><SGE_TASK_ID(optional)>";
 else	
     set -x
     echo `date`
@@ -94,7 +94,7 @@ else
 		-L $param -o $output/$sample.chr$chr.txt
         for((j=0; j<=99; j++))
         do
-			a=`cat $output/$sample.chr$chr.txt | grep -w "^$sample" | awk '$NF>'$j''  | wc -l`
+			a=`cat $output/$sample.chr$chr.txt | grep -w "$sample" | awk '$NF>'$j''  | wc -l`
 			echo $a >> $output/$sample.chr$chr.pileup.i.out
         done    
 	fi

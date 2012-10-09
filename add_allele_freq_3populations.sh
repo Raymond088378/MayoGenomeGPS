@@ -2,7 +2,7 @@
 
 if [ $# != 4 ];
 then
-	echo "usage ./add_3population.sh [input file with chr as 1st column and position as 2nd column, 1-based] [outout name, e.g., run70 ]"
+	echo -e "script to add allele frequency for hapmap and 1kgenome populations\nUsage ./add_3population.sh [input file with chr as 1st column and position as 2nd column, 1-based] [outout name, e.g., run70 ]"
 else
 	set -x
 	echo `date`

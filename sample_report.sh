@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $# -le 3 ];
+if [ $# -le 4 ];
 then
-	echo -e "script to merge the per chr report\nUsage:<output_dir> <TempReports> <sample name> <run_info> ";
+	echo -e "script to merge the per chr report\nUsage: ./sample_report.sh </path/to/output_dir> </path/to/TempReports> <sample name> </path/to/run_info><somatic/germline><SGE_TASK_ID(optional)> ";
 else
 	set -x
 	echo `date`
@@ -10,13 +10,19 @@ else
 	TempReports=$2
 	sample=$3
 	run_info=$4
-	if [ $5 ]
+	type=`echo $5 | tr "[A-Z]" "[a-z]"`	
+	if [ $type == "somatic" ]
 	then
-		prefix=$5
+		prefix="TUMOR"
 		sam=$prefix.$sample
 	else
 		sam=$sample
 	fi	
+	if [ $6 ]
+    then
+        SGE_TASK_ID=$6
+    fi	
+	
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
 	chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2)

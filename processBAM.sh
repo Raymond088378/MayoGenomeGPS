@@ -15,7 +15,7 @@
 
 if [ $# != 3 ];
 then
-    echo -e "wrapper to merge bam files and validate the bam for downstream analysis\nprocessBAM.sh </path/to/input directory><sample name> </path/to/run_info.txt>";
+    echo -e "wrapper to merge bam files and validate the bam for downstream analysis\nUsage: ./processBAM.sh </path/to/input directory><sample name> </path/to/run_info.txt>";
 else
     set -x
     echo `date`
@@ -71,7 +71,7 @@ else
 		then
 			rm $bam.bai
 		fi	
-		SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input/$sample.bam -s $samtools`
+		SORT_FLAG=`$script_path/checkBAMsorted.pl -i $input/$sample.bam -s $samtools`
 		if [ $SORT_FLAG == 1 ]
 		then
 			mv $input/$sample.bam $input/$sample.sorted.bam

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $# != 3 ];
+if [ $# != 3 ]
 then
-    echo -e "wrapper to merge bam files and validate the bam for downstream analysis\nUsage: reformat_BAM.sh </path/to/input directory> <sample name> </path/to/run_info.txt>";
+    echo -e "wrapper to merge bam files and validate the bam for downstream analysis\nUsage: ./reformat_BAM.sh </path/to/input directory> <sample name> </path/to/run_info.txt>";
 else
     set -x
     echo `date`
@@ -27,11 +27,7 @@ else
 		if [ `cat $file.fix.log | wc -l` -gt 0 ]
 		then
 			$script_path/email.sh $file "bam is truncated or corrupt" $run_info
-			while [ -f $file.fix.log ]
-			do
-				echo "waiting for the file to be fixed"
-				sleep 2m
-			done
+			$script_path/wait.sh $file.fix.log 
 		else
 			rm $file.fix.log 
 		fi
@@ -45,7 +41,7 @@ else
     then
 		bam=`echo $INPUTARGS | cut -d '=' -f2`
 		mv $bam $input/$sample.bam
-        SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input/$sample.bam -s $samtools`
+        SORT_FLAG=`$script_path/checkBAMsorted.pl -i $input/$sample.bam -s $samtools`
         if [ $SORT_FLAG == 1 ]
         then
             mv $input/$sample.bam $input/$sample.sorted.bam

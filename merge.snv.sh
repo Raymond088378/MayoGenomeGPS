@@ -15,7 +15,7 @@
 		
 if [ $# != 8 ];
 then
-	echo "Usage:<Tempreports><sample name><chromosome><sseq dir><sift dir><variant file><run info>";
+	echo -e "script to add various annotation to the reported varaint file\nUsage: ./merge.snv.sh </path/to/Tempreports><sample name><chromosome></path/to/sift dir></path/to/snpeff dir></path/to/polyphen dir><variant file><run info>";
 else	
 	set -x
 	echo `date`

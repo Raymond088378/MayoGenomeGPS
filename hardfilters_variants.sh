@@ -2,7 +2,7 @@
 
 if [ $# != 4 ]
 then
-	echo -e "Script to appy hard filters on vcf variant files\nUsage: script to appy hard filters \n <input vcf > <output vcf ><run info file><type SNP/INDEL>"
+	echo -e "Script to appy hard filters on vcf variant files\nUsage: ./hardfilters_variants.sh script to appy hard filters \n <input vcf > <output vcf ><run info file><type SNP/INDEL>"
 else
     set -x
     echo `date`
