@@ -484,7 +484,8 @@ else
 					qsub_args="-N $type.$version.run_breakdancer_in.$sample.$run_num -hold_jid $type.$version.igv_bam.$sample.$run_num -t $nump-$nump:$nump -l h_vmem=$mem"
 					qsub $args $qsub_args $script_path/run_breakdancer.sh $sample $igv $break $run_info
 					### merge the structural variants
-					hold="-hold_jid $type.$version.run_single_crest.sh.$sample.$run_num,$type.$version.run_cnvnator.$sample.$run_num,$type.$version.run_breakdancer.$sample.$run_num,$type.$version.run_breakdancer_in.$sample.$run_num"
+					hold="-hold_jid $type.$version.run_single_crest.sh.$sample.$run_num,$type.$version.run_cnvnator.$sample.$run_num,"
+					hold=$hold"$type.$version.run_breakdancer.$sample.$run_num,$type.$version.run_breakdancer_in.$sample.$run_num"
 					mkdir -p $sv
 					$script_path/check_qstat.sh $limit
 					mem=$( cat $memory_info | grep -w '^summaryze_struct_single' | cut -d '=' -f2)
@@ -512,7 +513,8 @@ else
 			then
 				if [ $tool == "whole_genome" ]
 				then
-					hold_args="-hold_jid $type.$version.plot_circos_cnv_sv.$sample.$run_num,$type.$version.sample_report.$sample.$run_num,$type.$version.annotation_CNV.$sample.$run_num,$type.$version.annotation_SV.sh.$sample.$run_num"
+					hold_args="-hold_jid $type.$version.plot_circos_cnv_sv.$sample.$run_num,$type.$version.sample_report.$sample.$run_num,"
+					hold_args=$hold_args"$type.$version.annotation_CNV.$sample.$run_num,$type.$version.annotation_SV.sh.$sample.$run_num"
 				else
 					hold_args="-hold_jid $type.$version.sample_report.$sample.$run_num"
 				fi

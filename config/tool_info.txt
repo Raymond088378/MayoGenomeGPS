@@ -93,8 +93,6 @@ PYTHONLIB=/data2/bsi/RandD/pacbio/smrtanalysis-1.2.1/analysis/lib/python2.5/:/pr
 R_SOFT=/usr/local/biotools/r/R-2.13.0/bin/
 
 ### customized paramters
-
-
 HTTP_SERVER=bmidev2
 THREADS=4
 REORDERSAM=NO
@@ -125,11 +123,11 @@ JSM_Filter=-prob 0.1
 JOINTSNVMIX_params=
 NOVO_params=-g 60 -x 2 -i PE 425,80 -r Random --hdrhd off -v 120 -c 4
 BWA_params=-l 32 -t 4
-VQSR_params_SNV=-an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP -nt 2--maxGaussians 4 --percentBadVariants 0.05
+VQSR_params_SNV=-an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP -nt 2 --maxGaussians 4 --percentBadVariants 0.05
 VQSR_params_INDEL=-an QD -an FS -an HaplotypeScore -an ReadPosRankSum --maxGaussians 4 -nt 2 --percentBadVariants 0.12 -std 10.0
 PICARD_ReadGroup_params=PL=illumina CN=mayo LB=hg19 CREATE_INDEX=true
 VCF_annotation_params=-A QualByDepth -A MappingQualityRankSumTest -A ReadPosRankSumTest -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A DepthPerAlleleBySample -A RMSMappingQuality -A FisherStrand -A ForwardReverseAlleleCounts 
-REALIGN_params=--maxReadsForRealignment 50000 --maxReadsInMemory 150000
+REALIGN_params=--maxReadsForRealignment 20000 --maxReadsInMemory 150000
 BLAT_params=-w 50 -m 70 -t 90 
 
 ### paramters
