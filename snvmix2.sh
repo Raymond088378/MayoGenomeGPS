@@ -2,7 +2,7 @@
 
 if [ $# != 6 ]
 then
-	echo -e "script to run snvmix\nUsage: <sample> <bam file><output vcf> <mode><bed file><run info> "
+	echo -e "script to run snvmix\nUsage: ./snvmix2.sh <sample> <bam file><output vcf> <mode><bed file><run info> "
 else
     set -x
     echo `date`
@@ -29,12 +29,8 @@ else
 	$samtools/samtools view -H $bam 1>$bam.snvmix.header 2>$bam.snvmix.fix.log
 	if [ `cat $bam.snvmix.fix.log | wc -l` -gt 0 ]
 	then
-		$script_path/email.sh $bam "bam is truncated or corrupt" $run_info
-		while [ -f $bam.snvmix.fix.log ]
-		do
-			echo "waiting for the $bam to be fixed"
-			sleep 2m
-		done
+		$script_path/email.sh $bam "bam is truncated or corrupt" realign_recal.sh $run_info
+		$script_path/wait.sh $bam.snvmix.fix.log
 	else
 		rm $bam.snvmix.fix.log
 	fi		

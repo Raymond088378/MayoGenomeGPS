@@ -37,21 +37,30 @@ else
         chrArray[$i]=$chr
         let i=i+1
     done
-
+	
+	if [ $analysis == "variant" ]
+	then
+		previous="split_bam_chr.sh"
+	else
+		previous="realign_recal.sh"
+	fi
+	
     if [ $multi == "YES" ]
     then
         cd $input/$sample
 		mkdir -p $output/$sample
         pair=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2)
-        for i in *.cleaned.bam
-        do
-			$samtools/samtools view -H $i 1>$i.igv.header 2> $i.fix.igv.log
-			if [ `cat $i.fix.igv.log | wc -l` -gt 0 ]
+        for j in $(seq 1 ${#chrArray[@]})
+		do
+			chr=${chrArray[$j]}
+			i=chr$chr.cleaned.bam
+			$samtools/samtools view -H $i 1>$i.igv.header 2> $i.igv.fix.log
+			if [ `cat $i.igv.fix.log | wc -l` -gt 0 ]
 			then
-				$script_path/email.sh $i "bam is truncated or corrupt" $run_info
-				$script_path/wait.sh $i.fix.igv.log
+				$script_path/email.sh $i "bam is truncated or corrupt" $previous $run_info
+				$script_path/wait.sh $i.igv.fix.log
 			else
-				rm $i.fix.igv.log
+				rm $i.igv.fix.log
 			fi	
 			rm $i.igv.header
 			$samtools/samtools view -H $i > $output/$sample/$sample.header.sam
@@ -104,12 +113,14 @@ else
 		rm $output/$sample/$sample.header.sam
     else
         cd $input/$sample/
-        for i in *.cleaned.bam
-        do
+        for j in $(seq 1 ${#chrArray[@]})
+		do
+			chr=${chrArray[$j]}
+			i=chr$chr.cleaned.bam
             $samtools/samtools view -H $i 1>$i.igv.header 2> $i.fix.igv.log
 			if [ `cat $i.fix.igv.log | wc -l` -gt 0 ]
 			then
-				$script_path/email.sh $i "bam is truncated or corrupt" $run_info
+				$script_path/email.sh $i "bam is truncated or corrupt" $previous $run_info
 				$script_path/wait.sh $i.fix.igv.log
 			else
 				rm $i.fix.igv.log

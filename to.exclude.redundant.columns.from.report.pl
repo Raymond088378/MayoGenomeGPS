@@ -1,3 +1,5 @@
+#!/usr/local/biotools/perl/5.10.0/bin/perl
+
 # script to remove columns from final report
 # Coordinates	chromosome	position	referenceBase	sampleGenotype	functionDBSNP	nickLab	dbSNPValidation	clinicalAssociation	 
 

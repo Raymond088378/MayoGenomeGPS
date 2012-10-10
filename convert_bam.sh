@@ -34,7 +34,13 @@ else
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     ref_path=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
-   
+	aligner=$( cat $run_info | grep -w '^ALIGNER' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
+	if [ $aligner == "bwa" ]
+	then
+		previous="align_bwa.sh"
+	else
+		previous="align_novo.sh"
+	fi	
     
 ########################################################	
 ######		PICARD to sort raw BAM file
@@ -43,7 +49,7 @@ else
     $samtools/samtools view -H $input/$input_bam 1> $input/$input_bam.header 2> $input/$input_bam.fix.log
 	if [ `cat $input/$input_bam.fix.log | wc -l` -gt 0 ]
 	then
-		$script_path/email.sh $input/$input_bam "bam is truncated or corrupt" $run_info
+		$script_path/email.sh $input/$input_bam "bam is truncated or corrupt" $previous $run_info
 		$script_path/wait.sh $input/$input_bam.fix.log
 	else
 		rm $input/$input_bam.fix.log

@@ -32,6 +32,14 @@ else
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	dup_flag=$( cat $tool_info | grep -w '^REMOVE_DUP' | cut -d '=' -f2 )
 	dup=$( cat $tool_info | grep -w '^MARKDUP' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
+	aligner=$( cat $run_info | grep -w '^ALIGNER' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
+	if [ $aligner == "bwa" ]
+	then
+		previous="align_bwa.sh"
+	else
+		previous="align_novo.sh"
+	fi	
+	
 ########################################################	
 
     ### dashboard update
@@ -47,11 +55,11 @@ else
     do
 		base=`basename $file`
 		dir=`dirname $file`
-        $script_path/filesize.sh processBAM $sample $dir $base $JOB_ID $run_info
+        $script_path/filesize.sh processBAM $sample $dir $base $run_info
 		$samtools/samtools view -H $file 1>$file.header 2> $file.fix.log
 		if [ `cat $file.fix.log | wc -l` -gt 0 ]
 		then
-			$script_path/email.sh $file "bam is truncated or corrupt" $run_info
+			$script_path/email.sh $file "bam is truncated or corrupt" $previous $run_info
 			$script_path/wait.sh $file.fix.log
 		else
 			rm $file.fix.log 
@@ -125,6 +133,6 @@ else
     ## dashboard
     $script_path/dashboard.sh $sample $run_info Alignment complete
 	## size of the bam file
-	$script_path/filesize.sh Alignment.out $sample $input $sample.sorted.bam $JOB_ID $run_info
+	$script_path/filesize.sh Alignment.out $sample $input $sample.sorted.bam $run_info
     echo `date`
 fi

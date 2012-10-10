@@ -1,7 +1,7 @@
 #!/bin/bash
 if [ $# != 8 ]
 then
-	echo "Usage: <normal bam> <tumor bam > <output dir> <chromosome> <tumor sample name> <normal sample name> <output vcf file name> <run info>"
+	echo -e "script to run somatic caller called mutect\nUsage: ./mutect.sh <normal bam> <tumor bam > <output dir> <chromosome> <tumor sample name> <normal sample name> <output vcf file name> <run info>"
 else
 	set -x
 	echo `date`

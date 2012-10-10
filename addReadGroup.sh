@@ -45,7 +45,7 @@ else
 		fi	
 		rm $outbam.rg.header
     else
-        $script_path/errorlog.sh $outbam convert.bam.sh ERROR "empty"
+        $script_path/errorlog.sh $outbam convert.bam.sh ERROR "is empty"
 		exit 1;
 	fi
     echo `date`

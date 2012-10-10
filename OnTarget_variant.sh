@@ -43,9 +43,20 @@ else
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     distance=$( cat $tool_info | grep -w '^SNP_DISTANCE_INDEL' | cut -d '=' -f2 )
 	gene_body=$( cat $tool_info | grep -w '^MATER_GENE_BODY' | cut -d '=' -f2 )
-	
+	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
 ##############################################################		
-    
+    if [ $analysis == "ontarget" ]
+	then
+		previous="reformat_VARIANTs_OnTarget.sh"
+	else
+		if [ $multi_sample != "YES" ]
+		then
+			previous="merge_variant_single.sh"
+		else
+			previous="merge_variant_group.sh"
+		fi		
+	fi	
+	
     if [ $tool == "exome" ]
     then
 		intersect_file=$TargetKit
@@ -59,7 +70,7 @@ else
 		input=$variants/$sample
 		if [ ! -s $input/$sample.variants.chr$chr.filter.vcf ]
 		then
-			$script_path/email.sh $input/$sample.variants.chr$chr.filter.vcf "doesn't exist" $run_info
+			$script_path/email.sh $input/$sample.variants.chr$chr.filter.vcf "doesn't exist" $previous $run_info
 			touch $input/$sample.variants.chr$chr.filter.vcf.fix.log
 			$script_path/wait.sh $input/$sample.variants.chr$chr.filter.vcf.fix.log
 		fi    
@@ -115,7 +126,7 @@ else
 		input=$variants/$group 
 		if [ ! -s $input/$group.variants.chr$chr.filter.vcf ]
 		then
-			$script_path/email.sh $input/$group.variants.chr$chr.filter.vcf "doesn't exist" $run_info
+			$script_path/email.sh $input/$group.variants.chr$chr.filter.vcf "doesn't exist" $previous $run_info
 			touch $input/$group.variants.chr$chr.filter.vcf.fix.log
 			$script_path/wait.sh $input/$group.variants.chr$chr.filter.vcf.fix.log
 		fi   
@@ -164,7 +175,7 @@ else
 		### for somatic calls
 		if [ ! -s $input/$group.somatic.variants.chr$chr.filter.vcf ]
 		then
-			$script_path/email.sh $input/$group.somatic.variants.chr$chr.filter.vcf "doesn't exist" $run_info
+			$script_path/email.sh $input/$group.somatic.variants.chr$chr.filter.vcf "doesn't exist" $previous $run_info
 			touch $input/$group.somatic.variants.chr$chr.filter.vcf.fix.log
 			$script_path/wait.sh $input/$group.somatic.variants.chr$chr.filter.vcf.fix.log
 		fi   

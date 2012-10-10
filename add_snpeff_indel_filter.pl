@@ -1,4 +1,4 @@
-
+#!/usr/local/biotools/perl/5.10.0/bin/perl
 
 ##chromosome      position        reference       Change  Homozygous      Bio_type        accession       Exon_ID Exon_Rank       functionGVS     aminoAcids      proteinPosition Codon_Degeneracy        geneList
 ##chr1    761958  *       +T      Hom     -       -       -       -       INTERGENIC      -       -       -       -

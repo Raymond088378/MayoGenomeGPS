@@ -2,7 +2,7 @@
 
 if [ $# != 5 ]
 then
-    echo -e "script to merge multiple BAm files and outputs a sorted BAM\nUsage: <input bam> <outputbam><temp dir><indexing flag (true/false)><run info>"
+    echo -e "script to merge multiple BAm files and outputs a sorted BAM\nUsage: ./mergeBam.sh <input bam> <outputbam><temp dir><indexing flag (true/false)><run info>"
 else
     set -x
     echo `date`
@@ -32,7 +32,7 @@ else
     
 	if [ ! -s $outbam ]
     then
-        $script_path/errorlog.sh $outbam MergeBam.sh ERROR empty
+        $script_path/errorlog.sh $outbam MergeBam.sh ERROR "is empty"
 		exit 1;
 	else
 		$samtools/samtools view -H $outbam 1>$outbam.me.header 2>$outbam.fix.me.log

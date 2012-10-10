@@ -1,6 +1,8 @@
+#!/bin/bash
+
 if [ $# != 4 ]
 then
-    echo "Usage : <in_vcf_file> <out_file> <run_info><type of variant>";
+    echo -e "script to parse a vcf file to tab delimited file using vctools vcf-query\nUsage: ./parse.vcf.sh <in_vcf_file> <out_file> <run_info><type of variant>";
 else
     set -x
     echo `date`
@@ -44,7 +46,7 @@ else
     then
         echo -e "\t\t\t\t\t\t$samples">$outfile
         echo -e "Chr\tPosition\tInCaptureKit\t#AlternateHits\tRef\tAlt${sample_cols}" >>$outfile
-	$vcftools/bin/vcf-query $dir/$file_name.gz -f '%CHROM\t%POS\t%INFO/CAPTURE\t%INFO/ED\t%REF\t%ALT\t[%GT\t%AD\t%DP\t%GQ\t%C2I\t]\n'	| $script_path/parse.snv.vcftools.pl >> $outfile
+		$vcftools/bin/vcf-query $dir/$file_name.gz -f '%CHROM\t%POS\t%INFO/CAPTURE\t%INFO/ED\t%REF\t%ALT\t[%GT\t%AD\t%DP\t%GQ\t%C2I\t]\n'	| $script_path/parse.snv.vcftools.pl >> $outfile
     else
         echo -e "\t\t\t\t\t\t\t\t$samples">$outfile
         echo -e "Chr\tStart\tStop\tInCaptureKit\t#AlternateHits\tRef\tAlt\tBase-Length${sample_cols}" >>$outfile

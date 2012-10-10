@@ -4,7 +4,7 @@ if [ $# != 1 ]
 then
 	echo -e "script to check the number of jobs a user can submit\nUsage: ./check_qstat.sh <limit of jobs>"
 else
-        limit=$1
+    limit=$1
 	sleep 10
 	let count=1
 	num=`qstat | awk '{ if ($1>0) print $1;}'` 

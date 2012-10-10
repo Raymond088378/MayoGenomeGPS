@@ -35,7 +35,7 @@ else
     
     if [ ! -s $outbam ]
     then
-        $script_path/errorlog.sh sortbam.sh $outbam ERROR empty
+        $script_path/errorlog.sh sortbam.sh $outbam ERROR "is empty"
         exit 1;
     else
         $samtools/samtools view -H $outbam 1>$outbam.sort.header 2> $outbam.sort.log

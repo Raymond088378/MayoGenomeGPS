@@ -19,13 +19,13 @@ else
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
 	
-    $samtools/samtools view -H $bam 1> $bam.header 2> $bam.fix.log
-	if [ `cat $bam.fix.log | wc -l` -gt 0 ]
+    $samtools/samtools view -H $bam 1> $bam.header 2> $bam.sbc.fix.log
+	if [ `cat $bam.sbc.fix.log | wc -l` -gt 0 ]
 	then
-		$script_path/email.sh $bam "bam is truncated or corrupt" $run_info
-		$script_path/wait.sh $bam.fix.log
+		$script_path/email.sh $bam "bam is truncated or corrupt" reformat_BAM.sh $run_info
+		$script_path/wait.sh $bam.sbc.fix.log
 	else
-		rm $bam.fix.log
+		rm $bam.sbc.fix.log
 	fi	
 	rm $bam.header	
 	$samtools/samtools view -b $bam chr${chr} > $input/chr${chr}.cleaned.bam
@@ -35,6 +35,8 @@ else
 	then
 		$script_path/errorlog.sh $input/chr${chr}.cleaned.bam split_bam_chr.sh ERROR "not created"  
 		exit 1;
+	else
+		$script_path/filesize.sh SplittingBam $sample $input chr${chr}.cleaned.bam $run_info
 	fi	
 	echo `date`
 fi	

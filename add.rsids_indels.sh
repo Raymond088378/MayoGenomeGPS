@@ -35,7 +35,7 @@ else
 	cat $TempReports/$indel | awk 'NR>1' > $TempReports/$indel.forrsIDs
 	if [ `cat $TempReports/$indel.forrsIDs | wc -l` -gt 1 ]
 	then
-		perl $script_path/add_dbsnp_indel.pl -i $TempReports/$indel.forrsIDs -b 1 -s $dbsnp_rsids_indel -c 1 -p 2 -x 3 -o $TempReports/$indel.forrsIDs.added -r $chr
+		$script_path/add_dbsnp_indel.pl -i $TempReports/$indel.forrsIDs -b 1 -s $dbsnp_rsids_indel -c 1 -p 2 -x 3 -o $TempReports/$indel.forrsIDs.added -r $chr
 	else
 		value=`echo $dbsnp_rsids_indel | perl -wlne 'print $1 if /.+dbSNP(\d+)/'`
 		echo -e "dbsnp${value}\tdbsnp${value}Alleles" > $TempReports/$indel.forrsIDs.added
@@ -45,7 +45,7 @@ else
 		mv $TempReports/$indel.forrsIDs.added.tmp $TempReports/$indel.forrsIDs.added
 	fi		
 	cat $TempReports/$indel.forrsIDs.added | awk '{if(NR != 1) print $0"\t0"; else print $0"\tDiseaseVariant"}' > $TempReports/$indel.forrsIDs.added.disease
-	perl $script_path/extract.rsids.pl -i $TempReports/$indel -r $TempReports/$indel.forrsIDs.added.disease -o $TempReports/$indel.rsIDs -v INDEL
+	$script_path/extract.rsids.pl -i $TempReports/$indel -r $TempReports/$indel.forrsIDs.added.disease -o $TempReports/$indel.rsIDs -v INDEL
 	num_a=`cat $TempReports/$indel.rsIDs | wc -l`
 	if [ $num == $num_a ]
 	then

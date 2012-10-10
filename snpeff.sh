@@ -11,7 +11,7 @@
 
 if [ $# -le 4 ];
 then
-    echo -e "script to run snpeff on a vcf file in a folder\nUsage:<snpeff dir> <input dir><sample><run_info><somatic/germline><SGE_TASK_ID(optional)>";
+    echo -e "script to run snpeff on a vcf file in a folder\nUsage: ./snpeff.sh <snpeff dir> <input dir><sample><run_info><somatic/germline><SGE_TASK_ID(optional)>";
 else
     set -x
     echo `date`
@@ -43,15 +43,23 @@ else
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     vcftools=$( cat $tool_info | grep -w '^VCFTOOLS' | cut -d '=' -f2)
     perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
-    export PERL5LIB=$perllib:$PERL5LIB
+    analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
+	if [ $analysis == "annotation" ]
+	then
+		previous="reformat_VARIANTs.sh"
+	else
+		previous="OnTarget_variant.sh"
+	fi	
+	export PERL5LIB=$perllib:$PERL5LIB
 
     if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
     then
         snv_file=$sam.variants.chr$chr.SNV.filter.i.c.vcf
         if [ ! -s $input/$snv_file ]
         then
-            $script_path/errorlog.sh $input/$snv_file snpeff.sh ERROR "not found"
-			exit 1;
+            touch $input/$snv_file.snpeff.fix.log
+			$script_path/email.sh $input/$snv_file "not found" $previous $run_info
+			$script_path/wait.sh $input/$snv_file.snpeff.fix.log
         fi
         num_snvs=`cat $input/$snv_file | awk '$0 !~ /^#/' | wc -l`
 		$script_path/filesize.sh snpeff $sam $input $snv_file $JOB_ID $run_info
@@ -88,7 +96,7 @@ else
 			$script_path/errorlog.sh "$snpeff/$sam.chr${chr}.snv.eff $snpeff/$sam.chr${chr}.snv.filtered.eff" snpeff.sh ERROR "failed to create" 
 			exit 1;
 		else
-			$script_path/filesize.sh snpeff.out $sam $snpeff $sam.chr${chr}.snv.eff $JOB_ID $run_info
+			$script_path/filesize.sh snpeff.out $sam $snpeff $sam.chr${chr}.snv.eff $run_info
 		fi
 	fi
 
@@ -97,8 +105,9 @@ else
 	indel_file=$sam.variants.chr$chr.INDEL.filter.i.c.vcf
         if [ ! -s $input/$indel_file ]
         then
-            $script_path/errorlog.sh $input/$indel_file snpeff.sh ERROR "not found"
-			exit 1;
+            touch $input/$indel_file.snpeff.fix.log
+			$script_path/email.sh $input/$indel_file "not found" $previous $run_info
+			$script_path/wait.sh $input/$indel_file.snpeff.fix.log
         fi
         num_indels=`cat $input/$indel_file | awk '$0 !~ /^#/' | wc -l`
         if [ $num_indels -ge 1 ]
@@ -134,7 +143,7 @@ else
 			$script_path/errorlog.sh "$snpeff/$sam.chr${chr}.indel.eff $snpeff/$sam.chr${chr}.indel.filtered.eff" snpeff.sh ERROR "failed to create" 
 			exit 1;
 		else
-			$script_path/filesize.sh snpeff.out $sam $snpeff $sam.chr${chr}.indel.eff $JOB_ID $run_info
+			$script_path/filesize.sh snpeff.out $sam $snpeff $sam.chr${chr}.indel.eff $run_info
 		fi
     fi    
     echo `date`

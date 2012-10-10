@@ -2,7 +2,7 @@
 
 if [ $# -le 4 ]
 then
-    echo -e "script to run polyphen on a vcf file\nUsage: </path/to/polphen dir> <path/to/ontarget directory><sample><run info><somatic/germline><SGE_TASK_ID(optional)>"
+    echo -e "script to run polyphen on a vcf file\nUsage: ./polyphen.sh </path/to/polphen dir> <path/to/ontarget directory><sample><run info><somatic/germline><SGE_TASK_ID(optional)>"
 else
     set -x
     echo `date`
@@ -29,16 +29,24 @@ else
     genome_build=$(cat $run_info | grep -w '^GENOMEBUILD' |  cut -d '=' -f2)
     perl=$(cat $tool_info | grep -w '^PERL_CIRCOS' |  cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )	
+	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
+	if [ $analysis == "annotation" ]
+	then
+		previous="reformat_VARIANTs.sh"
+	else
+		previous="OnTarget_variant.sh"
+	fi	
 	threads=1   
     export PERL5LIB=$perl_lib:${PERL5LIB}
     
     snv_file=$sam.variants.chr$chr.SNV.filter.i.c.vcf
     if [ ! -s $input/$snv_file ]
     then
-        $script_path/errorlog.sh $input/$snv_file polyphen.sh ERROR "not found"
-		exit 1;
+        touch $input/$snv_file.poly.fix.log
+        $script_path/email.sh $input/$snv_file "not found" $previous $run_info
+		$script_path/wait.sh $input/$snv_file.poly.fix.log
     else
-		$script_path/filesize.sh polyphen $sam $input $snv_file $JOB_ID $run_info
+		$script_path/filesize.sh polyphen $sam $input $snv_file $run_info
 	fi
     
     cat $input/$snv_file | awk '$0 !~ /^#/' | awk '{print $1":"$2"\t"$4"/"$5}' > $polyphen/$snv_file.poly
@@ -74,7 +82,7 @@ else
 		$script_path/errorlog.sh $polyphen/$snv_file.poly polyphen.sh ERROR "not created"
 		exit 1;
 	else
-		$script_path/filesize.sh polyphen.out $sam $polyphen $snv_file.poly $JOB_ID $run_info
+		$script_path/filesize.sh polyphen.out $sam $polyphen $snv_file.poly $run_info
 	fi	
 	echo `date`
 fi    

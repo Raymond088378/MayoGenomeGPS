@@ -134,8 +134,8 @@ else
             cp $bams $output/chr${chr}.realigned.bam
             cp $bams.bai $output/chr${chr}.realigned.bam.bai
         else
-            INPUTARGS=`echo $bams | tr " " "\n" | awk '{print "I="$1}'` 
-            $script_path/MergeBam.sh $INPUTARGS $output/chr${chr}.realigned.bam $output true $run_info 
+            INPUTARGS=`echo $bams | tr " " "\n" | awk '{print "INPUT="$1}'` 
+            $script_path/MergeBam.sh "$INPUTARGS" $output/chr${chr}.realigned.bam $output true $run_info 
 		fi
     else
         ## Realignment

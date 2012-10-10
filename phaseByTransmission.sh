@@ -2,7 +2,7 @@
 
 if [ $# != 2 ]
 then
-    echo -e "script to run phaseByTransmission\nUsage: phaseByTransmission.sh <vcf input> <vcf output> <run info file>"
+    echo -e "script to run phaseByTransmission\nUsage: ./phaseByTransmission.sh <vcf input> <vcf output> <run info file>"
 else
     set -x
     echo `date`

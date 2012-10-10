@@ -41,11 +41,11 @@ else
 		##1KGenome and Hapmap
 		$script_path/add_allele_freq_3populations.sh $TempReports/$var.forFrequencies.temp $TempReports/$var.forFrequencies.allele.frequency $run_info $chr
 		## BGI
-		perl $script_path/add_bgi_freq.pl -i $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.txt -r $bgi -c $chr -o $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.BGI.txt
+		$script_path/add_bgi_freq.pl -i $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.txt -r $bgi -c $chr -o $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.BGI.txt
 		## Cosmic
-		perl $script_path/add.cosmic.pl $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.BGI.txt 1 $cosmic $GenomeBuild 1 $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.BGI.Cosmic.txt
+		$script_path/add.cosmic.pl $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.BGI.txt 1 $cosmic $GenomeBuild 1 $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.BGI.Cosmic.txt
 		## ESP
-		perl $script_path/add_esp.pl -i $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.BGI.Cosmic.txt -d $esp -o $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.BGI.Cosmic.ESP.txt
+		$script_path/add_esp.pl -i $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.BGI.Cosmic.txt -d $esp -o $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.BGI.Cosmic.ESP.txt
     else
 		touch $TempReports/$var.forFrequencies.allele.frequency.CEU
 		touch $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI
@@ -57,7 +57,7 @@ else
 		mv $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.BGI.Cosmic.ESP.txt.tmp $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.BGI.Cosmic.ESP.txt
 	fi
 	### arrange the columns
-    perl $script_path/extract.allele_freq.pl -i $TempReports/$var.rsIDs -f $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.BGI.Cosmic.ESP.txt -o $TempReports/$var.rsIDs.allele_frequencies -v SNV
+    $script_path/extract.allele_freq.pl -i $TempReports/$var.rsIDs -f $TempReports/$var.forFrequencies.allele.frequency.CEU.YRI.CHBJPT.BGI.Cosmic.ESP.txt -o $TempReports/$var.rsIDs.allele_frequencies -v SNV
     num_a=`cat $TempReports/$var.rsIDs.allele_frequencies | wc -l`
     if [ $num == $num_a ]
     then

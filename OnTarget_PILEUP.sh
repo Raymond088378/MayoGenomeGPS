@@ -58,7 +58,7 @@ else
 	$samtools/samtools view -H $bam 1> $bam.OnTarget_PILEUP.header 2> $bam.fix.OnTarget_PILEUP.log
 	if [ `cat $bam.fix.OnTarget_PILEUP.log | wc -l` -gt 0 ]
 	then
-		$script_path/email.sh $bam "bam is truncated or corrupt" $run_info
+		$script_path/email.sh $bam "bam is truncated or corrupt" realign_recal.sh $run_info
 		$script_path/wait.sh $bam.fix.OnTarget_PILEUP.log
 	else
 		rm $bam.fix.OnTarget_PILEUP.log
@@ -98,8 +98,14 @@ else
 			echo $a >> $output/$sample.chr$chr.pileup.i.out
         done    
 	fi
-	rm $output/$sample.chr$chr.txt $output/$sample.chr$chr.bed
-    echo `date`
+	if [ -s $output/$sample.chr$chr.pileup.i.out ]
+	then
+		rm $output/$sample.chr$chr.txt $output/$sample.chr$chr.bed
+    else
+		$script_path/errorlog.sh $output/$sample.chr$chr.pileup.i.out OnTarget_PILEUP.sh ERROR "failed to create"
+		exit 1;
+	fi
+	echo `date`
 fi	
     
 	

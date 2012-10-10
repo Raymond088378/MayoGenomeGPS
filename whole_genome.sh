@@ -782,8 +782,8 @@ else
 				qsub $args $qsub_args $script_path/merge_variant_group.sh $output_variant $group $RSample $run_info 
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^OnTarget_BAM' | cut -d '=' -f2)
-				qsub_args=
-				qsub $args $qsub_args -N $type.$version.OnTarget_BAM.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -l h_vmem=$mem -t 1-$numchrs:1 $script_path/OnTarget_BAM.sh $igv $output_OnTarget $group $run_info
+				qsub_args="-N $type.$version.OnTarget_BAM.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -t 1-$numchrs:1 -l h_vmem=$mem"
+				qsub $args $qsub_args $script_path/OnTarget_BAM.sh $igv $output_OnTarget $group $run_info
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^OnTarget_PILEUP' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.OnTarget_PILEUP.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -t 1-$numchrs:1 -l h_vmem=$mem"
@@ -836,7 +836,7 @@ else
 				qsub_args="-N $type.$version.reports.$group.$run_num -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/reports.sh $run_info $group $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir somatic
 				$script_path/check_qstat.sh $limit
-				mem=$( cat $memory_info | grep -w '^sample_reports' | cut -d '=' -f2)
+				mem=$( cat $memory_info | grep -w '^sample_report' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.sample_report.$group.$run_num -hold_jid $type.$version.reports.$group.$run_num -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/sample_report.sh $output_dir $TempReports $group $run_info somatic
 				if [ $tool == "whole_genome" ]

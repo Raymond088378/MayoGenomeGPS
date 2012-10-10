@@ -1,4 +1,4 @@
-## Perl script to pull percent codon usage and find the difference
+#!/usr/local/biotools/perl/5.10.0/bin/perl
 
 use strict;
 use warnings;

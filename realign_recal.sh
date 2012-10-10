@@ -35,7 +35,7 @@ else
 			id=`echo $samples | awk -v sample=$i -F ':' '{ for(i=1;i<=NF;i++){ if ($i == sample) {print i} } }'`
 			in=`echo $input | cut -d ":" -f "$id"`
 			bb=`echo $bam | cut -d ":" -f "$id"`
-			$script_path/filesize.sh Realignment $i $in $bb $JOB_ID $run_info
+			$script_path/filesize.sh Realignment $i $in $bb $run_info
 		done
 	fi    
 	
@@ -48,7 +48,7 @@ else
 		$samtools/samtools view -H $in/$bb 1>$in/$bb.rr.$chr.header 2> $in/$bb.fix.rr.$chr.log
 		if [ `cat $in/$bb.fix.rr.$chr.log | wc -l` -gt 0 ]
 		then
-			$script_path/email.sh $in/$bb "bam is truncated or corrupt" $run_info
+			$script_path/email.sh $in/$bb "bam is truncated or corrupt" processBam.sh $run_info
 			$script_path/wait.sh $in/$bb.fix.rr.$chr.log
 		else
 			rm $in/$bb.fix.rr.$chr.log
@@ -85,9 +85,9 @@ else
 	rm $output_bam/chr$chr.cleaned.bam.rr.$chr.header
 	if [ `echo $samples | tr ":" "\n" | wc -l` -gt 1 ]
 	then
-		$script_path/filesize.sh Realignment multi_sample $output_bam chr$chr.cleaned.bam $JOB_ID $run_info
+		$script_path/filesize.sh Realignment multi_sample $output_bam chr$chr.cleaned.bam $run_info
 	else
-		$script_path/filesize.sh Realignment $samples $output_bam chr$chr.cleaned.bam $JOB_ID $run_info
+		$script_path/filesize.sh Realignment $samples $output_bam chr$chr.cleaned.bam $run_info
 	fi
 	echo `date`
 fi	

@@ -94,7 +94,7 @@ else
 	
     if [ ! -s $vcf.idx ]
     then
-        $script_path/errorlog.sh $vcf unifiedgenotyper.sh ERROR "empty"
+        $script_path/errorlog.sh $vcf unifiedgenotyper.sh ERROR "is empty"
         exit 1;
     else
 		rm $vcf.idx	

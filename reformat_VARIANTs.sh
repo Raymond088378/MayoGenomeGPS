@@ -5,7 +5,7 @@
 
 if [ $# != 4 ]
 then
-    echo -e "script to reformat the vcf files for the annotation module of the workflow\nusage: </path/to/output><sample><run_info><marker>";
+    echo -e "script to reformat the vcf files for the annotation module of the workflow\nUsage: ./reformat_VARIANTs.sh </path/to/output><sample><run_info><marker>";
 else	
     set -x
     echo `date`

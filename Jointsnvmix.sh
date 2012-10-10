@@ -2,7 +2,7 @@
 
 if [ $# != 8 ]
 then
-    echo "script to run joint snvmix on a set of tumor normal bam files\nUsage: <normal bam> <tumor bam > <output dir> <chromosome> <tumor sample name> <normal sample name ><output file> <run info>"
+    echo "script to run joint snvmix on a set of tumor normal bam files\nUsage: ./Jointsnvmix.sh <normal bam> <tumor bam > <output dir> <chromosome> <tumor sample name> <normal sample name ><output file> <run info>"
 else
     set -x
     echo `date`
@@ -39,7 +39,7 @@ else
     	$samtools/samtools view -H $normal_bam 1>$normal_bam.jsm.header 2> $normal_bam.fix.jsm.log
     	if [ `cat $normal_bam.fix.jsm.log | wc -l` -gt 0 ]
 		then
-			$script_path/email.sh $normal_bam "bam is truncated or corrupt" $run_info
+			$script_path/email.sh $normal_bam "bam is truncated or corrupt" realign_recal.sh $run_info
 			$script_path/wait.sh $normal_bam.fix.jsm.log 
 		else
 			rm $normal_bam.fix.jsm.log
@@ -55,7 +55,7 @@ else
     	$samtools/samtools view -H $tumor_bam 1>$tumor_bam.jsm.header 2> $tumor_bam.fix.jsm.log
 		if [ `cat $tumor_bam.fix.jsm.log | wc -l` -gt 0 ]
 		then
-			$script_path/email.sh $tumor_bam "bam is truncated or corrupt" $run_info
+			$script_path/email.sh $tumor_bam "bam is truncated or corrupt" realign_recal.sh $run_info
 			$script_path/wait.sh $tumor_bam.fix.jsm.log 
 		else
 			rm $tumor_bam.fix.jsm.log

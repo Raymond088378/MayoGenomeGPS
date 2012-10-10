@@ -2,7 +2,7 @@
 
 if [ $# != 7 ]
 then
-    echo -e "wrapper to validate bam file\nUsage: samplecheckBAM.sh <input dir><input bam><outputdir><run_info><sample><1 or 0 if bam is per chr><which _chr>";
+    echo -e "wrapper to validate bam file\nUsage: ./samplecheckBAM.sh <input dir><input bam><outputdir><run_info><sample><1 or 0 if bam is per chr><which _chr>";
 else	
     set -x
     echo `date`
@@ -66,7 +66,7 @@ else
     fi
     
     ## check if read group and platform is availbale in BAM
-    RG_FLAG=`perl $script_path/checkBAMreadGroup.pl -i $output/$sample.chr${chr}-sorted.bam -s $samtools`
+    RG_FLAG=`$script_path/checkBAMreadGroup.pl -i $output/$sample.chr${chr}-sorted.bam -s $samtools`
     if [ $RG_FLAG == 0 ]
     then
         $script_path/addReadGroup.sh $output/$sample.chr${chr}-sorted.bam $output/$sample.chr${chr}-sorted.bam.rg.bam $output/temp/ $run_info $sample   

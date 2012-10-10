@@ -14,7 +14,7 @@
 
 if [ $# -le 4 ];
 then
-    echo -e "script to run SIFT annotation tool on a vcf file\nUsage:<sift dir> <input dir><sample><run info><somatic/germline><SGE_TASK_ID(optional)>";
+    echo -e "script to run SIFT annotation tool on a vcf file\nUsage: ./sift.sh <sift dir> <input dir><sample><run info><somatic/germline><SGE_TASK_ID(optional)>";
 else
     set -x
     echo `date` 
@@ -40,6 +40,13 @@ else
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
+	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
+	if [ $analysis == "annotation" ]
+	then
+		previous="reformat_VARIANTs.sh"
+	else
+		previous="OnTarget_variant.sh"
+	fi	
 	### update dashboard
 	if [ $multi == "YES" ]
 	then
@@ -56,12 +63,13 @@ else
     snv_file=$sam.variants.chr$chr.SNV.filter.i.c.vcf
     if [ ! -s $input/$snv_file ]
     then
-        $script_path/errorlog.sh $input/$snv_file sift.sh ERROR "not found"
-		exit 1;
+		touch $input/$snv_file.sift.fix.log
+        $script_path/email.sh $input/$snv_file "not found" $previous $run_info
+		$script_path/wait.sh $input/$snv_file.sift.fix.log
     fi
     
     num_snvs=`cat $input/$snv_file | awk '$0 !~ /^#/' | wc -l`
-	$script_path/filesize.sh sift $sam $input $snv_file $JOB_ID $run_info
+	$script_path/filesize.sh sift $sam $input $snv_file $run_info
     #sift acceptable format 
     
     if [[ $num_snvs == 0 || $chr -eq 'M' ]]
@@ -92,7 +100,7 @@ else
         $script_path/errorlog.sh $sift/${sam}_chr${chr}_predictions.tsv sift.sh ERROR "failed to create" 
 		exit 1;
     else
-		$script_path/filesize.sh sift.out $sam $sift ${sam}_chr${chr}_predictions.tsv $JOB_ID $run_info
+		$script_path/filesize.sh sift.out $sam $sift ${sam}_chr${chr}_predictions.tsv $run_info
 	fi
     echo `date`
 fi	

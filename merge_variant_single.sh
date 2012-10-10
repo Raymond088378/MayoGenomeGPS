@@ -52,7 +52,7 @@ else
 		if [ ! -s $inputfile ]
 		then	
 			touch $inputfile.fix.log
-			$script_path/email.sh $inputfile "not exist" $run_info
+			$script_path/email.sh $inputfile "not exist" variants.sh $run_info
 			$script_path/wait.sh $inputfile.fix.log
 		fi
 		inputargs=$inputargs"$inputfile "
@@ -73,7 +73,7 @@ else
 	if [ ! -s $out/$sample.variants.filter.vcf ]
     then
     	touch $out/$sample.variants.filter.vcf.fix.log
-    	$script_path/email.sh $out/$sample.variants.filter.vcf "vqsr failed" $run_info
+    	$script_path/email.sh $out/$sample.variants.filter.vcf "vqsr failed" filter_variant_vqsr.sh $run_info
 		$script_path/wait.sh $out/$sample.variants.filter.vcf.fix.log
 	fi	
 	
@@ -81,19 +81,7 @@ else
 	### use GATK variant filter to filter using DP
 	if [[ $tool == "exome" && $filter_variants == "YES" ]]
 	then
-		memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
-		mem=$( cat $memory_info | grep -w '^VariantFiltration_JVM' | cut -d '=' -f2)
-		$java/java $mem -jar $gatk/GenomeAnalysisTK.jar \
-		-R $ref \
-		-et NO_ET \
-		-K $gatk/Hossain.Asif_mayo.edu.key \
-		-l INFO \
-		-T VariantFiltration \
-		-V $out/$sample.variants.filter.vcf \
-		-o $out/$sample.variants.filter.vcf.tmp \
-		--filterExpression "DP < $depth" --filterName DPFilter 
-		mv $out/$sample.variants.filter.vcf.tmp $out/$sample.variants.filter.vcf
-		mv $out/$sample.variants.filter.vcf.tmp.idx $out/$sample.variants.filter.vcf.idx
+		$script_path/filtervcf.sh $out/$sample.variants.filter.vcf $run_info 
 	fi
 	
     if [ ! -s $out/$sample.variants.filter.vcf ]

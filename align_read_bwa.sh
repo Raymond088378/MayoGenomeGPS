@@ -63,7 +63,7 @@ else
 		exit 1;
 	fi	
 	$script_path/fastq.sh $R1 $seq_file $fastq $run_info $fastqc
-    ILL2SANGER1=`perl $script_path/checkFastqQualityScores.pl $fastq/$R1 10000`
+    ILL2SANGER1=`$script_path/checkFastqQualityScores.pl $fastq/$R1 10000`
 
 ########################################################	
 ######		Run bwa alignemnt module

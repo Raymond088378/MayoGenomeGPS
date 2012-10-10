@@ -25,7 +25,7 @@ else
 ########################################################	
 ######		Reading run_info.txt and assigning to variables
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 ) 
+    memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" " " )
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
@@ -55,7 +55,7 @@ else
         if [ ! -s $inputfile ]
         then		
             touch $inputfile.fix.log
-			$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+			$script_path/email.sh $inputfile "not exist" variants.sh $run_info
 			$script_path/wait.sh $inputfile.fix.log
 		fi	
         inputargs=$inputargs"$inputfile "
@@ -75,7 +75,7 @@ else
     if [ ! -s $out/$group.somatic.variants.filter.vcf ]
     then
     	touch $out/$group.somatic.variants.filter.vcf.fix.log
-    	$script_path/email.sh $out/$group.somatic.variants.filter.vcf "vqsr failed" $JOB_NAME $JOB_ID $run_info
+    	$script_path/email.sh $out/$group.somatic.variants.filter.vcf "vqsr failed" filter_variant_vqsr.sh $run_info
 		$script_path/wait.sh $out/$group.somatic.variants.filter.vcf.fix.log
 	fi	
     
@@ -100,7 +100,7 @@ else
         if [ ! -s $inputfile ]
         then		
             touch $inputfile.fix.log
-			$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+			$script_path/email.sh $inputfile "not exist" variants.sh $run_info
 			$script_path/wait.sh $inputfile.fix.log
 		fi
         inputargs=$inputargs"$inputfile "
@@ -120,7 +120,7 @@ else
     if [ ! -s $out/$group.variants.filter.vcf ]
     then
     	touch $out/$group.variants.filter.vcf.fix.log
-    	$script_path/email.sh $out/$group.variants.filter.vcf "vqsr failed" $JOB_NAME $JOB_ID $run_info
+    	$script_path/email.sh $out/$group.variants.filter.vcf "vqsr failed" filter_variant_vqsr.sh $run_info
 		$script_path/wait.sh $out/$group.variants.filter.vcf.fix.log
 	fi	
 		
@@ -128,17 +128,7 @@ else
 	### use GATK variant filter to filter using DP
 	if [ $tool == "exome" ]
 	then
-		$java/java -Xmx1g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
-		-R $ref \
-		-et NO_ET \
-		-K $gatk/Hossain.Asif_mayo.edu.key \
-		-l INFO \
-		-T VariantFiltration \
-		-V $out/$group.variants.filter.vcf \
-		-o $out/$group.variants.filter.vcf.tmp \
-		--filterExpression "DP < $depth" --filterName DPFilter 
-		mv $out/$group.variants.filter.vcf.tmp $out/$group.variants.filter.vcf
-		mv $out/$group.variants.filter.vcf.tmp.idx $out/$group.variants.filter.vcf.idx
+		$script_path/filtervcf.sh $out/$group.variants.filter.vcf $run_info 
 	fi
 	
     if [ ! -s $out/$group.variants.filter.vcf ]

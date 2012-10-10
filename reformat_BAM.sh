@@ -23,13 +23,13 @@ else
     cd $input
     for file in $input/*sorted.bam
     do
-		$samtools/samtools view -H $file 1>$file.rf.header 2> $file.fix.log
-		if [ `cat $file.fix.log | wc -l` -gt 0 ]
+		$samtools/samtools view -H $file 1>$file.rf.header 2> $file.rf.fix.log
+		if [ `cat $file.rf.fix.log | wc -l` -gt 0 ]
 		then
-			$script_path/email.sh $file "bam is truncated or corrupt" $run_info
-			$script_path/wait.sh $file.fix.log 
+			$script_path/email.sh $file "bam is truncated or corrupt" "-" $run_info
+			$script_path/wait.sh $file.rf.fix.log 
 		else
-			rm $file.fix.log 
+			rm $file.rf.fix.log 
 		fi
 		rm $file.rf.header	
 		INPUTARGS="INPUT="$file" "$INPUTARGS;
@@ -69,7 +69,7 @@ else
     fi
 	if [ -s $input/$sample.sorted.bam ]
 	then
-		$script_path/filesize.sh Realignment $sample $input $sample.sorted.bam $JOB_ID $run_info
+		$script_path/filesize.sh Realignment $sample $input $sample.sorted.bam $run_info
 	else
 		$script_path/errorlog.sh reformat_BAM.sh $input/$sample.sorted.bam ERROR "not found"
 		exit 1;

@@ -49,7 +49,7 @@ else
 		$samtools/samtools view -H $bam 1>$bam.OnTarget_BAM.header 2> $bam.fix.OnTarget_BAM.log
 		if [ `cat $bam.fix.OnTarget_BAM.log | wc -l` -gt 0 ]
 		then
-			$script_path/email.sh $bam "bam is truncated or corrupt" $run_info
+			$script_path/email.sh $bam "bam is truncated or corrupt" realign_recal.sh $run_info
 			$script_path/wait.sh $bam.fix.OnTarget_BAM.log
 		else
 			rm $bam.fix.OnTarget_BAM.log
@@ -67,7 +67,12 @@ else
     else   
         $bed/intersectBed -abam $bam -b $kit | $samtools/samtools view - | wc -l > $output/$sample.chr$chr.bam.i.out
     fi
-    echo `date`
+    if [ ! -s $output/$sample.chr$chr.bam.i.out ]
+	then
+		$script_path/errorlog.sh $output/$sample.chr$chr.bam.i.out OnTarget_BAM.sh ERROR "failed to create"
+		exit 1;
+	fi	
+	echo `date`
 fi	
 	
 ### END OF SCRIPT	

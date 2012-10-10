@@ -2,7 +2,7 @@
 
 if [ $# != 4 ]
 then
-    echo -e "Usage: combine vcfs <input files><output vcf ><run info><to delete input files(yes/no)"
+    echo -e "script to mrege the vcf files using vcftools\nUsage: ./mergevcf.sh <input files><output vcf ><run info><to delete input files(yes/no)"
 else
     set -x
     echo `date`
@@ -17,7 +17,7 @@ else
     vcftools=$( cat $tool_info | grep -w '^VCFTOOLS' | cut -d '=' -f2)
 	perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
 	tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2)
-        ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
+    ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
 
 	export PERL5LIB=$PERL5LIB:$perllib
 	export PATH=$tabix/:$PATH
@@ -56,9 +56,9 @@ else
 				if [ $i != ".idx" ]
 				then
 					if [ -s $i ]
-                                        then
-                                            rm $i
-                                        fi
+					then
+						rm $i
+					fi
 				fi
 			done	
         fi

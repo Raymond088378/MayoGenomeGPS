@@ -1,4 +1,4 @@
-
+#!/usr/local/biotools/perl/5.10.0/bin/perl
 # Ying Li, 6/9/2011
 use strict;
 use warnings;

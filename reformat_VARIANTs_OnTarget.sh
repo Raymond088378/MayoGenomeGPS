@@ -2,7 +2,7 @@
 
 if [ $# != 5 ]
 then
-    echo "script to reformat the input vcf to run the ontarget module of the worflow\nusage: <input folder>>/path/to/output folder><sample><run_info><marker>";
+    echo -e "script to reformat the input vcf to run the ontarget module of the worflow\nUsage: ./reformat_VARIANTS_OnTarget.sh <input folder>>/path/to/output folder><sample><run_info><marker>";
 else	
     set -x
     echo `date`

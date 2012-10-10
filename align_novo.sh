@@ -79,7 +79,7 @@ else
 			exit 1;
 		fi	
 		$script_path/fastq.sh $R1 $seq_file $fastq $run_info $fastqc
-		$script_path/filesize.sh alignment $sample $fastq $R1 $JOB_ID $run_info
+		$script_path/filesize.sh alignment $sample $fastq $R1 $run_info
     fi  
     ILL2SANGER1=`perl $script_path/checkFastqQualityScores.pl $fastq/$R1 10000`
 
@@ -102,10 +102,10 @@ else
     
     if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.sam ]
     then
-        $script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.sam align_novo.sh ERROR empty
+        $script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.sam align_novo.sh ERROR "empty"
         exit 1;
     else
-		$script_path/filesize.sh alignment.out $sample $output_dir_sample $sample.$SGE_TASK_ID.sam $JOB_ID $run_info
+		$script_path/filesize.sh alignment.out $sample $output_dir_sample $sample.$SGE_TASK_ID.sam $run_info
 		if [ $paired == 0 ]
         then
             rm $fastq/$R1

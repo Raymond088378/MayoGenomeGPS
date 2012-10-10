@@ -49,7 +49,7 @@ else
 	$samtools/samtools view -H $input/$bam 1>$input/$bam.$chr.header 2> $input/$bam.$chr.fix.log
 	if [ `cat $input/$bam.$chr.fix.log | wc -l` -gt 0 ]
 	then
-		$script_path/email.sh $input/$bam "bam is truncated or corrupt" $run_info
+		$script_path/email.sh $input/$bam "bam is truncated or corrupt" realign_recal.sh $run_info
 		$script_path/wait.sh $input/$bam.$chr.fix.log
 	else
 		rm $input/$bam.$chr.fix.log
@@ -57,9 +57,9 @@ else
 	rm $input/$bam.$chr.header	
 	if [ `echo $samples | tr ":" "\n" | wc -l` -gt 1 ]
 	then
-		$script_path/filesize.sh VariantCalling multi_sample $input $bam $JOB_ID $run_info
+		$script_path/filesize.sh VariantCalling multi_sample $input $bam $run_info
 	else
-		$script_path/filesize.sh VariantCalling $samples $input $bam $JOB_ID $run_info
+		$script_path/filesize.sh VariantCalling $samples $input $bam $run_info
 	fi
 	
 	## update dashborad

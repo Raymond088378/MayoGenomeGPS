@@ -53,14 +53,13 @@ else
 	alt=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Alt") {print i} } }' $file`
 	if [ ! -s $sift/${sample}_chr${which_chr}_predictions.tsv ]
 	then
-		$script_path/email.sh $sift/${sample}_chr${which_chr}_predictions.tsv "not found" $JOB_NAME $JOB_ID $run_info
+		$script_path/email.sh $sift/${sample}_chr${which_chr}_predictions.tsv "not found" sift.sh $run_info
 		touch $sift/${sample}_chr${which_chr}_predictions.tsv.fix.log
 		$script_path/wait.sh $sift/${sample}_chr${which_chr}_predictions.tsv.fix.log
 	fi		
-	perl $script_path/parse_siftPredictions.pl -i $file -s $sift/${sample}_chr${which_chr}_predictions.tsv -c $chr -p $pos -r $ref -a $alt -o $file.sift
-	
+	$script_path/parse_siftPredictions.pl -i $file -s $sift/${sample}_chr${which_chr}_predictions.tsv -c $chr -p $pos -r $ref -a $alt -o $file.sift
 	### sort the erport using the start and position
-	perl $script_path/sort.variantReport.pl -i $file.sift -o $file.sift.sort -f Position
+	$script_path/sort.variantReport.pl -i $file.sift -o $file.sift.sort -f Position
 	mv $file.sift.sort $file.sift
 	num_a=`cat $file.sift | wc -l`
 	if [ $num == $num_a ]
@@ -73,7 +72,7 @@ else
 	codon=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ "Codons") {print i} } }' $file.sift`
 	SNP_Type=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ "SNP Type") {print i} } }' $file.sift`
 	cat $file.sift | cut -f ${codon},${SNP_Type} > $file.sift.forCodons.2columns
-	perl $script_path/codon_pref.pl $codon_ref $file.sift.forCodons.2columns $file.sift.forCodons.2columns.added
+	$script_path/codon_pref.pl $codon_ref $file.sift.forCodons.2columns $file.sift.forCodons.2columns.added
 	paste $file.sift $file.sift.forCodons.2columns.added > $file.sift.codons
 	num=`cat $file.sift.codons | wc -l`
 	if [ $num_a == $num ]
@@ -165,7 +164,7 @@ else
 	cat $build | awk -v num=chr$which_chr '$1 == num' > $file.sift.codons.map.repeat.base.ChrPos.bed.build.i
 	for type in ssr scs sao build
 	do
-		perl $script_path/match.pl -b $file.sift.codons.map.repeat.base.ChrPos.bed -i $file.sift.codons.map.repeat.base.ChrPos.bed.$type.i -o $file.sift.codons.map.repeat.base.ChrPos.bed.$type -t $type
+		$script_path/match.pl -b $file.sift.codons.map.repeat.base.ChrPos.bed -i $file.sift.codons.map.repeat.base.ChrPos.bed.$type.i -o $file.sift.codons.map.repeat.base.ChrPos.bed.$type -t $type
 	done
 	
 	echo -e "\nSNP_SuspectRegion" > $file.sift.codons.map.repeat.base.ChrPos.bed.ssr.tmp
@@ -201,7 +200,7 @@ else
 	    else
 			touch $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i}
 		fi
-		perl $script_path/matching_ucsc_tracks.pl $file.sift.codons.map.repeat.base.snp.ChrPos.bed $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i} $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i}.txt ${i} $chr
+		$script_path/matching_ucsc_tracks.pl $file.sift.codons.map.repeat.base.snp.ChrPos.bed $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i} $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i}.txt ${i} $chr
 	done
 	paste $file.sift.codons.map.repeat.base.snp $file.sift.codons.map.repeat.base.snp.ChrPos.bed.conservation.txt $file.sift.codons.map.repeat.base.snp.ChrPos.bed.regulation.txt $file.sift.codons.map.repeat.base.snp.ChrPos.bed.tfbs.txt $file.sift.codons.map.repeat.base.snp.ChrPos.bed.tss.txt $file.sift.codons.map.repeat.base.snp.ChrPos.bed.enhancer.txt > $file.sift.codons.map.repeat.base.snp.UCSCtracks 
 	rm $file.sift.codons.map.repeat.base.snp.ChrPos.bed
@@ -220,15 +219,13 @@ else
 	fi
 	
 	### add polyphen
-	if [ -f $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly ]
+	if [ ! -f $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly ]
 	then
-		perl $script_path/add_polphen.pl $file.sift.codons.map.repeat.base.snp.UCSCtracks $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly
-	else
-		$script_path/email.sh $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly  "not found" $JOB_NAME $JOB_ID $run_info
+		$script_path/email.sh $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly "not found" polyphen.sh $run_info
 		touch $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly.fix.log
 		$script_path/wait.sh $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly.fix.log
-		perl $script_path/add_polphen.pl $file.sift.codons.map.repeat.base.snp.UCSCtracks $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly
 	fi
+	$script_path/add_polphen.pl $file.sift.codons.map.repeat.base.snp.UCSCtracks $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly
 	num=`cat $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly | wc -l `
 	if [ $num == $num_a ]
 	then
@@ -238,24 +235,36 @@ else
 	fi    
    
 	### add snpeff prediction
-	perl $script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $snpeff/$sample.chr${which_chr}.snv.eff -o $TempReports/$sample.chr${which_chr}.SNV.report
-	perl $script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $snpeff/$sample.chr${which_chr}.snv.filtered.eff -o $TempReports/$sample.chr${which_chr}.filtered.SNV.report
+	if [ ! -f $snpeff/$sample.chr${which_chr}.snv.eff ]
+	then
+		$script_path/email.sh $snpeff/$sample.chr${which_chr}.snv.eff "not found" snpeff.sh $run_info
+		touch $snpeff/$sample.chr${which_chr}.snv.eff.fix.log
+		$script_path/wait.sh $snpeff/$sample.chr${which_chr}.snv.eff.fix.log
+	fi	
+	$script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $snpeff/$sample.chr${which_chr}.snv.eff -o $TempReports/$sample.chr${which_chr}.SNV.report
+	if [ ! -f $snpeff/$sample.chr${which_chr}.snv.filtered.eff ]
+	then
+		$script_path/email.sh $snpeff/$sample.chr${which_chr}.snv.filtered.eff "not found" snpeff.sh $run_info
+		touch $snpeff/$sample.chr${which_chr}.snv.filtered.eff.fix.log
+		$script_path/wait.sh $snpeff/$sample.chr${which_chr}.snv.filtered.eff.fix.log
+	fi
+	$script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $snpeff/$sample.chr${which_chr}.snv.filtered.eff -o $TempReports/$sample.chr${which_chr}.filtered.SNV.report
 	num_a=`cat $TempReports/$sample.chr${which_chr}.SNV.report | awk -F'\t' '{print $1"_"$2}' | sort | uniq | wc -l`
 	num_b=`cat $TempReports/$sample.chr${which_chr}.filtered.SNV.report | wc -l `
     rm $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly	
 	### add the entrez id to the report
 	for report in $TempReports/$sample.chr${which_chr}.SNV.report $TempReports/$sample.chr${which_chr}.filtered.SNV.report
 	do
-		perl $script_path/add_entrezID.pl -i $report -m $GeneIdMap -o $report.entrezid
+		$script_path/add_entrezID.pl -i $report -m $GeneIdMap -o $report.entrezid
 		mv $report.entrezid $report
 		## exclude the redundant columns from the report
-		perl $script_path/to.exclude.redundant.columns.from.report.pl $report $report.formatted
+		$script_path/to.exclude.redundant.columns.from.report.pl $report $report.formatted
 		mv $report.formatted $report
 	done
         
 	### add igv, tissue, pathway, kaviar column to the reports
-	perl $script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.SNV.report $run_info SNV > $TempReports/$sample.chr${which_chr}.SNV.xls
-	perl $script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.filtered.SNV.report $run_info SNV > $TempReports/$sample.chr${which_chr}.filtered.SNV.xls
+	$script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.SNV.report $run_info SNV > $TempReports/$sample.chr${which_chr}.SNV.xls
+	$script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.filtered.SNV.report $run_info SNV > $TempReports/$sample.chr${which_chr}.filtered.SNV.xls
 	rm $TempReports/$sample.chr${which_chr}.SNV.report
 	rm $TempReports/$sample.chr${which_chr}.filtered.SNV.report
 	echo `date`	

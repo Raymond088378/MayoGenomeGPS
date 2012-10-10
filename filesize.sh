@@ -1,16 +1,15 @@
 #!/bin/bash
 
-if [ $# != 6 ]
+if [ $# != 5 ]
 then
-	echo -e "script to create a file size file to be uploaded onto the database\nusage:<analysis type><sample name><filename><job id ><size of the file><run info >"
+	echo -e "script to create a file size file to be uploaded onto the database\nUsage: ./filesize.sh <analysis type><sample name><filename><job id ><size of the file><run info >"
 else
 	echo `date`
 	analysis=$1
 	sample=$2
 	dirname=$3
 	filename=$4
-	job=$5
-	run_info=$6
+	run_info=$5
 	
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 	memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
@@ -26,6 +25,11 @@ else
 	out=$output/$PI/$tool/$run_num
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
 	size=`du -b $dirname/$filename | sed 's/\([0-9]*\).*/\1/'`
+	job=$JOB_ID
+	if [ ${#job} -eq 0 ]
+	then
+		job="000000"
+	fi	
 	id=$SGE_TASK_ID
 	if [ ${#id} -ne 0 ]
 	then

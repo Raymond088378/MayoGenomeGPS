@@ -24,6 +24,7 @@ else
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
 	paired=$( cat $run_info | grep -w '^PAIRED' | cut -d '=' -f2)
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
+	
 	output_dir_sample=$output_dir/alignment/$sample
     fastq=$output_dir/fastq
 	
@@ -42,10 +43,10 @@ else
 	
 	if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.sam ]
     then
-        $script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.sam align_bwa.sh ERROR empty
+        $script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.sam align_bwa.sh ERROR "is empty"
         exit 1;
     else
-		$script_path/filesize.sh alignment.out $sample $output_dir_sample $sample.$SGE_TASK_ID.sam $JOB_ID $run_info
+		$script_path/filesize.sh alignment.out $sample $output_dir_sample $sample.$SGE_TASK_ID.sam $run_info
         if [ $paired == 0 ]
         then
             rm $fastq/$R1
@@ -71,7 +72,7 @@ else
 	$script_path/convert_bam.sh $output_dir_sample $sample.$SGE_TASK_ID.bam $sample.$SGE_TASK_ID $SGE_TASK_ID $run_info
 	if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.flagstat ]
     then
-        $script_path/errorlog.sh align_bwa.sh $output_dir_sample/$sample.$SGE_TASK_ID.flagstat ERROR "empty"
+        $script_path/errorlog.sh align_bwa.sh $output_dir_sample/$sample.$SGE_TASK_ID.flagstat ERROR "is empty"
 		exit 1;
 	fi
     echo `date`

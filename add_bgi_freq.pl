@@ -1,3 +1,5 @@
+#!/usr/local/biotools/perl/5.10.0/bin/perl
+
 ## scrip to add BGI frequencies to the SNV data
 use strict;
 use warnings;
