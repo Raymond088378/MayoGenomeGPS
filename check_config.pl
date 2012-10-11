@@ -19,7 +19,6 @@ my %runinfofmt = (
    MULTISAMPLE => 'boolean',
    INPUT_DIR => 'dir',
    BASE_OUTPUT_DIR => 'string',
-   EMAIL => 'string',
    ANALYSIS => 'string',
    SAMPLENAMES => 'csep',
    GROUPNAMES => 'csep',
@@ -28,15 +27,11 @@ my %runinfofmt = (
    LABINDEXES => 'csep',
    TOOL_INFO => 'file',
    SAMPLE_INFO => 'file',
+   MEMORY_INFO => 'file',
    OUTPUT_FOLDER => 'string',
-   QUEUE => 'string',
-   CENTER => 'string',
-   PLATFORM => 'string',
    GENOMEBUILD => 'string',
-   MARKDUP => 'boolean',
    FASTQC => 'boolean',
    FOLDER_FASTQC => 'dir',
-   UPLOAD_TABLEBROWSER => 'boolean',
    VARIANT_TYPE => 'string',
    SNV_CALLER => 'string',
    SAMPLEINFORMATION => 'string',
@@ -71,42 +66,39 @@ if (($runinfovars->{MULTISAMPLE} eq 'YES') &&(@samples == 1))	{
         print "$runinfo: MULTISAMPLE=YES and SAMPLENAMES has only one element\n";
 }
 
-if (($runinfovars->{MULTISAMPLE} eq 'YES') &&(@groups == 0))	{
+if (($runinfovars->{MULTISAMPLE} eq 'YES') &&((@groups == 0) || (@groups eq 'NA')))	{
+		
         print "$runinfo: MULTISAMPLE=YES and no groups defined\n";
 }
 
 my $toolinfo=$runinfovars->{TOOL_INFO};
 my $sampleinfo=$runinfovars->{SAMPLE_INFO};
+my $memoryinfo=$runinfovars->{MEMORY_INFO};
 die "Tool info file is empty\n\n" if (-z $toolinfo || ! -e $toolinfo) ;
 die "sample info file is empty\n\n" if (-z $sampleinfo || ! -e $sampleinfo) ;
+die "sample info file is empty\n\n" if (-z $memoryinfo || ! -e $memoryinfo) ;
 
 my ($toolinfovars, $toolinfomsg) = read_file_var($toolinfo);
 if ($toolinfomsg ne "") {
     print $toolinfomsg."\n";
     exit 1;
 }
-
 my ($sampleinfovars, $sampleinfomsg) = read_files_var($sampleinfo);
 
 if ($sampleinfomsg ne "") {
     print $sampleinfomsg."\n";
     exit 1;
 }
-
 my ($samplenames, $samplenamesmsg)= read_sample_names($sampleinfo);
 if ($samplenamesmsg ne "") {
     print $samplenamesmsg."\n";
     exit 1;
 }
-
 my ($pairsamplenames,$pairnamesmsg) = read_sample_pair_names($sampleinfo);
 if ($pairnamesmsg ne "") {
     print $pairnamesmsg."\n";
     exit 1;
 }
-
-
-
 my %toolinfofmt = (
 	REF_GENOME=>"file",
 	SPLIT_GENOME=>"dir",
@@ -237,13 +229,13 @@ sub check_files	{
     my ($rvars,$fname,$input) = @_;
     my $errmsg="";
     foreach my $key (keys %{$rvars})	{
-	my @files=split(/\t/,$rvars->{$key});
-	foreach (@files)	{
-	    my $name="$input/$_";
-	    if (! -e $name)	{
-		$errmsg .= "$name: does not exist\n";
-	    }		
-	}	
+		my @files=split(/\t/,$rvars->{$key});
+		foreach (@files)	{
+			my $name="$input/$_";
+			if (! -e $name)	{
+				$errmsg .= "$name: does not exist\n";
+			}		
+		}	
     }
     return $errmsg;	
 }		

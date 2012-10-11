@@ -195,7 +195,7 @@ then
 		echo -e "Important Paramters:"
 		echo -e "\nTHREADS\t\t\tnumber of threads to use during alignment, variant calling etc. (4)
 				\nREORDERSAM\t\tto make sure BAM file with a valid sequence dictionary. (NO)
-				\nEMIT_ALL_SITES\t\tto call variant for all the positions in teh given region. (NO)
+				\nEMIT_ALL_SITES\t\tto call variant for all the positions in the given region. (NO)
 				\nVARIANT_FILTER\t\tto filter the variant calls using VQSR. (YES)
 				\nSOMATIC_VARIANT_FILTER\t\tto filter the somatic calls using VQSR. (YES)
 				\nDEPTH_FILTER\t\tto filter the variant call using depth (0)
@@ -224,9 +224,9 @@ then
 				\nVQSR_params_INDEL\t\tspecify commandline VQSR for INDEL paramters (-an QD -an FS -an HaplotypeScore -an ReadPosRankSum --maxGaussians 4 --percentBadVariants 0.12 -std 10.0)
 				\nPICARD_ReadGroup_params\t\tspecify commandline picard read group function paramters (PL=illumina CN=mayo LB=hg19 CREATE_INDEX=true)
 				\nSNP_DISTANCE_INDEL\t\twindow size to look for a indel close to snp (10)
-				\nREALIGN_params\t\tto skip the region if the reads are more than this (--maxReadsForRealignment 50000 --maxReadsInMemory 150000)	
+				\nREALIGN_params\t\tto skip the region if the reads are more than this (--maxReadsForRealignment 20000 --maxReadsInMemory 150000)	
 				\nVCF_annotation_params\t\t features to annotate the vcf file (-A QualByDepth -A MappingQualityRankSumTest -A ReadPosRankSumTest -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A DepthPerAlleleBySample -A RMSMappingQuality -A FisherStrand -A ForwardReverseAlleleCounts )
-				\nBLAT_params\t\tparameters used for blat queryingof variant position (-w 50 -m 70 -t 90)
+				\nBLAT_params\t\tparameters used for blat querying of variant position (-w 50 -m 70 -t 90)
 				\nCNVNATOR_BINSIZE\t\tbin size in CNVnator (1000)
 				\nPCT_READS_SEGSEQ\t\tmin percent of reads for CNV (0.05)
 				\nMINFOLD\t\tmin. fold (0.5)
@@ -254,7 +254,7 @@ then
 	done
 	if [[ $memory_info == "YES" ]]
 	then
-		echo ""
+		echo "The memory requirements for each job and JVM are specified it and user should not touch this file unless the project needs it. If user need to make the changes in the file then you should have atleast extra pair of eyes to make sure nothing will break."
 	else
 		echo -e "\nOk, fine"
 	fi	

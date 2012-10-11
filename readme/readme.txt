@@ -5,6 +5,8 @@ To run the workflow user needs to create 3 Configuration files i.e
 1) Run information file
 2) Tool information file
 3) Sample information file
+4) Memory Information file
+
 If it is a standard run then user should not change tool info and use the tool info in script folder as it is. Make run info and sample info according to the samples you are running.
 
 ### how to run the workflow

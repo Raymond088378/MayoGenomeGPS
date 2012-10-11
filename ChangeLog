@@ -5,7 +5,7 @@
 3.  Coverage plot will show the coverage from 1 to 100X
 4.  Updated the tools used in the workflow
 5.  Added more QC steps so that if one script failed then the next will wait for the first one to finish properly
-6.  Added Support for beauty samples and if any investigator wants to use consensus calling then use callers are BEAUTY_EXOME
+6.  Added Support for beauty samples and if any investigator wants to use consensus calling then used callers are BEAUTY_EXOME
 7.  Added a readme file for all the files we deliver to the PI
 8.  Changed the paramters of Novoalign to get more soft clipping and not to affect the variant calling
 9.  Added all the tool paramter to the tool info file and depending on the tool the paramters can be paramterized.
@@ -13,9 +13,9 @@
 11. Added one more configuration file for memory specifications to the workflow so that workflow can be tweaked depending on run type.
 12. Realignment and recalibration is updated to use target region for capture data.
 13. Beauty Support is added to the workflow.
-14. Consensus Calling support is added to the workflow. (SNV_CALLER=BEAUTY_EXOME and SOMATIC_CALLER=BEAUTY_EXOME)
-15. DP4 annotation is added to the vcf files from the BAM files (Number of 1) forward ref alleles; 2) reverse ref; 3) forward non-ref; 4) reverse non-ref alleles, used in variant calling. Sum can be smaller than DP because low-quality bases are not counted.)
-16. SNPEFF 3.0 is in production
+14. DP4 annotation is added to the vcf files from the BAM files (Number of 1) forward ref alleles; 2) reverse ref; 3) forward non-ref; 4) reverse non-ref alleles, used in variant calling. Sum can be smaller than DP because low-quality bases are not counted.)
+15. SNPEFF is updated to 3.0
+16.	All the scripts can be run on command line as if the script require the Array ID then there is an optional last paramter in all the script to supply that as a parameter 
 17.	
 
 

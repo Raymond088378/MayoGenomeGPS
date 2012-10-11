@@ -9,6 +9,7 @@ To run the workflow user needs to make three configuration file
 1. Run info file
 2. Sample Info file
 3. Tool Info file
+4. Memory Info file
 
 ***  Specs about the configuration file is mentioned in a readme file in the same folder.
 *** example of each type of config file is provided in the config folder. Each field in the run info and tool info is mandatory.
