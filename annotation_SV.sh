@@ -48,8 +48,9 @@ else
         
         if [ ! -s $break/$sample.break.vcf ]
         then
-           $script_path/errorlog.sh $break/$sample.break.vcf annotation_SV.sh ERROR "not exist"
-            exit 1;
+			$script_path/email.sh $break/$sample.break.vcf "not exist" summaryze_struct_single.sh $run_info
+			touch $break/$sample.break.vcf.fix.log
+			$script_path/wait.sh $break/$sample.break.vcf.fix.log
         fi
         
         cat $crest/$sample.filter.crest.vcf | awk '$0 !~ /#/' | tr ";" "\t" | tr "=" "\t" | awk '{ print $1"\t"$2"\t"$1"\t"$12"\t"$10"\t"$16}' > $crest/$sample.crest.tmp
@@ -120,8 +121,9 @@ else
 		do
 			if [ ! -s $break/$group.$tumor.somatic.break.vcf ]
 			then
-				$script_path/errorlog.sh $break/$group.$tumor.somatic.break.vcf annotation_SV.sh ERROR "not exist"
-				exit 1;
+				$script_path/email.sh $break/$group.$tumor.somatic.break.vcf "not exist" summaryze_struct_group.sh $run_info
+				touch $break/$group.$tumor.somatic.break.vcf.fix.log
+				$script_path/wait.sh $break/$group.$tumor.somatic.break.vcf.fix.log
 			fi
 			cat $crest/$group.$tumor.somatic.filter.crest.vcf | awk '$0 !~ /#/' | tr ";" "\t" | tr "=" "\t" | awk '{ print $1"\t"$2"\t"$1"\t"$12"\t"$10"\t"$16}' > $crest/$group.$tumor.crest.tmp
 			cat $crest/$group.$tumor.crest.tmp | awk 'gsub($5, "crest_"$5,$5)1' | tr " " "\t" > $crest/$group.$tumor.crest.txt

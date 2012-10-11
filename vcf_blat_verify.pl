@@ -1,4 +1,4 @@
-#!/usr/local/biotools/perl/5.14.2/bin/perl
+#!/usr/local/biotools/perl/5.10.0/bin/perl
 
 =head1 NAME
    vcf_blat_verify.pl
@@ -60,8 +60,8 @@ B<--help,-h>
 
 use strict;
 use warnings;
-use Data::Dumper;
-use Cwd;
+#use Data::Dumper;
+#use Cwd;
 use Pod::Usage;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use POSIX;

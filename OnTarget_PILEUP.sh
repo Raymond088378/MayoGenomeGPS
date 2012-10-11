@@ -82,7 +82,11 @@ else
             do
 				a=`cat $output/$sample.chr$chr.txt | grep -w "$i" | awk '$NF>'$j'' | wc -l`
 				echo $a >> $output/$sample.$i.chr$chr.pileup.i.out
-			done	
+			done
+             if [ ! -s $output/$sample.$i.chr$chr.pileup.i.out ]
+            then
+                $script_path/errorlog.sh $output/$sample.$i.chr$chr.pileup.i.out OnTarget_PILEUP.sh ERROR "failed to create"
+        fi    
         done    
     else	
 		$java/java $mem -Djava.io.tmpdir=$output/temp/ -jar \
@@ -97,14 +101,13 @@ else
 			a=`cat $output/$sample.chr$chr.txt | grep -w "$sample" | awk '$NF>'$j''  | wc -l`
 			echo $a >> $output/$sample.chr$chr.pileup.i.out
         done    
+		if [ -s $output/$sample.chr$chr.pileup.i.out ]
+		then
+			$script_path/errorlog.sh $output/$sample.chr$chr.pileup.i.out OnTarget_PILEUP.sh ERROR "failed to create"
+			exit 1;
+		fi
 	fi
-	if [ -s $output/$sample.chr$chr.pileup.i.out ]
-	then
-		rm $output/$sample.chr$chr.txt $output/$sample.chr$chr.bed
-    else
-		$script_path/errorlog.sh $output/$sample.chr$chr.pileup.i.out OnTarget_PILEUP.sh ERROR "failed to create"
-		exit 1;
-	fi
+    rm $output/$sample.chr$chr.txt $output/$sample.chr$chr.bed
 	echo `date`
 fi	
     

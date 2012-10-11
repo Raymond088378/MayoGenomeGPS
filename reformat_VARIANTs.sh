@@ -27,9 +27,8 @@ else
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
 	perllib=$( cat $tool_info | grep -w '^PERLLIB' | cut -d '=' -f2)
-	perlblat=$( cat $tool_info | grep -w '^PERLLIB_BLAT' | cut -d '=' -f2 )
 	blat_params=$( cat $tool_info | grep -w '^BLAT_params' | cut -d '=' -f2 )
-	export PERL5LIB=$perlblat:$perllib:$PERL5LIB
+	export PERL5LIB=$perllib:$PERL5LIB
 	export PATH=$PERL5LIB:$PATH
 	
     if [ $marker -eq 2 ]

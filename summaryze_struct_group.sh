@@ -48,7 +48,7 @@ else
 			if [ ! -f $inputfile ]
 			then
 				touch $inputfile.fix.log
-				$script_path/email.sh $inputfile "not exist" $run_info
+				$script_path/email.sh $inputfile "not exist" run_segseq.sh $run_info
 				$script_path/wait.sh $inputfile.fix.log 
 				inputargs="-V $inputfile "$inputargs  
 				cat $input >> $basedir/cnv/$group/$sample.cnv.bed
@@ -63,7 +63,7 @@ else
 			if [ ! -f $inputfile ]
 			then	
 				touch $inputfile.fix.log
-				$script_path/email.sh $inputfile "not exist" $run_info
+				$script_path/email.sh $inputfile "not exist" run_segseq.sh $run_info
 				$script_path/wait.sh $inputfile.fix.log 
 				inputargs="-V $inputfile "$inputargs  
 				cat $input >> $basedir/cnv/$group/$sample.cnv.bed
@@ -78,7 +78,7 @@ else
 			if [ ! -f $inputfile ]
 			then	
 				touch $inputfile.fix.log
-				$script_path/email.sh $inputfile "not exist" $run_info
+				$script_path/email.sh $inputfile "not exist" run_segseq.sh $run_info
 				$script_path/wait.sh $inputfile.fix.log 
 				cat $input >> $basedir/cnv/$group/$sample.cnv.filter.bed
 				rm $input
@@ -93,7 +93,7 @@ else
 			if [ ! -f $inputfile ]
 			then
 				touch $inputfile.fix.log
-				$script_path/email.sh $inputfile "not exist" $run_info
+				$script_path/email.sh $inputfile "not exist" run_segseq.sh $run_info
 				$script_path/wait.sh $inputfile.fix.log 
 				cat $input >> $basedir/cnv/$group/$sample.cnv.filter.bed
 				rm $input
@@ -121,7 +121,7 @@ else
 			if [ ! -f $inputfile ]
 			then
 				touch $inputfile.fix.log
-				$script_path/email.sh $inputfile "not exist" $run_info
+				$script_path/email.sh $inputfile "not exist" run_breakdancer.sh $run_info
 				$script_path/wait.sh $inputfile.fix.log 
 				cat $inputfile >> $basedir/struct/$group.$sample.break  
 				cat $input_vcf | awk '$0 ~ /^#/' > $basedir/struct/$group.$sample.break.header
@@ -150,7 +150,20 @@ else
 	tumor_list=`echo $samples | tr " " "\n" | tail -$num_tumor`
 	for tumor in $tumor_list
 	do
-		$script_path/subtract_break.pl $basedir/struct/$group.$tumor.break $basedir/struct/$group.$normal.break > $basedir/struct/$group.$tumor.somatic.break
+		if [ ! -f $basedir/struct/$group.$tumor.break ]
+                then
+                    touch  $basedir/struct/$group.$tumor.break.fix.log
+                    $script_path/email.sh $basedir/struct/$group.$tumor.break "not exist" run_breakdancer.sh $run_info
+                    $script_path/wait.sh $basedir/struct/$group.$tumor.break.fix.log    
+                fi
+                if [ ! -f $basedir/struct/$group.$normal.break ]
+                then
+                    touch  $basedir/struct/$group.$normal.break.fix.log
+                    $script_path/email.sh $basedir/struct/$group.$normal.break "not exist" run_breakdancer.sh $run_info
+                    $script_path/wait.sh $basedir/struct/$group.$normal.break.fix.log    
+                fi
+                
+                $script_path/subtract_break.pl $basedir/struct/$group.$tumor.break $basedir/struct/$group.$normal.break > $basedir/struct/$group.$tumor.somatic.break
 		$script_path/Breakdancer2VCF.pl -i $basedir/struct/$group.$tumor.somatic.break -f $ref_genome -o $output/SV/$group.$tumor.somatic.break.vcf -s $tumor -t $samtools
 		$script_path/vcfsort.pl ${ref_genome}.fai $output/SV/$group.$tumor.somatic.break.vcf > $output/SV/$group.$tumor.somatic.break.vcf.sort
 		mv $output/SV/$group.$tumor.somatic.break.vcf.sort $output/SV/$group.$tumor.somatic.break.vcf
@@ -167,18 +180,18 @@ else
 		do
 			inputfile=$basedir/struct/crest/$group/$tumor.$chr.predSV.txt
 			inputvcf=$basedir/struct/crest/$group/$tumor.$chr.raw.vcf
-			if [ ! -s $inputvcf ]
+			if [ ! -f $inputvcf ]
 			then
 				touch $inputvcf.fix.log
-				$script_path/email.sh $inputvcf "not exist" $run_info
+				$script_path/email.sh $inputvcf "not exist" run_crest_multi.sh $run_info
 				$script_path/wait.sh $inputvcf.fix.log 
 			fi			
 			inputfile_filter=$basedir/struct/crest/$group/$tumor.$chr.filter.predSV.txt
 			inputvcf_filter=$basedir/struct/crest/$group/$tumor.$chr.filter.vcf
-			if [ ! -s $inputvcf_filter ]
+			if [ ! -f $inputvcf_filter ]
 			then
 				touch $inputvcf_filter.fix.log
-				$script_path/email.sh $inputvcf_filter "not exist" $run_info
+				$script_path/email.sh $inputvcf_filter "not exist" run_crest_multi.sh $run_info
 				$script_path/wait.sh $inputvcf_filter.fix.log
 			fi	
 			cat $inputfile >> $basedir/struct/$group.$tumor.somatic.raw.crest

@@ -81,13 +81,12 @@ POLYPHEN=/projects/bsi/bictools/apps/annotation/polyphen/2.2.2/
 ### libraries
 PERLLIB_CIRCOS=/usr/local/biotools/perl/5.10.0/lib/site_perl/5.10.0:/projects/bsi/bictools/lib/perl/5.10.0:/projects/bsi/bictools/lib/perl/GD-2.46/:/projects/bsi/bictools/apps/sv/breakdancer/breakdancer-1.1_2011_02_21/perl/
 PERLLIB=/projects/bsi/bictools/apps/sv/crest/bin:/projects/bsi/bictools/apps/sv/crest/bin/modules/lib/5.10.0:/projects/bsi/bictools/lib/perl/usr/local/biotools/perl/5.8.8-64/lib/site_perl/5.8.8/lib/perl5
-PERLLIB_VCF=/projects/bsi/bictools/apps/variant_detection/vcftools/0.1.8a/lib/perl5/site_perl/
+PERLLIB_VCF=/projects/bsi/bictools/apps/variant_detection/vcftools/0.1.8a/perl/:/projects/bsi/bictools/apps/variant_detection/vcftools/0.1.8a/lib/perl5/site_perl/
 PERL_CIRCOS=/usr/local/biotools/perl/5.10.0/bin/perl
 PERL_POLYPHEN_LIB=/projects/bsi/bictools/apps/annotation/polyphen/2.2.2/perl/
 ROOTLIB=/projects/bsi/bictools/apps/cnv/root/5.28.00c/lib/
 PERL_BREAKDANCER=/usr/local/biotools/perl/5.8.8-64/bin/perl
 PERLLIB_BREAKDANCER=/projects/bsi/bictools/apps/sv/breakdancer/breakdancer-1.1_2011_02_21/perl/
-PERLLIB_BLAT=/usr/lib64/perl5/5.8.8/x86_64-linux-thread-multi/
 PYTHON=/usr/local/biotools/python/2.7/bin/
 PYTHONLIB=/data2/bsi/RandD/pacbio/smrtanalysis-1.2.1/analysis/lib/python2.5/:/projects/bsi/bictools/apps/metadata/genomedata/arch/Linux-x86_64/lib/python2.5/:/projects/bsi/bictools/apps/metadata/genomedata/arch/Linux-x86_64/lib/python2.7/
 R_SOFT=/usr/local/biotools/r/R-2.13.0/bin/

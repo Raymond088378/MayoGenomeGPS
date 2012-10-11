@@ -2,7 +2,7 @@
 
 if [ $# -le 1 ]
 then
-	echo -e "script to merge per chr per sample file to merge file per chr\nUsage : </path/to/output folder> </path/to/run info file>"
+	echo -e "script to merge per chr per sample file to merge file per chr\nUsage : ./merge_raw_variants.sh </path/to/output folder> </path/to/run info file>"
 else
 	set -x
 	echo `date`
@@ -33,7 +33,13 @@ else
 		input=$var_dir/$sample
 		inputfile=$input/$sample.variants.chr$chr.raw.all.vcf.gz
 		input_indexfile=$input/$sample.variants.chr$chr.raw.all.vcf.gz.tbi
-			
+		
+		if [ ! -s $inputfile ]
+		then
+			$script_path/email.sh $inputfile "not exist" variants.sh $run_info
+			touch $inputfile.fix.log
+			$script_path/wait.sh $inputfile.fix.log
+		fi		
 		if [ ! -s $input_indexfile ]
 		then
 			$tabix/tabix -p vcf $input/$sample.variants.chr$chr.raw.all.vcf.gz

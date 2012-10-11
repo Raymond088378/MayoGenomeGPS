@@ -16,7 +16,7 @@
 
 if [ $# -le 3 ]
 then
-    echo -e "script to run cnvnator on a bam file\nUsage: <samplename> <input folder> </path/to/output directory> </path/to/run_info.txt>";
+    echo -e "script to run cnvnator on a bam file\nUsage: ./run_cnvator.sh <samplename> <input folder> </path/to/output directory> </path/to/run_info.txt>";
 else
     set -x
     echo `date`
@@ -48,13 +48,20 @@ else
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 ########################################################	
 ######		
-
+	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
+##############################################################		
+    if [ $analysis == "variant" ]
+	then
+		previous="split_bam_chr.sh"
+	else
+		previous="realign_recal.sh"		
+	fi	
     input_bam=$input/chr${chr}.cleaned.bam
 	
 	$samtools/samtools view -H $input_bam 1>$input_bam.cnv.header 2>$input_bam.fix.cnv.log
 	if [ `cat $input_bam.fix.cnv.log | wc -l` -gt 0 ]
 	then
-		$script_path/email.sh $input_bam "truncated or corrupt bam" $run_info
+		$script_path/email.sh $input_bam "truncated or corrupt bam" $previous $run_info
 		$script_path/wait.sh $input_bam.fix.cnv.log
 	else
 		rm $input_bam.fix.cnv.log

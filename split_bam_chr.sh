@@ -18,11 +18,17 @@ else
     tool_info=$(cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
-	
+	multi_sample=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2)
+	if [ $multi_sample == "YES" ]
+	then
+		previous="reformat_pairBAM.sh"
+	else
+		previous="reformat_BAM.sh"
+	fi	
     $samtools/samtools view -H $bam 1> $bam.header 2> $bam.sbc.fix.log
 	if [ `cat $bam.sbc.fix.log | wc -l` -gt 0 ]
 	then
-		$script_path/email.sh $bam "bam is truncated or corrupt" reformat_BAM.sh $run_info
+		$script_path/email.sh $bam "bam is truncated or corrupt" $previous $run_info
 		$script_path/wait.sh $bam.sbc.fix.log
 	else
 		rm $bam.sbc.fix.log

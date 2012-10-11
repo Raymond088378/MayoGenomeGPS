@@ -63,15 +63,21 @@ else
         for i in $pair
         do
             $bed/intersectBed -abam $input/$sample.$i.chr$chr.bam -b $kit | $samtools/samtools view -  | wc -l > $output/$sample.$i.chr$chr.bam.i.out
+        if [ ! -s $output/$sample.$i.chr$chr.bam.i.out ]
+	then
+		$script_path/errorlog.sh $output/$sample.$i.chr$chr.bam.i.out OnTarget_BAM.sh ERROR "failed to create"
+		exit 1;
+	fi	
         done 
     else   
         $bed/intersectBed -abam $bam -b $kit | $samtools/samtools view - | wc -l > $output/$sample.chr$chr.bam.i.out
-    fi
-    if [ ! -s $output/$sample.chr$chr.bam.i.out ]
+        if [ ! -s $output/$sample.chr$chr.bam.i.out ]
 	then
 		$script_path/errorlog.sh $output/$sample.chr$chr.bam.i.out OnTarget_BAM.sh ERROR "failed to create"
 		exit 1;
 	fi	
+    fi
+    
 	echo `date`
 fi	
 	

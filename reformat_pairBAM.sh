@@ -1,7 +1,8 @@
 #!/bin/bash
-if [ $# != 3 ];
+
+if [ $# != 3 ]
 then
-    echo -e "Usage: wrapper to merge bam files and validate the bam for downstream analysis \n merge_align.bam.sh </path/to/input directory> <name of BAM to sort> <sample name> </path/to/run_info.txt>";
+    echo -e "Usage: wrapper to merge bam files and validate the bam for downstream analysis\nUsage: ./reformat_pairBAM.sh </path/to/input directory> <group name> </path/to/run_info.txt>";
 else
     set -x
     echo `date`
@@ -34,12 +35,8 @@ else
 		$samtools/samtools view -H $file 1>$file.rf.header 2> $file.fix.log
 		if [ `cat $file.fix.log | wc -l` -gt 0 ]
 		then
-			$script_path/email.sh $file "bam is truncated or corrupt" $JOB_NAME $JOB_ID $run_info
-			while [ -f $file.fix.log ]
-			do
-				echo "waiting for the file to be fixed"
-				sleep 2m
-			done
+			$script_path/email.sh $file "bam is truncated or corrupt" "primary_script" $run_info
+			$script_path/wait.sh $file.fix.log
 		else
 			rm $file.fix.log 
 		fi	
@@ -53,16 +50,16 @@ else
     then
 		bam=`echo $INPUTARGS | cut -d '=' -f2`
 		mv $bam $input/$group.bam
-        SORT_FLAG=`perl $script_path/checkBAMsorted.pl -i $input/$group.bam -s $samtools`
+        SORT_FLAG=`$script_path/checkBAMsorted.pl -i $input/$group.bam -s $samtools`
         if [ $SORT_FLAG == 1 ]
         then
             mv $input/$group.bam $input/$group.sorted.bam
             $samtools/samtools index $input/$group.sorted.bam
         else
-            $script_path/sortbam.sh $input/$group.bam $input/$group.sorted.bam $input coordinate $max_reads $run_info
+            $script_path/sortbam.sh $input/$group.bam $input/$group.sorted.bam $input coordinate true $run_info
         fi
     else	
-        $script_path/MergeBam.sh $INPUTARGS $input/$group.sorted.bam $input true $run_info
+        $script_path/MergeBam.sh "$INPUTARGS" $input/$group.sorted.bam $input true $run_info
     fi
 
     ### add read grouup information
@@ -85,7 +82,6 @@ else
     then
         $script_path/reorderBam.sh $input/$group.sorted.bam $input/$group.sorted.tmp.bam $input $run_info  
     fi
-	
     echo `date`
 fi	
 	

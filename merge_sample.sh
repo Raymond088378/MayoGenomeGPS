@@ -29,12 +29,36 @@ else
 		do
 			if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
 			then
+				if [ ! -s $sample.SNV.xls ]
+				then
+					$script_path/email.sh $sample.SNV.xls "doesn't exist" "sample_report.sh" $run_info
+					touch $sample.SNV.xls.fix.log
+					$script_path/wait.sh $sample.SNV.xls.fix.log 
+				fi
 				ls $sample.SNV.xls >> list.snv
+				if [ ! -s $sample.SNV.filtered.xls ]
+				then
+					$script_path/email.sh $sample.SNV.filtered.xls "doesn't exist" "sample_report.sh" $run_info
+					touch $sample.SNV.filtered.xls.fix.log
+					$script_path/wait.sh $sample.SNV.filtered.xls.fix.log 
+				fi
 				ls $sample.SNV.filtered.xls >> list.filter.snv
 			fi
 			if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
 			then
+				if [ ! -s $sample.INDEL.xls ]
+				then
+					$script_path/email.sh $sample.INDEL.xls "doesn't exist" "sample_report.sh" $run_info
+					touch $sample.INDEL.xls.fix.log
+					$script_path/wait.sh $sample.INDEL.xls.fix.log 
+				fi
 				ls $sample.INDEL.xls >> list.indel
+				if [ ! -s $sample.INDEL.filtered.xls ]
+				then
+					$script_path/email.sh $sample.INDEL.filtered.xls "doesn't exist" "sample_report.sh" $run_info
+					touch $sample.INDEL.filtered.xls.fix.log
+					$script_path/wait.sh $sample.INDEL.filtered.xls.fix.log 
+				fi
 				ls $sample.INDEL.filtered.xls >> list.filter.indel
 			fi
 		done	
@@ -53,9 +77,33 @@ else
 	else
 		for group in $groups
 		do
+			if [ ! -s $group.SNV.xls ]
+			then
+				$script_path/email.sh $group.SNV.xls "doesn't exist" "sample_report.sh" $run_info
+				touch $group.SNV.xls.fix.log
+				$script_path/wait.sh $group.SNV.xls.fix.log 
+			fi
 			ls $group.SNV.xls >> list.snv
+			if [ ! -s $group.SNV.filtered.xls ]
+			then
+				$script_path/email.sh $group.SNV.filtered.xls "doesn't exist" "sample_report.sh" $run_info
+				touch $group.SNV.filtered.xls.fix.log
+				$script_path/wait.sh $group.SNV.filtered.xls.fix.log 
+			fi
 			ls $group.SNV.filtered.xls >> list.filter.snv
+			if [ ! -s $group.INDEL.xls ]
+			then
+				$script_path/email.sh $group.INDEL.xls "doesn't exist" "sample_report.sh" $run_info
+				touch $group.INDEL.xls.fix.log
+				$script_path/wait.sh $group.INDEL.xls.fix.log 
+			fi
 			ls $group.INDEL.xls >> list.indel
+			if [ ! -s $group.SNV.filtered.xls ]
+			then
+				$script_path/email.sh $group.INDEL.filtered.xls "doesn't exist" "sample_report.sh" $run_info
+				touch $group.INDEL.filtered.xls.fix.log
+				$script_path/wait.sh $group.INDEL.filtered.xls.fix.log 
+			fi
 			ls $group.INDEL.filtered.xls >> list.filter.indel
 		done
 		perl $script_path/union.snv.pl list.snv $output_dir/Reports/SNV.xls
@@ -66,9 +114,33 @@ else
     	### Merge the TUMOR files
     	for group in $groups
 		do
+			if [ ! -s TUMOR.$group.SNV.xls ]
+			then
+				$script_path/email.sh TUMOR.$group.SNV.xls "doesn't exist" "sample_report.sh" $run_info
+				touch TUMOR.$group.SNV.xls.fix.log
+				$script_path/wait.sh TUMOR.$group.SNV.xls.fix.log 
+			fi
 			ls TUMOR.$group.SNV.xls >> list.snv
+			if [ ! -s TUMOR.$group.SNV.filtered.xls ]
+			then
+				$script_path/email.sh TUMOR.$group.SNV.filtered.xls "doesn't exist" "sample_report.sh" $run_info
+				touch TUMOR.$group.SNV.filtered.xls.fix.log
+				$script_path/wait.sh TUMOR.$group.SNV.filtered.xls.fix.log 
+			fi
 			ls TUMOR.$group.SNV.filtered.xls >> list.filter.snv
+			if [ ! -s TUMOR.$group.INDEL.xls ]
+			then
+				$script_path/email.sh TUMOR.$group.INDEL.xls "doesn't exist" "sample_report.sh" $run_info
+				touch TUMOR.$group.INDEL.xls.fix.log
+				$script_path/wait.sh TUMOR.$group.INDEL.xls.fix.log 
+			fi
 			ls TUMOR.$group.INDEL.xls >> list.indel
+			if [ ! -s $group.SNV.filtered.xls ]
+			then
+				$script_path/email.sh TUMOR.$group.INDEL.filtered.xls "doesn't exist" "sample_report.sh" $run_info
+				touch TUMOR.$group.INDEL.filtered.xls.fix.log
+				$script_path/wait.sh TUMOR.$group.INDEL.filtered.xls.fix.log 
+			fi
 			ls TUMOR.$group.INDEL.filtered.xls >> list.filter.indel
 		done
 		perl $script_path/union.snv.pl list.snv $output_dir/Reports/TUMOR.SNV.xls

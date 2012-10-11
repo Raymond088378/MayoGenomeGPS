@@ -1,18 +1,19 @@
 #!/bin/bash
 
-if [ $# != 7 ]
+if [ $# != 8 ]
 then
-    echo -e "script to run somtic indel caller\nUsage: ./somaticindel.sh <normal bam ><tumor bam><chromosome><tumor sample><output dir><output file vcf><run info>"
+    echo -e "script to run somtic indel caller\nUsage: ./somaticindel.sh <normal bam ><tumor bam><chromosome><range><tumor sample><output dir><output file vcf><run info>"
 else
     set -x
     echo `date`
     tumor_bam=$1
     normal_bam=$2
     chr=$3
-    tumor_sample=$4
-    output=$5
-    output_file=$6
-    run_info=$7
+    param=$4
+    tumor_sample=$5
+    output=$6
+    output_file=$7
+    run_info=$8
     
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
@@ -59,7 +60,7 @@ else
 		-et NO_ET \
 		-K $gatk/Hossain.Asif_mayo.edu.key \
 		-T SomaticIndelDetector \
-		-L chr$chr \
+		$range \
 		-o $output/$output_file \
 		-verbose $output/$indel_v \
 		-I:normal $normal_bam \

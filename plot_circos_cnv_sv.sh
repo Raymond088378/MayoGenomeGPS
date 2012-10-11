@@ -18,17 +18,23 @@ else
     circos=$( cat $tool_info | grep -w '^CIRCOS' | cut -d '=' -f2)	
     perllib=$( cat $tool_info | grep -w '^PERLLIB_CIRCOS' | cut -d '=' -f2)	
 	perl=$( cat $tool_info | grep -w '^PERL_CIRCOS' | cut -d '=' -f2)	
-    
+    multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
+	if [ $multi == "YES" ]
+	then
+		previous="summaryze_struct_group.sh"
+	else	
+		previous="summaryze_struct_single.sh"
+	fi
     if [ ! -s $sv_file ]
     then
-		$script_path/email.sh $sv_file "not exist" $run_info
+		$script_path/email.sh $sv_file "not exist" $previous $run_info
 		touch $sv_file.fix.log
 		$script_path/wait.sh $sv_file.fix.log
     fi    
     
     if [ ! -s $cnv_file ]
     then
-		$script_path/email.sh $cnv_file "not exist" $run_info
+		$script_path/email.sh $cnv_file "not exist" $previous $run_info
 		touch $cnv_file.fix.log
 		$script_path/wait.sh $cnv_file.fix.log
     fi

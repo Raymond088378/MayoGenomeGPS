@@ -17,7 +17,7 @@ else
 	perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
 	tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2)
 	ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
-	export PERL5LIB=$PERL5LIB:$perllib
+	export PERL5LIB=$perllib:$PERL5LIB
 	export PATH=$tabix/:$PATH
 	
 	args=""

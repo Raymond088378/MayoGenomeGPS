@@ -26,7 +26,7 @@ else
 		$samtools/samtools view -H $file 1>$file.rf.header 2> $file.rf.fix.log
 		if [ `cat $file.rf.fix.log | wc -l` -gt 0 ]
 		then
-			$script_path/email.sh $file "bam is truncated or corrupt" "-" $run_info
+			$script_path/email.sh $file "bam is truncated or corrupt" "primary_script" $run_info
 			$script_path/wait.sh $file.rf.fix.log 
 		else
 			rm $file.rf.fix.log 

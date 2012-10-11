@@ -2,7 +2,7 @@
 
 if [ $# != 2 ]
 then
-	echo -e "script to concat per chromosome file to a merged file\nUsage : </path/to/output folder> </path/to/run info file>"
+	echo -e "script to concat per chromosome file to a merged file\nUsage : ./concat_raw_variants.sh </path/to/output folder> </path/to/run info file>"
 else
 	set -x
 	echo `date`
@@ -29,7 +29,17 @@ else
 	for chr in $chrs
 	do
 		inputfile=$var_dir/raw.chr$chr.SNV.vcf.gz 
-		inputfile_i=$var_dir/raw.chr$chr.SNV.vcf.gz.tbi 
+		if [ ! -s $inputfile ]
+		then
+			$script_path/email.sh $inputfile "not exist" merge_raw_variants.sh $run_info
+			touch $inputfile.fix.log
+			$script_path/wait.sh $inputfile.fix.log	
+		fi
+		inputfile_i=$var_dir/raw.chr$chr.SNV.vcf.gz.tbi
+		if [ ! -s $inputfile_i ]
+		then
+			$tabix/tabix -p vcf $inputfile
+		fi	
 		indexes=$indexes" $inputfile_i"
 		inputargs=$inputargs" $inputfile"
 	done

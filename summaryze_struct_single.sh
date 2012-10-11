@@ -38,7 +38,7 @@ else
 		if [ ! -f $inputfile ]
 		then
 			touch $inputfile.fix.log
-			$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+			$script_path/email.sh $inputfile "not exist" run_cnvnator.sh $run_info
 			$script_path/wait.sh $inputfile.fix.log 
 			inputargs="-V $inputfile "$inputargs  
 			cat $input >> $basedir/cnv/$sample/$sample.cnv.bed
@@ -54,7 +54,7 @@ else
 		if [ ! -f $inputfile ]
 		then	
 			touch $inputfile.fix.log
-			$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+			$script_path/email.sh $inputfile "not exist" run_cnvnator.sh $run_info
 			$script_path/wait.sh $inputfile.fix.log 
 			inputargs="-V $inputfile "$inputargs  
 			cat $input >> $basedir/cnv/$sample/$sample.cnv.bed
@@ -70,7 +70,7 @@ else
 		if [ ! -f $inputfile ]
 		then	
 			touch $inputfile.fix.log
-			$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+			$script_path/email.sh $inputfile "not exist" run_cnvnator.sh $run_info
 			$script_path/wait.sh $inputfile.fix.log 
 			cat $input >> $basedir/cnv/$sample/$sample.cnv.filter.bed
 			rm $input
@@ -86,7 +86,7 @@ else
 		if [ ! -f $inputfile ]
 		then
 			touch $inputfile.fix.log
-			$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+			$script_path/email.sh $inputfile "not exist" run_cnvnator.sh $run_info
 			$script_path/wait.sh $inputfile.fix.log 
 			cat $input >> $basedir/cnv/$sample/$sample.cnv.filter.bed
 			rm $input
@@ -112,7 +112,7 @@ else
 		if [ ! -s $inputfile ]
 		then      
 			touch $inputfile.fix.log
-			$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+			$script_path/email.sh $inputfile "not exist" run_breakdancer.sh $run_info
 			$script_path/wait.sh $inputfile.fix.log 
 			cat $inputfile | awk '$0 ~/^#/' > $basedir/struct/break/$sample/$sample.header.break
 			cat $inputfile | awk '$0 !~ /^#/' >> $output/SV/$sample.break.vcf
@@ -159,7 +159,7 @@ else
         if [ ! -s $inputfile ]
         then      
             touch $inputfile.fix.log
-			$script_path/email.sh $inputfile "not exist" $JOB_NAME $JOB_ID $run_info
+			$script_path/email.sh $inputfile "not exist" run_single_crest.sh $run_info
 			$script_path/wait.sh $inputfile.fix.log 
 			cat $inputfile | awk '$0 ~/^#/' > $basedir/struct/crest/$sample/vcf.header.$sample.crest
             cat $inputfile | awk '$0 !~ /^#/' >> $output/SV/$sample.raw.crest.vcf

@@ -187,7 +187,7 @@ else
 	###########################################################
 	#### sge paramters
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
-	args="-V -wd $output_dir/logs -q $queue -m ae -M $TO -l h_stack=10M"
+	args="-V -wd $output_dir/logs -q $queue -m a -M $TO -l h_stack=10M"
 	echo -e "\nRCF arguments used : $args\n" >> $output_dir/log.txt
 	#############################################################
 	
@@ -469,8 +469,14 @@ else
 					mkdir -p $break $crest $cnv
 					$script_path/check_qstat.sh $limit
 					mem=$( cat $memory_info | grep -w '^run_single_crest' | cut -d '=' -f2)
-					qsub_args="-N $type.$version.run_single_crest.sh.$sample.$run_num -hold_jid $type.$version.processBAM.$sample.$run_num -t 1-$numchrs:1 -l h_vmem=$mem"
-					qsub $args $qsub_args $script_path/run_single_crest.sh $sample $align_dir $bamfile $crest $run_info
+					if [ $analysis == "variant" ]
+					then
+						qsub_args="-N $type.$version.run_single_crest.sh.$sample.$run_num -hold_jid $type.$version.reformat_BAM.$sample.$run_num -t 1-$numchrs:1 -l h_vmem=$mem"
+						qsub $args $qsub_args $script_path/run_single_crest.sh $sample $realign_dir $bamfile $crest $run_info
+					else
+						qsub_args="-N $type.$version.run_single_crest.sh.$sample.$run_num -hold_jid $type.$version.processBAM.$sample.$run_num -t 1-$numchrs:1 -l h_vmem=$mem"
+						qsub $args $qsub_args $script_path/run_single_crest.sh $sample $align_dir $bamfile $crest $run_info
+					fi
 					$script_path/check_qstat.sh $limit
 					mem=$( cat $memory_info | grep -w '^run_cnvnator' | cut -d '=' -f2)
 					qsub_args="-N $type.$version.run_cnvnator.$sample.$run_num -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=$mem"
@@ -850,8 +856,14 @@ else
 					do
 						$script_path/check_qstat.sh $limit
 						mem=$( cat $memory_info | grep -w '^run_crest_multi_cover' | cut -d '=' -f2)
-						qsub_args="-N $type.$version.run_crest_multi_cover.$group.$sam.$run_num -hold_jid $vvid -t 1-$numchrs:1 -l h_vmem=$mem"
-						qsub $args $qsub_args $script_path/run_crest_multi_cover.sh $sam $group $output_dir/alignment/$sam/ $crest $run_info
+						if [ $analysis == "variant" ]
+						then
+							qsub_args="-N $type.$version.run_crest_multi_cover.$group.$sam.$run_num -hold_jid $vvid -t 1-$numchrs:1 -l h_vmem=$mem"
+							qsub $args $qsub_args $script_path/run_crest_multi_cover.sh $sam $group $output_dir/alignment/$sam/ $crest $run_info
+						else
+							qsub_args="-N $type.$version.run_crest_multi_cover.$group.$sam.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -t 1-$numchrs:1 -l h_vmem=$mem"
+							qsub $args $qsub_args $script_path/run_crest_multi_cover.sh $sam $group $igv $crest $run_info
+						fi	
 						id=$id"$type.$version.run_crest_multi_cover.$group.$sam.$run_num,"
 					done
 					$script_path/check_qstat.sh $limit

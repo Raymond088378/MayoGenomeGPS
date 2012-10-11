@@ -47,7 +47,14 @@ else
     multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
     blacklist_sv=$( cat $tool_info | grep -w '^BLACKLIST_SV' | cut -d '=' -f2 )
     bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
-	
+	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
+##############################################################		
+    if [ $analysis == "variant" ]
+	then
+		previous="split_bam_chr.sh"
+	else
+		previous="realign_recal.sh"		
+	fi	
 ########################################################	
 ######		
 
@@ -64,7 +71,7 @@ else
 			$samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
 			if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
 			then
-				$script_path/email.sh $input_bam "bam is truncated or corrupt" $run_info
+				$script_path/email.sh $input_bam "bam is truncated or corrupt" $previous $run_info
 				$script_path/wait.sh $input_bam.fix.break.log 
 			else
 				rm $input_bam.fix.break.log
@@ -95,7 +102,7 @@ else
 					rm $out/$samples.$chr.break.vcf.fail
 				fi  
 			else
-				$script_path/errorlog.sh $out/$samples.$chr.cfg run_cnvnator.sh ERROR "does not exist"
+				$script_path/errorlog.sh $out/$samples.$chr.cfg run_breakdancer.sh WARNING "does not exist"
 				touch $out/$samples.$chr.break
 				touch $out/$samples.$chr.break.sorted
 				$script_path/Breakdancer2VCF.pl -i $out/$samples.$chr.break -f $ref_genome -o $out/$samples.$chr.break.vcf -s $samples -t $samtools
@@ -109,7 +116,7 @@ else
 			$samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
 			if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
 			then
-				$script_path/email.sh $input_bam "bam is truncated or corrupt" $run_info
+				$script_path/email.sh $input_bam "bam is truncated or corrupt" $previous $run_info
 				$script_path/wait.sh $input_bam.fix.break.log
 			else
 				rm $input_bam.fix.break.log
@@ -142,7 +149,7 @@ else
 					fi  
 					rm $out/$samples.inter.cfg $out/$samples.tmp.bam
 				else
-					$script_path/errorlog.sh $out/$samples.inter.cfg run_cnvnator.sh ERROR "does not exist"
+					$script_path/errorlog.sh $out/$samples.inter.cfg run_breakdancer.sh WARNING "does not exist"
 					touch $out/$samples.inter.break
 					touch $out/$samples.inter.break.sorted
 					$script_path/Breakdancer2VCF.pl -i $out/$samples.inter.break -f $ref_genome -o $out/$samples.inter.break.vcf -s $samples -t $samtools
@@ -151,7 +158,7 @@ else
 					mv $out/$samples.inter.break.vcf.sort $out/$samples.inter.break.vcf
 				fi
 			else
-				$script_path/errorlog.sh $output_dir/$samples/$samples.tmp.bam run_cnvnator.sh ERROR "not created"
+				$script_path/errorlog.sh $output_dir/$samples/$samples.tmp.bam run_breakdancer.sh ERROR "not created"
 				exit 1;
 			fi
 		fi
@@ -162,7 +169,7 @@ else
 		$samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
 		if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
 		then
-			$script_path/email.sh $input_bam "bam is truncated or corrupt" $run_info
+			$script_path/email.sh $input_bam "bam is truncated or corrupt" $previous $run_info
 			$script_path/wait.sh $input_bam.fix.break.log
 		else
 			rm $input_bam.fix.break.log
@@ -193,7 +200,7 @@ else
                     rm $out/$sample.$chr.break.vcf.fail
                 fi  
             else
-                $script_path/errorlog.sh $out/$sample.$chr.cfg run_cnvnator.sh ERROR "not created"
+                $script_path/errorlog.sh $out/$sample.$chr.cfg run_breakdancer.sh WARNING "not created"
                 touch $out/$sample.$chr.break
 				touch $out/$sample.$chr.break.sorted
 				perl $script_path/Breakdancer2VCF.pl -i $out/$sample.$chr.break -f $ref_genome -o $out/$sample.$chr.break.vcf -s $sample -t $samtools
@@ -207,7 +214,7 @@ else
             $samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
 			if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
 			then
-				$script_path/email.sh $input_bam "bam is truncated or corrupt" $run_info
+				$script_path/email.sh $input_bam "bam is truncated or corrupt" $previous $run_info
 				$script_path/wait.sh $input_bam.fix.break.log
 			else
 				rm $input_bam.fix.break.log
@@ -238,7 +245,7 @@ else
                     fi  
                     rm $out/$sample.inter.cfg $out/$sample.tmp.bam
                 else
-					$script_path/errorlog.sh $out/$sample.inter.cfg run_cnvnator.sh ERROR "not created"
+					$script_path/errorlog.sh $out/$sample.inter.cfg run_breakdancer.sh WARNING "not created"
                     touch $out/$sample.inter.break
 					touch $out/$sample.inter.break.sorted
 					perl $script_path/Breakdancer2VCF.pl -i $out/$sample.inter.break -f $ref_genome -o $out/$sample.inter.break.vcf -s $sample -t $samtools
@@ -247,7 +254,7 @@ else
                     mv $out/$sample.inter.break.vcf.sort $out/$sample.inter.break.vcf
                 fi
             else
-                $script_path/errorlog.sh $out/$sample.tmp.bam run_cnvnator.sh ERROR "not created"
+                $script_path/errorlog.sh $out/$sample.tmp.bam run_breakdancer.sh ERROR "not created"
                 exit 1;
             fi
 	    fi

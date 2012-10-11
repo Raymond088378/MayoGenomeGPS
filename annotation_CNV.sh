@@ -51,14 +51,16 @@ else
         
         if [ ! -s $cnvnator/$sample.cnv.vcf ]
         then
-            $script_path/errorlog.sh $cnvnator/$sample.cnv.vcf annotation_CNV.sh ERROR "not exist"
-            exit 1;
+            $script_path/email.sh $cnvnator/$sample.cnv.vcf "not exist" summaryze_struct_single.sh $run_info
+			touch $cnvnator/$sample.cnv.vcf.fix.log
+			$script_path/wait.sh $cnvnator/$sample.cnv.vcf.fix.log 
         fi
         
         if [ ! -s $cnvnator/$sample.cnv.filter.vcf ]
         then
-            $script_path/errorlog.sh $cnvnator/$sample.cnv.filter.vcf annotation_CNV.sh ERROR "not exist"
-            exit 1;
+            $script_path/email.sh $cnvnator/$sample.cnv.filter.vcf "not exist" summaryze_struct_single.sh $run_info
+			touch $cnvnator/$sample.cnv.filter.vcf.fix.log
+			$script_path/wait.sh $cnvnator/$sample.cnv.filter.vcf.fix.log
         fi
         cat $cnvnator/$sample.cnv.vcf | awk '$0 !~ /#/' | grep DEL >> $cnvnator/$sample.cnv.raw.del.vcf
         cat $cnvnator/$sample.cnv.vcf | awk '$0 !~ /#/' | grep DUP >> $cnvnator/$sample.cnv.raw.dup.vcf
@@ -105,14 +107,16 @@ else
 
 			if [ ! -s $cnvnator/$group.$tumor.cnv.vcf ]
 			then
-				$script_path/errorlog.sh $cnvnator/$group.$tumor.cnv.vcf annotation_CNV.sh ERROR "not exist"
-				exit 1;
+				$script_path/email.sh $cnvnator/$group.$tumor.cnv.vcf "not exist" summaryze_struct_group.sh $run_info
+				touch $cnvnator/$group.$tumor.cnv.vcf.fix.log
+				$script_path/wait.sh $cnvnator/$group.$tumor.cnv.vcf.fix.log
 			fi
 
 			if [ ! -s $cnvnator/$group.$tumor.cnv.filter.vcf ]
 			then
-				$script_path/errorlog.sh $cnvnator/$group.$tumor.cnv.filter.vcf annotation_CNV.sh ERROR "not exist"
-				exit 1;
+				$script_path/email.sh $cnvnator/$group.$tumor.cnv.filter.vcf "not exist" summaryze_struct_group.sh $run_info
+				touch $cnvnator/$group.$tumor.cnv.filter.vcf.fix.log
+				$script_path/wait.sh $cnvnator/$group.$tumor.cnv.filter.vcf.fix.log
 			fi
 
 			cat $cnvnator/$group.$tumor.cnv.vcf | awk '$0 !~ /#/' | grep DEL >> $cnvnator/$group.$tumor.cnv.raw.del.vcf

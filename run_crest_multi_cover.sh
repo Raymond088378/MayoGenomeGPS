@@ -14,7 +14,7 @@
 ######		$5	=	/path/to/run_info.txt
 ########################################################
 
-if [ $# != 5 ]
+if [ $# -le 4 ]
 then
     echo -e "Script to run crest on a paired sample\nUsage: ./run_crest_multi_cover.sh <sample name> <group name> </path/to/input directory> </path/to/output directory> </path/to/run_info.txt>"
 else
@@ -25,6 +25,10 @@ else
     input=$3
     output_dir=$4
     run_info=$5
+	if [ $6 ]
+	then
+		SGE_TASK_ID=$6
+	fi	
 	########################################################	
     ######		Reading run_info.txt and assigning to variables
     #SGE_TASK_ID=1
@@ -36,19 +40,31 @@ else
     perllib=$( cat $tool_info | grep -w '^PERLLIB' | cut -d '=' -f2 )
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     ref_genome=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2 )
-
+	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
+	if [ $analysis == "variant" ]
+	then
+		input_bam=$input/$group.$sample.chr$chr.bam
+		previous="split_sample_pair.sh"
+	else
+		input_bam=$input/$sample.sorted.bam
+		previous="processBAM.sh"
+	fi	
     export PERL5LIB=$perllib:$crest
     PATH=$PATH:$blat:$crest:$perllib
 	mkdir -p $output_dir/$group/log
-	$samtools/samtools view -H $input/$sample.sorted.bam 1>$input/$sample.sorted.bam.$chr.header 2>$input/$sample.sorted.bam.$chr.crest.fix.log
-	if [ `cat $input/$sample.sorted.bam.$chr.crest.fix.log | wc -l` -gt 0 ]
+	$samtools/samtools view -H $input_bam 1>$input_bam.crest.header 2>$input_bam.crest.fix.log
+	if [ `cat $input_bam.crest.fix.log | wc -l` -gt 0 ]
 	then
-		$script_path/email.sh $input/$sample.sorted.bam "bam is truncated or corrupt" $run_info
-		$script_path/wait.sh $input/$sample.sorted.bam.$chr.crest.fix.log
+		$script_path/email.sh $input_bam "bam is truncated or corrupt" $previous $run_info
+		$script_path/wait.sh $input_bam.crest.fix.log
 	else
-		rm $input/$sample.sorted.bam.$chr.crest.fix.log
+		rm $input_bam.crest.fix.log
 	fi
-	rm $input/$sample.sorted.bam.$chr.header
+	rm $input_bam.crest.header
+	if [ ! -s ${input_bam}.bai ]
+	then
+		$samtools/samtools index $input_bam 
+	fi	
 	$samtools/samtools view -b $input/$sample.sorted.bam chr$chr >  $output_dir/$group/$sample.chr$chr.bam
 	$samtools/samtools index $output_dir/$group/$sample.chr$chr.bam
     file=$output_dir/$group/$sample.chr$chr.bam

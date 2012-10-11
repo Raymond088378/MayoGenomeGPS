@@ -55,14 +55,21 @@ else
 	bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
 	len=$( cat $tool_info | grep -w '^MIN_SCIP_LEN' | cut -d '=' -f2 )
 	reads=$( cat $tool_info | grep -w '^MIN_SCIP_READS' | cut -d '=' -f2 )
-	
+	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
+##############################################################		
+    if [ $analysis == "variant" ]
+	then
+		previous="reformat_BAM"
+	else
+		previous="processBAM.sh"		
+	fi	
 ########################################################	
 ######		
 	pid=""
 	$samtools/samtools view -H $input/$input_bam 1>$input/$input_bam.crest.$chr.header 2>$input/$input_bam.$chr.fix.crest.log
 	if [ `cat $input/$input_bam.$chr.fix.crest.log | wc -l` -gt 0 ]
 	then
-		$script_path/email.sh $input/$input_bam "truncated or corrupt bam" $run_info
+		$script_path/email.sh $input/$input_bam "truncated or corrupt bam" $previous $run_info
 		$script_path/wait.sh $input/$input_bam.$chr.fix.crest.log
 	else
 		rm $input/$input_bam.$chr.fix.crest.log
