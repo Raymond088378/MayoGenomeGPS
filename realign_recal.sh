@@ -4,7 +4,7 @@
 
 if [ $# -le 5 ]
 then
-    echo -e "wrapper script to do realignment and variant calling\nUsage: ./realign_recal.sh Multi-Samples\n<input ':' sep> <bam ':' sep[normal:tumor1:tumor2:tumorN]> <samples ':' sep[normal:tumor1:tumor2:tumorN]> <outputdir bams> <run_info><1 for realign-recal or 0 for recal-realign><SGE_TASK_ID (optional)>\nelse\n<input> <bam > <samples> <outputdir bams><run_info><1 for realign-recal or 0 for recal-realign><SGE_TASK_ID (optional)>\n"
+    echo -e "wrapper script to do realignment and variant calling\nUsage: ./realign_recal.sh Multi-Samples\n<input ':' sep> <bam ':' sep[normal:tumor1:tumor2:tumorN]> <samples ':' sep[normal:tumor1:tumor2:tumorN]> <outputdir bams> <run_info><1 for realign-recal or 0 for recal-realign><SGE_TASK_ID (optional)>\nelse\n<input> <bam > <samples> <outputdir bams><run_info><1 for realign-recal or 0 for recal-realign><SGE_TASK_ID (optional)>"
 else
     set -x
     echo `date`

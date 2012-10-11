@@ -2,7 +2,7 @@
 
 if [ $# -le 4 ]
 then
-	echo -e "script to run variant calling on set of BAM files\nUsage: ./variants.sh </path/to/input dir><samples ':' sep[normal:tumor1:tumor2:tumorN]> </path/to/output directory> <1 or 0 chopped or not ><path/to/run info><SGE_TASK_ID(optional)>\nNOTE: first sample is considered as normal and others are considered as tumor[Assumption]\n";
+	echo -e "script to run variant calling on set of BAM files\nUsage: ./variants.sh </path/to/input dir><samples ':' sep[normal:tumor1:tumor2:tumorN]> </path/to/output directory> <1 or 0 chopped or not ><path/to/run info><SGE_TASK_ID(optional)>\nNOTE: first sample is considered as normal and others are considered as tumor[Assumption]";
 else
 	set -x
 	echo `date`

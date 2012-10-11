@@ -16,7 +16,7 @@
 
 if [ $# -le 3 ]
 then
-    echo -e "wrapper script to run the alignment using NOVO ALIGN\nUsage: ./align_read_bwa.sh <sample name> </path/to/output_dir> </path/to/run_info.txt> <SGE TASK ID (optional)>";
+    echo -e "wrapper script to run the alignment using BWA\nUsage: ./align_read_bwa.sh <sample name> </path/to/output_dir> <which read(1/2)> </path/to/run_info.txt> <SGE TASK ID (optional)>";
 else	
     set -x 
     echo `date`
