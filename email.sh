@@ -23,7 +23,7 @@ else
 	then
 		SGE="-"
 	fi	
-	MESG="Date: $date\n\nFilename: $file\nError: $message from the predecessor job\nScriptToCheck: $previous\nJobName: $job_name\nJobId: $job_id\nArrayJobId: $SGE\n\nPlease fix the error and delete the $file.fix.log file so that job can resume properly\n\nCourtesy: $workflow $version"
+	MESG="Date: $date\n============================\n\nFilename: $file\nError: $message from the predecessor job\nScriptToCheck: $previous\nJobName: $job_name\nJobId: $job_id\nArrayJobId: $SGE\n\nPlease fix the error and delete the $file.fix.log file so that job can resume properly\n\nCourtesy: $workflow $version"
 	## send the completion email
 	echo -e "$MESG" | mailx -v -s "$SUB" "$TO" 
 	echo `date`
