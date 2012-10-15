@@ -89,7 +89,8 @@ else
 			exit 1;
 		fi
 		status=`$blat/gfServer status $blat_server $blat_port | wc -l`;
-		while [ "$status" -le 1 ]
+		let count=0
+		while [[ "$status" -le 1 && $count -le 5 ]]
 		do
 			`kill -9 $pid`
 			blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
@@ -104,6 +105,7 @@ else
 				sleep 5m
 			fi
 			status=`$blat/gfServer status $blat_server $blat_port | wc -l`;
+			let count=count+1
 		done 	
 
 		$crest/CREST.pl -f $output_dir/$group/$sample.chr$chr.cover \

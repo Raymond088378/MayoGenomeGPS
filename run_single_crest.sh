@@ -34,8 +34,6 @@ else
 ######		Reading run_info.txt and assigning to variables
 #SGE_TASK_ID=2
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-	email=$( cat $run_info | grep -w '^EMAIL' | cut -d '=' -f2)
-	queue=$( cat $run_info | grep -w '^QUEUE' | cut -d '=' -f2)
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
 	picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 ) 
 	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
@@ -107,7 +105,8 @@ else
 	fi
 	$crest/extractSClip.pl -i $input_bam -r chr$chr --ref_genome $ref_genome -o $output_dir/$sample -p $sample
 	status=`$blat/gfServer status localhost $blat_port | wc -l`;
-	while [ "$status" -le 1 ]
+	let count=0
+	while [[ "$status" -le 1 && $count -le 5 ]]
 	do
 		`kill -9 $pid`
 		blat_port=$( cat $tool_info | grep -w '^BLAT_PORT' | cut -d '=' -f2 )
@@ -122,7 +121,8 @@ else
 			sleep 5m
 		fi
 		status=`$blat/gfServer status localhost $blat_port | wc -l`;
-    done 	
+		let count=count+1
+	done 	
 	cd $crest    
 	if [ -f $output_dir/$sample/$sample.chr$chr.cover ]
 	then

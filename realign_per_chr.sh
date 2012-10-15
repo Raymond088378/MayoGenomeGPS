@@ -111,8 +111,13 @@ else
     	region="-L chr${chr}"
     else
     	cat $TargetKit | grep -w chr$chr > $output/chr$chr.bed
-    	region="-L $output/chr$chr.bed"
-    fi		
+		if [ `cat $output/chr$chr.bed | wc -l` -gt 0 ]
+		then
+			region="-L $output/chr$chr.bed"
+		else
+			region="-L chr${chr}"
+		fi	
+	fi		
 	## GATK Target Creator
     
 	mem=$( cat $memory_info | grep -w '^RealignerTargetCreator_JVM' | cut -d '=' -f2)

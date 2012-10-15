@@ -248,7 +248,7 @@ then
 		echo -e "\nOk, fine"
 	fi	
 	read -p "Do you want to know how to create memory info file ? : " memory_info
-	while [[ $tool_info != "yes" && $tool_info != "no" ]]
+	while [[ $memory_info != "yes" && $memory_info != "no" ]]
 	do
 		read -p "Do you want to know how to create memory info file ? : " memory_info
 	done
