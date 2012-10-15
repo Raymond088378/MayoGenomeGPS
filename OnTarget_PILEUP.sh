@@ -101,7 +101,7 @@ else
 			a=`cat $output/$sample.chr$chr.txt | grep -w "$sample" | awk '$NF>'$j''  | wc -l`
 			echo $a >> $output/$sample.chr$chr.pileup.i.out
         done    
-		if [ -s $output/$sample.chr$chr.pileup.i.out ]
+		if [ ! -s $output/$sample.chr$chr.pileup.i.out ]
 		then
 			$script_path/errorlog.sh $output/$sample.chr$chr.pileup.i.out OnTarget_PILEUP.sh ERROR "failed to create"
 			exit 1;

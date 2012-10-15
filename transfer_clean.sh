@@ -181,7 +181,7 @@ else
 			fi
 		fi
 	fi
-    $java/java -Xmx2g -Xms512m -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -f $flowcell -r $run_num -s Delivered -a $tool
+	$java/java -Xmx2g -Xms512m -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -f $flowcell -r $run_num -s Delivered -a $tool
 	echo "data is transfered and intermediate files are deleted"
     echo "User needs to transfer the data to the windows share"
 	echo `date`

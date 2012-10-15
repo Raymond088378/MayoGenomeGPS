@@ -139,7 +139,7 @@ exit(0);
 sub check_parameters {
     my $options = shift;
 
-	my @required = qw(input ext);
+	my @required = qw(input ext output);
 
 	foreach my $key (@required) {
 		unless ($options{$key}) {

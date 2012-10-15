@@ -27,10 +27,19 @@ else
 		then
 			$tabix/bgzip $file
 		fi
-		$tabix/tabix -p vcf $file.gz
+		if [ ! -s $file.gz.tbi ]
+		then
+			$tabix/tabix -p vcf $file.gz
+		fi
 		args=$args" $file.gz"
 	done	
-	
+	for i in $args
+	do
+		if [ ! -s $i ]
+		then
+			exit 1;
+		fi
+	done	
 	$vcftools/bin/vcf-concat $args > $output
     
     if [ ! -s $output ]

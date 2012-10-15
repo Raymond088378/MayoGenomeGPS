@@ -187,7 +187,7 @@ else
 	###########################################################
 	#### sge paramters
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
-	args="-V -wd $output_dir/logs -q $queue -m a -M $TO -l h_stack=10M"
+	args="-V -wd $output_dir/logs -q $queue -m ae -M $TO -l h_stack=10M"
 	echo -e "\nRCF arguments used : $args\n" >> $output_dir/log.txt
 	#############################################################
 	

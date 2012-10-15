@@ -8,7 +8,7 @@ else
 	file=$1
 	while [ -f $file ]
 	do
-		sleep 2m
+		sleep 5m
 		echo "waiting for the $file to be fixed"
 	done
 	echo `date`

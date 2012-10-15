@@ -29,7 +29,7 @@ else
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     realign_param=$( cat $tool_info | grep -w '^REALIGN_params' | cut -d '=' -f2 )
-    tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[a-z]" "[A-Z]")
+    tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
     TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
     if [ ${#dbSNP} -ne 0 ]
     then
