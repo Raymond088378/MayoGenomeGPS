@@ -107,7 +107,13 @@ else
 			status=`$blat/gfServer status $blat_server $blat_port | wc -l`;
 			let count=count+1
 		done 	
-
+		
+		if [ $count -ge 5 ]
+		then
+			$script_path/errorlog.sh GFSERVER run_single_crest.sh ERROR "failed to create gfserver"
+			exit 1;
+		fi	
+	
 		$crest/CREST.pl -f $output_dir/$group/$sample.chr$chr.cover \
         -d $output_dir/$group/${file}.chr$chr.bam -g $output_dir/$group/${normal_sample}.chr$chr.bam \
 		--ref_genome $ref_genome -t $blat_ref \

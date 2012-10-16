@@ -123,6 +123,12 @@ else
 		status=`$blat/gfServer status localhost $blat_port | wc -l`;
 		let count=count+1
 	done 	
+	
+	if [ $count -ge 5 ]
+	then
+		$script_path/errorlog.sh GFSERVER run_single_crest.sh ERROR "failed to create gfserver"
+		exit 1;
+	fi	
 	cd $crest    
 	if [ -f $output_dir/$sample/$sample.chr$chr.cover ]
 	then
