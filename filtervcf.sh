@@ -26,7 +26,7 @@ else
 	-V $inputvcf \
 	-o $inputvcf.tmp --filterExpression "DP < $depth" --filterName DPFilter 
 	
-	if [ -s $inputvcf.idx ]
+	if [ -s $inputvcf.tmp.idx ]
 	then
 		mv $inputvcf.tmp $inputvcf
 		mv $inputvcf.temp.idx $inputvcf.idx

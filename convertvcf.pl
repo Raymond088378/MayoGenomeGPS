@@ -19,7 +19,7 @@ while (my $l = <FH>)	{
 		chomp $l;
 		my @a = split(/\t/,$l);
 		### 7th field is pass field
-		if ($a[6] eq ".")	{
+		if($a[6] ne "PASS")	{
 			my @f=(0 .. 5);
 			my @la=(7 .. $#ar);
 			print join ("\t",@a[@f],"PASS",@a[@la]) . "\n";

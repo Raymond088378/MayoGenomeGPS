@@ -172,6 +172,9 @@ else
 		annot=$output_dir/Reports_per_Sample/ANNOT
 		sv=$output_dir/Reports_per_Sample/SV
 		numbers=$output_dir/numbers
+		struct=$output_dir/struct/
+		cnv=$output_dir/cnv/
+		circos=$output_dir/circos/
 	fi
 	
 	##########################################################
@@ -500,7 +503,10 @@ else
 					$script_path/check_qstat.sh $limit
 					mem=$( cat $memory_info | grep -w '^plot_circos_cnv_sv' | cut -d '=' -f2)
 					qsub_args="-N $type.$version.plot_circos_cnv_sv.$sample.$run_num -hold_jid $type.$version.summaryze_struct_single.$sample.$run_num -l h_vmem=$mem"
-					qsub $args $qsub_args $script_path/plot_circos_cnv_sv.sh $break/$sample/$sample.break $crest/$sample/$sample.filter.crest $cnv/$sample.cnv.filter.bed $sample $output_dir/circos $run_info	
+					break_file=$break/$sample/$sample.break
+					crest_file=$crest/$sample/$sample.filter.crest
+					cnv_file=$cnv/$sample.cnv.filter.bed
+					qsub $args $qsub_args $script_path/plot_circos_cnv_sv.sh $break_file $crest_file $cnv_file $sample $circos $run_info	
 				fi
 				if [[ $tool == "whole_genome" && $analysis != "alignment" && $analysis != "annotation" && $analysis != "ontarget" ]]
 				then
@@ -859,7 +865,7 @@ else
 						if [ $analysis == "variant" ]
 						then
 							qsub_args="-N $type.$version.run_crest_multi_cover.$group.$sam.$run_num -hold_jid $vvid -t 1-$numchrs:1 -l h_vmem=$mem"
-							qsub $args $qsub_args $script_path/run_crest_multi_cover.sh $sam $group $output_dir/alignment/$sam/ $crest $run_info
+							qsub $args $qsub_args $script_path/run_crest_multi_cover.sh $sam $group $output_align/$sam/ $crest $run_info
 						else
 							qsub_args="-N $type.$version.run_crest_multi_cover.$group.$sam.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -t 1-$numchrs:1 -l h_vmem=$mem"
 							qsub $args $qsub_args $script_path/run_crest_multi_cover.sh $sam $group $igv $crest $run_info
@@ -873,7 +879,7 @@ else
 					$script_path/check_qstat.sh $limit
 					mem=$( cat $memory_info | grep -w '^run_segseq' | cut -d '=' -f2)
 					qsub_args="-N $type.$version.run_segseq.$group.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -t 1-$numchrs:1 -l matlab_lic=1 -l h_vmem=$mem"
-					qsub $args $qsub_args $script_path/run_segseq.sh $group $igv $output_dir/cnv $run_info    
+					qsub $args $qsub_args $script_path/run_segseq.sh $group $igv $cnv $run_info    
 					let nump=$numchrs+1;    
 					mkdir -p $break/$group
 					id=""
@@ -900,7 +906,10 @@ else
 						$script_path/check_qstat.sh $limit
 						mem=$( cat $memory_info | grep -w '^plot_circos_cnv_sv' | cut -d '=' -f2)
 						qsub_args="-N $type.$version.plot_circos_cnv_sv.$group.$tumor.$i.$run_num -hold_jid $type.$version.summaryze_struct_group.$group.$run_num -l h_vmem=$mem"
-						qsub $args $qsub_args $script_path/plot_circos_cnv_sv.sh $output_dir/struct/$group.$tumor.somatic.break $output_dir/struct/$group.$tumor.somatic.filter.crest $output_dir/cnv/$group/$tumor.cnv.filter.bed $group.$tumor $output_dir/circos $run_info
+						break_file=$struct/$group.$tumor.somatic.break
+						crest_file=$struct/$group.$tumor.somatic.filter.crest
+						cnv_file=$cnv/$group/$tumor.cnv.filter.bed
+						qsub $args $qsub_args $script_path/plot_circos_cnv_sv.sh $break_file $crest_file $cnv_file $group.$tumor $circos $run_info
 					done
 				fi
 			done
