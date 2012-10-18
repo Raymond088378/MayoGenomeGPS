@@ -36,12 +36,12 @@ else
 	#rm $output_dir/bed_file.bed
 	if [[ $analysis != "alignment" && $analysis != "annotation"  && $analysis != "ontarget" ]] 
 	then
-		perl $script_path/create.igv.pl -o $output_dir -r $run_info
+		$script_path/create.igv.pl -o $output_dir -r $run_info
 	fi
-	perl $script_path/MainDocument.pl -r $run_info -p $output_dir
+	$script_path/MainDocument.pl -r $run_info -p $output_dir
 	
 	## create tsv file for sample statistcs
-	perl $script_path/SampleStatistics.pl -r $run_info -p $output_dir
+	$script_path/SampleStatistics.pl -r $run_info -p $output_dir
 	### generate readme file
 	$script_path/generate_readme.sh $output_dir $run_info
 	## TableBrowser upload

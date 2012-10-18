@@ -101,7 +101,7 @@ else
 		then
 			let check=0
 			let count=0
-			while [[ $check -eq 0 && $count -le 2 ]]
+			while [[ $check -eq 0 && $count -le 3 ]]
 			do
                 mem=$( cat $memory_info | grep -w '^VariantRecalibrator_JVM' | cut -d '=' -f2)
 				$java/java $mem -jar $gatk/GenomeAnalysisTK.jar \
@@ -191,7 +191,7 @@ else
 		then
 			let count=0
 			let check=0
-			while [[ $check -eq 0 && $count -le 2 ]]
+			while [[ $check -eq 0 && $count -le 3 ]]
 			do
 				mem=$( cat $memory_info | grep -w '^VariantRecalibrator_JVM' | cut -d '=' -f2)
 				$java/java $mem -jar $gatk/GenomeAnalysisTK.jar \
