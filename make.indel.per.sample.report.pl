@@ -1,3 +1,5 @@
+#!/usr/local/biotools/perl/5.10.0/bin/perl
+
 # script to parse the indel output from GATK to make per sample output report
 use strict;
 use warnings;

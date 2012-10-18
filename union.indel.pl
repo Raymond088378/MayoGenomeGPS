@@ -1,3 +1,5 @@
+#!/usr/local/biotools/perl/5.10.0/bin/perl
+
 use strict;
 use warnings;
 die "Usage:$0 <file w/ list of files> <output file>\n" if ($#ARGV != 1);

@@ -1,3 +1,5 @@
+#!/usr/local/biotools/perl/5.10.0/bin/perl
+
 # script to calculate transition to trnsversion ratio
 
 #Transition [ A-G G-A C-T T-C ]
