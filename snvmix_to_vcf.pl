@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/local/biotools/perl/5.10.0/bin/perl
 
 # Converts raw svnmix output to VCF 4.1 format
 # Jared Evans  evans.jared@mayo.edu

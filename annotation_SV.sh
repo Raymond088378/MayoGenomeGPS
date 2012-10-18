@@ -73,9 +73,20 @@ else
             cat $SV_dir/$sample.SV.tmp |  awk '{if ($3>10000) print $0}' > $SV_dir/$sample.SV.tmp1
             cat $SV_dir/$sample.SV.tmp1 | awk '{print $2"\t"$3"\t"($3+10000)"\t"$1}' > $SV_dir/$sample.SV.leftend.bed
             cat $SV_dir/$sample.SV.tmp1 | awk '{print $5"\t"($6-10000)"\t"$6"\t"$4}' > $SV_dir/$sample.SV.rightend.bed                            
-            $bedtools/intersectBed -b $SV_dir/$sample.SV.leftend.bed -a $master_gene_file -wb > $SV_dir/$sample.SV.leftend.intersect.bed
-            $bedtools/intersectBed -b $SV_dir/$sample.SV.rightend.bed -a $master_gene_file -wb > $SV_dir/$sample.SV.rightend.intersect.bed
-            $script_path/GeneAnnotation.SV.pl $SV_dir/$sample.SV.tmp $SV_dir/$sample.SV.leftend.intersect.bed $SV_dir/$sample.SV.rightend.intersect.bed $SV_dir/$sample.SV.leftend.annotation.tmp $SV_dir/$sample.SV.rightend.annotation.tmp
+            if [ `cat $SV_dir/$sample.SV.leftend.bed | wc -l` -gt 0 ]
+			then
+				$bedtools/intersectBed -b $SV_dir/$sample.SV.leftend.bed -a $master_gene_file -wb > $SV_dir/$sample.SV.leftend.intersect.bed
+            else
+				touch $SV_dir/$sample.SV.leftend.intersect.bed
+			fi
+			if [ `cat $SV_dir/$sample.SV.rightend.bed | wc -l` -gt 0 ]
+			then
+				$bedtools/intersectBed -b $SV_dir/$sample.SV.rightend.bed -a $master_gene_file -wb > $SV_dir/$sample.SV.rightend.intersect.bed
+            else
+				touch $SV_dir/$sample.SV.rightend.intersect.bed
+			fi
+			
+			$script_path/GeneAnnotation.SV.pl $SV_dir/$sample.SV.tmp $SV_dir/$sample.SV.leftend.intersect.bed $SV_dir/$sample.SV.rightend.intersect.bed $SV_dir/$sample.SV.leftend.annotation.tmp $SV_dir/$sample.SV.rightend.annotation.tmp
             cat $SV_dir/$sample.SV.leftend.annotation.tmp | tr "^" "\t" | sort -n > $SV_dir/$sample.SV.leftend.annotation.txt
             cat $SV_dir/$sample.SV.rightend.annotation.tmp | tr "^" "\t" | sort -n > $SV_dir/$sample.SV.rightend.annotation.txt
             cat $SV_dir/$sample.SV.rightend.annotation.txt | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$6"\t"$5}' > $SV_dir/$sample.SV.rightend.annotation.final.txt
@@ -87,7 +98,7 @@ else
             cat $SV_dir/$sample.SV.temp | awk '$0 !~ "NA_NA"' > $SV_dir/$sample.SV.temp1
             #  generating per sample SV annotation files
             touch $report_dir/$sample.SV.annotated.txt
-            if [ ! -s $SV_dir/$sample.SV.temp1 ]
+            if [ ! -f $SV_dir/$sample.SV.temp1 ]
             then
                 $script_path/errorlog.sh $SV_dir/$sample.SV.temp1 annotation_SV.sh ERROR "failed to create"
                 exit 1
@@ -144,9 +155,19 @@ else
                 cat $SV_dir/$group.$tumor.SV.tmp |  awk '{if ($3>10000) print $0}' > $SV_dir/$group.$tumor.SV.tmp1
                 cat $SV_dir/$group.$tumor.SV.tmp1 | awk '{print $2"\t"$3"\t"($3+10000)"\t"$1}' > $SV_dir/$group.$tumor.SV.leftend.bed
                 cat $SV_dir/$group.$tumor.SV.tmp1 | awk '{print $5"\t"($6-10000)"\t"$6"\t"$4}' > $SV_dir/$group.$tumor.SV.rightend.bed                             
-                $bedtools/intersectBed -b $SV_dir/$group.$tumor.SV.leftend.bed -a $master_gene_file -wb > $SV_dir/$group.$tumor.SV.leftend.intersect.bed
-                $bedtools/intersectBed -b $SV_dir/$group.$tumor.SV.rightend.bed -a $master_gene_file -wb > $SV_dir/$group.$tumor.SV.rightend.intersect.bed
-                $script_path/GeneAnnotation.SV.pl $SV_dir/$group.$tumor.SV.tmp $SV_dir/$group.$tumor.SV.leftend.intersect.bed $SV_dir/$group.$tumor.SV.rightend.intersect.bed $SV_dir/$group.$tumor.SV.leftend.annotation.tmp $SV_dir/$group.$tumor.SV.rightend.annotation.tmp
+                if [ `cat $SV_dir/$group.$tumor.SV.leftend.bed | wc -l` -gt 0 ]
+				then
+					$bedtools/intersectBed -b $SV_dir/$group.$tumor.SV.leftend.bed -a $master_gene_file -wb > $SV_dir/$group.$tumor.SV.leftend.intersect.bed
+                else
+					touch $SV_dir/$group.$tumor.SV.leftend.intersect.bed
+				fi
+				if [ `cat $SV_dir/$group.$tumor.SV.rightend.bed | wc -l` -gt 0 ]
+				then
+					$bedtools/intersectBed -b $SV_dir/$group.$tumor.SV.rightend.bed -a $master_gene_file -wb > $SV_dir/$group.$tumor.SV.rightend.intersect.bed
+                else
+					touch $SV_dir/$group.$tumor.SV.rightend.intersect.bed	
+				fi
+				$script_path/GeneAnnotation.SV.pl $SV_dir/$group.$tumor.SV.tmp $SV_dir/$group.$tumor.SV.leftend.intersect.bed $SV_dir/$group.$tumor.SV.rightend.intersect.bed $SV_dir/$group.$tumor.SV.leftend.annotation.tmp $SV_dir/$group.$tumor.SV.rightend.annotation.tmp
                 cat $SV_dir/$group.$tumor.SV.leftend.annotation.tmp | tr "^" "\t" | sort -n > $SV_dir/$group.$tumor.SV.leftend.annotation.txt
                 cat $SV_dir/$group.$tumor.SV.rightend.annotation.tmp | tr "^" "\t" | sort -n > $SV_dir/$group.$tumor.SV.rightend.annotation.txt
                 cat $SV_dir/$group.$tumor.SV.rightend.annotation.txt | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$6"\t"$5}' > $SV_dir/$group.$tumor.SV.rightend.annotation.final.txt
@@ -158,7 +179,7 @@ else
                 cat $SV_dir/$group.$tumor.SV.temp | awk '$0 !~ "NA_NA"' > $SV_dir/$group.$tumor.SV.temp1
                 #  generating per sample SV annotation files
                 touch $report_dir/$group.$tumor.SV.annotated.txt
-                if [ ! -s $SV_dir/$group.$tumor.SV.temp1 ]
+                if [ ! -f $SV_dir/$group.$tumor.SV.temp1 ]
                 then
                     $script_path/errorlog.sh $SV_dir/$group.$tumor.SV.temp1 annotation_SV.sh WARNING "failed to create"
                     exit 1

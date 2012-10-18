@@ -25,7 +25,7 @@ else
 	only_ontarget=$( cat $tool_info | grep -w '^TARGETTED' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 	command_line_params=$( cat $tool_info | grep -w '^MUTECT_params' | cut -d '=' -f2 )
 	memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
-	mem=$( cat $memory_info | grep -w '^MuTecT_JVM' | cut -d '=' -f2)
+	mem=$( cat $memory_info | grep -w '^MuTecT_JVM=' | sed -e '/MuTecT_JVM=/s///g')
 	 
 	export PATH=$java:$PATH  
     if [ $only_ontarget == "YES" ]
