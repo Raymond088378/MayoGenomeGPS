@@ -40,7 +40,7 @@ gene_summary=2G
 merge_raw_variants=1G
 concat_raw_variants=1G
 merge_sample=16G
-generate_html=8G
+generate_html=1G
 
 
 

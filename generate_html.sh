@@ -44,16 +44,6 @@ else
 	$script_path/SampleStatistics.pl -r $run_info -p $output_dir
 	### generate readme file
 	$script_path/generate_readme.sh $output_dir $run_info
-	## TableBrowser upload
-	if [[ $upload_tb == "YES"  && $analysis != "alignment" ]]
-	then
-		PI_LANID=$( echo $PI | cut -d '_' -f 3 )
-		mem=$( cat $memory_info | grep -w '^TREATUploader_JVM' | cut -d '=' -f2)
-		$java/java $mem -jar $script_path/TREATUploader.jar -n $PI_LANID -u $run_num -i $output_dir/Reports/INDEL.xls -s $output_dir/Reports/SNV.xls -r $run_num
-		echo -e "Variants uploaded to TableBrowser" >> $output_dir/log.txt
-	else
-		echo -e "Variants Not uploaded to TableBrowser" >> $output_dir/log.txt
-	fi	
 	END=`date`
 	echo -e "Analysis Ends at :" >> $output_dir/log.txt
 	echo -e "${END}" >>  $output_dir/log.txt

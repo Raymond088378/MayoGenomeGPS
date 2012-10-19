@@ -865,10 +865,10 @@ else
 						if [ $analysis == "variant" ]
 						then
 							qsub_args="-N $type.$version.run_crest_multi_cover.$group.$sam.$run_num -hold_jid $vvid -t 1-$numchrs:1 -l h_vmem=$mem"
-							qsub $args $qsub_args $script_path/run_crest_multi_cover.sh $sam $group $output_align/$sam/ $crest $run_info
+							qsub $args $qsub_args $script_path/run_crest_multi_cover.sh $sam $group $igv $crest $run_info
 						else
 							qsub_args="-N $type.$version.run_crest_multi_cover.$group.$sam.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -t 1-$numchrs:1 -l h_vmem=$mem"
-							qsub $args $qsub_args $script_path/run_crest_multi_cover.sh $sam $group $igv $crest $run_info
+							qsub $args $qsub_args $script_path/run_crest_multi_cover.sh $sam $group $output_align/$sam/ $crest $run_info
 						fi	
 						id=$id"$type.$version.run_crest_multi_cover.$group.$sam.$run_num,"
 					done

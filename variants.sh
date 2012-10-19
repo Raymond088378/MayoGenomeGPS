@@ -126,13 +126,13 @@ else
 			if [[ $all_sites == "YES"  && $tool == "exome" ]]
 			then
 				len=`cat $output/chr$chr.target.bed |wc -l`
-                                if [ $len -gt 0 ]
-                                then    
-                                    param="-L $output/chr$chr.target.bed"
+				if [ $len -gt 0 ]
+				then    
+					param="-L $output/chr$chr.target.bed"
 				else
-                                    param="-L chr$chr"
-                                fi
-                                bam="-I $output/$sample.chr${chr}-sorted.bam"
+					param="-L chr$chr"
+				fi
+				bam="-I $output/$sample.chr${chr}-sorted.bam"
 				$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.all.vcf BOTH "$param" EMIT_ALL_SITES $run_info
 				## add phase by transmission if pedigree information provided.
 				if [ $ped != "NA" ]
@@ -148,22 +148,17 @@ else
 				mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
 				sed '/^$/d' $output/$sample.variants.chr${chr}.raw.all.vcf > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
 				mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
-				if [[ $len -gt 0 && $only_ontarget == "YES" ]]
-				then
-					$bedtools/intersectBed -a $output/$sample.variants.chr${chr}.raw.all.vcf -b $output/chr$chr.target.bed -wa -header > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
-					mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
-				fi
 				$tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
 				mv $output/$sample.variants.chr${chr}.raw.all.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.multi.vcf
 			elif [ $tool == "exome" ]
-                        then
+			then
 				len=`cat $output/chr$chr.target.bed |wc -l`
-                                if [ $len -gt 0 ]
-                                then    
-                                    param="-L $output/chr$chr.target.bed"
+				if [ $len -gt 0 ]
+				then    
+					param="-L $output/chr$chr.target.bed"
 				else
-                                    param="-L chr$chr"
-                                fi
+					param="-L chr$chr"
+				fi
 				bam="-I $output/$sample.chr${chr}-sorted.bam"
 				$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info
 				## add phase by transmission if pedigree information provided.
@@ -174,8 +169,8 @@ else
 				mv $output/$sample.variants.chr${chr}.raw.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.multi.vcf
 				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info "$bam" 
 				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam"
-                        else
-                                param="-L chr$chr"
+			else
+				param="-L chr$chr"
 				bam="-I $output/$sample.chr${chr}-sorted.bam"
 				$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info
 				## add phase by transmission if pedigree information provided.
@@ -194,11 +189,11 @@ else
 			then
 				len=`cat $output/chr$chr.target.bed |wc -l`
 				if [ $len -gt 0 ]
-                                then    
-                                    param="-L $output/chr$chr.target.bed"
+				then    
+					param="-L $output/chr$chr.target.bed"
 				else
-                                    param="-L chr$chr"
-                                fi
+					param="-L chr$chr"
+				fi
 				## call indels
 				bam="-I $output/$sample.chr${chr}-sorted.bam"
 				$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.indel.all.vcf INDEL "$param" EMIT_ALL_SITES $run_info
@@ -212,21 +207,16 @@ else
 				in="$output/$sample.variants.chr${chr}.raw.snv.all.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.indel.all.vcf.multi.vcf"
 				$script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info yes
 				cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "." || $0 ~ /^#/' | grep -v "\./\."  | grep -v "0\/0" > $output/$sample.variants.chr${chr}.raw.vcf
-				if [[ $len -gt 0 && $only_ontarget == "YES" ]]
-				then
-					$bedtools/intersectBed -a $output/$sample.variants.chr${chr}.raw.all.vcf -b $output/chr$chr.target.bed -wa -header > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
-					mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
-				fi
 				$tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
 			elif [ $tool == "exome" ]
-                        then
+			then
 				len=`cat $output/chr$chr.target.bed |wc -l`
 				if [ $len -gt 0 ]
-                                then    
-                                    param="-L $output/chr$chr.target.bed"
+				then    
+					param="-L $output/chr$chr.target.bed"
 				else
-                                    param="-L chr$chr"
-                                fi
+					param="-L chr$chr"
+				fi
 				bam="-I $output/$sample.chr${chr}-sorted.bam"
 				$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.indel.vcf INDEL "$param" EMIT_VARIANTS_ONLY $run_info &
 				### call snvs using snvmix
@@ -244,7 +234,7 @@ else
 				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info "$bam" 
 				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam"
 			else
-                                param="-L chr$chr"
+				param="-L chr$chr"
 				bam="-I $output/$sample.chr${chr}-sorted.bam"
 				$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.indel.vcf INDEL "$param" EMIT_VARIANTS_ONLY $run_info &
 				### call snvs using snvmix
@@ -265,71 +255,71 @@ else
 		elif [ $SNV_caller == "BEAUTY_EXOME" ]
 		then
 			if [ $tool == "exome" ]
-                        then    
-			len=`cat $output/chr$chr.target.bed |wc -l`
+			then    
+				len=`cat $output/chr$chr.target.bed |wc -l`
 				if [ $len -gt 0 ]
-                                then    
-                                    param="-L $output/chr$chr.target.bed"
+				then    
+					param="-L $output/chr$chr.target.bed"
 				else
-                                    param="-L chr$chr"
-                                fi
-			bam="-I $output/$sample.chr${chr}-sorted.bam"
-			$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.gatk.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info &
-			### call snvs using snvmix
-			$script_path/snvmix2.sh $sample "$bam" $output/$sample.variants.chr${chr}.raw.snvmix.vcf target "$param" $run_info &
-			#UNION    
-			while [[ ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf  || ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf.multi.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf.multi.vcf ]]
-			do
-				echo " waiting for gatk and snvnix to complete to complete "
-				sleep 2m	
-			done
-			input_var=""
-			input_var="-V:GATK $output/$sample.variants.chr${chr}.raw.gatk.vcf -V:SNVMix $output/$sample.variants.chr${chr}.raw.snvmix.vcf -priority GATK,SNVMix"
-			#Combine Variants
-			$script_path/combinevcf.sh "$input_var" ${output}/$sample.variants.chr${chr}.raw.vcf $run_info yes
-			$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam" 
-			input_var=""
-			input_var="-V:GATK $output/$sample.variants.chr${chr}.raw.gatk.vcf.multi.vcf -V:SNVMix $output/$sample.variants.chr${chr}.raw.snvmix.vcf.multi.vcf -priority GATK,SNVMix"
-			$script_path/combinevcf.sh "$input_var" ${output}/$sample.variants.chr${chr}.raw.multi.vcf $run_info yes
-			$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info "$bam"
-                    else
-                        param="-L chr$chr"
-			bam="-I $output/$sample.chr${chr}-sorted.bam"
-			$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.gatk.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info &
-			### call snvs using snvmix
-			$script_path/snvmix2.sh $sample "$bam" $output/$sample.variants.chr${chr}.raw.snvmix.vcf target "$param" $run_info &
-			#UNION    
-			while [[ ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf  || ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf.multi.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf.multi.vcf ]]
-			do
-				echo " waiting for gatk and snvnix to complete to complete "
-				sleep 2m	
-			done
-			input_var=""
-			input_var="-V:GATK $output/$sample.variants.chr${chr}.raw.gatk.vcf -V:SNVMix $output/$sample.variants.chr${chr}.raw.snvmix.vcf -priority GATK,SNVMix"
-			#Combine Variants
-			$script_path/combinevcf.sh "$input_var" ${output}/$sample.variants.chr${chr}.raw.vcf $run_info yes
-			$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam" 
-			input_var=""
-			input_var="-V:GATK $output/$sample.variants.chr${chr}.raw.gatk.vcf.multi.vcf -V:SNVMix $output/$sample.variants.chr${chr}.raw.snvmix.vcf.multi.vcf -priority GATK,SNVMix"
-			$script_path/combinevcf.sh "$input_var" ${output}/$sample.variants.chr${chr}.raw.multi.vcf $run_info yes
-			$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info "$bam"  
-                    fi
-                fi
+					param="-L chr$chr"
+				fi
+				bam="-I $output/$sample.chr${chr}-sorted.bam"
+				$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.gatk.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info &
+				### call snvs using snvmix
+				$script_path/snvmix2.sh $sample "$bam" $output/$sample.variants.chr${chr}.raw.snvmix.vcf target "$param" $run_info &
+				#UNION    
+				while [[ ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf  || ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf.multi.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf.multi.vcf ]]
+				do
+					echo " waiting for gatk and snvnix to complete to complete "
+					sleep 2m	
+				done
+				input_var=""
+				input_var="-V:GATK $output/$sample.variants.chr${chr}.raw.gatk.vcf -V:SNVMix $output/$sample.variants.chr${chr}.raw.snvmix.vcf -priority GATK,SNVMix"
+				#Combine Variants
+				$script_path/combinevcf.sh "$input_var" ${output}/$sample.variants.chr${chr}.raw.vcf $run_info yes
+				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam" 
+				input_var=""
+				input_var="-V:GATK $output/$sample.variants.chr${chr}.raw.gatk.vcf.multi.vcf -V:SNVMix $output/$sample.variants.chr${chr}.raw.snvmix.vcf.multi.vcf -priority GATK,SNVMix"
+				$script_path/combinevcf.sh "$input_var" ${output}/$sample.variants.chr${chr}.raw.multi.vcf $run_info yes
+				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info "$bam"
+			else
+				param="-L chr$chr"
+				bam="-I $output/$sample.chr${chr}-sorted.bam"
+				$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.gatk.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info &
+				### call snvs using snvmix
+				$script_path/snvmix2.sh $sample "$bam" $output/$sample.variants.chr${chr}.raw.snvmix.vcf target "$param" $run_info &
+				#UNION    
+				while [[ ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf  || ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf.multi.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf.multi.vcf ]]
+				do
+					echo " waiting for gatk and snvnix to complete to complete "
+					sleep 2m	
+				done
+				input_var=""
+				input_var="-V:GATK $output/$sample.variants.chr${chr}.raw.gatk.vcf -V:SNVMix $output/$sample.variants.chr${chr}.raw.snvmix.vcf -priority GATK,SNVMix"
+				#Combine Variants
+				$script_path/combinevcf.sh "$input_var" ${output}/$sample.variants.chr${chr}.raw.vcf $run_info yes
+				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam" 
+				input_var=""
+				input_var="-V:GATK $output/$sample.variants.chr${chr}.raw.gatk.vcf.multi.vcf -V:SNVMix $output/$sample.variants.chr${chr}.raw.snvmix.vcf.multi.vcf -priority GATK,SNVMix"
+				$script_path/combinevcf.sh "$input_var" ${output}/$sample.variants.chr${chr}.raw.multi.vcf $run_info yes
+				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info "$bam"  
+			fi
+		fi
 	else
 		## assuming that normal is the first column/sample
 		normal=${sampleArray[1]}.chr$chr-sorted.bam
 		inputfiles="-I $output/$normal ";
 		if [ $tool == "exome" ]
-                then
-                    len=`cat $output/chr$chr.target.bed |wc -l`
-				if [ $len -gt 0 ]
-                                then    
-                                    param="-L $output/chr$chr.target.bed"
-				else
-                                    param="-L chr$chr"
-                                fi
-                else                
-                    param="-L chr${chr}"
+		then
+			len=`cat $output/chr$chr.target.bed |wc -l`
+			if [ $len -gt 0 ]
+			then    
+				param="-L $output/chr$chr.target.bed"
+			else
+				param="-L chr$chr"
+			fi
+		else                
+			param="-L chr${chr}"
 		fi
 		if [ $somatic_caller == "BEAUTY_EXOME" ]
 		then
@@ -399,7 +389,7 @@ else
 		done
 		## Germline calling
 		
-                bam="-I $input/$bam"
+		bam="-I $input/$bam"
 		$script_path/unifiedgenotyper.sh "$bam" $output/variants.chr${chr}.raw.gatk.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info
 		### call snvs using snvmix
 		if [ $somatic_caller == "BEAUTY_EXOME" ]
