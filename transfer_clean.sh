@@ -18,6 +18,8 @@ else
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
 	run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
     flowcell=`echo $run_num | awk -F'_' '{print $NF}' | sed 's/.\(.*\)/\1/'`
+	memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
+	
 	if [ $type == "exome" ]
 	then
 		tool=Exome
@@ -100,9 +102,11 @@ else
     fi
 	
     ### copy the config files
-    for i in sample_info.txt run_info.txt tool_info.txt memory_info.txt
+    mkdir $delivery/config
+	chmod -Rf 777 $delivery/config
+	for i in sample_info.txt run_info.txt tool_info.txt memory_info.txt
     do
-    	cp $secondary/$i $delivery/
+    	cp $secondary/$i $delivery/config/
     done
    
     mv $secondary/Reports_per_Sample/*.xls $delivery/Reports_per_Sample/
@@ -181,7 +185,8 @@ else
 			fi
 		fi
 	fi
-	$java/java -Xmx2g -Xms512m -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -f $flowcell -r $run_num -s Delivered -a $tool
+	mem=$( cat $memory_info | grep -w '^AddSecondaryAnalysis_JVM' | cut -d '=' -f2)
+	$java/java $mem -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -f $flowcell -r $run_num -s Delivered -a $tool
 	echo "data is transfered and intermediate files are deleted"
     echo "User needs to transfer the data to the windows share"
 	echo `date`

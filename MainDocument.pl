@@ -62,7 +62,7 @@ else    {
 	@line=split(/=/,`perl -ne "/^WORKFLOW_PATH/ && print" $tool_info`);
 	my $script_path=$line[$#line];chomp $script_path;
 	my ($read_length, $variant_type, $target_region, $SNV_caller, $Aligner, $ontarget, $fastqc, $fastqc_path, $server, $upload_tb );
-	@line=split(/=/,`perl -ne "/^UPLOAD_TABLEBROWSER/ && print" $run_info`);
+	@line=split(/=/,`perl -ne "/^UPLOAD_TABLEBROWSER/ && print" $tool_info`);
 	$upload_tb=$line[$#line];chomp $upload_tb;
 	@line=split(/=/,`perl -ne "/^READLENGTH/ && print" $run_info`);
 	$read_length=$line[$#line];chomp $read_length;

@@ -128,15 +128,15 @@ else
 			do
 				if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
 				then
-					s=`cat $ontarget/$sample.variants.chr${chr}.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' |  wc -l`
+					s=`cat $ontarget/$sample.variants.chr${chr}.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' |  awk '$10 !~ /^\.\/\./' |wc -l`
 					genomic_snvs=`expr $genomic_snvs "+" $s`
-					s_c=`cat $ontarget/$sample.variants.chr${chr}.SNV.filter.i.c.vcf | awk '$0 !~ /^#/'  | grep -c 'CAPTURE=1'`
+					s_c=`cat $ontarget/$sample.variants.chr${chr}.SNV.filter.i.c.vcf | awk '$0 !~ /^#/'  | awk '$10 !~ /^\.\/\./'|grep -c 'CAPTURE=1'`
 					capture_snvs=`expr $capture_snvs "+" $s_c`
 				fi
 				if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
 				then
-					i=`cat $ontarget/$sample.variants.chr${chr}.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' |  wc -l`
-					i_c=`cat $ontarget/$sample.variants.chr${chr}.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/'  | grep -c 'CAPTURE=1'`
+					i=`cat $ontarget/$sample.variants.chr${chr}.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' |  awk '$10 !~ /^\.\/\./'|wc -l`
+					i_c=`cat $ontarget/$sample.variants.chr${chr}.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/'  | awk '$10 !~ /^\.\/\./'|grep -c 'CAPTURE=1'`
 					capture_indels=`expr $capture_indels "+" $i_c`
 					genomic_indels=`expr $genomic_indels "+" $i`
 				fi
@@ -397,13 +397,13 @@ else
             for chr in $chrs
             do
 				col=`cat $ontarget/$group.variants.chr${chr}.SNV.filter.i.c.vcf  | awk '$0 ~ /^#/' | tail -1 | awk -v s=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
-                                s=`cat $ontarget/$group.variants.chr${chr}.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' |  awk -v num=$col '$num !~ /^\.\/\./ ' | wc -l`
+                s=`cat $ontarget/$group.variants.chr${chr}.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\.\/\./ && $num !~ /^0\/0/' | wc -l`
 				genomic_snvs=`expr $genomic_snvs "+" $s`
-				s_c=`cat $ontarget/$group.variants.chr${chr}.SNV.filter.i.c.vcf | awk '$0 !~ /^#/'  | awk -v num=$col '$num !~ /^\.\/\./ '| grep -c 'CAPTURE=1'`
+				s_c=`cat $ontarget/$group.variants.chr${chr}.SNV.filter.i.c.vcf | awk '$0 !~ /^#/'  | awk -v num=$col '$num !~ /^\.\/\./ && $num !~ /^0\/0/'| grep -c 'CAPTURE=1'`
 				capture_snvs=`expr $capture_snvs "+" $s_c`
-                                col=`cat $ontarget/$group.variants.chr${chr}.INDEL.filter.i.c.vcf  | awk '$0 ~ /^#/' | tail -1 | awk -v s=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
-				i=`cat $ontarget/$group.variants.chr${chr}.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' |  awk -v num=$col '$num !~ /^\.\/\./ ' | wc -l`
-				i_c=`cat $ontarget/$group.variants.chr${chr}.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/'  | awk -v num=$col '$num !~ /^\.\/\./ ' | grep -c 'CAPTURE=1'`
+                col=`cat $ontarget/$group.variants.chr${chr}.INDEL.filter.i.c.vcf  | awk '$0 ~ /^#/' | tail -1 | awk -v s=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
+				i=`cat $ontarget/$group.variants.chr${chr}.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' |  awk -v num=$col '$num !~ /^\.\/\./ && $num !~ /^0\/0/' | wc -l`
+				i_c=`cat $ontarget/$group.variants.chr${chr}.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/'  | awk -v num=$col '$num !~ /^\.\/\./ && $num !~ /^0\/0/' | grep -c 'CAPTURE=1'`
 				capture_indels=`expr $capture_indels "+" $i_c`
 				genomic_indels=`expr $genomic_indels "+" $i`
             done

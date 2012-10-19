@@ -41,8 +41,8 @@ else
 	fi	
 	echo -e "\n* Compressed file with the statistical numbers in GENOME_GPS for all the samples : numbers.tar.gz" >> $file
   	
-	echo -e "\n* Configuration files for GENOME_GPS:\n" >> $file
-  	echo -e "-run_info.txt\n-sample_info.txt\n-tool_info.txt" >> $file
+	echo -e "\n* Configuration files for GENOME_GPS (under config folder):\n" >> $file
+  	echo -e "-run_info.txt\n-sample_info.txt\n-tool_info.txt\n-memory_info.txt" >> $file
  	echo -e "\n#### Annotation Reports\n" >> $file
 	echo -e "Directory with merged SNV and INDEL reports: : Reports/" >> $file
 	echo -e "\n**ANNOTATION files (filtered - single annotation line per variant call(most impacting transcript))" >> $file
