@@ -474,10 +474,10 @@ else
 					mem=$( cat $memory_info | grep -w '^run_single_crest' | cut -d '=' -f2)
 					if [ $analysis == "variant" ]
 					then
-						qsub_args="-N $type.$version.run_single_crest.sh.$sample.$run_num -hold_jid $type.$version.reformat_BAM.$sample.$run_num -t 1-$numchrs:1 -l h_vmem=$mem"
+						qsub_args="-N $type.$version.run_single_crest.sh.$sample.$run_num -hold_jid $type.$version.reformat_BAM.$sample.$run_num -t 1-$numchrs:1 -pe threaded 2 -l h_vmem=$mem"
 						qsub $args $qsub_args $script_path/run_single_crest.sh $sample $realign_dir $bamfile $crest $run_info
 					else
-						qsub_args="-N $type.$version.run_single_crest.sh.$sample.$run_num -hold_jid $type.$version.processBAM.$sample.$run_num -t 1-$numchrs:1 -l h_vmem=$mem"
+						qsub_args="-N $type.$version.run_single_crest.sh.$sample.$run_num -hold_jid $type.$version.processBAM.$sample.$run_num -t 1-$numchrs:1 -pe threaded 2 -l h_vmem=$mem"
 						qsub $args $qsub_args $script_path/run_single_crest.sh $sample $align_dir $bamfile $crest $run_info
 					fi
 					$script_path/check_qstat.sh $limit
@@ -874,7 +874,7 @@ else
 					done
 					$script_path/check_qstat.sh $limit
 					mem=$( cat $memory_info | grep -w '^run_crest_multi' | cut -d '=' -f2)
-					qsub_args="-N $type.$version.run_crest_multi.$group.$run_num -hold_jid $id -t 1-$numchrs:1 -l h_vmem=$mem"
+					qsub_args="-N $type.$version.run_crest_multi.$group.$run_num -hold_jid $id -t 1-$numchrs:1 -pe threaded 2 -l h_vmem=$mem"
 					qsub $args $qsub_args $script_path/run_crest_multi.sh $group $igv $crest $run_info
 					$script_path/check_qstat.sh $limit
 					mem=$( cat $memory_info | grep -w '^run_segseq' | cut -d '=' -f2)
