@@ -190,7 +190,7 @@ else
 	###########################################################
 	#### sge paramters
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
-	args="-V -wd $output_dir/logs -q $queue -m ae -M $TO -l h_stack=10M"
+	args="-V -wd $output_dir/logs -q $queue -m a -M $TO -l h_stack=10M"
 	echo -e "\nRCF arguments used : $args\n" >> $output_dir/log.txt
 	#############################################################
 	
@@ -330,15 +330,15 @@ else
 					for ((i=1; i <=$num_bams; i++));
 					do
 						bam=`echo $infile | awk -v num=$i '{print $num}'`
-						$samtools/samtools view -H $input/$bam 1>$align_dir/$sample.$i.sorted.bam.header 2> $align_dir/$sample.$i.sorted.bam.fix.log
-						if [ `cat $align_dir/$sample.$i.sorted.bam.fix.log | wc -l` -gt 0 ]
+						$samtools/samtools view -H $input/$bam 1>$realign_dir/$sample.$i.sorted.bam.header 2> $realign_dir/$sample.$i.sorted.bam.fix.log
+						if [ `cat $realign_dir/$sample.$i.sorted.bam.fix.log | wc -l` -gt 0 ]
 						then
 							$script_path/errorlog.sh $input/$bam whole_genome.sh ERROR "truncated or corrupted"
 							exit 1;
 						else
-							rm $align_dir/$sample.$i.sorted.bam.fix.log
+							rm $realign_dir/$sample.$i.sorted.bam.fix.log
 						fi
-						rm $align_dir/$sample.$i.sorted.bam.header
+						rm $realign_dir/$sample.$i.sorted.bam.header
 						ln -s $input/$bam $realign_dir/$sample.$i.sorted.bam						
 					done
 					$script_path/check_qstat.sh $limit
@@ -730,7 +730,8 @@ else
 				mkdir -p $realign_dir $variant_dir
 				if [ $analysis == "variant" ]
 				then
-					infile=`cat $sample_info | grep -w ^BAM:${group} | cut -d '=' -f2`
+					vvid=""
+                                        infile=`cat $sample_info | grep -w ^BAM:${group} | cut -d '=' -f2`
 					num_bams=`echo $infile | tr " " "\n" | wc -l`
 					if [ $num_bams -eq 0 ]
 					then
@@ -764,6 +765,7 @@ else
 					qsub_args="-N $type.$version.split_bam_chr.$group.$run_num -hold_jid $type.$version.reformat_pairBAM.$group.$run_num -t 1-$numchrs:1 -l h_vmem=$mem"
 					qsub $args $qsub_args $script_path/split_bam_chr.sh $realign_dir $group $run_info
 					variant_id="$type.$version.split_bam_chr.$group.$run_num"
+                                        vvid="$type.$version.split_bam_chr.$group.$run_num"
 				else        
 					vvid=""
 					for sample in $samples
@@ -864,7 +866,7 @@ else
 						mem=$( cat $memory_info | grep -w '^run_crest_multi_cover' | cut -d '=' -f2)
 						if [ $analysis == "variant" ]
 						then
-							qsub_args="-N $type.$version.run_crest_multi_cover.$group.$sam.$run_num -hold_jid $vvid -t 1-$numchrs:1 -l h_vmem=$mem"
+							qsub_args="-N $type.$version.run_crest_multi_cover.$group.$sam.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -t 1-$numchrs:1 -l h_vmem=$mem"
 							qsub $args $qsub_args $script_path/run_crest_multi_cover.sh $sam $group $igv $crest $run_info
 						else
 							qsub_args="-N $type.$version.run_crest_multi_cover.$group.$sam.$run_num -hold_jid $type.$version.split_sample_pair.$group.$run_num -t 1-$numchrs:1 -l h_vmem=$mem"
@@ -922,7 +924,7 @@ else
 					samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" "\n")
 					sampleArray=()
 					i=1
-					for sample in $sampleNames
+					for sample in $samples
 					do
 						sampleArray[$i]=$sample
 						let i=i+1

@@ -43,7 +43,7 @@ else
 	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
 	if [ $analysis == "variant" ]
 	then
-		input_bam=$input/$group.$sample.chr$chr.bam
+		input_bam=$input/$group.$sample.chr$chr.re.bam
 		previous="split_sample_pair.sh"
 	else
 		input_bam=$input/$sample.sorted.bam
@@ -52,20 +52,20 @@ else
     export PERL5LIB=$perllib:$crest
     PATH=$PATH:$blat:$crest:$perllib
 	mkdir -p $output_dir/$group/log
-	$samtools/samtools view -H $input_bam 1>$input_bam.crest.header 2>$input_bam.crest.fix.log
-	if [ `cat $input_bam.crest.fix.log | wc -l` -gt 0 ]
+	$samtools/samtools view -H $input_bam 1>$input_bam.crest.$sample.$chr.header 2>$input_bam.crest.$sample.$chr.fix.log
+	if [ `cat $input_bam.crest.$sample.$chr.fix.log | wc -l` -gt 0 ]
 	then
 		$script_path/email.sh $input_bam "bam is truncated or corrupt" $previous $run_info
-		$script_path/wait.sh $input_bam.crest.fix.log
+		$script_path/wait.sh $input_bam.crest.$sample.$chr.fix.log
 	else
-		rm $input_bam.crest.fix.log
+		rm $input_bam.crest.$sample.$chr.fix.log
 	fi
-	rm $input_bam.crest.header
+	rm $input_bam.crest.$sample.$chr.header
 	if [ ! -s ${input_bam}.bai ]
 	then
 		$samtools/samtools index $input_bam 
 	fi	
-	$samtools/samtools view -b $input/$sample.sorted.bam chr$chr >  $output_dir/$group/$sample.chr$chr.bam
+	$samtools/samtools view -b $input_bam chr$chr >  $output_dir/$group/$sample.chr$chr.bam
 	$samtools/samtools index $output_dir/$group/$sample.chr$chr.bam
     file=$output_dir/$group/$sample.chr$chr.bam
     SORT_FLAG=`$script_path/checkBAMsorted.pl -i $file -s $samtools`
