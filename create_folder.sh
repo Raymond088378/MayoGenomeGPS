@@ -39,6 +39,7 @@ else
 	
 	mkdir -p $output_dir/logs
 	mkdir -p $output_dir/size
+        mkdir -p $output_dir/config
 
 	if [[ $analysis != "annotation"  && $analysis != "ontarget" ]]
 	then
@@ -82,7 +83,6 @@ else
         mkdir -p $output_dir/TempReports
         mkdir -p $output_dir/Reports_per_Sample
         mkdir -p $output_dir/Reports
-        mkdir -p $output_dir/config
     fi
     mkdir -p $output_dir/numbers
     echo `date`
