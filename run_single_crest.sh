@@ -51,9 +51,8 @@ else
 	min_id=$( cat $tool_info | grep -w '^STRUCT_MIN_IDENTITY' | cut -d '=' -f2)
 	blacklist_sv=$( cat $tool_info | grep -w '^BLACKLIST_SV' | cut -d '=' -f2 )
 	bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
-	len=$( cat $tool_info | grep -w '^MIN_SCIP_LEN' | cut -d '=' -f2 )
-	reads=$( cat $tool_info | grep -w '^MIN_SCIP_READS' | cut -d '=' -f2 )
 	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
+	crest_params=$( cat $tool_info | grep -w '^CREST_params' | cut -d '=' -f2 )
 ##############################################################		
     if [ $analysis == "variant" ]
 	then
@@ -136,7 +135,7 @@ else
 		--ref_genome $ref_genome -t $blat_ref \
 		--blatport $blat_port -blatserver localhost \
 		--cap3 $cap3/cap3 \
-		-o $output_dir/$sample -p $sample.$chr
+		-o $output_dir/$sample -p $sample.$chr $crest_params
         rm $input_bam $input_bam.bai
 		$script_path/CREST2VCF.pl -i $output_dir/$sample/$sample.$chr.predSV.txt -f $ref_genome -o $output_dir/$sample/$sample.$chr.raw.vcf -s $sample -t $samtools
 		if [ ! -s $output_dir/$sample/$sample.$chr.raw.vcf.fail ]

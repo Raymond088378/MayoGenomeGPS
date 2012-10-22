@@ -49,8 +49,7 @@ else
 	min_id=$( cat $tool_info | grep -w '^STRUCT_MIN_IDENTITY' | cut -d '=' -f2)
 	blacklist_sv=$( cat $tool_info | grep -w '^BLACKLIST_SV' | cut -d '=' -f2 )
 	bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
-    len=$( cat $tool_info | grep -w '^MIN_SCIP_LEN' | cut -d '=' -f2 )
-	reads=$( cat $tool_info | grep -w '^MIN_SCIP_READS' | cut -d '=' -f2 )
+	crest_params=$( cat $tool_info | grep -w '^CREST_params' | cut -d '=' -f2 )
 
 	########################################################	
 	######		
@@ -118,7 +117,7 @@ else
         -d $output_dir/$group/${file}.chr$chr.bam -g $output_dir/$group/${normal_sample}.chr$chr.bam \
 		--ref_genome $ref_genome -t $blat_ref \
 		--blatport $blat_port -blatserver $blat_server \
-		--cap3 $cap3/cap3 -r chr$chr -o $output_dir/$group -p $sample.$chr
+		--cap3 $cap3/cap3 -r chr$chr -o $output_dir/$group -p $sample.$chr $crest_params
 
         if [ -f $output_dir/$group/${file}.$chr.predSV.txt ] 
         then

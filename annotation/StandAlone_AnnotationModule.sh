@@ -124,7 +124,7 @@ else
 	typeset -i SNP_Type
 	#convert to text file
 	echo " Converting VCF files to TEXT files"
-        $script_path/parse.vcf.sh $output/$ff.SNV.vcf $output/$sample.snv $tool_info SNV $script_path $sample
+    $script_path/parse.vcf.sh $output/$ff.SNV.vcf $output/$sample.snv $tool_info SNV $script_path $sample
 	$script_path/parse.vcf.sh $output/$ff.INDEL.vcf $output/$sample.indel $tool_info INDEL $script_path $sample
 
 	file=$output/$sample.snv
