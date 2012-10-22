@@ -43,7 +43,7 @@ else
 	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
 	if [ $analysis == "variant" ]
 	then
-		input_bam=$input/$group.$sample.chr$chr.re.bam
+		input_bam=$input/$group.$sample.chr$chr.bam
 		previous="split_sample_pair.sh"
 	else
 		input_bam=$input/$sample.sorted.bam

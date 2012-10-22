@@ -5,7 +5,7 @@ then
 	echo -e "script to check the number of jobs a user can submit\nUsage: ./check_qstat.sh <limit of jobs>"
 else
     limit=$1
-	sleep 10
+	sleep 3
 	let count=1
 	`qstat 1>qstat_out.txt 2>qstat_log.txt`
 	if [ `cat qstat_log.txt | wc -l` -gt 0 ]

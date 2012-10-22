@@ -25,15 +25,15 @@ else
 	else
 		previous="reformat_BAM.sh"
 	fi	
-    $samtools/samtools view -H $bam 1> $bam.header 2> $bam.sbc.fix.log
-	if [ `cat $bam.sbc.fix.log | wc -l` -gt 0 ]
+    $samtools/samtools view -H $bam 1> $bam.$chr.header 2> $bam.$chr.sbc.fix.log
+	if [ `cat $bam.$chr.sbc.fix.log | wc -l` -gt 0 ]
 	then
 		$script_path/email.sh $bam "bam is truncated or corrupt" $previous $run_info
-		$script_path/wait.sh $bam.sbc.fix.log
+		$script_path/wait.sh $bam.$chr.sbc.fix.log
 	else
-		rm $bam.sbc.fix.log
+		rm $bam.$chr.sbc.fix.log
 	fi	
-	rm $bam.header	
+	rm $bam.$chr.header	
 	$samtools/samtools view -b $bam chr${chr} > $input/chr${chr}.cleaned.bam
     $samtools/samtools index $input/chr${chr}.cleaned.bam
     $samtools/samtools flagstat $input/chr${chr}.cleaned.bam > $input/chr${chr}.flagstat

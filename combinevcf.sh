@@ -31,13 +31,20 @@ else
             cp $file.idx $output.idx
         fi
     else    
-        $java/java $mem -jar $gatk/GenomeAnalysisTK.jar \
-        -R $ref \
-        -et NO_ET \
-        -K $gatk/Hossain.Asif_mayo.edu.key \
-        -T CombineVariants \
-        $input \
-        -o $output
+        let check=0
+        let count=0
+        while [[ $check -eq 0 && $count -le 3 ]]
+        do
+            $java/java $mem -jar $gatk/GenomeAnalysisTK.jar \
+            -R $ref \
+            -et NO_ET \
+            -K $gatk/Hossain.Asif_mayo.edu.key \
+            -T CombineVariants \
+            $input \
+            -o $output
+            check=`[ -s $output.idx ] && echo "1" || echo "0"`
+            let count=count+1
+        done     
     fi
     if [ ! -s $output.idx ]
     then
