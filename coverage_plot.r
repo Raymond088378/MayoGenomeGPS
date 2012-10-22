@@ -7,7 +7,9 @@ if(length(stdin) > 1){
 	jpeg(file="coverage.jpeg", width=1190, height=1190, quality=100, res=100)
 	target <- as.integer(stdin[1])
 	sp.max <- length(stdin)-1
-	palette(rainbow(sp.max))
+	if (sp.max >1 )	{
+		palette(rainbow(sp.max))
+	}
 	all <- c()
 	samplenames <- c()
 	for (i in 1:sp.max) {

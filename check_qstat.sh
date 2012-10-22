@@ -20,8 +20,7 @@ else
 			num_jobs=$limit
 		fi	
 	fi
-	rm qstat_log.txt
-	rm qstat_out.txt
+	rm qstat_log.txt qstat_out.txt
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
 	while [ $num_jobs -ge $limit ]
 	do
@@ -45,8 +44,7 @@ else
 				num_jobs=$limit
 			fi	
 		fi
-		rm qstat_log.txt
-		rm qstat_out.txt
+		rm qstat_log.txt qstat_out.txt
 		let count=count+1
 	done
 	jobs=`expr $limit "-" $num_jobs`

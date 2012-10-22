@@ -32,7 +32,6 @@ else
 		
 	## This script should be run by chromosome so submit as an array job -t 1-24
 	## or else run all together and uncomment the following
-#SGE_TASK_ID=2
 	########################################################	
 	######		Reading run_info.txt and assigning to variables
 
@@ -88,8 +87,8 @@ else
 		#Create info and map files for tumor
 		for lane in `$samtools/samtools view $outdir/$sample_tumor.$chr.bam | cut -f1 | sed -e "s/:/\t/g" | cut -f 1-2 | awk '{print $1":"$2}' | head -n 1000000 | sort | uniq | tail -n 2`
 		do
+			echo "Lane:$lane"
 			echo -e "$outdir/map/$sample_tumor.$lane.$chr.map\t$sample_tumor\tTumor" >> $infofile;
-
 			$samtools/samtools view $outdir/$sample_tumor.$chr.bam | awk "\$1~/$lane/" |awk '{print $3,"\t",$4,"\t",$9}'\
 			|sed -e "s/chr//g" | sed -e "s/X/23/g" | sed -e "s/Y/24/g" | sed -e "s/M/25/g" \
 			|awk 'BEGIN{OFS="\t"} {if ($3>0) print $1,$2,0; else print $1,$2,1}' > $outdir/map/$sample_tumor.$lane.$chr.map
