@@ -138,7 +138,7 @@ else
 	### create folders
 	$script_path/create_folder.sh $run_info
 	output_dir=$output/$PI/$tool/$run_num
-        config=$output_dir/config
+	config=$output_dir/config
         
 	if [ -f $output_dir/folder_exist.log ]
 	then
@@ -154,18 +154,18 @@ else
 	add=`date +%D`
 	cat $run_info | grep -w -v -E '^TOOL_INFO|^SAMPLE_INFO|^MEMORY_INFO' > $run_info.tmp
 	echo -e "TOOL_INFO=$config/tool_info.txt\nSAMPLE_INFO=$config/sample_info.txt\nMEMORY_INFO=$config/memory_info.txt\nDATE=$add" | cat $run_info.tmp - > $run_info
+	rm $run_info.tmp
 	mv $run_info $config
-        run_info=$config/run_info.txt
-        rm $run_info.tmp
+	run_info=$config/run_info.txt
 	tool_info=$output_dir/tool_info.txt
 	mv $tool_info $config
-        tool_info=$config/tool_info.txt
-        sample_info=$output_dir/sample_info.txt
-        mv $sample_info $config
-        sample_info=$config/sample_info.txt
+	tool_info=$config/tool_info.txt
+	sample_info=$output_dir/sample_info.txt
+	mv $sample_info $config
+	sample_info=$config/sample_info.txt
 	memory_info=$output_dir/memory_info.txt
-        mv $memory_info $config
-        memory_info=$config/memory_info.txt
+	mv $memory_info $config
+	memory_info=$config/memory_info.txt
 	output_align=$output_dir/alignment
 	if [ $analysis != "alignment" ]
 	then
@@ -912,7 +912,15 @@ else
 					qsub_args="-N $type.$version.summaryze_struct_group.$group.$run_num -hold_jid $hhold -l h_vmem=$mem"
 					qsub $args $qsub_args $script_path/summaryze_struct_group.sh $group $output_dir $run_info
 					mkdir -p $output_dir/circos;
-					for i in $(seq 2 ${#sampleArray[@]})
+					samm=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" "\n")
+                                        sampleArray=()
+                                        i=1
+                                        for sample in $samm
+                                        do
+                                            sampleArray[$i]=$sample
+                                            let i=i+1
+                                        done
+                                        for i in $(seq 2 ${#sampleArray[@]})
 					do  
 						tumor=${sampleArray[$i]}
 						$script_path/check_qstat.sh $limit
