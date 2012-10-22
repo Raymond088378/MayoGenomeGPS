@@ -104,9 +104,10 @@ else
     ### copy the config files
     mkdir $delivery/config
 	chmod -Rf 777 $delivery/config
-	for i in sample_info.txt run_info.txt tool_info.txt memory_info.txt
+    	
+        for i in sample_info.txt run_info.txt tool_info.txt memory_info.txt
     do
-    	cp $secondary/$i $delivery/config/
+    	cp $secondary/config/$i $delivery/config/
     done
    
     mv $secondary/Reports_per_Sample/*.xls $delivery/Reports_per_Sample/
