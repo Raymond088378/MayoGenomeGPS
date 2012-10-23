@@ -113,6 +113,9 @@ else
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2 )
 	limit=$( cat $tool_info | grep -w '^JOB_LIMIT' | cut -d '=' -f2 )
+	info=$(cat $run_info | grep -w '^SAMPLEINFORMATION' | cut -d '=' -f2 )
+	workflow=$( cat $run_info | grep '^TOOL=' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
+	version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
 	if [[ $somatic_caller == "JOINTSNVMIX" || $somatic_caller == "BEAUTY_EXOME" ]]
 	then
 		python_path=`which python`
@@ -202,7 +205,7 @@ else
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
 	args="-V -wd $output_dir/logs -q $queue -m a -M $TO -l h_stack=10M"
 	echo -e "\nRCF arguments used : $args\n" >> $output_dir/log.txt
-	echo -e "Started the analysis for $PI for $tool samples" | mailx -v -s "Analysis Started" -c Kahl.Jane@mayo.edu "$TO"
+	echo -e "Started the ${tool} analysis for ${run_num} for ${PI}\n\n${info}\n\nCourtesy: $workflow $version" | mailx -v -s "Analysis Started" -c Kahl.Jane@mayo.edu "$TO"
         #############################################################
 	
 	if [ $multi_sample != "YES" ]
