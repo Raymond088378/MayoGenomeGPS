@@ -27,7 +27,7 @@ else
     temp=`echo $output | sed -e '/.vcf/s///g'`
 	
 	$samtools/samtools view -H $bam 1>$bam.snvmix.header 2>$bam.snvmix.fix.log
-	if [ `cat $bam.snvmix.fix.log | wc -l` -gt 0 ]
+	if [[ `cat $bam.snvmix.fix.log | wc -l` -gt 0 || `cat $bam.snvmix.header | wc -l` -le 0 ]]
 	then
 		$script_path/email.sh $bam "bam is truncated or corrupt" realign_recal.sh $run_info
 		$script_path/wait.sh $bam.snvmix.fix.log

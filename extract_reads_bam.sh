@@ -35,7 +35,7 @@ else
 	done
 
 	$samtools/samtools view -H $output/$bam 1> $output/$bam.erb.header 2> $output/$bam.erb.fix.log
-	if [ `cat $output/$bam.erb.fix.log | wc -l` -gt 0 ]
+	if [[ `cat $output/$bam.erb.fix.log | wc -l` -gt 0 || `cat $output/$bam.erb.header | wc -l` -le 0 ]]
 	then
 		$script_path/email.sh $output/$bam "bam is truncated or corrupt" processBam.sh $run_info
 		$script_path/wait.sh $output/$bam.erb.fix.log

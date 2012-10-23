@@ -37,7 +37,7 @@ else
 	
 	$samtools/samtools view -H $tumor_bam 1>$tumor_bam.si.header 2> $tumor_bam.fix.si.log
 	$samtools/samtools view -H $normal_bam 1>$normal_bam.si.header 2> $normal_bam.fix.si.log
-	if [ `cat $tumor_bam.fix.si.log | wc -l` -gt 0 ]
+	if [[ `cat $tumor_bam.fix.si.log | wc -l` -gt 0 || `cat $tumor_bam.si.header | wc -l` le 0 ]]
 	then
 		$script_path/email.sh $tumor_bam "bam is truncated or corrupt" realign_recal.sh $run_info
 		$script_path/wait.sh $tumor_bam.fix.si.log 
@@ -45,7 +45,7 @@ else
 		rm $tumor_bam.fix.si.log
 	fi	
 	rm $tumor_bam.si.header
-	if [ `cat $normal_bam.fix.si.log | wc -l` -gt 0 ]
+	if [[ `cat $normal_bam.fix.si.log | wc -l` -gt 0 || `cat $normal_bam.si.header | wc -l` -le 0 ]]
 	then
 		$script_path/email.sh $normal_bam "bam is truncated or corrupt" realign_recal.sh $run_info
 		$script_path/wait.sh $normal_bam.fix.si.log 

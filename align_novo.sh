@@ -67,7 +67,7 @@ else
 				exit 1;
 			fi	
 			$script_path/fastq.sh $i $seq_file $fastq $run_info $fastqc
-	    	$script_path/filesize.sh alignment $sample $fastq $i $JOB_ID $run_info
+	    	$script_path/filesize.sh alignment $sample $fastq $i $run_info
         done
     elif [ $paired == 0 ]
     then
@@ -116,7 +116,7 @@ else
 
     $samtools/samtools view -bS $output_dir_sample/$sample.$SGE_TASK_ID.sam > $output_dir_sample/$sample.$SGE_TASK_ID.bam 
 	$samtools/samtools view -H $output_dir_sample/$sample.$SGE_TASK_ID.bam 1>$output_dir_sample/$sample.$SGE_TASK_ID.bam.header 2> $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log
-	if [ `cat $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log | wc -l` -gt 0 ]	
+	if [[ `cat $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log | wc -l` -gt 0 || `cat $output_dir_sample/$sample.$SGE_TASK_ID.bam.header | wc -l` -le 0 ]]	
 	then
 		$script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.bam align_novo.sh ERROR "truncated or corrupt"
 		exit 1;

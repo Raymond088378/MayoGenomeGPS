@@ -24,24 +24,25 @@ else
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 	snv=$tumor_sample.chr$chr.snv.output
 	
-	$samtools/samtools view -H $tumor_bam 1> $tumor_bam.header 2> $tumor_bam.fix.ss.log
-	$samtools/samtools view -H $normal_bam 1>$normal_bam.header 2> $normal_bam.fix.ss.log
-	if [ `cat $tumor_bam.fix.ss.log | wc -l` -gt 0 ]
+	$samtools/samtools view -H $tumor_bam 1> $tumor_bam.$chr.header 2> $tumor_bam.$chr.fix.ss.log
+	$samtools/samtools view -H $normal_bam 1>$normal_bam.$chr.header 2> $normal_bam.$chr.fix.ss.log
+	if [[ `cat $tumor_bam.$chr.fix.ss.log | wc -l` -gt 0 || `cat $tumor_bam.$chr.header | wc -l` -le 0 ]]
 	then
 		$script_path/email.sh $tumor_bam "bam is truncated or corrupt" realign_recal.sh $run_info
-		$script_path/wait.sh $tumor_bam.fix.ss.log
+		$script_path/wait.sh $tumor_bam.$chr.fix.ss.log
 	else
-		rm $tumor_bam.fix.ss.log
+		rm $tumor_bam.$chr.fix.ss.log
 	fi	
-	rm $tumor_bam.header
-	if [ `cat $normal_bam.fix.ss.log | wc -l` -gt 0 ]
+	rm $tumor_bam.$chr.header
+	if [[ `cat $normal_bam.$chr.fix.ss.log | wc -l` -gt 0 || `cat $normal_bam.$chr.header | wc -l` -le 0 ]]
 	then
 		$script_path/email.sh $normal_bam "bam is truncated or corrupt" realign_recal.sh $run_info
-		$script_path/wait.sh $normal_bam.fix.ss.log
+		$script_path/wait.sh $normal_bam.$chr.fix.ss.log
 	else
-		rm $normal_bam.fix.ss.log
+		rm $normal_bam.$chr.fix.ss.log
 	fi	
-	rm $normal_bam.header
+	rm $normal_bam.$chr.header
+	
     $somatic_sniper/bam-somaticsniper $command_line_params -F vcf -f $ref $tumor_bam $normal_bam $output/$snv
     cat $output/$snv | awk 'BEGIN {OFS="\t"} {if($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,"PASS",$8,$9,$10,$11;}' | sed -e "/NORMAL/s//$normal_sample/g" | sed -e "/TUMOR/s//$tumor_sample/g"  | awk '$0 ~ /^#/ || $5 !~ /,/' | $script_path/ssniper_vcf_add_AD.pl > $output/$output_file
     cat $output/$snv | awk 'BEGIN {OFS="\t"} {if($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,"PASS",$8,$9,$10,$11;}' | sed -e "/NORMAL/s//$normal_sample/g" | sed -e "/TUMOR/s//$tumor_sample/g"  | awk '$0 ~ /^#/ || $5 ~ /,/' | $script_path/ssniper_vcf_add_AD.pl > $output/$output_file.multi.vcf    

@@ -55,7 +55,7 @@ else
 			chr=${chrArray[$j]}
 			i=chr$chr.cleaned.bam
 			$samtools/samtools view -H $i 1>$i.igv.header 2> $i.igv.fix.log
-			if [ `cat $i.igv.fix.log | wc -l` -gt 0 ]
+			if [[ `cat $i.igv.fix.log | wc -l` -gt 0 || `cat $i.igv.header | wc -l` -le 0  ]]
 			then
 				$script_path/email.sh $i "bam is truncated or corrupt" $previous $run_info
 				$script_path/wait.sh $i.igv.fix.log
@@ -118,7 +118,7 @@ else
 			chr=${chrArray[$j]}
 			i=chr$chr.cleaned.bam
             $samtools/samtools view -H $i 1>$i.igv.header 2> $i.fix.igv.log
-			if [ `cat $i.fix.igv.log | wc -l` -gt 0 ]
+			if [[ `cat $i.fix.igv.log | wc -l` -gt 0 || `cat $i.igv.header | wc -l` -le 0 ]]
 			then
 				$script_path/email.sh $i "bam is truncated or corrupt" $previous $run_info
 				$script_path/wait.sh $i.fix.igv.log

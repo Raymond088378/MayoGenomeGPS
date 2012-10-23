@@ -47,7 +47,7 @@ else
 	#### check and validate the bam file and let user to proceed after validation
 	bam=chr${chr}.cleaned.bam
 	$samtools/samtools view -H $input/$bam 1>$input/$bam.$chr.header 2> $input/$bam.$chr.fix.log
-	if [ `cat $input/$bam.$chr.fix.log | wc -l` -gt 0 ]
+	if [[ `cat $input/$bam.$chr.fix.log | wc -l` -gt 0 || `cat $input/$bam.$chr.header | wc -l` -le 0 ]]
 	then
 		$script_path/email.sh $input/$bam "bam is truncated or corrupt" realign_recal.sh $run_info
 		$script_path/wait.sh $input/$bam.$chr.fix.log

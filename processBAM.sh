@@ -57,7 +57,7 @@ else
 		dir=`dirname $file`
         $script_path/filesize.sh processBAM $sample $dir $base $run_info
 		$samtools/samtools view -H $file 1>$file.header 2> $file.fix.log
-		if [ `cat $file.fix.log | wc -l` -gt 0 ]
+		if [[ `cat $file.fix.log | wc -l` -gt 0 || `cat $file.header | wc -l` -le 0 ]]
 		then
 			$script_path/email.sh $file "bam is truncated or corrupt" $previous $run_info
 			$script_path/wait.sh $file.fix.log

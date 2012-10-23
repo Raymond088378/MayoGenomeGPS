@@ -40,7 +40,7 @@ else
     if [ -s $outbam ]
     then
        $samtools/samtools view -H $outbam 1>$outbam.rmdup.header 2> $outbam.rmdup.log
-		if [ `cat $outbam.rmdup.log | wc -l` -gt 0 ]
+		if [[ `cat $outbam.rmdup.log | wc -l` -gt 0 || `cat $outbam.rmdup.header | wc -l` -le 0 ]]
 		then
 			$script_path/errorlog.sh rmdup.sh $outbam ERROR "truncated or corrupted"
 			exit 1;

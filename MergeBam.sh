@@ -36,7 +36,7 @@ else
 		exit 1;
 	else
 		$samtools/samtools view -H $outbam 1>$outbam.me.header 2>$outbam.fix.me.log
-		if [ `cat $outbam.fix.me.log | wc -l` -gt 0 ]
+		if [[ `cat $outbam.fix.me.log | wc -l` -gt 0 || `cat $outbam.me.header | wc -l` -le 0 ]]
 		then
 			$script_path/errorlog.sh $outbam MergeBam.sh ERROR "truncated or corrupt"
 			exit 1;

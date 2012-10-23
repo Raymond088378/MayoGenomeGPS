@@ -47,7 +47,7 @@ else
 	then
 		bam=$input/chr$chr.cleaned.bam
 		$samtools/samtools view -H $bam 1>$bam.OnTarget_BAM.header 2> $bam.fix.OnTarget_BAM.log
-		if [ `cat $bam.fix.OnTarget_BAM.log | wc -l` -gt 0 ]
+		if [[ `cat $bam.fix.OnTarget_BAM.log | wc -l` -gt 0 || `cat $bam.OnTarget_BAM.header | wc -l` -le 0 ]]
 		then
 			$script_path/email.sh $bam "bam is truncated or corrupt" realign_recal.sh $run_info
 			$script_path/wait.sh $bam.fix.OnTarget_BAM.log

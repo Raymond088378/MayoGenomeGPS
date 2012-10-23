@@ -42,7 +42,6 @@ else
     fi
     
     
-
     if [ $realign == 1 ]
     then
         inputDirs=$( echo $input | tr ":" "\n" )

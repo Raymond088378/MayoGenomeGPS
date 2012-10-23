@@ -25,7 +25,7 @@ else
     if [ -f $input/$sample/chr$chr.cleaned.bam ]
     then
         $samtools/samtools view -H chr$chr.cleaned.bam 1>$output/$sample.chr$chr.header.sam 2>$output/$sample.chr$chr.cleaned.bam.fix.ssp.log
- 		if [ `cat $output/$sample.chr$chr.cleaned.bam.fix.ssp.log | wc -l` -gt 0 ]
+ 		if [[ `cat $output/$sample.chr$chr.cleaned.bam.fix.ssp.log | wc -l` -gt 0  || `cat $output/$sample.chr$chr.header.sam | wc -l` -le 0  ]]
 		then
 			$script_path/email.sh $input/$sample/chr$chr.cleaned.bam "bam is truncated or corrupt" realign_recal.sh $run_info
 			$script_path/wait.sh $output/$sample.chr$chr.cleaned.bam.fix.ssp.log

@@ -46,7 +46,7 @@ else
 		in=`echo $input | cut -d ":" -f "$id"`
 		bb=`echo $bam | cut -d ":" -f "$id"`
 		$samtools/samtools view -H $in/$bb 1>$in/$bb.rr.$chr.header 2> $in/$bb.fix.rr.$chr.log
-		if [ `cat $in/$bb.fix.rr.$chr.log | wc -l` -gt 0 ]
+		if [[ `cat $in/$bb.fix.rr.$chr.log | wc -l` -gt 0 || `cat $in/$bb.rr.$chr.header | wc -l` -le 0 ]]
 		then
 			$script_path/email.sh $in/$bb "bam is truncated or corrupt" processBam.sh $run_info
 			$script_path/wait.sh $in/$bb.fix.rr.$chr.log
@@ -75,7 +75,7 @@ else
     fi    
 	### file name will be chr*.cleaned.bam
 	$samtools/samtools view -H $output_bam/chr$chr.cleaned.bam 1>$output_bam/chr$chr.cleaned.bam.rr.$chr.header 2>$output_bam/chr$chr.cleaned.bam.fix.rr.$chr.log
-	if [ `cat $output_bam/chr$chr.cleaned.bam.fix.rr.$chr.log | wc -l` -gt 0 ]
+	if [[ `cat $output_bam/chr$chr.cleaned.bam.fix.rr.$chr.log | wc -l` -gt 0  || `cat $output_bam/chr$chr.cleaned.bam.rr.$chr.header | wc -l` -le 0 ]]
 	then
 		$script_path/errorlog.sh $output_bam/chr$chr.cleaned.bam realign_recal.sh ERROR "is truncated or corrupt"
 		exit 1;

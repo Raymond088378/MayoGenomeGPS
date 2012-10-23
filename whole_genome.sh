@@ -307,7 +307,7 @@ else
 				do	
 					bam=`echo $infile | awk -v num=$i '{print $num}'`
 					$samtools/samtools view -H $input/$bam 1>$align_dir/$sample.$i.sorted.header 2> $align_dir/$sample.$i.sorted.bam.log
-					if [ `cat $align_dir/$sample.$i.sorted.bam.log | wc -l` -gt 0 ]
+					if [[ `cat $align_dir/$sample.$i.sorted.bam.log | wc -l` -gt 0 || `cat $align_dir/$sample.$i.sorted.header | wc -l` -le 0 ]]
 					then
 						$script_path/errorlog.sh $input/$bam whole_genome.sh ERROR "truncated or corrupted"
 						exit 1;
@@ -345,7 +345,7 @@ else
 					do
 						bam=`echo $infile | awk -v num=$i '{print $num}'`
 						$samtools/samtools view -H $input/$bam 1>$realign_dir/$sample.$i.sorted.bam.header 2> $realign_dir/$sample.$i.sorted.bam.fix.log
-						if [ `cat $realign_dir/$sample.$i.sorted.bam.fix.log | wc -l` -gt 0 ]
+						if [[ `cat $realign_dir/$sample.$i.sorted.bam.fix.log | wc -l` -gt 0 || `cat $realign_dir/$sample.$i.sorted.bam.header | wc -l` -le 0 ]]
 						then
 							$script_path/errorlog.sh $input/$bam whole_genome.sh ERROR "truncated or corrupted"
 							exit 1;
@@ -702,7 +702,7 @@ else
 				do
 					bam=`echo $infile | awk -v num=$i '{print $num}'`
 					$samtools/samtools view -H $input/$bam 1>$align_dir/$sample.$i.sorted.header 2> $align_dir/$sample.$i.sorted.bam.log
-					if [ `cat $align_dir/$sample.$i.sorted.bam.log | wc -l` -gt 0 ]
+					if [[ `cat $align_dir/$sample.$i.sorted.bam.log | wc -l` -gt 0 || `cat $align_dir/$sample.$i.sorted.header | wc -l` -le 0 ]]
 					then
 						echo "$input/$bam : bam file is truncated or corrupted" 	
 						exit 1;
@@ -745,7 +745,7 @@ else
 				if [ $analysis == "variant" ]
 				then
 					vvid=""
-                                        infile=`cat $sample_info | grep -w ^BAM:${group} | cut -d '=' -f2`
+                    infile=`cat $sample_info | grep -w ^BAM:${group} | cut -d '=' -f2`
 					num_bams=`echo $infile | tr " " "\n" | wc -l`
 					if [ $num_bams -eq 0 ]
 					then
@@ -756,7 +756,7 @@ else
 					do
 						bam=`echo $infile | awk -v num=$i '{print $num}'`
 						$samtools/samtools view -H $input/$bam 1>$realign_dir/$group.$i.sorted.header 2> $realign_dir/$group.$i.sorted.bam.log
-						if [ `cat $realign_dir/$group.$i.sorted.bam.log | wc -l` -gt 0 ]
+						if [[ `cat $realign_dir/$group.$i.sorted.bam.log | wc -l` -gt 0 || `cat $realign_dir/$group.$i.sorted.header | wc -l` -le 0 ]]
 						then
 							echo "$input/$bam : bam file is truncated or corrupted" 	
 							exit 1;
@@ -779,7 +779,7 @@ else
 					qsub_args="-N $type.$version.split_bam_chr.$group.$run_num -hold_jid $type.$version.reformat_pairBAM.$group.$run_num -t 1-$numchrs:1 -l h_vmem=$mem"
 					qsub $args $qsub_args $script_path/split_bam_chr.sh $realign_dir $group $run_info
 					variant_id="$type.$version.split_bam_chr.$group.$run_num"
-                                        vvid="$type.$version.split_bam_chr.$group.$run_num"
+					vvid="$type.$version.split_bam_chr.$group.$run_num"
 				else        
 					vvid=""
 					for sample in $samples
@@ -917,14 +917,14 @@ else
 					qsub $args $qsub_args $script_path/summaryze_struct_group.sh $group $output_dir $run_info
 					mkdir -p $output_dir/circos;
 					samm=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" "\n")
-                                        sampleArray=()
-                                        i=1
-                                        for sample in $samm
-                                        do
-                                            sampleArray[$i]=$sample
-                                            let i=i+1
-                                        done
-                                        for i in $(seq 2 ${#sampleArray[@]})
+					sampleArray=()
+					i=1
+					for sample in $samm
+					do
+						sampleArray[$i]=$sample
+						let i=i+1
+					done
+					for i in $(seq 2 ${#sampleArray[@]})
 					do  
 						tumor=${sampleArray[$i]}
 						$script_path/check_qstat.sh $limit

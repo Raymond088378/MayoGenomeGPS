@@ -47,7 +47,7 @@ else
 
     ## check if BAM is sorted
     $samtools/samtools view -H $input/$input_bam 1> $input/$input_bam.header 2> $input/$input_bam.fix.log
-	if [ `cat $input/$input_bam.fix.log | wc -l` -gt 0 ]
+	if [[ `cat $input/$input_bam.fix.log | wc -l` -gt 0 || `cat $input/$input_bam.header | wc -l` -le 0 ]]
 	then
 		$script_path/email.sh $input/$input_bam "bam is truncated or corrupt" $previous $run_info
 		$script_path/wait.sh $input/$input_bam.fix.log
@@ -77,11 +77,11 @@ else
 	$samtools/samtools flagstat $input/$sample.sorted.bam > $input/$sample.flagstat
     if [ ! -s $input/$sample.flagstat ]
     then
-        $script_path/errorlog.sh convert.bam.sh $input/$sample.flagstat ERROR "empty"
+        $script_path/errorlog.sh convert_bam.sh $input/$sample.flagstat ERROR "empty"
 		exit 1;
 	else
 		## update secondary dashboard
-		$script_path/filesize.sh alignment $sam $input $sample.sorted.bam $JOB_ID $size $run_info
+		$script_path/filesize.sh alignment $sam $input $sample.sorted.bam $run_info
 		$script_path/dashboard.sh $sample $run_info Alignment complete $id
     fi
 	echo `date`

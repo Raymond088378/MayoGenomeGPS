@@ -37,7 +37,7 @@ else
         exit 1;
     else
     	$samtools/samtools view -H $normal_bam 1>$normal_bam.jsm.header 2> $normal_bam.fix.jsm.log
-    	if [ `cat $normal_bam.fix.jsm.log | wc -l` -gt 0 ]
+    	if [[ `cat $normal_bam.fix.jsm.log | wc -l` -gt 0 || `cat $normal_bam.jsm.header | wc -l` -le 0 ]]
 		then
 			$script_path/email.sh $normal_bam "bam is truncated or corrupt" realign_recal.sh $run_info
 			$script_path/wait.sh $normal_bam.fix.jsm.log 
@@ -53,7 +53,7 @@ else
         exit 1;
     else
     	$samtools/samtools view -H $tumor_bam 1>$tumor_bam.jsm.header 2> $tumor_bam.fix.jsm.log
-		if [ `cat $tumor_bam.fix.jsm.log | wc -l` -gt 0 ]
+		if [[ `cat $tumor_bam.fix.jsm.log | wc -l` -gt 0 || `cat $tumor_bam.jsm.header | wc -l` -le 0 ]]
 		then
 			$script_path/email.sh $tumor_bam "bam is truncated or corrupt" realign_recal.sh $run_info
 			$script_path/wait.sh $tumor_bam.fix.jsm.log 

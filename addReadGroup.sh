@@ -34,7 +34,7 @@ else
     if [ -s $outbam ]
     then
         $samtools/samtools view -H $outbam 1> $outbam.rg.header 2> $outbam.fix.rg.log
-		if [ `cat $outbam.fix.rg.log | wc -l` -gt 0 ]
+		if [[ `cat $outbam.fix.rg.log | wc -l` -gt 0 || `cat $outbam.rg.header | wc -l` -le 0 ]]
 		then
 			$script_path/errorlog.sh $outbam addReadGroup.sh ERROR "truncated or corrupted "
 			exit 1;

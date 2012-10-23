@@ -24,7 +24,7 @@ else
     for file in $input/*sorted.bam
     do
 		$samtools/samtools view -H $file 1>$file.rf.header 2> $file.rf.fix.log
-		if [ `cat $file.rf.fix.log | wc -l` -gt 0 ]
+		if [[ `cat $file.rf.fix.log | wc -l` -gt 0 || `cat $file.rf.header | wc -l` le 0 ]]
 		then
 			$script_path/email.sh $file "bam is truncated or corrupt" "primary_script" $run_info
 			$script_path/wait.sh $file.rf.fix.log 
