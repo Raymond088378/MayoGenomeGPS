@@ -202,7 +202,8 @@ else
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
 	args="-V -wd $output_dir/logs -q $queue -m a -M $TO -l h_stack=10M"
 	echo -e "\nRCF arguments used : $args\n" >> $output_dir/log.txt
-	#############################################################
+	echo -e "Started the analysis for $PI for $tool samples" | mailx -v -s "Analysis Started" -c Kahl.Jane@mayo.edu "$TO"
+        #############################################################
 	
 	if [ $multi_sample != "YES" ]
 	then

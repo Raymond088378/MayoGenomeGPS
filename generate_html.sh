@@ -72,7 +72,7 @@ else
 	MESG=" ${text} ${text1} $tool workflow completed for ${run_num} on ${END} and ready for tertiary analysis in ${output_dir} "
 	## send the completion email
 	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
-	echo -e "$MESG\n\nTIMESTAMPS:" | cat - $output_dir/log.txt | mailx -v -s "$SUB" "$TO" 
+	echo -e "$MESG\n\nTIMESTAMPS:" | cat - $output_dir/log.txt | mailx -v -s "$SUB" -c Kahl.Jane@mayo.edu "$TO" 
 	for sample in $samples
 	do
 		$script_path/dashboard.sh $sample $run_info Results complete
