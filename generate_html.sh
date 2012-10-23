@@ -77,8 +77,11 @@ else
 	do
 		$script_path/dashboard.sh $sample $run_info Results complete
 	done
-	mem=$( cat $memory_info | grep -w '^AddSecondaryAnalysis_JVM' | cut -d '=' -f2)
-	$java/java $mem -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -f $flowcell -r $run_num -s Complete -a $tool
+	if [[ $analysis == "mayo" || $analysis == "realign-mayo" ]]
+	then
+		mem=$( cat $memory_info | grep -w '^AddSecondaryAnalysis_JVM' | cut -d '=' -f2)
+		$java/java $mem -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -f $flowcell -r $run_num -s Complete -a $tool
+	fi
 	echo `date`
 fi
 
