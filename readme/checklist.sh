@@ -303,7 +303,7 @@ then
 		echo -e "\n ok, GOOD JOB !!"
 	else
 		echo -e "\nLook for QC information here : "
-		echo "http://bioinformatics.mayo.edu/BMI/bin/view/Main/BioinformaticsCore/Analytics/PISupportLinksMainInternal"
+		echo "http://bsiweb.mayo.edu/node/7235"
 	fi
 
 	read -p "Did you run transfer and cleanup script : " clean
