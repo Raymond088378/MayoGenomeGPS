@@ -202,7 +202,7 @@ else
 	echo -e "MEMORY INFO  file used : $memory_info" >>  $output_dir/log.txt
 	###########################################################
 	#### sge paramters
-	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
+	TO=$USER
 	args="-V -wd $output_dir/logs -q $queue -m a -M $TO -l h_stack=10M"
 	echo -e "\nRCF arguments used : $args\n" >> $output_dir/log.txt
 	echo -e "Started the ${tool} analysis for ${run_num} for ${PI}\n\n${info}\n\nCourtesy: $workflow $version" | mailx -v -s "Analysis Started" -c Kahl.Jane@mayo.edu "$TO"

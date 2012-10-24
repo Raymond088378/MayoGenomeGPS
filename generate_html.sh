@@ -73,7 +73,7 @@ else
 	SUB="$tool workflow completion for RunID ${run_num} "
 	MESG=" ${text} ${text1} $tool workflow completed for ${run_num} on ${END} and ready for tertiary analysis in ${output_dir} "
 	## send the completion email
-	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
+	TO=$USER
 	echo -e "$MESG\n\nTIMESTAMPS:" | cat - $output_dir/log.txt | mailx -v -s "$SUB" -c Kahl.Jane@mayo.edu "$TO" 
 	for sample in $samples
 	do
