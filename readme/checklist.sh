@@ -5,7 +5,7 @@ shopt -s nocasematch
 
 echo -e "\nPlease answer all the question in (yes/no) else directed {case insensitive}\n"
 
-echo -e "Options: \n 1) Things to remember before running the workflow \n 2) Information about the config files and help creating it. \n 3) Do the QC \n 4) Questions ?"
+echo -e "Options: \n 1) Things to remember before running the workflow \n 2) Information about the config files and help creating it. \n 3) Things to remember after running the workflow \n 4) Questions ?"
 
 read -p "Enter your option(1 , 2, 3 or 4) : " workflow
 while [[ $workflow != "1" && $workflow != "2"  && $workflow != "3"  && $workflow != "4" ]]
@@ -77,9 +77,8 @@ then
 	then
 		echo -e "\n ok, GOOD JOB !!"
 	else
-		echo -e "\nPlease review fastqc results here"
+		echo -e "\nPlease review fastqc results:"
 		echo "\\rcfcluster-cifs\data2\bsi\reports\<flowcell id>"
-		exit 1;
 	fi
 
 	read -p "Did you looked at the NGSPortal to validate the samples : " portal
@@ -94,7 +93,7 @@ then
 	else
 		echo -e "\n Log into the Portal to validate the samples and indexes and lane information"
 		echo " http://charlotte:8886/NGSPortal/ "
-		exit 1;
+		echo -e "\nContact: \nDougherty, Gregory T. <Dougherty.Gregory@mayo.edu>\nHorton, Iain F. <Horton.Iain@mayo.edu>\nBockol, Matthew A. (Matt) <Bockol.Matthew@mayo.edu>"
 	fi	
 	
 	read -p "Any/Further Questions : " ques
@@ -299,7 +298,6 @@ then
 	else
 		echo -e "\nLook for QC information here : "
 		echo "http://bioinformatics.mayo.edu/BMI/bin/view/Main/BioinformaticsCore/Analytics/PISupportLinksMainInternal"
-		exit 1;
 	fi
 
 	read -p "Did you run transfer and cleanup script : " clean
@@ -313,7 +311,6 @@ then
 		echo -e "\n ok, GOOD JOB !!"
 	else
 		echo -e "\nLook for the clean up and transfer script in the scripts folder (transfer_clean.sh)"
-		exit 1;
 	fi
 
 	read -p "Did you Rsync the data from delivery to Isilon NL server : " rsync
@@ -326,9 +323,8 @@ then
 	then
 		echo -e "\n ok, GOOD JOB !!"
 	else 
-		echo -e "\nGo To this webpage to the R sync process : "
+		echo -e "\nGo To this webpage to the Rsync process : "
 		echo "http://rcfcluster1.mayo.edu/cgi-cim/rsync-agtc.pl "
-		exit 1;
 	fi
 
 
@@ -344,7 +340,6 @@ then
 	else
 		echo -e "\nYou need to transfer the results to windows share : "
 		echo "\\ressrv08\BIC_Projects\PI_Support_Projects\<PI> "
-		exit 1;
 	fi
 
 	read -p "Do you have more questions or problems with workflow : " ques

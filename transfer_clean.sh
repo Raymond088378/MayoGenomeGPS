@@ -144,6 +144,7 @@ else
     mv $secondary/README $delivery/
     ### make tar balls
     cd $secondary
+    rm -Rf logs/core*
     tar -cvzf logs.tar.gz logs
     chmod -Rf 777 logs.tar.gz
 	rm -Rf $secondary/logs

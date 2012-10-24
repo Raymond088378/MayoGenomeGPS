@@ -29,15 +29,17 @@ else
 		$script_path/dashboard.sh $sample $run_info Results started
 	done
 	cd $output_dir/numbers
+	
 	if [[ $analysis != "alignment" && $analysis != "annotation"  && $analysis != "ontarget" ]] 
 	then
 		$script_path/generate.coverage.sh $output_dir/numbers $output_dir $run_info
 	fi
-	#rm $output_dir/bed_file.bed
+	
 	if [[ $analysis != "alignment" && $analysis != "annotation"  && $analysis != "ontarget" ]] 
 	then
 		$script_path/create.igv.pl -o $output_dir -r $run_info
 	fi
+	
 	$script_path/MainDocument.pl -r $run_info -p $output_dir
 	
 	## create tsv file for sample statistcs

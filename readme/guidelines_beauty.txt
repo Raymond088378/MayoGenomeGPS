@@ -6,7 +6,7 @@ runinfo file
 1. SNV_CALLER=BEAUTY_EXOME
 2. SOMATIC_CALLER=BEAUTY_EXOME
 
-tool_info file
+Important information about tool_info file
 
 use the tool info file in config folder of the scripts for whole genome workflow
 the file is named as tool_info.beauty.txt 
