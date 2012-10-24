@@ -106,6 +106,7 @@ then
 	then
 		echo -e "\nok. you should be good to run the workflow"
 	else
+		echo "http://bsiweb.mayo.edu/node/7374"
 		echo -e "\nContact:\nRoss, Christian <ross.christian@mayo.edu>\nBaheti, Saurabh <baheti.saurabh@mayo.edu>"
 	fi
 elif [[ $workflow == "2" ]]
@@ -264,6 +265,7 @@ then
 	done
 	if [[ $ques == "YES" ]]
 	then
+		echo "http://bsiweb.mayo.edu/node/7374"
 		echo -e "\nContact:\nRoss, Christian <ross.christian@mayo.edu>\nBaheti, Saurabh <baheti.saurabh@mayo.edu>"
 	else
 		echo -e "\nok. you should be good to run the workflow"
@@ -352,9 +354,11 @@ then
 	then
 		echo -e "\nok. you are good to deliver the results"
 	else
+		echo "http://bsiweb.mayo.edu/node/7374"
 		echo -e "\nContact:\nRoss, Christian <ross.christian@mayo.edu>\nBaheti, Saurabh <baheti.saurabh@mayo.edu>"
 	fi
 else
+	echo "http://bsiweb.mayo.edu/node/7374"
 	echo -e "\nContact:\nRoss, Christian <ross.christian@mayo.edu>\nBaheti, Saurabh <baheti.saurabh@mayo.edu>"
 fi	
 
