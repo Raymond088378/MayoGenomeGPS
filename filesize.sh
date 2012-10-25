@@ -23,7 +23,6 @@ else
 	tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
 	mem=$( cat $memory_info | grep -w '^AddGPSMetadata_JVM' | cut -d '=' -f2)
 	out=$output/$PI/$tool/$run_num
-	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
 	size=`du -b $dirname/$filename | sed 's/\([0-9]*\).*/\1/'`
 	job=$JOB_ID
 	if [ ${#job} -eq 0 ]
@@ -38,6 +37,6 @@ else
 		file=$out/size/filesize.$job.csv
 	fi	
 	
-	$java/java $mem -jar $script_path/AddGPSMetadata.jar -p $script_path/AddGPSMetadata.properties -S $identify -t $type -a $analysis -b $size -j $job -r $run_num -s $sample -n $filename -u $TO -F $file
+	$java/java $mem -jar $script_path/AddGPSMetadata.jar -p $script_path/AddGPSMetadata.properties -S $identify -t $type -a $analysis -b $size -j $job -r $run_num -s $sample -n $filename -u $USER -F $file
 	echo `date`
 fi
