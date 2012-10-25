@@ -11,10 +11,9 @@ else
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
 	type=$( cat $run_info | grep -w '^TOOL' | cut -d '=' -f2|tr "[a-z]" "[A-Z]")
 	run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
-	TO=$USER
-	cat $run_info | grep -w -v -E '^IDENTIFICATION_NUMBER' > $run_info.tmp
+	TO=`id |awk -F '(' '{print $2}' | cut -f1 -d ')'`
+	cat $run_info | grep -w -v -E '^IDENTIFICATION_NUMBER|^TEMPORARY_ID' > $run_info.tmp
 	mv $run_info.tmp $run_info
-	
 	unique_id=`$java/java -Xmx1g -jar $script_path/AddGPSMetadata.jar -p $script_path/AddGPSMetadata.properties -t $type -a begin -I -r $run_num -s $run_num -u $TO`
 	if echo $unique_id | egrep -q '^[0-9]+$'
 	then
