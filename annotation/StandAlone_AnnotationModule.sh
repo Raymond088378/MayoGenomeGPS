@@ -37,8 +37,19 @@ else
 	export PERL5LIB=$perllib:$PERL5LIB
 	PATH=$tabix/:$PATH
 	echo " vcf validation step "
-	type=`cat $file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'`
+	###check for the extension of the file  (if .gz then use gunzip and then move)
+	ext=$(echo $file | sed 's/.*\.//')
+	if [ $ext == "gz" ]
+	then
+		type=`gunzip -c $file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'`
+		gunzip -c $file > $output/$sample.first.vcf 
+	else
+		type=`cat $file | head -1 | awk '{if ($0 ~ /^##/) print "vcf";else print "txt"}'`
+		ln -s $file $output/$sample.first.vcf 
+	fi
+	
 	ff="$sample.vcf"
+	file=$output/$sample.first.vcf 
 	if [ $type == "txt" ]
 	then
 		if [[ `cat $file| awk -F'\t' '{print NF}' | sort | uniq` != 4 ]]
@@ -51,12 +62,13 @@ else
 	else
 		if [ $multi == "multi" ]
 		then
-			cat $file  | $script_path/convert.vcf.pl > $output/$ff
+			cat $file | $script_path/convert.vcf.pl > $output/$ff
 		else
 			col=`cat $file | awk '$0 ~ /#CHROM/' | awk -v num=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == num) {print i} } }'`
 			cat $file | awk -v num=$col 'BEGIN {OFS="\t"} { if ($0 ~ /^##/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8,$9,$num; }' | $script_path/convert.vcf.pl > $output/$ff
 		fi
 	fi
+	rm $file
 	
 	### extract multi-allelic variants and keep that as a vcf file
 	cat $output/$ff | awk '$0 ~ /^#/ || $5 ~ /,/ || $4 ~ /,/' > $output/$sample.multi.vcf
