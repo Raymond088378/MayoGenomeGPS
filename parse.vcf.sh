@@ -15,8 +15,8 @@ else
     vcftools=$( cat $tool_info | grep -w '^VCFTOOLS' | cut -d '=' -f2 )
 	perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
-	export PERL5LIB=$PERL5LIB:$perllib
-	PATH=$tabix/:$PATH
+	export PERL5LIB=$perllib:$PERL5LIB
+	export PATH=$tabix/:$PATH
 	file_name=`basename $file`	
 	dir=`dirname $outfile`	
     cat $file | $script_path/convert.vcf.pl > $dir/$file_name
