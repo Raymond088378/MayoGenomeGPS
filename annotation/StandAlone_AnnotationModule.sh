@@ -4,6 +4,7 @@ if [ $# != 7 ]
 then
     echo -e "Usage: stand alone script for annotation using a single vcf or text file \n <sample name><vcf or txt file><output folder><tool_info file> <genome build><single/multi><script_path>"
 else
+	START=$(date +%s)
 	echo -e "\n ************************************************** \n"
 	echo " Started the annotation for your data on `date` "
 	sample=$1
@@ -329,5 +330,8 @@ else
 	$script_path/sort.variantReport.pl -i $output/$sample.filtered.INDEL.xls -o $output/$sample.filtered.INDEL.xls.sort -f Start
 	mv $output/$sample.filtered.INDEL.xls.sort $output/$sample.filtered.INDEL.xls
 	echo " Annotation finished on `date` "
+	END=$(date +%s)
+	DIFF=$(( $END - $START ))
+	echo "It took $DIFF seconds"
 	echo -e "\n ************************************************** \n"
 fi
