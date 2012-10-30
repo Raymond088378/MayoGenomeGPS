@@ -19,7 +19,8 @@ else
 	export PATH=$tabix/:$PATH
 	file_name=`basename $file`	
 	dir=`dirname $outfile`	
-    cat $file | $script_path/convert.vcf.pl > $dir/$file_name
+    num=`cat $file | grep -v '#' | wc -l`
+	cat $file | $script_path/convert.vcf.pl > $dir/$file_name
 
     $tabix/bgzip $dir/$file_name
     $tabix/tabix -p vcf $dir/$file_name.gz
@@ -52,6 +53,15 @@ else
         echo -e "Chr\tStart\tStop\tInCaptureKit\t#AlternateHits\tRef\tAlt\tBase-Length${sample_cols}" >>$outfile
         $vcftools/bin/vcf-query $dir/$file_name.gz -f '%CHROM\t%POS\t%INFO/CAPTURE\t%INFO/ED\t%REF\t%ALT\t[%AD\t%DP\t]\n' | $script_path/parse.pl >> $outfile
     fi    
-    rm $dir/$file_name.gz.tbi $dir/$file_name.gz
-    echo `date`
+    num_a=`cat $outfile | awk 'NR>2' | wc -l`
+	if [ $num_a == $num ]
+	then
+		rm $dir/$file_name.gz.tbi $dir/$file_name.gz
+    else
+		touch $outfile.fix.log
+		$script_path/email.sh $outfile "not found" OnTarget_variant.sh $run_info
+		$script_path/wait.sh $outfile.fix.log
+		rm $dir/$file_name.gz.tbi $dir/$file_name.gz
+	fi
+	echo `date`
 fi

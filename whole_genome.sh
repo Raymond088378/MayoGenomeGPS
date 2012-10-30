@@ -798,7 +798,7 @@ else
 					vvid=""
 					for sample in $samples
 					do
-						vvid=$vvid"$type.$version.processBAM.$sample.$run_num.$identify,$type.$version.extract_reads_bam.$sample.$run_num.$identify"
+						vvid=$vvid"$type.$version.processBAM.$sample.$run_num.$identify,"
 					done    
 					$script_path/check_qstat.sh $limit
 					mem=$( cat $memory_info | grep -w '^realign_recal' | cut -d '=' -f2)
