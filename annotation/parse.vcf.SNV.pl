@@ -1,3 +1,5 @@
+#!/usr/local/biotools/perl/5.10.0/bin/perl
+
 #script to parse VCF format variant calls to readable format SNVs
 #
 #chr1	109	.	A	T	328.94	.	AC=1;AF=0.50;AN=2;DP=218;DS;Dels=0.00;HRun=0;HaplotypeScore=130.5110;MQ=19.84;MQ0=52;QD=1.51;SB=54.12;sumGLbyD=1.65	GT:AD:DP:GQ:PL	0/1:140,68:65:99:359,0,1222

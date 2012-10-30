@@ -1,4 +1,4 @@
-#! /usr/bin/perl
+#!/usr/local/biotools/perl/5.10.0/bin/perl
 ################################################################################
 # add_entrezID.pl
 #	author: Ying Li   

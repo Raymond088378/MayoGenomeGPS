@@ -1,3 +1,4 @@
+#!/usr/local/biotools/perl/5.10.0/bin/perl
 	
 	## parse VCF to create old GATK format file
 	##06/13/2011

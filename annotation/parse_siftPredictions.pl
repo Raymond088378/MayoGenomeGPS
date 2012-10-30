@@ -1,3 +1,5 @@
+#!/usr/local/biotools/perl/5.10.0/bin/perl
+
 ## Use tab-delim file from SIFT predictions with SNP file to
 ## Combine variant report with SNP annotation
 
