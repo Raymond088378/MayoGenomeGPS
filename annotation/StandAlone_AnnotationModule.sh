@@ -66,7 +66,13 @@ else
 			cat $file | $script_path/convert.vcf.pl > $output/$ff
 		else
 			col=`cat $file | awk '$0 ~ /#CHROM/' | awk -v num=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == num) {print i} } }'`
-			cat $file | awk -v num=$col 'BEGIN {OFS="\t"} { if ($0 ~ /^##/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8,$9,$num; }' | $script_path/convert.vcf.pl > $output/$ff
+			if [ ${#col} -ne 0 ]
+			then
+				cat $file | awk -v num=$col 'BEGIN {OFS="\t"} { if ($0 ~ /^##/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8,$9,$num; }' | $script_path/convert.vcf.pl > $output/$ff
+			else
+				echo " There is no variant for $sample in the VCF file"
+				exit 1;
+			fi	
 		fi
 	fi
 	rm $file
@@ -75,6 +81,11 @@ else
 	cat $output/$ff | awk '$0 ~ /^#/ || $5 ~ /,/ || $4 ~ /,/' > $output/$sample.multi.vcf
 	cat $output/$ff | awk '$0 ~ /^#/ || ($5 !~ /,/ && $4 !~ /,/)' > $output/$ff.temp
 	mv $output/$ff.temp $output/$ff
+	if [ `cat $output/$ff | awk '$0 !~ /^#/' | wc -l` -le 0 ]
+	then
+		echo " There is no variants in the VCF file"
+		exit 1;
+	fi	
 	
 	## ADD BLAT column
 	n=`cat $output/$ff |  awk '$0 ~ /^#/' | awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
@@ -332,6 +343,6 @@ else
 	echo " Annotation finished on `date` "
 	END=$(date +%s)
 	DIFF=$(( $END - $START ))
-	echo "It took $DIFF seconds"
+	echo " StandAlone Annotation script took $DIFF seconds"
 	echo -e "\n ************************************************** \n"
 fi
