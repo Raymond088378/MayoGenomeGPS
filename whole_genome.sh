@@ -870,7 +870,7 @@ else
 				qsub $args $qsub_args $script_path/reports.sh $run_info $group $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir germline
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^sample_report' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.sample_reports.$sample.$run_num.$identify -hold_jid $type.$version.reports.$group.$run_num.$identify -l h_vmem=$mem"
+				qsub_args="-N $type.$version.sample_reports.$group.$run_num.$identify -hold_jid $type.$version.reports.$group.$run_num.$identify -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/sample_report.sh $output_dir $TempReports $group $run_info germline
 				hold="$type.$version.sift.${group}.$run_num.$identify,$type.$version.snpeff.$group.$run_num.$identify,$type.$version.polyphen.$group.$run_num.$identify"
 				$script_path/check_qstat.sh $limit

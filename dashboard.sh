@@ -59,7 +59,7 @@ else
             s=`echo $sample | tr ":" " "`
             for sam in $s
             do
-                pos=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | grep -n $sam | cut -d ":" -f1)
+                pos=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | grep -w -n $sam | cut -d ":" -f1)
                 lanes=$( cat $run_info | grep -w '^LANEINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $pos | tail -n 1 | tr "," " ")
                 i=1
                 for lane in $lanes
