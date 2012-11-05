@@ -2,10 +2,11 @@
 
 use strict;
 use warnings;
-die "Usage:$0 <file w/ list of files> <output file>\n" if ($#ARGV != 1);
+die "Usage:$0 <file w/ list of files> <flag><output file>\n" if ($#ARGV != 2);
 my $list=$ARGV[0];
 open FH, "$list" or die "can not open $list : $!\n";
-my $out=$ARGV[1];
+my $flag=$ARGV[1];
+my $out=$ARGV[2];
 open OUT, ">$out" or die " can not open $out: $!\n";
 my $IGV=0;
 my $CHR=1;
@@ -79,7 +80,8 @@ while(my $l = <FH>){
 			push(@{$snpeff{$a[$CHR]}{$a[$START]}{$id_a}},$snpeff_value);
 			if ($id ne $prev)	{
 				my $value=$#{$sample_info{$a[$CHR]}{$a[$START]}{$id_a}};
-				$value=($value+2)*$prev_samples;
+				if ($flag eq "multi")	{$value=($value+2) * $prev_samples;}
+				else	{$value=($value+2);}	
 				my $sample_value;
 				my $sam;
 				if ($value == 0){

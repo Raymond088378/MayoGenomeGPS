@@ -64,14 +64,14 @@ else
 		done	
 		if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
 		then
-			perl $script_path/union.snv.pl list.snv $output_dir/Reports/SNV.xls
-			perl $script_path/union.snv.pl list.filter.snv $output_dir/Reports/SNV.filtered.xls
+			perl $script_path/union.snv.pl list.snv single $output_dir/Reports/SNV.xls
+			perl $script_path/union.snv.pl list.filter.snv single $output_dir/Reports/SNV.filtered.xls
 			rm list.snv list.filter.snv
 		fi
 		if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
 		then
-			perl $script_path/union.indel.pl list.indel $output_dir/Reports/INDEL.xls
-			perl $script_path/union.indel.pl list.filter.indel $output_dir/Reports/INDEL.filtered.xls
+			perl $script_path/union.indel.pl list.indel single $output_dir/Reports/INDEL.xls
+			perl $script_path/union.indel.pl list.filter.indel single $output_dir/Reports/INDEL.filtered.xls
 			rm list.indel list.filter.indel
 		fi
 	else
@@ -106,10 +106,10 @@ else
 			fi
 			ls $group.INDEL.filtered.xls >> list.filter.indel
 		done
-		perl $script_path/union.snv.pl list.snv $output_dir/Reports/SNV.xls
-		perl $script_path/union.snv.pl list.filter.snv $output_dir/Reports/SNV.filtered.xls
-		perl $script_path/union.indel.pl list.indel $output_dir/Reports/INDEL.xls
-		perl $script_path/union.indel.pl list.filter.indel $output_dir/Reports/INDEL.filtered.xls	
+		perl $script_path/union.snv.pl list.snv multi $output_dir/Reports/SNV.xls
+		perl $script_path/union.snv.pl list.filter.snv multi $output_dir/Reports/SNV.filtered.xls
+		perl $script_path/union.indel.pl list.indel multi $output_dir/Reports/INDEL.xls
+		perl $script_path/union.indel.pl list.filter.indel multi $output_dir/Reports/INDEL.filtered.xls	
 		rm list.snv list.filter.snv list.indel list.filter.indel	
     	### Merge the TUMOR files
     	for group in $groups
@@ -143,10 +143,10 @@ else
 			fi
 			ls TUMOR.$group.INDEL.filtered.xls >> list.filter.indel
 		done
-		perl $script_path/union.snv.pl list.snv $output_dir/Reports/TUMOR.SNV.xls
-		perl $script_path/union.snv.pl list.filter.snv $output_dir/Reports/TUMOR.SNV.filtered.xls
-		perl $script_path/union.indel.pl list.indel $output_dir/Reports/TUMOR.INDEL.xls
-		perl $script_path/union.indel.pl list.filter.indel $output_dir/Reports/TUMOR.INDEL.filtered.xls	
+		perl $script_path/union.snv.pl list.snv multi $output_dir/Reports/TUMOR.SNV.xls
+		perl $script_path/union.snv.pl list.filter.snv multi $output_dir/Reports/TUMOR.SNV.filtered.xls
+		perl $script_path/union.indel.pl list.indel multi $output_dir/Reports/TUMOR.INDEL.xls
+		perl $script_path/union.indel.pl list.filter.indel multi $output_dir/Reports/TUMOR.INDEL.filtered.xls	
 		rm list.snv list.filter.snv list.indel list.filter.indel	
 	fi
     echo `date`
