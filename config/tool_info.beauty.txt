@@ -47,6 +47,8 @@ MILLS_REF=/data2/bsi/reference/misc/ALL.wgs.indels_mills_devine_hg19_leftAligned
 PEDIGREE=NA
 SNP_SAO=/data2/bsi/reference/annotation/dbSNP/hg19/sao.bed
 SNP_BUILD=/data2/bsi/reference/annotation/dbSNP/hg19/dbSNPbuild.bed
+ANNOTATION_FEATURES=/data2/bsi/reference/annotation/Generic_FeatureSelection.xls
+ANNOTATION_MODULE_DATA=/data2/bsi/reference/annotation/stopGapBeauty/
 
 
 ## tools
@@ -147,3 +149,4 @@ MAX_READS_MEM_SORT=2000000
 TB_PORT=8886
 TB_HOST=charlotte
 JOB_LIMIT=3000
+BEAUTY_MOD_MULTIPLIER=1

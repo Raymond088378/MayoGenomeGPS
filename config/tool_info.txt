@@ -47,10 +47,10 @@ MILLS_REF=/data2/bsi/reference/misc/ALL.wgs.indels_mills_devine_hg19_leftAligned
 PEDIGREE=NA
 SNP_SAO=/data2/bsi/reference/annotation/dbSNP/hg19/sao.bed
 SNP_BUILD=/data2/bsi/reference/annotation/dbSNP/hg19/dbSNPbuild.bed
-
+ANNOTATION_MODULE_DATA=/data2/bsi/reference/annotation/stopGapBeauty/
 
 ## tools
-WORKFLOW_PATH=/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/trunk/
+WORKFLOW_PATH=/data2/bsi/RandD/m088378/GenomeGPS/
 NOVOALIGN=/projects/bsi/bictools/apps/alignment/novoalign/2.08.01/novoalign
 BWA=/projects/bsi/bictools/apps/alignment/bwa/0.5.9/
 BOWTIE=/projects/bsi/bictools/apps/alignment/bowtie/2.0.0-beta5/

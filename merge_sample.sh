@@ -4,7 +4,7 @@ if [ $# != 2 ]
 then
     echo -e "script to merge the per sample report\nUsage : <output_dir> <run_info>";
 else
-    set -x
+#    set -x
     echo `date`
     output_dir=$1
     run_info=$2
@@ -18,7 +18,8 @@ else
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     groups=$( cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2 | tr ":" " ")
     variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2 |tr "[a-z]" "[A-Z]")
-	### merge per sample files to make merged report to be uploaded to TBB
+    snv_caller=$( cat $run_info | grep -w '^SNV_CALLER' | cut -d '=' -f2)
+    ### merge per sample files to make merged report to be uploaded to TBB
     ##Merge the unfiltered file
     cd $output_dir/Reports_per_Sample/
     mkdir -p $output_dir/Reports/
@@ -147,10 +148,15 @@ else
 		perl $script_path/union.snv.pl list.filter.snv multi $output_dir/Reports/TUMOR.SNV.filtered.xls
 		perl $script_path/union.indel.pl list.indel multi $output_dir/Reports/TUMOR.INDEL.xls
 		perl $script_path/union.indel.pl list.filter.indel multi $output_dir/Reports/TUMOR.INDEL.filtered.xls	
-		rm list.snv list.filter.snv list.indel list.filter.indel
-
-
-		### Adding Beauty Anntation Module	
+		rm list.snv list.filter.snv list.indel list.filter.indel	
 	fi
+
+	### Adding Beauty Anntation Module
+	if [ $snv_caller == "BEAUTY_EXOME" ]
+	then
+		## Script to create additional annotation file, with pharmicogentic emphasis
+		$script_path/PharmacoAnnotModule.sh $output_dir/Reports/SNV.filtered.xls $run_info
+	fi
+
     echo `date`
 fi	
