@@ -217,9 +217,10 @@ else
 	###########################################################
 	#### sge paramters
 	TO=$USER
-	args="-V -wd $output_dir/logs -q $queue -m a -M $TO -l h_stack=10M"
+	email=`finger $USER | grep Mail | awk '{print $NF}'`
+	args="-V -wd $output_dir/logs -q $queue -m a -M $email -l h_stack=10M"
 	echo -e "\nRCF arguments used : $args\n" >> $output_dir/log.txt
-	echo -e "Started the ${tool} analysis for ${run_num} for ${PI}\n\n${info}\n\nCourtesy: $workflow $version" | mailx -v -s "Analysis Started" -c Kahl.Jane@mayo.edu "$TO"
+	echo -e "Started the ${tool} analysis for ${run_num} for ${PI}\n\n${info}\n\nCourtesy: $workflow $version" | mailx -v -s "Analysis Started" -c Kahl.Jane@mayo.edu "$email"
         #############################################################
 	
 	if [ $multi_sample != "YES" ]
