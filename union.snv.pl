@@ -81,13 +81,9 @@ while(my $l = <FH>){
 			my $snpeff_value=join("\t",@a[@annot_snpeff]);
 			push(@{$snpeff{$a[$CHR]}{$a[$POS]}{$a[$ALT]}},$snpeff_value);
 			if ($id ne $prev)	{
-				print "$a[$CHR],$a[$POS],$a[$ALT]\n";
 				my $value=$#{$sample_info{$a[$CHR]}{$a[$POS]}{$a[$ALT]}};
-				print "value and previous: $value \t $prev_samples\n";
 				if ($flag eq "multi")	{$value=($value+2) * $prev_samples;}
 				else	{$value=($value+2);}	
-				print "value: $value\n";
-				print "i : $i\n";
 				my $sample_value;
 				my $sam;
 				if ($value == 0){
@@ -95,8 +91,6 @@ while(my $l = <FH>){
 						@sample=($k .. $k+5);
 						$sample_value=join("\t",@a[@sample]);
 						push(@{$sample_info{$a[$CHR]}{$a[$POS]}{$a[$ALT]}},$sample_value);
-						print "$a[$CHR],$a[$POS],$a[$ALT]\n";
-						print "sample_value : $sample_value\n";<STDIN>;
 						$k+=6;
 					}
 				}
@@ -105,14 +99,11 @@ while(my $l = <FH>){
 						$sam="n/a\tn/a\tn/a\tn/a\tn/a\tn/a\t";  
 						$sam =~ s/\s*$//;
 						push(@{$sample_info{$a[$CHR]}{$a[$POS]}{$a[$ALT]}},$sam);	
-						print "$a[$CHR],$a[$POS],$a[$ALT]\n";
-						print "sam: $sam\n";<STDIN>;
 					}
 					for (my $k=$START_INFO;$k<$STOP_INFO;)	{
 						@sample=($k .. $k+5);
 						$sample_value=join("\t",@a[@sample]);
 						push(@{$sample_info{$a[$CHR]}{$a[$POS]}{$a[$ALT]}},$sample_value);	
-						print "sample_value : $sample_value\n";<STDIN>;
 						$k+=6;
 					}	
 				}	
