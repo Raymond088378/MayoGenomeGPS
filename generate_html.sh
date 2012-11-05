@@ -23,6 +23,7 @@ else
 	upload_tb=$( cat $tool_info | grep -w '^UPLOAD_TABLEBROWSER' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 	tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
     samples=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" " ")    
+	flowcell=`echo $run_num | awk -F'_' '{print $NF}' | sed 's/.\(.*\)/\1/'`
 	# generate Coverage plot
 	for sample in $samples
 	do
@@ -80,6 +81,12 @@ else
 	do
 		$script_path/dashboard.sh $sample $run_info Results complete
 	done
+	if [ $type == "exome" ]
+	then
+		tool=Exome
+	else
+		tool=WholeGenome
+    fi
 	if [[ $analysis == "mayo" || $analysis == "realign-mayo" ]]
 	then
 		mem=$( cat $memory_info | grep -w '^AddSecondaryAnalysis_JVM' | cut -d '=' -f2)

@@ -147,7 +147,10 @@ else
 		perl $script_path/union.snv.pl list.filter.snv multi $output_dir/Reports/TUMOR.SNV.filtered.xls
 		perl $script_path/union.indel.pl list.indel multi $output_dir/Reports/TUMOR.INDEL.xls
 		perl $script_path/union.indel.pl list.filter.indel multi $output_dir/Reports/TUMOR.INDEL.filtered.xls	
-		rm list.snv list.filter.snv list.indel list.filter.indel	
+		rm list.snv list.filter.snv list.indel list.filter.indel
+
+
+		### Adding Beauty Anntation Module	
 	fi
     echo `date`
 fi	
