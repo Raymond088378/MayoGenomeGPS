@@ -15,6 +15,11 @@ else
 	multi=$6
 	script_path=$7
 	## paths
+	if [ ! -f $file ]
+	then
+		echo "input file is not found"
+		exit 1;
+	fi	
 	mkdir -p $output
 	cp $tool_info $output/$sample.tool_info.txt
 	tool_info=$output/$sample.tool_info.txt
