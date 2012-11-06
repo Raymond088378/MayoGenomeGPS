@@ -72,7 +72,7 @@ else
 	$script_path/filesize.sh sift $sam $input $snv_file $run_info
     #sift acceptable format 
     
-    if [[ $num_snvs == 0 || $chr -eq 'M' ]]
+    if [[ $num_snvs == 0 || $chr == 'M' ]]
     then
         touch $sift/${sam}_chr${chr}_predictions.tsv
         echo -e "Coordinates\tCodons\tTranscript ID\tProtein ID\tSubstitution\tRegion\tdbSNP ID\tSNP Type\tPrediction\tScore\tMedian Info\t# Seqs at position\tGene ID\tGene Name\tOMIM Disease\tAverage Allele Freqs\tUser Comment" > $sift/${sam}_chr${chr}_predictions.tsv
