@@ -239,9 +239,9 @@ else
 				mkdir -p $align_dir
 				if [ $paired == 1 ]
 				then
-					let numfiles=(`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`)/2
+					let numfiles=(`cat $sample_info | grep -w ^FASTQ:$sample= | cut -d '=' -f2| tr "\t" "\n" |wc -l`)/2
 				else
-					let numfiles=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`
+					let numfiles=`cat $sample_info | grep -w ^FASTQ:$sample= | cut -d '=' -f2| tr "\t" "\n" |wc -l`
 				fi	
 				if [ $numfiles -eq 0 ]
 				then
@@ -307,7 +307,7 @@ else
 			elif [[ $analysis == "realignment" || $analysis == "realign-mayo" ]]
 			then
 				mkdir -p $align_dir
-				infile=`cat $sample_info | grep -w ^BAM:${sample} | cut -d '=' -f2`
+				infile=`cat $sample_info | grep -w ^BAM:${sample}= | cut -d '=' -f2`
 				num_bams=`echo $infile | tr " " "\n" | wc -l`
 				if [ $num_bams -eq 0 ]
 				then
@@ -349,7 +349,7 @@ else
 				mkdir -p $realign_dir $variant_dir
 				if [ $analysis == "variant" ]
 				then
-					infile=`cat $sample_info | grep -w ^BAM:${sample} | cut -d '=' -f2`
+					infile=`cat $sample_info | grep -w ^BAM:${sample}= | cut -d '=' -f2`
 					num_bams=`echo $infile | tr " " "\n" | wc -l`
 					if [ $num_bams -eq 0 ]
 					then
@@ -656,9 +656,9 @@ else
 			then
 				if [ $paired == 1 ]
 				then
-					let numfiles=(`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`)/2
+					let numfiles=(`cat $sample_info | grep -w ^FASTQ:$sample= | cut -d '=' -f2| tr "\t" "\n" |wc -l`)/2
 				else
-					let numfiles=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`
+					let numfiles=`cat $sample_info | grep -w ^FASTQ:$sample= | cut -d '=' -f2| tr "\t" "\n" |wc -l`
 				fi
 				if [ $numfiles -eq 0 ]
 				then
@@ -706,7 +706,7 @@ else
 				qsub $args $qsub_args $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $igv		
 			elif [[ $analysis == "realignment" || $analysis == "realign-mayo" ]]
 			then
-				infile=`cat $sample_info | grep -w ^BAM:${sample} | cut -d '=' -f2`
+				infile=`cat $sample_info | grep -w ^BAM:${sample}= | cut -d '=' -f2`
 				num_bams=`echo $infile | tr " " "\n" | wc -l`
 				if [ $num_bams -eq 0 ]
 				then
@@ -760,7 +760,7 @@ else
 				if [ $analysis == "variant" ]
 				then
 					vvid=""
-                    infile=`cat $sample_info | grep -w ^BAM:${group} | cut -d '=' -f2`
+                    infile=`cat $sample_info | grep -w ^BAM:${group}= | cut -d '=' -f2`
 					num_bams=`echo $infile | tr " " "\n" | wc -l`
 					if [ $num_bams -eq 0 ]
 					then
