@@ -76,7 +76,7 @@ else
 	MESG=" ${text} ${text1} $tool workflow completed for ${run_num} on ${END} and ready for tertiary analysis in ${output_dir} "
 	## send the completion email
 	TO=$USER
-	echo -e "$MESG\n\nTIMESTAMPS:" | cat - $output_dir/log.txt | mailx -v -s "$SUB" -c Kahl.Jane@mayo.edu "$email" 
+	echo -e "$MESG\n\nTIMESTAMPS:" | cat - $output_dir/log.txt | mailx -v -s "$SUB" -c Kahl.Jane@mayo.edu,Hossain.Asif@mayo.edu "$email" 
 	for sample in $samples
 	do
 		$script_path/dashboard.sh $sample $run_info Results complete
