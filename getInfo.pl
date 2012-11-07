@@ -123,9 +123,10 @@ $index =~ s/:$//;
 #print sample info for run_info file
 #print "\n";
 my @parameters=split(/\//,$options{input});
+my $input_dir= $options{input};
 my $delivery = $options{input} =~ s/primary/secondary/g;
 print R_INFO "TOOL=GENOME_GPS\n" . "VERSION=1.2\n" . "TYPE=\n" . "DISEASE=NA\n" . "READLENGTH=\n" . "PAIRED=\n" . "ANALYSIS=\n" . "PI=$parameters[3]\n"
-. "MULTISAMPLE=\n" . "INPUT_DIR=$options{input}\n" . "BASE_OUTPUT_DIR=/data2/bsi/secondary/\n" . "SAMPLENAMES=" .$sample. "\n" . "GROUPNAMES=\n" . "LANEINDEX=" .$lane. "\n".
+. "MULTISAMPLE=\n" . "INPUT_DIR=$input_dir\n" . "BASE_OUTPUT_DIR=/data2/bsi/secondary/\n" . "SAMPLENAMES=" .$sample. "\n" . "GROUPNAMES=\n" . "LANEINDEX=" .$lane. "\n".
 "LABINDEXES=" .$index. "\n" . "CHRINDEX=1:2:3:4:5:6:7:8:9:10:11:12:13:14:15:16:17:18:19:20:21:22:X:Y:M\n" . "TOOL_INFO=\n" 
 . "SAMPLE_INFO=$options{output}/sample_info.txt\n"  . "MEMORY_INFO=\n" . "OUTPUT_FOLDER=$parameters[4]\n" .
 "GENOMEBUILD=hg19\nALIGNER=NOVOALIGN\nFASTQC=NO\nFOLDER_FASTQC=/data2/bsi/reports/$parameters[4]/fastqc\nVARIANT_TYPE=BOTH\nSNV_CALLER=GATK\nSOMATIC_CALLER=SOMATICSNIPER\n"
