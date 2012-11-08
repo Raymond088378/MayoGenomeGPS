@@ -19,6 +19,9 @@ else
     groups=$( cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2 | tr ":" " ")
     variant_type=$( cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2 |tr "[a-z]" "[A-Z]")
     snv_caller=$( cat $run_info | grep -w '^SNV_CALLER' | cut -d '=' -f2)
+    ### Beauty Specific
+    BEAUTYDIR="$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )/beauty_annot_module"
+    BEAUTYDB=$( cat $tool_info | grep -w '^ANNOTATION_MODULE_DATA' | cut -d '=' -f2 )
     ### merge per sample files to make merged report to be uploaded to TBB
     ##Merge the unfiltered file
     cd $output_dir/Reports_per_Sample/
@@ -151,11 +154,37 @@ else
 		rm list.snv list.filter.snv list.indel list.filter.indel	
 	fi
 
+	###Intended to reduce repitious coding.
+	callJasonsScripts(){
+		INFILTER="$output_dir/Reports/$1.filtered.xls"
+		CANCTMP="$output_dir/Reports/$1.cancerDrug.xls"
+		PANLTMP="$output_dir/Reports/$1.clinPanel.xls"
+		KINOMTPM="$output_dir/Reports/$1.kinome.xls"
+
+		perl $BEAUTYDIR/addCancerDrugs.pl $BEAUTYDB/NCCN.CancerDrugs.txt $INFILTER $CANCTMP
+ 		perl $BEAUTYDIR/addClinPanel.pl $BEAUTYDB/uniq_genes_in_clinical_panels.txt $CANCTMP $PANLTMP
+		perl $BEAUTYDIR/addKinome.pl $BEAUTYDB/kinome.genes.txt $PANLTMP $KINOMTPM
+
+		rm $INFILTER $CANCTMP $PANLTMP
+		mv $KINOMTPM $INFILTER
+	}
+
+
 	### Adding Beauty Anntation Module
 	if [ $snv_caller == "BEAUTY_EXOME" ]
 	then
+		callJasonsScripts "SNV"
+		callJasonsScripts "INDEL"
 		## Script to create additional annotation file, with pharmicogentic emphasis
 		$script_path/PharmacoAnnotModule.sh $output_dir/Reports/SNV.filtered.xls $run_info
+		$script_path/PharmacoAnnotModule.sh $output_dir/Reports/INDEL.filtered.xls $run_info
+		
+		if [ $multi_sample != "NO" ] ; then
+			callJasonsScripts "TUMOR.SNV"
+			callJasonsScripts "TUMOR.INDEL"
+			$script_path/PharmacoAnnotModule.sh $output_dir/Reports/TUMOR.SNV.filtered.xls $run_info
+			$script_path/PharmacoAnnotModule.sh $output_dir/Reports/TUMOR.INDEL.filtered.xls $run_info
+		fi
 	fi
 
     echo `date`
