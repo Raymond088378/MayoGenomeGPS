@@ -19,7 +19,7 @@ else
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
 	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2 )
     run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
-	type=$( cat $run_info | grep -w '^TOOL' | cut -d '=' -f2|tr "[a-z]" "[A-Z]")
+	type=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[a-z]" "[A-Z]")
 	upload_tb=$( cat $tool_info | grep -w '^UPLOAD_TABLEBROWSER' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 	tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
     samples=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" " ")    
@@ -71,12 +71,12 @@ else
 		text1="with warnings"
 	fi		
 	
-	email=`finger $USER | grep Mail | awk '{print $NF}'`
+	email=`finger $USER | awk -F ';' '{print $2}'`
 	SUB="$tool workflow completion for RunID ${run_num} "
 	MESG=" ${text} ${text1} $tool workflow completed for ${run_num} on ${END} and ready for tertiary analysis in ${output_dir} "
 	## send the completion email
 	TO=$USER
-	echo -e "$MESG\n\nTIMESTAMPS:" | cat - $output_dir/log.txt | mailx -v -s "$SUB" -c Kahl.Jane@mayo.edu,Hossain.Asif@mayo.edu "$email" 
+	echo -e "$MESG\n\nTIMESTAMPS:" | cat - $output_dir/log.txt | mailx -s "$SUB" -c Kahl.Jane@mayo.edu,Hossain.Asif@mayo.edu "$email" 
 	for sample in $samples
 	do
 		$script_path/dashboard.sh $sample $run_info Results complete

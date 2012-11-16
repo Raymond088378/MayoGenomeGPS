@@ -3,7 +3,7 @@
 align_novo=4096M
 align_read_bwa=1024M
 align_bwa=8G
-processBAM=8704M
+processBAM=11G
 extract_reads_bam=5632M
 reformat_BAM=6144M
 reformat_pairBAM=6144M

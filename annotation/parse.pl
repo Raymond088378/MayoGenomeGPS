@@ -13,6 +13,8 @@ for ($i=0 ; $i <= $#a ; $i++)	{
 	}
 }	
 
+#print join ("\t",@a);
+#print "\n";
 $stop=0;
 $bases=0;
 $start=$a[1];
@@ -26,14 +28,18 @@ else	{
 }	
 $num_samples=($#a-6+1)/2;
 
+#print "$num_samples\n";
+
 	
 print "$a[0]\t$start\t$stop\t$a[2]\t$a[3]\t$a[4]\t$a[5]\t$bases";
 my $init=5;
 for (my $i=1; $i <=$num_samples; $i++)	{
 	$read=$a[$init+1];
+	#print "\n$read\n";
 	if ($read eq "n/a")	{
 		$read="n/a";
 		$depth="n/a";
+		$alt="n/a"
 	}
 	else{	
 	($ref,$alt)=split(/,/,$read);

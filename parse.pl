@@ -34,6 +34,7 @@ for (my $i=1; $i <=$num_samples; $i++)	{
 	if ($read eq "n/a")	{
 		$read="n/a";
 		$depth="n/a";
+		$alt="n/a"
 	}
 	else{	
 	($ref,$alt)=split(/,/,$read);

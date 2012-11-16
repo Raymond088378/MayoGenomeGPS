@@ -8,7 +8,7 @@ thread=$7
 
 if [ `cat $output/$ff.SNV.vcf | awk '$0 !~ /^#/' | wc -l` -gt 0 ]
 then
-	awk cat $output/$ff.SNV.vcf | awk '$0 !~ /^#/' | sed -e '/chr/s///g' | awk '{print $1","$2",1,"$4"/"$5}' > $output/$ff.SNV.vcf.sift
+	cat $output/$ff.SNV.vcf | awk '$0 !~ /^#/' | sed -e '/chr/s///g' | awk '{print $1","$2",1,"$4"/"$5}' > $output/$ff.SNV.vcf.sift
 	a=`pwd`
 
 	#running SIFT for each sample
