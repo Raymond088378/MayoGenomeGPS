@@ -428,9 +428,9 @@ else
 			class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }'`
 			col=`cat $file | awk 'NR==1' | awk -v num=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == num) {print i} } }'`
 			echo -e "Total Known SNVs" >> $numbers/$group.$sample.out
-			cat $file | awk 'NR>2' | awk -v num=$dbsnp -v col=$col '$col !~ /n\/a/ && $num ~ /^rs/' | wc -l >> $numbers/$group.$sample.out
+			cat $file | awk 'NR>2' | awk -v num=$dbsnp -v col=$col -v ref=$ref '$col !~ /n\/a/ && $num ~ /^rs/ && $col !~ $ref$ref' | wc -l >> $numbers/$group.$sample.out
 			echo -e "KNOWN Transition To Transversion Ratio" >> $numbers/$group.$sample.out
-			cat $file | awk 'NR>2' | awk -v num=$dbsnp -v col=$col '$col !~ /n\/a/ && $num ~ /^rs/' > $file.known
+			cat $file | awk 'NR>2' | awk -v num=$dbsnp -v col=$col -v ref=$ref '$col !~ /n\/a/ && $num ~ /^rs/ && $col !~ $ref$ref' > $file.known
 			tt=`perl $script_path/transition.transversion.persample.pl $file.known $ref $alt`
 			if [ ${#tt} -gt 0 ]
 			then
@@ -442,14 +442,14 @@ else
 			for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
 			do
 				echo -e "KNOWN $snv" >> $numbers/$group.$sample.out
-				cat $file.known | awk -F'\t' -v comp=$snv -v num=$class '$num == comp'  | wc -l >> $numbers/$group.$sample.out
+				cat $file.known | awk -F'\t' -v comp=$snv -v col=$col -v ref=$ref -v num=$class '$num == comp && $col !~ $ref$ref '  | wc -l >> $numbers/$group.$sample.out
 			done	
 			rm $file.known
 			
 			echo -e "Total Novel SNVs" >> $numbers/$group.$sample.out
-			cat $file | awk 'NR>2' | awk -v num=$dbsnp -v col=$col '$col !~ /n\/a/ && $num !~ /^rs/' | wc -l >> $numbers/$group.$sample.out
+			cat $file | awk 'NR>2' | awk -v num=$dbsnp -v col=$col -v ref=$ref '$col !~ /n\/a/ && $num !~ /^rs/ && $col !~ $ref$ref' | wc -l >> $numbers/$group.$sample.out
 			echo -e "KNOWN Transition To Transversion Ratio" >> $numbers/$group.$sample.out
-			cat $file | awk 'NR>2' | awk -v num=$dbsnp -v col=$col '$col !~ /n\/a/ && $num !~ /^rs/' > $file.novel
+			cat $file | awk 'NR>2' | awk -v num=$dbsnp -v col=$col -v ref=$ref '$col !~ /n\/a/ && $num !~ /^rs/ && $col !~ $ref$ref' > $file.novel
 			tt=`perl $script_path/transition.transversion.persample.pl $file.novel $ref $alt`
 			if [ ${#tt} -gt 0 ]
 			then
@@ -461,7 +461,7 @@ else
 			for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
 			do
 				echo -e "NOVEL $snv" >> $numbers/$group.$sample.out
-				cat $file.novel | awk -F'\t' -v comp=$snv -v num=$class '$num == comp' | wc -l >> $numbers/$group.$sample.out  
+				cat $file.novel | awk -F'\t' -v ref=$ref -v col=$col -v comp=$snv -v num=$class '$num == comp && $col !~ $ref$ref' | wc -l >> $numbers/$group.$sample.out  
 			done
 			rm $file.novel
 			## INDELs
@@ -483,7 +483,7 @@ else
                         for indel in EXON_DELETED FRAME_SHIFT CODON_CHANGE UTR_5_DELETED UTR_3_DELETED CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR UTR_5_PRIME UTR_3_PRIME		
 			do
 				echo -e "$indel" >> $numbers/$group.$sample.out 
-				cat $file | awk -F'\t' -v comp=$indel -v num=$class -v col=$col '$col !~ /n\/a/ && $num == comp'  | wc -l >> $numbers/$group.$sample.out 
+				cat $file | awk -F'\t' -v comp=$indel -v num=$class -v ref=$ref -v col=$col '$col !~ /n\/a/ && $num == comp && $col !~ $ref$ref'  | wc -l >> $numbers/$group.$sample.out 
 			done	
 			$script_path/dashboard.sh $sample $run_info Statistics complete
 		done
@@ -519,8 +519,8 @@ else
             raw_snvs=0
             raw_indels=0
             col=`cat $variants/$group.somatic.variants.raw.vcf | awk '$0 ~ /^#/' | tail -1 | awk -v s=$tumor -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
-            a=`cat $variants/$group.somatic.variants.raw.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\.\/\./' | awk 'length($4) == 1 && length($5) == 1' | wc -l `
-            b=`cat $variants/$group.somatic.variants.raw.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\.\/\./' | awk 'length($4) > 1 || length($5) > 1' | wc -l`
+            a=`cat $variants/$group.somatic.variants.raw.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^0\/0/ && $num !~ /^\.\/\./' | awk 'length($4) == 1 && length($5) == 1' | wc -l `
+            b=`cat $variants/$group.somatic.variants.raw.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^0\/0/ && $num !~ /^\.\/\./' | awk 'length($4) > 1 || length($5) > 1' | wc -l`
             raw_indels=`expr $raw_indels "+" $b`
             raw_snvs=`expr $raw_snvs "+" $a`
 
@@ -529,8 +529,8 @@ else
             filtered_snvs=0
             filtered_indels=0
             col=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 ~ /^#/' | tail -1 | awk -v s=$tumor -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
-            a=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\.\/\./' | awk 'length($4) == 1 && length($5) == 1' | grep -c PASS`
-            b=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\.\/\./' | awk 'length($4) > 1 || length($5) > 1' | grep -c PASS `
+            a=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^0\/0/ && $num !~ /^\.\/\./' | awk 'length($4) == 1 && length($5) == 1' | grep -c PASS`
+            b=`cat $variants/$group.somatic.variants.filter.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^0\/0/ && $num !~ /^\.\/\./' | awk 'length($4) > 1 || length($5) > 1' | grep -c PASS `
             filtered_indels=`expr $filtered_indels "+" $b`
             filtered_snvs=`expr $filtered_snvs "+" $a`
 
@@ -544,13 +544,13 @@ else
             for chr in $chrs
             do
                 col=`cat $ontarget/TUMOR.$group.variants.chr${chr}.SNV.filter.i.c.vcf| awk '$0 ~ /^#/' | tail -1 | awk -v s=$tumor -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
-                s=`cat $ontarget/TUMOR.$group.variants.chr${chr}.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' |  awk -v num=$col '$num !~ /^\.\/\./ ' | wc -l`
+                s=`cat $ontarget/TUMOR.$group.variants.chr${chr}.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' |  awk -v num=$col '$num !~ /^0\/0/ && $num !~ /^\.\/\./ ' | wc -l`
 				genomic_snvs=`expr $genomic_snvs "+" $s`
-				s_c=`cat $ontarget/TUMOR.$group.variants.chr${chr}.SNV.filter.i.c.vcf | awk '$0 !~ /^#/'  | awk -v num=$col '$num !~ /^\.\/\./ ' |  grep -c 'CAPTURE=1'`
+				s_c=`cat $ontarget/TUMOR.$group.variants.chr${chr}.SNV.filter.i.c.vcf | awk '$0 !~ /^#/'  | awk -v num=$col '$num !~ /^0\/0/ && $num !~ /^\.\/\./ ' |  grep -c 'CAPTURE=1'`
 				capture_snvs=`expr $capture_snvs "+" $s_c`
 				col=`cat $ontarget/TUMOR.$group.variants.chr${chr}.INDEL.filter.i.c.vcf| awk '$0 ~ /^#/' | tail -1 | awk -v s=$tumor -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
-                                i=`cat $ontarget/TUMOR.$group.variants.chr${chr}.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' |  awk -v num=$col '$num !~ /^\.\/\./ ' | wc -l`
-				i_c=`cat $ontarget/TUMOR.$group.variants.chr${chr}.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/'  | awk -v num=$col '$num !~ /^\.\/\./ ' |  grep -c 'CAPTURE=1'`
+                                i=`cat $ontarget/TUMOR.$group.variants.chr${chr}.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' |  awk -v num=$col '$num !~ /^0\/0/ && $num !~ /^\.\/\./ ' | wc -l`
+				i_c=`cat $ontarget/TUMOR.$group.variants.chr${chr}.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/'  | awk -v num=$col '$num !~ /^0\/0/ && $num !~ /^\.\/\./ ' |  grep -c 'CAPTURE=1'`
 				capture_indels=`expr $capture_indels "+" $i_c`
 				genomic_indels=`expr $genomic_indels "+" $i`
             done
@@ -575,9 +575,9 @@ else
 			class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }'`
 			col=`cat $file | awk 'NR==1' | awk -v num=$tumor -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == num) {print i} } }'`
 			echo -e "Total Known SNVs" >> $numbers/TUMOR.$group.$tumor.out
-			cat $file | awk 'NR>2' | awk -v num=$dbsnp -v col=$col '$col !~ /n\/a/ && $num ~ /^rs/' | wc -l >> $numbers/TUMOR.$group.$tumor.out
+			cat $file | awk 'NR>2' | awk -v num=$dbsnp -v col=$col -v ref=$ref '$col !~ /n\/a/ && $num ~ /^rs/ && $col !~ $ref$ref' | wc -l >> $numbers/TUMOR.$group.$tumor.out
 			echo -e "KNOWN Transition To Transversion Ratio" >> $numbers/TUMOR.$group.$tumor.out
-			cat $file | awk -v num=$dbsnp -v col=$col '$col !~ /n\/a/ && $num ~ /^rs/' > $file.known
+			cat $file | awk -v num=$dbsnp -v col=$col -v ref=$ref '$col !~ /n\/a/ && $num ~ /^rs/ && $col !~ $ref$ref' > $file.known
 			tt=`perl $script_path/transition.transversion.persample.pl $file.known $ref $alt`
 			if [ ${#tt} -gt 0 ]
 			then
@@ -589,14 +589,14 @@ else
 			for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
 			do
 				echo -e "KNOWN $snv" >> $numbers/TUMOR.$group.$tumor.out
-				cat $file.known | awk -F'\t' -v comp=$snv -v num=$class '$num == comp'  | wc -l >> $numbers/TUMOR.$group.$tumor.out
+				cat $file.known | awk -F'\t' -v col=$col -v comp=$snv -v ref=$ref -v num=$class '$num == comp && $col !~ $ref$ref'  | wc -l >> $numbers/TUMOR.$group.$tumor.out
 			done	
 			rm $file.known
 			
 			echo -e "Total Novel SNVs" >> $numbers/TUMOR.$group.$tumor.out
-			cat $file | awk 'NR>2' | awk -v num=$dbsnp -v col=$col '$col !~ /n\/a/ && $num !~ /^rs/' | wc -l >> $numbers/TUMOR.$group.$tumor.out
+			cat $file | awk 'NR>2' | awk -v num=$dbsnp -v ref=$ref -v col=$col '$col !~ /n\/a/ && $num !~ /^rs/ && $col !~ $ref$ref' | wc -l >> $numbers/TUMOR.$group.$tumor.out
 			echo -e "KNOWN Transition To Transversion Ratio" >> $numbers/TUMOR.$group.$tumor.out
-			cat $file | awk 'NR>2' | awk -v num=$dbsnp -v col=$col '$col !~ /n\/a/ && $num !~ /^rs/' > $file.novel
+			cat $file | awk 'NR>2' | awk -v num=$dbsnp -v ref=$ref -v col=$col '$col !~ /n\/a/ && $num !~ /^rs/ && $col !~ $ref$ref' > $file.novel
 			tt=`perl $script_path/transition.transversion.persample.pl $file.novel $ref $alt`
 			if [ ${#tt} -gt 0 ]
 			then
@@ -608,7 +608,7 @@ else
 			for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
 			do
 				echo -e "NOVEL $snv" >> $numbers/TUMOR.$group.$tumor.out
-				cat $file.novel | awk -F'\t' -v comp=$snv -v num=$class '$num == comp' | wc -l >> $numbers/TUMOR.$group.$tumor.out 
+				cat $file.novel | awk -F'\t' -v col=$col -v ref=$ref -v comp=$snv -v num=$class '$num == comp && $col !~ $ref$ref' | wc -l >> $numbers/TUMOR.$group.$tumor.out 
 			done
 			rm $file.novel
 			## INDELs
@@ -626,11 +626,11 @@ else
 			## Annotated INDELs
 			file=$variants/TUMOR.$group.INDEL.filtered.xls
 			col=`cat $file | awk 'NR==1' | awk -v num=$tumor -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == num) {print i} } }'`
-                        class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /Effect/) {print i} } }'`
+            class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /Effect/) {print i} } }'`
 			for indel in EXON_DELETED FRAME_SHIFT CODON_CHANGE UTR_5_DELETED UTR_3_DELETED CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR UTR_5_PRIME UTR_3_PRIME	
 			do
 				echo -e "$indel" >> $numbers/TUMOR.$group.$tumor.out
-				cat $file | awk -F'\t' -v comp=$indel -v num=$class -v col=$col '$col !~ /n\/a/ && $num == comp'  | wc -l >> $numbers/TUMOR.$group.$tumor.out
+				cat $file | awk -F'\t' -v comp=$indel -v ref=$ref -v num=$class -v col=$col '$col !~ /n\/a/ && $num == comp && $col !~ $ref$ref'  | wc -l >> $numbers/TUMOR.$group.$tumor.out
 			done	
 			if [ $tool == "whole_genome" ]
 			then

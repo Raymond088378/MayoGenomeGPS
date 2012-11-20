@@ -3,7 +3,7 @@
 align_novo=4096M
 align_read_bwa=1024M
 align_bwa=8G
-processBAM=11G
+processBAM=13G
 extract_reads_bam=5632M
 reformat_BAM=6144M
 reformat_pairBAM=6144M
@@ -24,7 +24,7 @@ sift=3584M
 polyphen=8G
 snpeff=5632M
 reports=3G
-sample_report=932M
+sample_report=2G
 run_single_crest=4096M
 run_crest_multi_cover=6144M
 run_crest_multi=4096M
