@@ -76,15 +76,20 @@ while(my $l = <FH>){
 			my $id="$a[$CHR]\*$a[$START]\*$a[$STOP]\*$a[$ALT]\*$a[$BASE]";
 			my $id_a="$a[$STOP]\*$a[$ALT]\*$a[$BASE]";
 			##snpeff values	
+			#if ($count == 2)	{
+			#	<STDIN>;
+			#}
 			my $snpeff_value=join("\t",@a[@annot_snpeff]);
 			push(@{$snpeff{$a[$CHR]}{$a[$START]}{$id_a}},$snpeff_value);
 			if ($id ne $prev)	{
 				my $value=$#{$sample_info{$a[$CHR]}{$a[$START]}{$id_a}};
-				if ($flag eq "multi")	{$value=($value+2) * $prev_samples;}
-				else	{$value=($value+2);}	
+				#print "$a[$START]\tvalue=$value\tpre=$prev_samples\n";
+				#<STDIN>;#$value=$prev_samples;
+				$value=$value+1;	
+				#if ($a[$START] == "1684347" || $a[$START] == "761957")	{print "value=$value\ti=$i\tpre=$prev_samples\n";}
 				my $sample_value;
 				my $sam;
-				if ($value == 0){
+				if ($value == $prev_samples){
 					for (my $k=$START_INFO;$k<$STOP_INFO;)	{
 						@sample=($k .. $k+1);
 						$sample_value=join("\t",@a[@sample]);
@@ -93,7 +98,8 @@ while(my $l = <FH>){
 					}
 				}
 				else {
-					for(my $ll=$value; $ll <$i;$ll++){
+					$value=$prev_samples-$value;
+					for(my $ll=0; $ll <$value;$ll++){
 						$sam="n/a\tn/a\t";
 						$sam =~ s/\s*$//;
 						push(@{$sample_info{$a[$CHR]}{$a[$START]}{$id_a}},$sam);	
@@ -115,6 +121,7 @@ while(my $l = <FH>){
 	}
 	$count++;
 	close FILE;
+	#<STDIN>;
 }
 close FH;
 print OUT "-\t";

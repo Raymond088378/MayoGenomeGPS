@@ -82,11 +82,12 @@ while(my $l = <FH>){
 			push(@{$snpeff{$a[$CHR]}{$a[$POS]}{$a[$ALT]}},$snpeff_value);
 			if ($id ne $prev)	{
 				my $value=$#{$sample_info{$a[$CHR]}{$a[$POS]}{$a[$ALT]}};
-				if ($flag eq "multi")	{$value=($value+2) * $prev_samples;}
-				else	{$value=($value+2);}	
+				#if ($flag eq "multi")	{$value=($value+2) * $prev_samples;}
+				#else	{$value=($value+2);}	
+				$value=$value+1;
 				my $sample_value;
 				my $sam;
-				if ($value == 0){
+				if ($value == $prev_samples){
 					for (my $k=$START_INFO;$k<$STOP_INFO;)	{
 						@sample=($k .. $k+5);
 						$sample_value=join("\t",@a[@sample]);
@@ -95,7 +96,8 @@ while(my $l = <FH>){
 					}
 				}
 				else {
-					for(my $ll=$value; $ll <$i;$ll++){
+					$value=$prev_samples-$value;
+					for(my $ll=0; $ll <$value;$ll++){
 						$sam="n/a\tn/a\tn/a\tn/a\tn/a\tn/a\t";  
 						$sam =~ s/\s*$//;
 						push(@{$sample_info{$a[$CHR]}{$a[$POS]}{$a[$ALT]}},$sam);	
