@@ -67,7 +67,7 @@ else
 			else
 				cp $input/$indel_file $reports/$sample.variants.INDEL.raw.vcf
 			fi	
-				in="-V $reports/$sample.variants.SNV.raw.vcf $reports/$sample.variants.INDEL.raw.vcf"
+				in="-V $reports/$sample.variants.SNV.raw.vcf -V $reports/$sample.variants.INDEL.raw.vcf"
 				$script_path/combinevcf.sh "$in" $reports/$sample.variants.raw.vcf $run_info yes
 				cp $reports/$sample.variants.raw.vcf $reports/$sample.variants.filter.vcf
 			for chr in $chrs

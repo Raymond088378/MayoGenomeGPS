@@ -60,7 +60,8 @@ while(my $row = <IN>){
 		}
 	}
 	if ($PSOM >= $filter_prob){
-	print OUT "$chr\t$pos\t.\t$ref\t$alt\t.\tPASS\t" . "NS=2:DP=$total_dp:PGERM=$PGERM:PLOH=$PLOH:PHETMUT=$PHETMUT:PHOMMUT=$PHOMMUT:PSOM=$PSOM:PPS=$line[$#line]" . "\tGT:AD:DP:GQ\t" . "$ngeno[$id]:$normal_depth_ref,$normal_depth_alt:$normal_depth:99\t" . "$tgeno[$id]:$tumor_depth_ref,$tumor_depth_alt:$tumor_depth:99\n";	    
+	
+	print OUT "$chr\t$pos\t.\t$ref\t$alt\t.\tPASS\t" . "." . "\tGT:IGT:DP:DP4:BCOUNT:GQ:JGQ:VAQ:BQ:MQ:TMQ:SS:SSC:PGERM:PLOH:PHETMUT:PHOMMUT:PSOM:PPS:INSC:DELC:POW:IMPAIR:MQ0:MUTX_LOD:SOMATIC:AD\t" . "$ngeno[$id]:.:$normal_depth:.:.:99:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:$normal_depth_ref,$normal_depth_alt\t" . "$tgeno[$id]:.:$tumor_depth:.:.:99:.:.:.:.:.:.:.:$PGERM:$PLOH:$PHETMUT:$PHOMMUT:$PSOM:$line[$#line]:.:.:.:.:.:.:.:$tumor_depth_ref,$tumor_depth_alt\n";	    
 }}
 close IN;
 close OUT;
@@ -71,20 +72,31 @@ sub header{
     my $header = qq{##fileformat=VCFv4.1
 ##fileDate=$date
 ##source=jsm2vcf.pl
-##INFO=<ID=AN,Number=1,Type=Integer,Description="Total number of alleles in called genotypes">
-##INFO=<ID=NS,Number=1,Type=Integer,Description="Number of Samples With Data">
-##INFO=<ID=NS,Number=1,Type=Integer,Description="Number of Samples With Data">
-##INFO=<ID=DP,Number=1,Type=Integer,Description="Total Depth">
 ##FORMAT=<ID=AD,Number=.,Type=Integer,Description="Allelic depths for the ref and alt alleles in the order listed">
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 ##FORMAT=<ID=GQ,Number=1,Type=Float,Description="Genotype Quality">
 ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth for This Sample">
+##FORMAT=<ID=DP4,Number=.,Type=Integer,Description="# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases">
 ##FORMAT=<ID=PGERM,Number=1,Type=Float,Description="probability of germ line call">
 ##FORMAT=<ID=PLOH,Number=1,Type=Float,Description="probability of Loss of heterozygosity">
 ##FORMAT=<ID=PHETMUT,Number=1,Type=Float,Description="probability of Hetero zygous mutation">
 ##FORMAT=<ID=PHOMMUT,Number=1,Type=Float,Description="probability of Homo zygous mutation">
 ##FORMAT=<ID=PSOM,Number=1,Type=Float,Description="probability of somatic mutation">
-##FORMAT=<ID=PPS,Number=1,Type=Float,Description="post processed probability of somatic call ">
+##FORMAT=<ID=PPS,Number=1,Type=Float,Description="post processed probability of somatic call">
+##FORMAT=<ID=IGT,Number=1,Type=String,Description="Genotype when called independently (only filled if called in joint prior mode)">
+##FORMAT=<ID=BCOUNT,Number=.,Type=Integer,Description="Occurrence count for each base at this site (A,C,G,T)">
+##FORMAT=<ID=BQ,Number=.,Type=Integer,Description="Average base quality">
+##FORMAT=<ID=JGQ,Number=1,Type=Integer,Description="Joint genotype quality (only filled if called in join prior mode)">
+##FORMAT=<ID=MQ,Number=.,Type=Integer,Description="Average mapping quality">
+##FORMAT=<ID=SS,Number=1,Type=Integer,Description="Variant status relative to non-adjacent Normal, 0=wildtype,1=germline,2=somatic,3=LOH,4=unknown">
+##FORMAT=<ID=SSC,Number=1,Type=Integer,Description="Somatic Score">
+##FORMAT=<ID=TMQ,Number=1,Type=Integer,Description="Average mapping quality across all reads">
+##FORMAT=<ID=VAQ,Number=1,Type=Integer,Description="Variant allele quality">
+##FORMAT=<ID=POW,Number=1,Type=Float,Description="given the tumor sequencing depth, what is the power to detect a mutation at 0.3 allelic fraction * given the normal sequencing depth, what power did we have to detect (and reject) this as a germline variant">
+##FORMAT=<ID=IMPAIR,Number=1,Type=Integer,Description="number of reads which have abnormal pairing (orientation and distance)">
+##FORMAT=<ID=MQ0,Number=1,Type=Integer,Description="total number of mapping quality zero reads in the tumor and normal at this locus">
+##FORMAT=<ID=MUTX_LOD,Number=1,Type=Float,Description="log likelihood of ( normal being reference / normal being altered )">
+##FORMAT=<ID=SOMATIC,Number=1,Type=Integer,Description="keep/Reject (confident call)">
 #CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t${nsm}\t${tsm}\n};
 print OUT $header;
 }

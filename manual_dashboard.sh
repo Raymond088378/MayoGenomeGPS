@@ -2,7 +2,7 @@
 
 if [ $# != 4 ]
 then
-	echo -e "script to upload the status to the dash board when megng diffrent flowcell\nUsage: ./manual_dashboard.sh <','seperated flowcells> <type of data><status <Begnnning,Complete> <full/path/to/tool_info file>"
+	echo -e "script to upload the status to the dash board when megng diffrent flowcell\nUsage: ./manual_dashboard.sh <','seperated flowcells> <type of data(Exome/WholeGenome)><status <Beginning/Complete/Delivered> <full/path/to/tool_info file>"
 else
 	flowcells=`echo $1 | tr "," " "`
 	type=$2

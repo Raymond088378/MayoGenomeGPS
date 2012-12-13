@@ -85,6 +85,11 @@ else
 			done	
         fi
     fi
+	if [ `echo $input | tr " " "\n" | awk '$0 ~ /-priority/'| wc -l` -gt 0 ]
+	then
+		cat $output | $script_path/add.format.set.pl > $output.temp.vcf
+		mv $output.temp.vcf $output
+	fi	
     echo `date`
 fi	
 	
