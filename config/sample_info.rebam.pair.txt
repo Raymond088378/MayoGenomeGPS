@@ -1,3 +1,0 @@
-BAM:pair1=pair.bam
-
-pair1=s_normal	s_tumor

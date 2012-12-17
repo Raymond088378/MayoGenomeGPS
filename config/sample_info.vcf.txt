@@ -1,4 +1,0 @@
-SNV:s_normal=s_normal.target.vcf
-INDEL:s_normal=s_normal.target.vcf
-SNV:s_tumor=s_tumor.target.vcf
-INDEL:s_tumor=s_tumor.target.vcf
