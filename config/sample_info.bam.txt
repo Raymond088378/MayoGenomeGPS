@@ -1,0 +1,4 @@
+BAM:s_normal=s_normal.sorted.bam
+BAM:s_tumor=s_tumor.sorted.bam
+
+pair1=s_normal	s_tumor

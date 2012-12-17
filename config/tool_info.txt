@@ -1,0 +1,149 @@
+## path to all the tools and references to run workflow
+## whole genome references
+
+REF_GENOME=/data2/bsi/reference/sequence/human/ncbi/37.1/allchr.fa
+SPLIT_GENOME=/data2/bsi/reference/sequence/human/ncbi/37.1/
+KGENOME=/data2/bsi/reference/genetics/1kGenome/hg19/
+HAPMAP=/data2/bsi/reference/genetics/hapmap/hg19/
+CODON_REF=/data2/bsi/reference/misc/percent_codon_syn_usage.txt
+GAP_GENOME=/data2/bsi/reference/db/gaps.hg19.bed
+BWA_REF=/data2/bsi/reference/sequence/human/ncbi/37.1/indexed/allchr.fa
+BLAT_REF=/data2/bsi/reference/db/hg19.2bit
+KG_INDELS_VCF=/data2/bsi/reference/genetics/1kGenome/hg19/ALL.wgs.phase1_integrated_calls.20101123.snps_indels_svs.sites.vcf
+DBSNP_VCF=/data2/bsi/reference/annotation/dbSNP/hg19/dbsnp_135.hg19.vcf.gz
+HAPMAP_VCF=/data2/bsi/reference/genetics/hapmap/hg19/hapmap_3.3.hg19.sites.vcf
+OMNI_VCF=/data2/bsi/reference/genetics/omni/hg19/1000G_omni2.5.hg19.sites.vcf
+NOVO_REF=/data2/bsi/reference/sequence/human/ncbi/37.1/indexed/allchr.nix
+dbSNP_REF=/data2/bsi/reference/annotation/dbSNP/hg19/dbsnp_135.hg19.vcf.gz
+KGENOME_REF=/data2/bsi/reference/genetics/1kGenome/hg19/kgenome.hg19.vcf
+dbSNP_SNV_rsIDs=/data4/bsi/refdata/NCBI/dbsnp/UCSChg19dbSNP135.single
+COSMIC_INDEL_REF=/data2/bsi/reference/genetics/Cosmic/CosmicInsExport_v53_180511_selected_col.tsv
+COSMIC_SNV_REF=/data2/bsi/reference/genetics/Cosmic/CosmicMutantExport_v53_180511_selected_col.tsv
+dbSNP_disease_rsIDs=/data4/bsi/refdata/NCBI/dbsnp/UCSChg19dbSNP135flagged
+UCSC_TRACKS=/data2/bsi/reference/UCSC/hg19/
+ACC_TO_GENE=/data4/bsi/refdata/NCBI/RefSeq/acc_symbol_match.txt
+GeneIdMap=/data2/bsi/reference/misc/gene_id_name_mapping.txt
+UCSC_REF_FLAT=/data4/bsi/refdata/bictools/annotation/UCSC/ucsc_refflat_hg19_2011-01-24.txt
+UCSC_REF_FLAT_BED=/data4/bsi/refdata/bictools/annotation/UCSC/hg19/ucsc_refflat_hg19_2011-01-24.bed
+METACORE_PATHWAY=/data2/bsi/reference/metacore_kegg_pathway_files/
+TISSUE_SPECIFIC=/data2/bsi/reference/Tissue-Specific.Gene.Expression/
+dbSNP_INDEL_rsIDs=/data4/bsi/refdata/NCBI/dbsnp/UCSChg19dbSNP135.indels
+BGI_REF=/data2/bsi/reference/genetics/BGI/LuCAMP_200exomeFinal_hg19.txt
+SIFT_REF=/projects/bsi/bictools/apps/variant_detection/sift/4.0.3/db/Human_db_37/
+MASTER_GENE_FILE=/data2/bsi/reference/misc/hg19.master.gene.bed
+MASTER_ENTREZ_FILE=/data2/bsi/reference/misc/hg19.master.entrezid.bed
+MATER_GENE_BODY=/data2/bsi/reference/misc/hg19.gene.body.bed
+CAPTUREKIT=/data4/bsi/refdata/exomeCapture/SureSelect_All_Exon_V4+UTRs_with_annotation_hg19_.bed
+ONTARGET=/data4/bsi/refdata/exomeCapture/AgilentV4+UTRs_ucsc_refflat_hg19_2011-01-24.10bp.merge.bed
+BLACKLISTED=/data2/bsi/reference/misc/wgEncodeDacMapabilityConsensusExcludable.bed
+MAPABILITY=/data2/bsi/reference/misc/wgEncodeDukeMapabilityRegionsExcludable.bed
+REPEATREGIONS=/data2/bsi/reference/misc/repeat.bed
+miRbase=/data4/bsi/refdata/mirbase/v18/hsa.gff.bed
+SNP_SR=/data2/bsi/reference/annotation/dbSNP/hg19/ssr.bed
+SNP_CS=/data2/bsi/reference/annotation/dbSNP/hg19/scs.bed
+BLACKLIST_SV=/data2/bsi/reference/misc/hg19.STRUCTURAL_BALCKLIST.bed
+ESP=/data2/bsi/reference/genetics/ESP6500/ESP6500.snps.txt
+MILLS_REF=/data2/bsi/reference/misc/ALL.wgs.indels_mills_devine_hg19_leftAligned_collapsed.sites.vcf
+PEDIGREE=NA
+SNP_SAO=/data2/bsi/reference/annotation/dbSNP/hg19/sao.bed
+SNP_BUILD=/data2/bsi/reference/annotation/dbSNP/hg19/dbSNPbuild.bed
+ANNOTATION_MODULE_DATA=/data2/bsi/reference/annotation/stopGapBeauty/
+
+## tools
+WORKFLOW_PATH=/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/tags/1.2/
+NOVOALIGN=/projects/bsi/bictools/apps/alignment/novoalign/2.08.01/novoalign
+BWA=/projects/bsi/bictools/apps/alignment/bwa/0.5.9/
+BOWTIE=/projects/bsi/bictools/apps/alignment/bowtie/2.0.0-beta5/
+JAVA=/usr/java/latest/bin
+SAMTOOLS=/projects/bsi/bictools/apps/alignment/samtools/samtools-0.1.18/
+GATK=/projects/bsi/bictools/apps/alignment/GenomeAnalysisTK/1.7/
+SOMATIC_SNIPER=/projects/bsi/bictools/apps/variant_detection/somatic_sniper/1.0.0.1-19/bin/
+BEDTOOLS=/projects/bsi/bictools/apps/misc/BEDTools/2.16.2/bin/
+PICARD=/projects/bsi/bictools/apps/alignment/picard/1.77/
+FASTQC=/projects/bsi/bictools/apps/qc/FastQC/0.10/FastQC
+SNVmix=/projects/bsi/bictools/apps/variant_detection/SNVMix/0.11.8-r3/
+JOINTSNVMIX=/projects/bsi/bictools/apps/variant_detection/jointsnvmix/0.8-b2/
+CNVNATOR=/projects/bsi/bictools/apps/cnv/cnvnator/0.2.2/src/
+MUTECT=/projects/bsi/bictools/apps/variant_detection/muTect/1.0.27783/
+CREST=/projects/bsi/bictools/apps/sv/crest/1.0.1/bin/
+CAP3=/projects/bsi/bictools/apps/sv/crest/1.0.1/bin/
+BLAT=/projects/bsi/bictools/apps/alignment/blat/34
+BREAKDANCER=/projects/bsi/bictools/apps/sv/breakdancer/breakdancer-1.1_2011_02_21/
+MATLAB=/usr/local/biotools/matlab/r2011a/bin
+SEGSEQ=/projects/bsi/bictools/apps/sv/SegSeq/1.0.0/bin/
+CIRCOS=/projects/bsi/bictools/apps/visualizers/circos/circos-0.54/
+SIFT=/projects/bsi/bictools/apps/variant_detection/sift/4.0.3/bin/
+VCFTOOLS=/projects/bsi/bictools/apps/variant_detection/vcftools/0.1.8a/
+TABIX=/projects/bsi/bictools/apps/misc/tabix/0.2.5/
+SNPEFF=/projects/bsi/bictools/apps/annotation/snpeff/3.0/
+POLYPHEN=/projects/bsi/bictools/apps/annotation/polyphen/2.2.2/
+
+### libraries
+PERLLIB_CIRCOS=/usr/local/biotools/perl/5.10.0/lib/site_perl/5.10.0:/projects/bsi/bictools/lib/perl/5.10.0:/projects/bsi/bictools/lib/perl/GD-2.46/:/projects/bsi/bictools/apps/sv/breakdancer/breakdancer-1.1_2011_02_21/perl/
+PERLLIB=/projects/bsi/bictools/apps/sv/crest/bin:/projects/bsi/bictools/apps/sv/crest/bin/modules/lib/5.10.0:/projects/bsi/bictools/lib/perl/usr/local/biotools/perl/5.8.8-64/lib/site_perl/5.8.8/lib/perl5
+PERLLIB_VCF=/projects/bsi/bictools/apps/variant_detection/vcftools/0.1.8a/perl/:/projects/bsi/bictools/apps/variant_detection/vcftools/0.1.8a/lib/perl5/site_perl/
+PERL_CIRCOS=/usr/local/biotools/perl/5.10.0/bin/perl
+PERL_POLYPHEN_LIB=/projects/bsi/bictools/apps/annotation/polyphen/2.2.2/perl/
+ROOTLIB=/projects/bsi/bictools/apps/cnv/root/5.28.00c/lib/
+PERL_BREAKDANCER=/usr/local/biotools/perl/5.8.8-64/bin/perl
+PERLLIB_BREAKDANCER=/projects/bsi/bictools/apps/sv/breakdancer/breakdancer-1.1_2011_02_21/perl/
+PYTHON=/usr/local/biotools/python/2.7/bin/
+PYTHONLIB=/data2/bsi/RandD/pacbio/smrtanalysis-1.2.1/analysis/lib/python2.5/:/projects/bsi/bictools/apps/metadata/genomedata/arch/Linux-x86_64/lib/python2.5/:/projects/bsi/bictools/apps/metadata/genomedata/arch/Linux-x86_64/lib/python2.7/
+R_SOFT=/usr/local/biotools/r/R-2.13.0/bin/
+
+### customized paramters
+HTTP_SERVER=bmidev2
+THREADS=4
+REORDERSAM=NO
+EMIT_ALL_SITES=NO
+VARIANT_FILTER=YES
+SOMATIC_VARIANT_FILTER=YES
+DEPTH_FILTER=0
+TARGETTED=YES
+MARKDUP=YES
+REMOVE_DUP=FALSE
+REMOVE_ALIGNED_BAM=NO
+T_DEPTH_FILTER=6
+UPLOAD_TABLEBROWSER=YES
+PLATFORM=illumina
+CENTER=mayo
+QUEUE=ngs-test
+
+#Parameters
+SNVMIX2_params=
+SNVMIX2_Filter=-p 0.8
+UnifiedGenotyper_params=-maxAlleles 5
+SOMATIC_INDEL_params=--window_size 1000
+SOMATIC_SNIPER_params=-q 20 -Q 20
+MUTECT_params=
+BREAKDANCER_params=-c 5 -r 10
+CREST_params=
+JSM_Filter=-prob 0.1
+JOINTSNVMIX_params=
+NOVO_params=-x 5 -i PE 425,80 -r Random --hdrhd off -v 120 -c 4
+BWA_params=-l 32 -t 4
+VQSR_params_SNV=-an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP -nt 2 --maxGaussians 4 --percentBadVariants 0.05
+VQSR_params_INDEL=-an QD -an FS -an HaplotypeScore -an ReadPosRankSum --maxGaussians 4 -nt 2 --percentBadVariants 0.12 -std 10.0
+PICARD_ReadGroup_params=PL=illumina CN=mayo LB=hg19 CREATE_INDEX=true
+VCF_annotation_params=-A QualByDepth -A MappingQualityRankSumTest -A ReadPosRankSumTest -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A DepthPerAlleleBySample -A RMSMappingQuality -A FisherStrand -A ForwardReverseAlleleCounts 
+REALIGN_params=--maxReadsForRealignment 20000 --maxReadsInMemory 150000
+BLAT_params=-w 50 -m 70 -t 90 
+
+### paramters
+CNVNATOR_BINSIZE=1000
+PCT_READS_SEGSEQ=0.05
+MINFOLD=0.5
+MAXFOLD=1.5
+DISTGAP=1000
+BLAT_PORT=50000
+BLAT_SERVER=localhost
+STRUCT_DIST_GENE=1000
+STRUCT_MIN_SUPPORT=10
+STRUCT_MIN_IDENTITY=0.9
+STRUCT_PCT_BLACKLIST=1
+SNP_DISTANCE_INDEL=10
+MAX_FILE_HANDLES=100
+MAX_READS_MEM_SORT=2000000
+TB_PORT=8886
+TB_HOST=charlotte
+JOB_LIMIT=3000

@@ -1,0 +1,2 @@
+BAM:s_normal=s_normal.igv-sorted.bam
+BAM:s_tumor=s_tumor.igv-sorted.bam
