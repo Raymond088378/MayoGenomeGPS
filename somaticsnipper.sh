@@ -22,6 +22,10 @@ else
 	command_line_params=$( cat $tool_info | grep -w '^SOMATIC_SNIPER_params' | cut -d '=' -f2 )
     bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
+	tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 )
+	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
+	gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
+	
 	snv=$tumor_sample.chr$chr.snv.output
 	
 	$samtools/samtools view -H $tumor_bam 1> $tumor_bam.$chr.header 2> $tumor_bam.$chr.fix.ss.log
@@ -42,9 +46,16 @@ else
 		rm $normal_bam.$chr.fix.ss.log
 	fi	
 	rm $normal_bam.$chr.header
+	### removing duplicates from the bam files
+	#$samtools/samtools view -b -F 1024 $tumor_bam > $output_file/$tumor_sample.chr$chr.ss.bam
+	#$samtools/samtools view -b -F 1024 $normal_bam > $output_file/$normal_sample.chr$chr.ss.bam
 	
+	#normal_bam=$output_file/$normal_sample.chr$chr.ss.bam
+	#tumor_bam=$output_file/$tumor_sample.chr$chr.ss.bam
     $somatic_sniper/bam-somaticsniper $command_line_params -F vcf -f $ref $tumor_bam $normal_bam $output/$snv
-    cat $output/$snv | awk 'BEGIN {OFS="\t"} {if($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,"PASS",$8,$9,$10,$11;}' | sed -e "/NORMAL/s//$normal_sample/g" | sed -e "/TUMOR/s//$tumor_sample/g"  | awk '$0 ~ /^#/ || $5 !~ /,/' | $script_path/ssniper_vcf_add_AD.pl > $output/$output_file
+    #rm $normal_bam $tumor_bam
+	
+	cat $output/$snv | awk 'BEGIN {OFS="\t"} {if($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,"PASS",$8,$9,$10,$11;}' | sed -e "/NORMAL/s//$normal_sample/g" | sed -e "/TUMOR/s//$tumor_sample/g"  | awk '$0 ~ /^#/ || $5 !~ /,/' | $script_path/ssniper_vcf_add_AD.pl > $output/$output_file
     cat $output/$snv | awk 'BEGIN {OFS="\t"} {if($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,"PASS",$8,$9,$10,$11;}' | sed -e "/NORMAL/s//$normal_sample/g" | sed -e "/TUMOR/s//$tumor_sample/g"  | awk '$0 ~ /^#/ || $5 ~ /,/' | $script_path/ssniper_vcf_add_AD.pl > $output/$output_file.multi.vcf    
     
     only_ontarget=$( cat $tool_info | grep -w '^TARGETTED' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )

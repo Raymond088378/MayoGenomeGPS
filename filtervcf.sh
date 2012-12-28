@@ -29,7 +29,7 @@ else
 	if [ -s $inputvcf.tmp.idx ]
 	then
 		mv $inputvcf.tmp $inputvcf
-		mv $inputvcf.temp.idx $inputvcf.idx
+		mv $inputvcf.tmp.idx $inputvcf.idx
 	fi
 	echo `date`	
 fi

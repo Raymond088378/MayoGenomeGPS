@@ -1,3 +1,4 @@
+
 java=$1
 snpeff=$2
 GenomeBuild=$3
@@ -10,11 +11,12 @@ script_path=$9
 sample=${10}
 	
 	
-	if [ `cat $output/$ff.SNV.vcf | awk '$0 !~ /^#/' | wc -l`  -gt 0 ]
+	if [ `cat $output/$ff.SNV.vcf | awk '$0 !~ /^#/' | head -100 | wc -l`  -gt 0 ]
 	then
-		$java/java -Xmx2g -Xms512m -jar $snpeff/snpEff.jar eff -o txt -chr chr -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.SNV.vcf | $script_path/snpeff.pl > $output/$sample.SNV.eff
-		$java/java -Xmx2g -Xms512m -jar $snpeff/snpEff.jar eff -chr chr -o vcf -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.SNV.vcf | awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"3.0c (build 2012-07-30), by Pablo Cingolani\""; else print $0;}' > $output/$ff.SNV.vcf.eff.vcf
-		$java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+		$java/java -Xmx6g -Xms512m -jar $snpeff/snpEff.jar eff -o txt -chr chr -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.SNV.vcf | $script_path/snpeff.pl > $output/$sample.SNV.eff
+		$java/java -Xmx6g -Xms512m -jar $snpeff/snpEff.jar eff -chr chr -o vcf -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.SNV.vcf | awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"3.0c (build 2012-07-30), by Pablo Cingolani\""; else print $0;}' > $output/$ff.SNV.vcf.eff.vcf
+		
+		$java/java -Xmx6g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
 		-T VariantAnnotator \
 		-et NO_ET \
 		-K $gatk/Hossain.Asif_mayo.edu.key \
@@ -23,7 +25,7 @@ sample=${10}
 		--variant $output/$ff.SNV.vcf \
 		--snpEffFile $output/$ff.SNV.vcf.eff.vcf \
 		-L $output/$ff.SNV.vcf \
-		-o $output/$ff.SNV.vcf.annot.vcf > $output/log 2>&1
+		-o $output/$ff.SNV.vcf.annot.vcf >> $output/log 2>&1
 	
 		$vcftools/bin/vcftools --vcf $output/$ff.SNV.vcf.annot.vcf \
 		--get-INFO SNPEFF_AMINO_ACID_CHANGE \
@@ -34,7 +36,7 @@ sample=${10}
 		--get-INFO SNPEFF_GENE_NAME \
 		--get-INFO SNPEFF_IMPACT \
 		--get-INFO SNPEFF_TRANSCRIPT_ID \
-		--out $output/$ff.SNV.vcf.annot > $output/log 2>&1
+		--out $output/$ff.SNV.vcf.annot >> $output/log 2>&1
             
 		perl $script_path/parse_snpeffect.pl $output/$ff.SNV.vcf.annot.INFO > $output/$sample.SNV.filtered.eff
 		rm $output/$ff.SNV.vcf.annot.INFO $output/$ff.SNV.vcf.annot.log
@@ -45,16 +47,15 @@ sample=${10}
 			echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tEffect\tFunctionalClass\tFunctionalImpact\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList\n" > $output/$sample.SNV.filtered.eff
 	fi
 	echo " Filtering SNPEFF output from multiple transcript to most impacting transcript "
-	## INDELs
-	num_indels=`cat $output/$ff.INDEL.vcf| awk '$0 !~ /^#/' | wc -l` 
-	if [ $num_indels -ge 1 ]
+	## INDELs 
+	if [ `cat $output/$ff.INDEL.vcf| awk '$0 !~ /^#/' | head -100 | wc -l` -ge 1 ]
 	then
 	
-		$java/java -Xmx2g -Xms512m -jar $snpeff/snpEff.jar eff -o txt -chr chr -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.INDEL.vcf | $script_path/snpeff.pl > $output/$sample.INDEL.eff
-		$java/java -Xmx2g -Xms512m -jar $snpeff/snpEff.jar eff -o vcf -chr chr -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.INDEL.vcf | awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"3.0c (build 2012-07-30), by Pablo Cingolani\""; else print $0;}' > $output/$ff.INDEL.vcf.eff.vcf
+		$java/java -Xmx4g -Xms512m -jar $snpeff/snpEff.jar eff -o txt -chr chr -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.INDEL.vcf | $script_path/snpeff.pl > $output/$sample.INDEL.eff
+		$java/java -Xmx4g -Xms512m -jar $snpeff/snpEff.jar eff -o vcf -chr chr -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.INDEL.vcf | awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"3.0c (build 2012-07-30), by Pablo Cingolani\""; else print $0;}' > $output/$ff.INDEL.vcf.eff.vcf
 
 		### use GATK to filter the multiple transcript
-		$java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
+		$java/java -Xmx4g -Xms512m -jar $gatk/GenomeAnalysisTK.jar \
 		-T VariantAnnotator \
 		-et NO_ET \
 		-K $gatk/Hossain.Asif_mayo.edu.key \
@@ -63,7 +64,7 @@ sample=${10}
 		--variant $output/$ff.INDEL.vcf \
 		--snpEffFile $output/$ff.INDEL.vcf.eff.vcf \
 		-L $output/$ff.INDEL.vcf \
-		-o $output/$ff.INDEL.vcf.annot.vcf > $output/log 2>&1
+		-o $output/$ff.INDEL.vcf.annot.vcf >> $output/log 2>&1
 
 		$vcftools/bin/vcftools --vcf $output/$ff.INDEL.vcf.annot.vcf \
 		--get-INFO SNPEFF_AMINO_ACID_CHANGE \
@@ -74,7 +75,7 @@ sample=${10}
 		--get-INFO SNPEFF_GENE_NAME \
 		--get-INFO SNPEFF_IMPACT \
 		--get-INFO SNPEFF_TRANSCRIPT_ID \
-		--out $output/$ff.INDEL.vcf.annot > $output/log 2>&1
+		--out $output/$ff.INDEL.vcf.annot >> $output/log 2>&1
 
 		perl $script_path/parse_snpeffect.pl $output/$ff.INDEL.vcf.annot.INFO > $output/$sample.INDEL.filtered.eff
 		rm $output/$ff.INDEL.vcf.annot.INFO $output/$ff.INDEL.vcf.annot.log

@@ -1,6 +1,6 @@
 #!/usr/local/biotools/perl/5.10.0/bin/perl
 
-use strict;
+#use strict;
 # use warnings;
 use Getopt::Std;
 our ($opt_r,$opt_p);
@@ -14,88 +14,52 @@ else    {
 	my ($path) = $opt_p;chomp $path;
 	my $desc = $path."/StatisticsDescription.html";
 	open DESC, ">$desc" or die "can not open $desc : $!\n";
-	my @line=split(/=/,`perl -ne "/^DISEASE/ && print" $run_info`);
-	my $disease=$line[$#line];chomp $disease;
-	@line=split(/=/,`perl -ne "/^TOOL=/ && print" $run_info`);
-	my $workflow=$line[$#line];chomp $workflow;
-	@line=split(/=/,`perl -ne "/^DATE/ && print" $run_info`);
-	my $date=$line[$#line];chomp $date;
-	@line=split(/=/,`perl -ne "/^SAMPLENAMES/ && print" $run_info`);
-	my $sampleNames=$line[$#line];chomp $sampleNames;
-	my @sampleArray = split(/:/,$sampleNames);
-	@line=split(/=/,`perl -ne "/^GROUPNAMES/ && print" $run_info`);
-	my $groupNames=$line[$#line];chomp $groupNames;
-	my @groupArray = split(/:/,$groupNames);
-	@line=split(/=/,`perl -ne "/^MULTISAMPLE/ && print" $run_info`);
-	my $multi=$line[$#line];chomp $multi;
-	@line=split(/=/,`perl -ne "/^LANEINDEX/ && print" $run_info`);
-	my $laneNumbers=$line[$#line];chomp $laneNumbers;
-	my @laneArray = split(/:/,$laneNumbers);
-	@line=split(/=/,`perl -ne "/^PAIRED/ && print" $run_info`);
-	my $paired=$line[$#line];chomp $paired;
-	@line=split(/=/,`perl -ne "/^GENOMEBUILD/ && print" $run_info`);
-	my $GenomeBuild=$line[$#line];chomp $GenomeBuild;
-	@line=split(/=/,`perl -ne "/^TOOL_INFO/ && print" $run_info`);
-	my $tool_info=$line[$#line];chomp $tool_info;
-	@line=split(/=/,`perl -ne "/^TYPE/ && print" $run_info`);
-	my $tool=$line[$#line];chomp $tool;
-	$tool=lc($tool);
-	@line=split(/=/,`perl -ne "/^ANALYSIS/ && print" $run_info`);
-	my $analysis=$line[$#line];chomp $analysis;
-	@line=split(/=/,`perl -ne "/^SAMPLEINFORMATION/ && print" $run_info`);
-	my $sampleinfo=$line[$#line];chomp $sampleinfo;
-	@line=split(/=/,`perl -ne "/^OUTPUT_FOLDER/ && print" $run_info`);
-	my $run_num=$line[$#line];chomp $run_num;
-	@line=split(/=/,`perl -ne "/^TB_PORT/ && print" $tool_info`);
-	my $port=$line[$#line];chomp $port;
-	@line=split(/=/,`perl -ne "/^TB_HOST/ && print" $tool_info`);
-	my $host=$line[$#line];chomp $host;
-	@line=split(/=/,`perl -ne "/^SAMPLE_INFO/ && print" $run_info`);
-	my $sample_info=$line[$#line];chomp $sample_info;
-	@line=split(/=/,`perl -ne "/^LABINDEXES/ && print" $run_info`);
-	my $labindex=$line[$#line];chomp $labindex;
-	my @IndexArray = split(/:/,$labindex);
-	@line=split(/=/,`perl -ne "/^dbSNP_SNV_rsIDs/ && print" $tool_info`);
-	my $dbsnp_file=$line[$#line];chomp $dbsnp_file;
-	$dbsnp_file =~ m/.+dbSNP(\d+)/;
-	my $dbsnp_v = $1;
-	@line=split(/=/,`perl -ne "/^WORKFLOW_PATH/ && print" $tool_info`);
-	my $script_path=$line[$#line];chomp $script_path;
-	my ($read_length, $variant_type, $target_region, $SNV_caller, $Aligner, $ontarget, $fastqc, $fastqc_path, $server, $upload_tb );
-	@line=split(/=/,`perl -ne "/^UPLOAD_TABLEBROWSER/ && print" $tool_info`);
-	$upload_tb=$line[$#line];chomp $upload_tb;
-	@line=split(/=/,`perl -ne "/^READLENGTH/ && print" $run_info`);
-	$read_length=$line[$#line];chomp $read_length;
-	@line=split(/=/,`perl -ne "/^MULTISAMPLE/ && print" $run_info`);
-	$multi=$line[$#line];chomp $multi;
-	@line=split(/=/,`perl -ne "/^ALIGNER/ && print" $run_info`);
-	$Aligner=$line[$#line];chomp $Aligner;
-	@line=split(/=/,`perl -ne "/^FASTQC/ && print" $run_info`);
-	$fastqc=$line[$#line];chomp $fastqc;
-	@line=split(/=/,`perl -ne "/^VARIANT_TYPE/ && print" $run_info`);
-	$variant_type=$line[$#line];chomp $variant_type;
-	@line=split(/=/,`perl -ne "/^DELIVERY_FOLDER/ && print" $run_info`);
-	my $delivery=$line[$#line];chomp $delivery;
-	@line=split(/=/,`perl -ne "/^TERTIARY_FOLDER/ && print" $run_info`);
-	my $tertiary=$line[$#line];chomp $tertiary;
-	@line=split(/=/,`perl -ne "/^SNV_CALLER/ && print" $run_info`);
-	$SNV_caller=$line[$#line];chomp $SNV_caller;
-	@line=split(/=/,`perl -ne "/^VERSION/ && print" $run_info`);
-	my $version=$line[$#line];chomp $version;
+	$vars=read_files_var($run_info);
+	my $disease=$vars->{DISEASE};
+	my $workflow=$vars->{TOOL};$tool=lc($tool);
+	my $date=$vars->{DATE};
+	my $sampleNames=$vars->{SAMPLENAMES};
+	my $groupNames=$vars->{GROUPNAMES};
+	my $multi=$vars->{MULTISAMPLE};$multi=uc($multi);
+	my $laneNumbers=$vars->{LANEINDEX};
+	my $GenomeBuild=$vars->{GENOMEBUILD};
+	my $tool_info=$vars->{TOOL_INFO};
+	my $sampleinfo=$vars->{SAMPLEINFORMATION};
+	my $sample_info=$vars->{SAMPLE_INFO};
+	my $paired=$vars->{PAIRED};
+	my $analysis=$vars->{ANALYSIS};$analysis=lc($analysis);
+	my $run_num=$vars->{OUTPUT_FOLDER};
+	my $labindex=$vars->{LABINDEXES};
+	my $dbsnp_file=$vars->{dbSNP_SNV_rsIDs};$dbsnp_file =~ m/.+dbSNP(\d+)/;$dbsnp_v = $1;
+	my $read_length=$vars->{READLENGTH};
+	my $variant_type=$vars->{VARIANT_TYPE};
+	my $Aligner=$vars->{ALIGNER};
+	my $delivery=$vars->{DELIVERY_FOLDER};
+	my $tertiary=$vars->{TERTIARY_FOLDER};
+	my $version=$vars->{VERSION};
+	$fastqc=$vars->{FASTQC};
+	$vars=read_files_var($tool_info);
+	my $port=$vars->{TB_PORT};
+	my $host=$vars->{TB_HOST};
+	my $script_path=$vars->{WORKFLOW_PATH};
+	my $upload_tb=$vars->{UPLOAD_TABLEBROWSER};
+	my $somatic_calling=$vars->{SOMATIC_CALLING};
 	
-		if ( ( $analysis eq 'external' ) || ( $analysis eq 'variant' ) || ($analysis eq 'mayo') || ($analysis eq 'realignment') || ($analysis eq 'realign-mayo') )	{
+	my @sampleArray = split(/:/,$sampleNames);
+	my @groupArray = split(/:/,$groupNames);
+	my @laneArray = split(/:/,$laneNumbers);
+	my @IndexArray = split(/:/,$labindex);
+	
+	if ( ( $analysis eq 'external' ) || ( $analysis eq 'variant' ) || ($analysis eq 'mayo') || ($analysis eq 'realignment') || ($analysis eq 'realign-mayo') )	{
 		if ($tool eq 'exome')	{
-			@line=split(/=/,`perl -ne "/^CAPTUREKIT/ && print" $tool_info`);
-			$ontarget=$line[$#line];chomp $ontarget;
+			$ontarget=$vars->{CAPTUREKIT};
 			$target_region=`awk '{sum+=\$3-\$2+1; print sum}' $ontarget | tail -1`;chomp $target_region;
 		}
 		elsif ($tool eq 'whole_genome'){
-			@line=split(/=/,`perl -ne "/^MATER_GENE_BODY/ && print" $tool_info`);
-			$ontarget=$line[$#line];chomp $ontarget;
+			$ontarget=$vars->{MATER_GENE_BODY};
 			$target_region=`awk '{sum+=\$3-\$2+1; print sum}' $ontarget | tail -1`;chomp $target_region;
 		}
-		@line=split(/=/,`perl -ne "/^HTTP_SERVER/ && print" $tool_info`);
-		$server=$line[$#line];chomp $server;	
+		$server=$vars->{HTTP_SERVER};	
 	}
 	print "Run : $run_num \n";
 	print "Result Folder : $path \n";
@@ -109,28 +73,11 @@ else    {
 	print "Type of Tool: $tool\n";
 	print "ReadLength: $read_length\n";
 	print "AnalysisType: $analysis\n";
-	
-	sub trim($);
-	
-	sub CommaFormatted
-	{
-		my $delimiter = ','; # replace comma if desired
-		my($n,$d) = split /\./,shift,2;
-		my @a = ();
-		while($n =~ /\d\d\d\d/)
-		{
-			$n =~ s/(\d\d\d)$//;
-			unshift @a,$1;
-		}
-		unshift @a,$n;
-		$n = join $delimiter,@a;
-		$n = "$n\.$d" if $d =~ /\d/;
-		return $n;
-	}
-	
 	my $output = "$path/Main_Document.html";
+	my $s_output= "$path/SampleStatistics.tsv";
 	print "Generating the Document... \n";
 	open (OUT,">$output");
+	open (SOUT,">$s_output");
 	print OUT "<html>"; 
 	print OUT "<head>"; 
 	print OUT "<title>${tool} Analysis Main Document for $run_num</title>"; 
@@ -365,10 +312,12 @@ else    {
 	my $uniq;
 	# storing all the numbers in a Hash per sample
 	chomp $multi;
+	print SOUT "SampleNamesUsed/info";
 	if ($multi eq 'NO')	{
 		for(my $k = 0; $k < $num_samples;$k++)	
 		{
 			print OUT "<td class=\"helpHed\"><p align='center'>$sampleArray[$k]</td>";
+			print SOUT "\t$sampleArray[$k]";
 			my $file="$path/numbers/$sampleArray[$k].out";
 			open SAMPLE, "<$file", or die "could not open $file : $!";
 			print"reading numbers from $sampleArray[$k]\n";
@@ -392,6 +341,7 @@ else    {
 			for (my $j = 0; $j <=$#sams; $j++)	{
 				chomp $sams[$j];
 				print OUT "<td class=\"helpHed\"><p align='center'>$groupArray[$i]-$sams[$j]</td>";
+				print SOUT "\t$groupArray[$i]-$sams[$j]";
 				my $file="$path/numbers/$groupArray[$i].$sams[$j].out";
 				open SAMPLE, "<$file", or die "could not open $file : $!";
 				print"reading numbers from $groupArray[$i] - $sams[$j]\n";
@@ -410,7 +360,57 @@ else    {
 			}
 		}	
 	}
-	
+	print SOUT "\n";
+	print SOUT "lanes";
+	if ($multi eq "NO")	{
+		for(my $k = 0; $k < $num_samples;$k++)  {
+			print SOUT "\t$laneArray[$k]";
+		}
+		print SOUT "\n";
+	}
+	else	{
+		for (my $i = 0; $i < $num_groups; $i++)	{
+			my @sams=split(/\t/,`cat $sample_info | grep -w "^$groupArray[$i]" | cut -d '=' -f2`);
+			for (my $j = 0; $j <=$#sams; $j++)	{
+				my $id_n=-1;
+				chomp $sams[$j];
+				for(my $k = 0; $k < $num_samples;$k++)  {
+					chomp $sampleArray[$k];
+					if ($sams[$j] eq $sampleArray[$k])	{
+						$id_n=$k;
+						last;
+					}
+				}
+				print SOUT "\t$laneArray[$id_n]";	
+			}
+		}
+		print SOUT "\n";
+	}
+	print SOUT "indexes";
+	if ($multi eq "NO")	{
+		for(my $k = 0; $k < $num_samples;$k++)  {
+			print SOUT "\t$IndexArray[$k]";
+		}
+		print SOUT "\n";
+    }
+	else	{
+		for (my $i = 0; $i < $num_groups; $i++)	{
+			my @sams=split(/\t/,`cat $sample_info | grep -w "^$groupArray[$i]" | cut -d '=' -f2`);
+			for (my $j = 0; $j <=$#sams; $j++)	{
+				my $id_n=-1;
+				chomp $sams[$j];
+				for(my $k = 0; $k < $num_samples;$k++)  {
+					chomp $sampleArray[$k];
+					if ($sams[$j] eq $sampleArray[$k])	{
+						$id_n=$k;
+						last;
+					}
+				}
+				print SOUT "\t$IndexArray[$id_n]";	
+			}
+		}
+		print SOUT "\n";
+	}
 	
 	
 	print OUT "</tr>";
@@ -667,29 +667,34 @@ else    {
 	
 	foreach my $key (sort {$a <=> $b} keys %sample_numbers)	{
 		print OUT "<td class=\"helpHed\"><p align='left'><a href=\"#$names[$key]\" title=\"$values[$key]\">$names[$key]</a></td>";
+		print SOUT "$names[$key]";
 		if ( $key eq '1' && $analysis ne 'annotation'  && $analysis ne 'ontarget' && $multi eq 'NO' )	{
 				for (my $c=0; $c < $num_samples;$c++)	{
 					my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
 					my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 					print OUT "<td class=\"helpBod\">$print <br> <b>($per_mapped \%) <b></td>";
+					print SOUT "\t$print ($per_mapped \%)";
 					$avg_mapped_reads=$avg_mapped_reads + ${$sample_numbers{$key}}[$c];
 					$per_mapped_reads = $per_mapped_reads + $per_mapped; 
 				}
 				$avg_mapped_reads=$avg_mapped_reads/$num_samples;$avg_mapped_reads=int($avg_mapped_reads/1000000);
 				$per_mapped_reads =$per_mapped_reads/$num_samples;
 				print OUT "</tr>\n";
+				print SOUT "\n";
 		}
 		if ($key eq '1' && ( $analysis eq 'realignment' || $analysis eq 'realign-mayo' || $analysis eq 'external' || $analysis eq 'mayo')	&& $multi eq 'YES')	{
 			for (my $c=0; $c < $num_samples;$c++)	{
 					my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
 					my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 					print OUT "<td class=\"helpBod\">$print <br> <b>($per_mapped \%) <b></td>";
+					print OUT "\t$print ($per_mapped \%)";
 					$avg_mapped_reads=$avg_mapped_reads + ${$sample_numbers{$key}}[$c];
 					$per_mapped_reads = $per_mapped_reads + $per_mapped; 
 				}
 				$avg_mapped_reads=$avg_mapped_reads/$num_samples;$avg_mapped_reads=int($avg_mapped_reads/1000000);
 				$per_mapped_reads =$per_mapped_reads/$num_samples;
 				print OUT "</tr>\n";
+				print SOUT "\n";
 		}
 		
 		if ($key eq '2' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' && $multi eq 'NO'  )	{
@@ -697,48 +702,60 @@ else    {
 				my $print=sprintf("%.4f",$sample_numbers{$key}[$c]);
 				my $duplicate=sprintf("%.1f",($print * 100));
 				print OUT "<td class=\"helpBod\">$duplicate\%</td>";
+				print OUT "$duplicate\%";
 			}		
 			print OUT "</tr>\n";
+			print SOUT "\n";
 		}
 		elsif ($key eq '2' && $analysis eq 'variant' && $multi eq 'NO')	{
 			for (my $c=0; $c < $num_samples;$c++)	{
 				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
 				my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 				print OUT "<td class=\"helpBod\">$print <br> <b>($per_mapped \%) <b></td>";	
+				print SOUT "\t$print ($per_mapped \%)";	
 			}
 			print OUT "</tr>\n";
+			print SOUT "\n";
 		}
 		elsif ($key eq '2' && ( $analysis eq 'realignment' || $analysis eq 'realign-mayo' || $analysis eq 'external' || $analysis eq 'mayo')	&& $multi eq 'YES')	{
 			for (my $c=0; $c < $num_samples;$c++)	{
 				my $print=sprintf("%.4f",$sample_numbers{$key}[$c]);
 				my $duplicate=sprintf("%.1f",($print * 100));
 				print OUT "<td class=\"helpBod\">$duplicate\%</td>";
+				print SOUT "\t$duplicate\%";
 			}		
 			print OUT "</tr>\n";
+			print SOUT "\n";
 		}
 		if ($key eq '3' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' && $multi eq 'NO' )	{
 			for (my $c=0; $c < $num_samples;$c++)	{
 				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
 				my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 				print OUT "<td class=\"helpBod\">$print <br> <b>($per_mapped \%) <b></td>";	
+				print SOUT "\t$print ($per_mapped \%)";	
 			}
 			print OUT "</tr>\n";
+			print SOUT "\n";
 		}
 		if ($key eq '3' && ( $analysis eq 'realignment' || $analysis eq 'realign-mayo' || $analysis eq 'external' || $analysis eq 'mayo')	&& $multi eq 'YES')	{
 			for (my $c=0; $c < $num_samples;$c++)	{
 				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
 				my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 				print OUT "<td class=\"helpBod\">$print <br> <b>($per_mapped \%) <b></td>";	
+				print SOUT "\t$print ($per_mapped \%)";
 			}
 			print OUT "</tr>\n";
+			print SOUT "\n";
 		}
 		if ($key eq '4' && $analysis ne 'annotation' && $analysis ne 'variant' && $analysis ne 'ontarget' && $multi ne 'YES')	{
 			for (my $c=0; $c < $num_samples;$c++)	{
 				my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
 				my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 				print OUT "<td class=\"helpBod\">$print <br> <b>($per_mapped \%) <b></td>";	
+				print SOUT "\t$print ($per_mapped \%)";
 			}
 			print OUT "</tr>\n";
+			print SOUT "\n";
 		}
 					
 		
@@ -749,12 +766,14 @@ else    {
 						if ( ( $key ne '1') && ( $key ne '3' ) && ($key ne '2') && ($key ne '4') )	{
 							my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 							print OUT "<td class=\"helpBod\">$print</td>\n";	
+							print SOUT "\t$print";
 						}
 					}
 					elsif ($analysis eq 'variant')	{
 						if ( ( $key ne '1') && ( $key ne '2') )	{
 							my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 							print OUT "<td class=\"helpBod\">$print</td>\n";	
+							print SOUT "\t$print";
 						}
 					}
 				}
@@ -762,12 +781,14 @@ else    {
 					if ($analysis ne 'variant')	{
 						if ( ( $key ne '1') && ( $key ne '3' ) && ($key ne '2'))	{
 							my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
-							print OUT "<td class=\"helpBod\">$print</td>\n";	
+							print OUT "<td class=\"helpBod\">$print</td>\n";
+							print SOUT "\t$print";							
 						}
 					}
 					elsif ($analysis eq 'variant')	{
 							my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 							print OUT "<td class=\"helpBod\">$print</td>\n";	
+							print SOUT "\t$print";
 						
 					}
 				}	
@@ -777,10 +798,11 @@ else    {
 			for ( my $c=0; $c < $num_samples; $c++ )	{
 					my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 					print OUT "<td class=\"helpBod\">$print</td>\n";
+					print SOUT "\t$print";
 			}
 		}
 		print OUT "</tr>";
-		
+		print SOUT "\n";
 		if ( ( $analysis eq 'external' ) || ($analysis eq 'realignment') || ($analysis eq 'mayo') || ($analysis eq 'realign-mayo')) {	
 			if ($tool eq 'whole_genome')	{
 				my @key_num;
@@ -796,8 +818,10 @@ else    {
 						print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
+							print SOUT "\t";
 						}		
 						print OUT "</tr>\n";
+						print SOUT "\n";
 					}	
 				}		
 			}
@@ -810,8 +834,10 @@ else    {
 							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 							for (my $c=0; $c < $num_samples;$c++)	{
 								print OUT "<td class=\"helpHed\"></td>";
+								print SOUT "\t";
 							}		
 							print OUT "</tr>\n";
+							print SOUT "\n";
 						}	
 					}		
 				}
@@ -823,8 +849,10 @@ else    {
 							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 							for (my $c=0; $c < $num_samples;$c++)	{
 								print OUT "<td class=\"helpHed\"></td>";
+								print SOUT "\t";
 							}		
 							print OUT "</tr>\n";
+							print SOUT "\n";
 						}	
 					}			
 				}
@@ -839,8 +867,10 @@ else    {
 						print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
+							print SOUT "\t";
 						}		
 						print OUT "</tr>\n";
+						print SOUT "\n";
 					}	
 				}
 				if ($variant_type eq 'BOTH')	{
@@ -851,8 +881,10 @@ else    {
 							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 							for (my $c=0; $c < $num_samples;$c++)	{
 								print OUT "<td class=\"helpHed\"></td>";
+								print SOUT "\t";
 							}		
 							print OUT "</tr>\n";
+							print SOUT "\n";
 						}	
 					}	
 				}
@@ -865,8 +897,10 @@ else    {
 						print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
+							print SOUT "\t";
 						}		
 						print OUT "</tr>\n";
+						print SOUT "\n";
 					}	
 				}	
 			}
@@ -879,8 +913,10 @@ else    {
 					print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 					for (my $c=0; $c < $num_samples;$c++)	{
 						print OUT "<td class=\"helpHed\"></td>";
+						print SOUT "\t";
 					}		
 					print OUT "</tr>\n";
+					print SOUT "\n";
 				}	
 			}	
 		}
@@ -894,8 +930,10 @@ else    {
 							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 							for (my $c=0; $c < $num_samples;$c++)	{
 								print OUT "<td class=\"helpHed\"></td>";
+								print SOUT "\t";
 							}		
 							print OUT "</tr>\n";
+							print SOUT "\n";
 						}	
 					}		
 				}
@@ -907,8 +945,10 @@ else    {
 							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 							for (my $c=0; $c < $num_samples;$c++)	{
 								print OUT "<td class=\"helpHed\"></td>";
+								print SOUT "\t";
 							}		
 							print OUT "</tr>\n";
+							print SOUT "\n";
 						}	
 					}
 				}	
@@ -922,8 +962,10 @@ else    {
 							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 							for (my $c=0; $c < $num_samples;$c++)	{
 								print OUT "<td class=\"helpHed\"></td>";
+								print SOUT "\t";
 							}		
 							print OUT "</tr>\n";
+							print SOUT "\n";
 						}	
 					}			
 				}
@@ -934,8 +976,10 @@ else    {
 							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 							for (my $c=0; $c < $num_samples;$c++)	{
 								print OUT "<td class=\"helpHed\"></td>";
+								print SOUT "\t";
 							}		
 							print OUT "</tr>\n";
+							print SOUT "\n";
 						}	
 					}			
 				}
@@ -944,9 +988,11 @@ else    {
 	}	
 	undef %sample_numbers;
 	print OUT "</table>";
-	
+	close SOUT;
 	my %group_numbers=();
 	if ($multi eq 'YES')	{
+		$s_output= "$path/SampleStatistics_pair.tsv";
+		open SOUT ">$s_output" or die "can not open $s_output : $!\n";
 		print OUT"
 		<br><a name=\"Statistics based on per Group analysis\" id=\"Statistics based on per Group analysis\"></a>Statistics based on per Group Analysis(<u><a href=\"StatisticsDescription.html\"target=\"_blank\">ColumnDescription</a></u>)<br>\n";
 		print OUT "<br><table cellspacing=\"0\" class=\"sofT\"><tr><td class=\"helpHed\"><p align='center'></td>";
@@ -958,6 +1004,7 @@ else    {
 			for (my $q=1;$q <=$#sam;$q++)	{
 				chomp $sam[$q];
 				print OUT "<td class=\"helpHed\"><p align='center'>SOMATIC:$groupArray[$k] - $sam[$q] </td>";
+				print SOUT "\tSOMATIC:$groupArray[$k] - $sam[$q]";
 				my $file="$path/numbers/TUMOR.$groupArray[$k].$sam[$q].out";
 				open SAMPLE, "<$file", or die "could not open $file : $!";
 				print"reading numbers from $groupArray[$k] - $sam[$q]\n";
@@ -979,6 +1026,7 @@ else    {
 		}
 		$tot=$tot-1;
 		print OUT "</tr>";
+		print SOUT "\n";
 		@align=("Combined Total Reads"," Combined Mapped Reads");
 		@align_h=("Total number of combined reads of the pair after realignment and recalibration","Number of reads mapped of the pair after realignment and recalibration");
 		if ($tool eq 'exome')	{
@@ -1013,6 +1061,7 @@ else    {
                         print OUT "<td class=\"helpHed\"></td>";
                 }               
                 print OUT "</tr>\n";
+				print SOUT "\n";
         
 		foreach my $key (sort {$a <=> $b} keys %group_numbers)	{	
 			
@@ -1024,8 +1073,10 @@ else    {
 						print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 						for (my $c=0; $c <= $tot;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
+							print SOUT "\t";
 						}		
 						print OUT "</tr>\n";
+						print SOUT "\n";
 					}
 				}
 				my $flag=1;
@@ -1042,8 +1093,10 @@ else    {
 					for(my $k = 0; $k <= $tot;$k++)	{
 						my $print=CommaFormatted(${$group_numbers{$key}}[$k]);
 						print OUT "<td class=\"helpBod\">$print</td>\n";
+						print SOUT "\t$print";
 					}
 					print OUT "</tr>\n";
+					print SOUT "\n";
 				}				
 			}
 			elsif ($tool eq 'whole_genome')	{
@@ -1054,8 +1107,10 @@ else    {
 						print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 						for (my $c=0; $c <= $tot;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
+							print SOUT "\t";
 						}		
 						print OUT "</tr>\n";
+						print SOUT "\n";
 					}
 				}
 				my $flag=1;
@@ -1072,15 +1127,17 @@ else    {
 					for(my $k = 0; $k <= $tot;$k++)	{
 						my $print=CommaFormatted(${$group_numbers{$key}}[$k]);
 						print OUT "<td class=\"helpBod\">$print</td>\n";
+						print SOUT "\t$print";
 					}
 					print OUT "</tr>\n";
+					print SOUT "\n";
 				}			
 			}	
 		}
 	}
 	undef %group_numbers;
 	print OUT "</table>";
-	
+	close SOUT;
 	
 	print DESC "
 	<p align='left'><b> Row description for Statistics Table:</p></b>
@@ -1324,4 +1381,35 @@ else    {
 	print OUT "</html>\n"; 
 	close OUT;
 	print "Document is generated with path as $output.......... \n";
+}
+sub trim($);
+	
+sub CommaFormatted
+{
+	my $delimiter = ','; # replace comma if desired
+	my($n,$d) = split /\./,shift,2;
+	my @a = ();
+	while($n =~ /\d\d\d\d/)
+	{
+		$n =~ s/(\d\d\d)$//;
+		unshift @a,$1;
+	}
+	unshift @a,$n;
+	$n = join $delimiter,@a;
+	$n = "$n\.$d" if $d =~ /\d/;
+	return $n;
+}
+
+sub read_files_var{
+	my ($filename) = @_;
+		open INFILE, "<$filename" or die "$filename $!\n";
+	my %variables; 
+	LINE:while (<INFILE>) {
+	next LINE if /^#|^\s/;
+	chomp;
+
+	my ($var, $value) = split (/=/,$_);
+	$variables{$var}=$value;
+	}
+	return (\%variables);
 }

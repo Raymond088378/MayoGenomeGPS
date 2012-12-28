@@ -34,7 +34,7 @@ else
 		fi
         for i in $pair
         do
-            sam=`echo $pair | tr " " "\n" | grep -v $i | tr "\n" " "`
+            sam=`echo $pair | tr " " "\n" | grep -w -v $i | tr "\n" " "`
             gr=""
             for s in $sam
             do

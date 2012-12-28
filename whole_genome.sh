@@ -127,6 +127,8 @@ else
 	info=$(cat $run_info | grep -w '^SAMPLEINFORMATION' | cut -d '=' -f2 )
 	workflow=$( cat $run_info | grep '^TOOL=' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 	version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
+	somatic_calling=$( cat $tool_info | grep -w '^SOMATIC_CALLING' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )   
+	
 	if [[ $somatic_caller == "JOINTSNVMIX" || $somatic_caller == "BEAUTY_EXOME" ]]
 	then
 		python_path=`which python`
@@ -184,6 +186,7 @@ else
 	mv $memory_info $config/memory_info.txt
 	memory_info=$config/memory_info.txt
 	output_align=$output_dir/alignment
+	
 	if [ $analysis != "alignment" ]
 	then
 		output_realign=$output_dir/realign/
@@ -215,13 +218,14 @@ else
 	echo -e "RUN INFO  file used : $run_info" >>  $output_dir/log.txt
 	echo -e "MEMORY INFO  file used : $memory_info" >>  $output_dir/log.txt
 	###########################################################
+	
 	#### sge paramters
 	TO=$USER
 	email=`finger $USER | awk -F ';' '{print $2}'`
 	args="-V -wd $output_dir/logs -q $queue -m a -M $email -l h_stack=10M"
 	echo -e "\nRCF arguments used : $args\n" >> $output_dir/log.txt
 	echo -e "Started the ${tool} analysis for ${run_num} for ${PI}\n\n${info}\n\nCourtesy: $workflow $version" | mailx -v -s "Analysis Started" -c Kahl.Jane@mayo.edu "$email"
-        #############################################################
+    #############################################################
 	
 	if [ $multi_sample != "YES" ]
 	then
@@ -845,25 +849,34 @@ else
 				mem=$( cat $memory_info | grep -w '^sift' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.sift.$group.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/sift.sh $sift $output_OnTarget $group $run_info germline
-				$script_path/check_qstat.sh $limit
-				qsub_args="-N $type.$version.sift.$group.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/sift.sh $sift $output_OnTarget $group $run_info somatic
+				if [ $somatic_calling == "YES" ]
+				then
+					$script_path/check_qstat.sh $limit
+					qsub_args="-N $type.$version.sift.$group.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
+					qsub $args $qsub_args $script_path/sift.sh $sift $output_OnTarget $group $run_info somatic
+				fi
 				## SNPEFF
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^snpeff' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.snpeff.$group.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/snpeff.sh $snpeff $output_OnTarget $group $run_info germline
-				$script_path/check_qstat.sh $limit
-				qsub_args="-N $type.$version.snpeff.$group.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/snpeff.sh $snpeff $output_OnTarget $group $run_info somatic
+				if [ $somatic_calling == "YES" ]
+				then
+					$script_path/check_qstat.sh $limit
+					qsub_args="-N $type.$version.snpeff.$group.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
+					qsub $args $qsub_args $script_path/snpeff.sh $snpeff $output_OnTarget $group $run_info somatic
+				fi
 				##POLYPHEN
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^polyphen' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.polyphen.$group.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/polyphen.sh $polyphen $output_OnTarget $group $run_info germline  
-				$script_path/check_qstat.sh $limit
-				qsub_args="-N $type.$version.polyphen.$group.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/polyphen.sh $polyphen $output_OnTarget $group $run_info somatic
+				if [ $somatic_calling == "YES" ]
+				then
+					$script_path/check_qstat.sh $limit
+					qsub_args="-N $type.$version.polyphen.$group.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
+					qsub $args $qsub_args $script_path/polyphen.sh $polyphen $output_OnTarget $group $run_info somatic
+				fi
 				hold="$type.$version.sift.$group.$run_num.$identify,$type.$version.snpeff.$group.$run_num.$identify,$type.$version.polyphen.$group.$run_num.$identify"
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^reports' | cut -d '=' -f2)
@@ -874,14 +887,18 @@ else
 				qsub_args="-N $type.$version.sample_reports.$group.$run_num.$identify -hold_jid $type.$version.reports.$group.$run_num.$identify -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/sample_report.sh $output_dir $TempReports $group $run_info germline
 				hold="$type.$version.sift.${group}.$run_num.$identify,$type.$version.snpeff.$group.$run_num.$identify,$type.$version.polyphen.$group.$run_num.$identify"
-				$script_path/check_qstat.sh $limit
-				mem=$( cat $memory_info | grep -w '^reports' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.reports.$group.$run_num.$identify -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/reports.sh $run_info $group $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir somatic
-				$script_path/check_qstat.sh $limit
-				mem=$( cat $memory_info | grep -w '^sample_report' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.sample_report.$group.$run_num.$identify -hold_jid $type.$version.reports.$group.$run_num.$identify -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/sample_report.sh $output_dir $TempReports $group $run_info somatic
+				if [ $somatic_calling == "YES" ]
+				then
+					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^reports' | cut -d '=' -f2)
+					qsub_args="-N $type.$version.reports.$group.$run_num.$identify -hold_jid $hold -t 1-$numchrs:1 -l h_vmem=$mem"
+					qsub $args $qsub_args $script_path/reports.sh $run_info $group $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir somatic
+					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^sample_report' | cut -d '=' -f2)
+					qsub_args="-N $type.$version.sample_report.$group.$run_num.$identify -hold_jid $type.$version.reports.$group.$run_num.$identify -l h_vmem=$mem"
+					qsub $args $qsub_args $script_path/sample_report.sh $output_dir $TempReports $group $run_info somatic
+				fi
+				
 				if [ $tool == "whole_genome" ]
 				then
 					crest=$output_dir/struct/crest

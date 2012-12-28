@@ -40,6 +40,7 @@ else
     vcftools=$( cat $tool_info | grep -w '^VCFTOOLS' | cut -d '=' -f2 )
 	perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
 	blat_params=$( cat $tool_info | grep -w '^BLAT_params' | cut -d '=' -f2 )
+	closeto=$( cat $tool_info | grep -w '^SNP_DISTANCE_INDEL' | cut -d '=' -f2 )
 	export PERL5LIB=$perllib:$PERL5LIB
 	PATH=$tabix/:$PATH
 	echo " vcf validation step "
@@ -111,7 +112,7 @@ else
 	if [ $n == 0 ]
 	then
 		echo " Adding CloseToIndel column to the vcf file"
-		$script_path/markSnv_IndelnPos.pl -s $output/$ff.SNV.vcf -i $output/$ff.INDEL.vcf -n 10 -o $output/$ff.SNV.vcf.pos
+		$script_path/markSnv_IndelnPos.pl -s $output/$ff.SNV.vcf -i $output/$ff.INDEL.vcf -n $closeto -o $output/$ff.SNV.vcf.pos
 		cat $output/$ff.SNV.vcf.pos | $script_path/add.info.close2indel.vcf.pl | $script_path/add.info.capture.vcf.pl > $output/$ff.SNV.vcf
 		rm $output/$ff.SNV.vcf.pos
 	fi

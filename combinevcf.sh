@@ -18,8 +18,6 @@ else
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
 	memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
 	mem=$( cat $memory_info | grep -w '^COMBINE_JVM' | cut -d '=' -f2)
-	 
-    export PATH=$java:$PATH
     
     num_times=`echo $input | tr " " "\n" | grep -c -w "\-V"`
     if [ $num_times == 1 ]

@@ -40,7 +40,7 @@ else
 	blat=$( cat $tool_info | grep -w '^BLAT' | cut -d '=' -f2 )
 	blat_ref=$( cat $tool_info | grep -w '^BLAT_REF' | cut -d '=' -f2 )
 	blat_params=$( cat $tool_info | grep -w '^BLAT_params' | cut -d '=' -f2 )
-	
+	somatic_calling=$( cat $tool_info | grep -w '^SOMATIC_CALLING' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 	export PERL5LIB=$perllib:$PERL5LIB
 	export PATH=$java:$tabix/:$PATH
 	
@@ -84,29 +84,32 @@ else
 	if [ ${#sampleArray[@]} -gt 1 ]
 	then
 		#bams are splitted using read group information
-		for i in $(seq 1 ${#sampleArray[@]})
-		do
-			sample=${sampleArray[$i]}
-			# removing the header for the extra samples from the BAM
-			sam=`echo $samples | tr ":" "\n"| grep -w -v "$sample" | tr "\n" " "`
-			gr=""
-			for s in $sam
+		if [ $somatic_calling == "YES" ]
+		then
+			for i in $(seq 1 ${#sampleArray[@]})
 			do
-				a="ID:$s|";
-				gr="$gr$a"
-			done
-			gr=`echo $gr |  sed "s/|$//"`
-			$samtools/samtools view -b -r $sample $input/$bam > $output/$sample.chr$chr.rg.bam
-			$samtools/samtools view -H $output/$sample.chr$chr.rg.bam | grep -w -E -v "$gr" | $samtools/samtools reheader - $output/$sample.chr$chr.rg.bam > $output/$sample.chr$chr.rg.re.bam
-			mv $output/$sample.chr$chr.rg.re.bam $output/$sample.chr$chr.rg.bam
+				sample=${sampleArray[$i]}
+				#removing the header for the extra samples from the BAM
+				sam=`echo $samples | tr ":" "\n"| grep -w -v "$sample" | tr "\n" " "`
+				gr=""
+				for s in $sam
+				do
+					a="ID:$s|";
+					gr="$gr$a"
+				done
+				gr=`echo $gr |  sed "s/|$//"`
+				$samtools/samtools view -b -r $sample $input/$bam > $output/$sample.chr$chr.rg.bam
+				$samtools/samtools view -H $output/$sample.chr$chr.rg.bam | grep -w -E -v "$gr" | $samtools/samtools reheader - $output/$sample.chr$chr.rg.bam > $output/$sample.chr$chr.rg.re.bam
+				mv $output/$sample.chr$chr.rg.re.bam $output/$sample.chr$chr.rg.bam
 
-			if [ ! -s $output/$sample.chr$chr.rg.bam ]
-			then
-				$script_path/errorlog.sh $output/$sample.chr$chr.rg.bam variants.sh ERROR "failed to create"
-				exit 1;
-			fi
-			$script_path/samplecheckBAM.sh $output $sample.chr$chr.rg.bam $output $run_info $sample $chopped $chr
-		done
+				if [ ! -s $output/$sample.chr$chr.rg.bam ]
+				then
+					$script_path/errorlog.sh $output/$sample.chr$chr.rg.bam variants.sh ERROR "failed to create"
+					exit 1;
+				fi
+				$script_path/samplecheckBAM.sh $output $sample.chr$chr.rg.bam $output $run_info $sample $chopped $chr
+			done
+		fi
 	else
 		sample=${sampleArray[1]}
 		$script_path/samplecheckBAM.sh $input $bam $output $run_info $sample $chopped $chr
@@ -327,54 +330,57 @@ else
 			in="-V $output/${sampleArray[1]}.variants.chr${chr}.raw.snvmix.vcf "
 			in_mu="-V $output/${sampleArray[1]}.variants.chr${chr}.raw.snvmix.vcf.multi.vcf "
 		fi
-		for i in $(seq 2 ${#sampleArray[@]})
-		do
-			sample=${sampleArray[$i]}
-			tumor=$sample.chr$chr-sorted.bam
-			snv=$sample.chr$chr.snv.output
-			inputfiles=$inputfiles" -I $output/$tumor"
-			##run somatic caller
-			if [ $somatic_caller == "JOINTSNVMIX" ]
-			then
-				$script_path/Jointsnvmix.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.vcf $run_info
-			elif [ $somatic_caller == "SOMATICSNIPER" ]
-			then
-				$script_path/somaticsnipper.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.vcf $run_info
-			elif [ $somatic_caller == "MUTECT" ]
-			then
-				$script_path/mutect.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.vcf $run_info
-			elif [ $somatic_caller == "BEAUTY_EXOME" ]
-			then
-				$script_path/mutect.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.mutect.vcf $run_info
-				$script_path/Jointsnvmix.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.jsm.vcf $run_info & 
-				$script_path/somaticsnipper.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.ss.vcf $run_info &
-				
-				while [[ ! -s $output/$sample.chr$chr.snv.jsm.vcf ||  ! -s $output/$sample.chr$chr.snv.ss.vcf ]]
-				do
-					echo " waiting for jointsnvmix somaticsniper to complete "
-					sleep 2m	
-				done
-				#Combine vcf's into one VCF
-				input_var="-V:MuTect $output/$sample.chr$chr.snv.mutect.vcf -V:JSM $output/$sample.chr$chr.snv.jsm.vcf -V:SomSniper $output/$sample.chr$chr.snv.ss.vcf -priority SomSniper,JSM,MuTect"
-				#Combine Variants
-				echo -e "starting to combine variants\n\n"
-				$script_path/combinevcf.sh "$input_var" $output/$sample.chr${chr}.snv.vcf $run_info yes
-				input_var="-V:MuTect $output/$sample.chr$chr.snv.mutect.vcf.multi.vcf -V:JSM $output/$sample.chr$chr.snv.jsm.vcf.multi.vcf -V:SomSniper $output/$sample.chr$chr.snv.ss.vcf.multi.vcf -priority SomSniper,JSM,MuTect"
-				#Combine Variants
-				echo -e "starting to combine variants\n\n"
-				$script_path/combinevcf.sh "$input_var" $output/$sample.chr${chr}.snv.vcf.multi.vcf $run_info yes
-			fi
-			### annotate vcfs if they haven't been already
-			in_bam="-I $input/$bam"
-			if [ $somatic_caller != "BEAUTY_EXOME" ]
-			then
-				$script_path/annotate_vcf.sh $output/$sample.chr$chr.snv.vcf $run_info "$in_bam"
-			fi
-			### somatic indel calling
-			$script_path/somaticindel.sh $output/$tumor $output/$normal $chr "$param" $sample $output $sample.chr$chr.indel.vcf $run_info
-			### annoatte vcfs
-			$script_path/annotate_vcf.sh $output/$sample.chr$chr.indel.vcf $run_info "$in_bam"
-		done
+		if [ $somatic_calling == "YES" ]
+		then
+			for i in $(seq 2 ${#sampleArray[@]})
+			do
+				sample=${sampleArray[$i]}
+				tumor=$sample.chr$chr-sorted.bam
+				snv=$sample.chr$chr.snv.output
+				inputfiles=$inputfiles" -I $output/$tumor"
+				##run somatic caller
+				if [ $somatic_caller == "JOINTSNVMIX" ]
+				then
+					$script_path/Jointsnvmix.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.vcf $run_info
+				elif [ $somatic_caller == "SOMATICSNIPER" ]
+				then
+					$script_path/somaticsnipper.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.vcf $run_info
+				elif [ $somatic_caller == "MUTECT" ]
+				then
+					$script_path/mutect.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.vcf $run_info
+				elif [ $somatic_caller == "BEAUTY_EXOME" ]
+				then
+					$script_path/mutect.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.mutect.vcf $run_info
+					$script_path/Jointsnvmix.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.jsm.vcf $run_info & 
+					$script_path/somaticsnipper.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.ss.vcf $run_info &
+					
+					while [[ ! -s $output/$sample.chr$chr.snv.jsm.vcf ||  ! -s $output/$sample.chr$chr.snv.ss.vcf ]]
+					do
+						echo " waiting for jointsnvmix somaticsniper to complete "
+						sleep 2m	
+					done
+					#Combine vcf's into one VCF
+					input_var="-V:MuTect $output/$sample.chr$chr.snv.mutect.vcf -V:JSM $output/$sample.chr$chr.snv.jsm.vcf -V:SomSniper $output/$sample.chr$chr.snv.ss.vcf -priority SomSniper,JSM,MuTect"
+					#Combine Variants
+					echo -e "starting to combine variants\n\n"
+					$script_path/combinevcf.sh "$input_var" $output/$sample.chr${chr}.snv.vcf $run_info yes
+					input_var="-V:MuTect $output/$sample.chr$chr.snv.mutect.vcf.multi.vcf -V:JSM $output/$sample.chr$chr.snv.jsm.vcf.multi.vcf -V:SomSniper $output/$sample.chr$chr.snv.ss.vcf.multi.vcf -priority SomSniper,JSM,MuTect"
+					#Combine Variants
+					echo -e "starting to combine variants\n\n"
+					$script_path/combinevcf.sh "$input_var" $output/$sample.chr${chr}.snv.vcf.multi.vcf $run_info yes
+				fi
+				### annotate vcfs if they haven't been already
+				in_bam="-I $input/$bam"
+				if [ $somatic_caller != "BEAUTY_EXOME" ]
+				then
+					$script_path/annotate_vcf.sh $output/$sample.chr$chr.snv.vcf $run_info "$in_bam"
+				fi
+				### somatic indel calling
+				$script_path/somaticindel.sh $output/$tumor $output/$normal $chr "$param" $sample $output $sample.chr$chr.indel.vcf $run_info
+				### annoatte vcfs
+				$script_path/annotate_vcf.sh $output/$sample.chr$chr.indel.vcf $run_info "$in_bam"
+			done
+		fi
 		## Germline calling
 		
 		bam="-I $input/$bam"
@@ -392,7 +398,7 @@ else
 			done
 			while [[ ! -s $output/${sampleArray[1]}.variants.chr${chr}.raw.snvmix.vcf ]]
 			do
-				echo "waiting for vnsmix 2 complete for normal sample "
+				echo "waiting for snvmix2 complete for normal sample "
 				sleep 2m	
 			done
 			$script_path/combinevcf.sh "$in" ${output}/variants.chr${chr}.raw.snvmix.vcf $run_info yes
@@ -456,12 +462,8 @@ else
 		## combine both snv and indel
 		in="$output/MergeAllSamples.chr$chr.snvs.raw.vcf $output/MergeAllSamples.chr$chr.Indels.raw.vcf"
 		$script_path/concatvcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.vcf $run_info yes
-		#cat $output/MergeAllSamples.chr$chr.raw.vcf | sed -e 's/-1/\./g' > $output/MergeAllSamples.chr$chr.raw.vcf.temp
-		#mv $output/MergeAllSamples.chr$chr.raw.vcf.temp $output/MergeAllSamples.chr$chr.raw.vcf
 		in="$output/MergeAllSamples.chr$chr.snvs.raw.multi.vcf $output/MergeAllSamples.chr$chr.Indels.raw.multi.vcf"
 		$script_path/concatvcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.multi.vcf $run_info yes
-		#cat $output/MergeAllSamples.chr$chr.raw.multi.vcf | sed -e 's/-1/\./g' > $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp
-		#mv $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp $output/MergeAllSamples.chr$chr.raw.multi.vcf
 	fi
 
 	## remove files and add ED blat field
@@ -511,28 +513,31 @@ else
 		$script_path/vcf_blat_verify.pl -i $output/variants.chr$chr.raw.multi.vcf -o $output/variants.chr$chr.raw.multi.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 		mv $output/variants.chr$chr.raw.multi.vcf.temp $output/variants.chr$chr.raw.multi.vcf
 		
-		cat $output/MergeAllSamples.chr$chr.raw.vcf |  awk '$0 !~ /^#/ && $5 ~ /,/' > $output/MergeAllSamples.chr$chr.raw.vcf.multi
-		cat $output/MergeAllSamples.chr$chr.raw.vcf |  awk '$0 ~ /^#/ || $5 !~ /,/' > $output/MergeAllSamples.chr$chr.raw.vcf.temp
-		mv $output/MergeAllSamples.chr$chr.raw.vcf.temp $output/MergeAllSamples.chr$chr.raw.vcf
-		cat $output/MergeAllSamples.chr$chr.raw.multi.vcf $output/MergeAllSamples.chr$chr.raw.vcf.multi > $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp
-		$script_path/vcfsort.pl $ref.fai $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp > $output/MergeAllSamples.chr$chr.raw.multi.vcf
-		rm $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp $output/MergeAllSamples.chr$chr.raw.vcf.multi
-		$script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.vcf -o $output/MergeAllSamples.chr$chr.raw.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
-		mv $output/MergeAllSamples.chr$chr.raw.vcf.temp $output/MergeAllSamples.chr$chr.raw.vcf
-		$script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.multi.vcf -o $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
-		mv $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp $output/MergeAllSamples.chr$chr.raw.multi.vcf 
-		for i in $(seq 1 ${#sampleArray[@]})
-		do	
-			rm $output/${sampleArray[$i]}.chr$chr.rg.bam
-			rm $output/${sampleArray[$i]}.chr$chr.rg.bam.$chr.bam
-			rm $output/${sampleArray[$i]}.chr$chr.rg.bam.$chr.bam.bai
-			rm $output/${sampleArray[$i]}.chr$chr.bam
-			rm $output/${sampleArray[$i]}.chr$chr.bam.bai
-			rm $output/${sampleArray[$i]}.chr$chr-sorted.bam
-			rm $output/${sampleArray[$i]}.chr$chr-sorted.bam.bai
-		done
+		if [ $somatic_calling == "YES" ]
+		then
+			cat $output/MergeAllSamples.chr$chr.raw.vcf |  awk '$0 !~ /^#/ && $5 ~ /,/' > $output/MergeAllSamples.chr$chr.raw.vcf.multi
+			cat $output/MergeAllSamples.chr$chr.raw.vcf |  awk '$0 ~ /^#/ || $5 !~ /,/' > $output/MergeAllSamples.chr$chr.raw.vcf.temp
+			mv $output/MergeAllSamples.chr$chr.raw.vcf.temp $output/MergeAllSamples.chr$chr.raw.vcf
+			cat $output/MergeAllSamples.chr$chr.raw.multi.vcf $output/MergeAllSamples.chr$chr.raw.vcf.multi > $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp
+			$script_path/vcfsort.pl $ref.fai $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp > $output/MergeAllSamples.chr$chr.raw.multi.vcf
+			rm $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp $output/MergeAllSamples.chr$chr.raw.vcf.multi
+			$script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.vcf -o $output/MergeAllSamples.chr$chr.raw.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
+			mv $output/MergeAllSamples.chr$chr.raw.vcf.temp $output/MergeAllSamples.chr$chr.raw.vcf
+			$script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.multi.vcf -o $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
+			mv $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp $output/MergeAllSamples.chr$chr.raw.multi.vcf 
+			for i in $(seq 1 ${#sampleArray[@]})
+			do	
+				rm $output/${sampleArray[$i]}.chr$chr.rg.bam
+				rm $output/${sampleArray[$i]}.chr$chr.rg.bam.$chr.bam
+				rm $output/${sampleArray[$i]}.chr$chr.rg.bam.$chr.bam.bai
+				rm $output/${sampleArray[$i]}.chr$chr.bam
+				rm $output/${sampleArray[$i]}.chr$chr.bam.bai
+				rm $output/${sampleArray[$i]}.chr$chr-sorted.bam
+				rm $output/${sampleArray[$i]}.chr$chr-sorted.bam.bai
+			done
+			$script_path/filesize.sh VariantCalling multi_sample $output MergeAllSamples.chr$chr.raw.vcf $JOB_ID $run_info
+		fi
 		$script_path/filesize.sh VariantCalling multi_sample $output variants.chr$chr.raw.vcf $JOB_ID $run_info
-		$script_path/filesize.sh VariantCalling multi_sample $output MergeAllSamples.chr$chr.raw.vcf $JOB_ID $run_info
 	fi
 	## update dash board
 	if [ $SGE_TASK_ID == 1 ]
