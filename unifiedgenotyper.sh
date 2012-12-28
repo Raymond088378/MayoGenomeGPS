@@ -18,10 +18,8 @@ else
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
-    dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
     threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2)
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
-	qual=$( cat $tool_info | grep -w '^BASE_QUALITY' | cut -d '=' -f2 )
 	command_line_params=$( cat $tool_info | grep -w '^UnifiedGenotyper_params' | cut -d '=' -f2 )
 	memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
 	mem=$( cat $memory_info | grep -w '^UnifiedGenotyper_JVM' | cut -d '=' -f2)
@@ -86,11 +84,6 @@ else
     done 
 	
 	$script_path/convertvcf.pl $vcf > $vcf.tmp
-	mv $vcf.tmp $vcf
-	
-	cat $vcf | awk '$0 ~ /^#/ || $5 ~ /,/' > $vcf.multi.vcf
-	cat $vcf | awk '$0 ~ /^#/ || $5 !~ /,/' > $vcf.temp
-	mv $vcf.temp $vcf
 	
     if [ ! -s $vcf.idx ]
     then

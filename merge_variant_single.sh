@@ -44,11 +44,9 @@ else
 	
     
     inputargs=""
-    inputargs_multi=""
     for i in $chrs
     do
 		inputfile=$input/$sample/$sample.variants.chr$i.raw.vcf 
-		multi=$input/$sample/$sample.variants.chr$i.raw.multi.vcf 
 		if [ ! -s $inputfile ]
 		then	
 			touch $inputfile.fix.log
@@ -56,12 +54,9 @@ else
 			$script_path/wait.sh $inputfile.fix.log
 		fi
 		inputargs=$inputargs"$inputfile "
-		inputargs_multi=$inputargs_multi"$multi "
     done
 	
     $script_path/concatvcf.sh "$inputargs" $out/$sample.variants.raw.vcf $run_info no
-	$script_path/concatvcf.sh "$inputargs_multi" $out/$sample.variants.raw.multi.vcf $run_info yes
-	
 	
     ### filter the variant calls
     if [ $filter_variants == "YES" ]

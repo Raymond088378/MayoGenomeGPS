@@ -101,9 +101,7 @@ else
         else
             cat $output/$output_file | awk '$0 ~ /^#/ || $8 ~ /SOMATIC/' > $output/$output_file.tmp
 		fi
-        cat $output/$output_file.tmp | awk '$0 ~ /^#/ || $5 ~ /,/' > $output/$output_file.multi.vcf
-		cat $output/$output_file.tmp | awk '$0 ~ /^#/ || $5 !~ /,/' > $output/$output_file
-		rm $output/$output_file.tmp $output/$output_file.idx
+        rm $output/$output_file.idx
     fi
     echo `date`
 fi

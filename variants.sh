@@ -152,7 +152,6 @@ else
 				sed '/^$/d' $output/$sample.variants.chr${chr}.raw.all.vcf > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
 				mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
 				$tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
-				mv $output/$sample.variants.chr${chr}.raw.all.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.multi.vcf
 			elif [ $tool == "exome" ]
 			then
 				len=`cat $output/chr$chr.target.bed |wc -l`
@@ -169,8 +168,6 @@ else
 				then
 					$script_path/phaseByTransmission.sh $output/$sample.variants.chr${chr}.raw.all.vcf $output/$sample.variants.chr${chr}.raw.all.pbt.vcf $run_info
 				fi
-				mv $output/$sample.variants.chr${chr}.raw.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.multi.vcf
-				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info "$bam" 
 				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam"
 			else
 				param="-L chr$chr"
@@ -181,8 +178,6 @@ else
 				then
 					$script_path/phaseByTransmission.sh $output/$sample.variants.chr${chr}.raw.all.vcf $output/$sample.variants.chr${chr}.raw.all.pbt.vcf $run_info
 				fi
-				mv $output/$sample.variants.chr${chr}.raw.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.multi.vcf
-				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info "$bam" 
 				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam"
 			fi
 		elif [ $SNV_caller == "SNVMIX" ]
@@ -207,8 +202,6 @@ else
 				### merge snvs and indels to give on vcf
 				in="$output/$sample.variants.chr${chr}.raw.snv.all.vcf $output/$sample.variants.chr${chr}.raw.indel.all.vcf "
 				$script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.all.vcf $run_info yes
-				in="$output/$sample.variants.chr${chr}.raw.snv.all.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.indel.all.vcf.multi.vcf"
-				$script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info yes
 				cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "." || $0 ~ /^#/' | grep -v "\./\."  | grep -v "0\/0" > $output/$sample.variants.chr${chr}.raw.vcf
 				$tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
 			elif [ $tool == "exome" ]
@@ -224,7 +217,7 @@ else
 				$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.indel.vcf INDEL "$param" EMIT_VARIANTS_ONLY $run_info &
 				### call snvs using snvmix
 				$script_path/snvmix2.sh $sample "$bam" $output/$sample.variants.chr${chr}.raw.snv.vcf target "$param" $run_info &
-				while [[ ! -s $output/$sample.variants.chr${chr}.raw.indel.vcf || ! -s $output/$sample.variants.chr${chr}.raw.indel.vcf.multi.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snv.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snv.vcf.multi.vcf ]]
+				while [[ ! -s $output/$sample.variants.chr${chr}.raw.indel.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snv.vcf ]]
 				do
 					echo " waiting for gatk and snvnix to complete to complete "
 					sleep 2m	
@@ -232,9 +225,6 @@ else
 				### merge snvs and indels to give on vcf
 				in="$output/$sample.variants.chr${chr}.raw.snv.vcf $output/$sample.variants.chr${chr}.raw.indel.vcf"
 				$script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.vcf $run_info yes
-				in="$output/$sample.variants.chr${chr}.raw.snv.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.indel.vcf.multi.vcf"
-				$script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info yes
-				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info "$bam" 
 				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam"
 			else
 				param="-L chr$chr"
@@ -242,7 +232,7 @@ else
 				$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.indel.vcf INDEL "$param" EMIT_VARIANTS_ONLY $run_info &
 				### call snvs using snvmix
 				$script_path/snvmix2.sh $sample "$bam" $output/$sample.variants.chr${chr}.raw.snv.vcf target "$param" $run_info &
-				while [[ ! -s $output/$sample.variants.chr${chr}.raw.indel.vcf || ! -s $output/$sample.variants.chr${chr}.raw.indel.vcf.multi.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snv.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snv.vcf.multi.vcf ]]
+				while [[ ! -s $output/$sample.variants.chr${chr}.raw.indel.vcf  || ! -s $output/$sample.variants.chr${chr}.raw.snv.vcf ]]
 				do
 					echo " waiting for gatk and snvnix to complete to complete "
 					sleep 2m	
@@ -250,9 +240,6 @@ else
 				### merge snvs and indels to give on vcf
 				in="$output/$sample.variants.chr${chr}.raw.snv.vcf $output/$sample.variants.chr${chr}.raw.indel.vcf"
 				$script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.vcf $run_info yes
-				in="$output/$sample.variants.chr${chr}.raw.snv.vcf.multi.vcf $output/$sample.variants.chr${chr}.raw.indel.vcf.multi.vcf"
-				$script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info yes
-				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info "$bam" 
 				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam"
 			fi
 		elif [ $SNV_caller == "BEAUTY_EXOME" ]
@@ -271,7 +258,7 @@ else
 				### call snvs using snvmix
 				$script_path/snvmix2.sh $sample "$bam" $output/$sample.variants.chr${chr}.raw.snvmix.vcf target "$param" $run_info &
 				#UNION    
-				while [[ ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf  || ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf.multi.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf.multi.vcf ]]
+				while [[ ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf  ]]
 				do
 					echo " waiting for gatk and snvnix to complete to complete "
 					sleep 2m	
@@ -281,10 +268,6 @@ else
 				#Combine Variants
 				$script_path/combinevcf.sh "$input_var" ${output}/$sample.variants.chr${chr}.raw.vcf $run_info yes
 				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam" 
-				input_var=""
-				input_var="-V:GATK $output/$sample.variants.chr${chr}.raw.gatk.vcf.multi.vcf -V:SNVMix $output/$sample.variants.chr${chr}.raw.snvmix.vcf.multi.vcf -priority GATK,SNVMix"
-				$script_path/combinevcf.sh "$input_var" ${output}/$sample.variants.chr${chr}.raw.multi.vcf $run_info yes
-				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info "$bam"
 			else
 				param="-L chr$chr"
 				bam="-I $output/$sample.chr${chr}-sorted.bam"
@@ -292,7 +275,7 @@ else
 				### call snvs using snvmix
 				$script_path/snvmix2.sh $sample "$bam" $output/$sample.variants.chr${chr}.raw.snvmix.vcf target "$param" $run_info &
 				#UNION    
-				while [[ ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf  || ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf.multi.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf.multi.vcf ]]
+				while [[ ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf ]]
 				do
 					echo " waiting for gatk and snvnix to complete to complete "
 					sleep 2m	
@@ -301,11 +284,7 @@ else
 				input_var="-V:GATK $output/$sample.variants.chr${chr}.raw.gatk.vcf -V:SNVMix $output/$sample.variants.chr${chr}.raw.snvmix.vcf -priority GATK,SNVMix"
 				#Combine Variants
 				$script_path/combinevcf.sh "$input_var" ${output}/$sample.variants.chr${chr}.raw.vcf $run_info yes
-				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam" 
-				input_var=""
-				input_var="-V:GATK $output/$sample.variants.chr${chr}.raw.gatk.vcf.multi.vcf -V:SNVMix $output/$sample.variants.chr${chr}.raw.snvmix.vcf.multi.vcf -priority GATK,SNVMix"
-				$script_path/combinevcf.sh "$input_var" ${output}/$sample.variants.chr${chr}.raw.multi.vcf $run_info yes
-				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.multi.vcf $run_info "$bam"  
+				$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam"   
 			fi
 		fi
 	else
@@ -328,7 +307,6 @@ else
 		then
 			$script_path/snvmix2.sh ${sampleArray[1]} "$inputfiles" $output/${sampleArray[1]}.variants.chr${chr}.raw.snvmix.vcf target "$param" $run_info &
 			in="-V $output/${sampleArray[1]}.variants.chr${chr}.raw.snvmix.vcf "
-			in_mu="-V $output/${sampleArray[1]}.variants.chr${chr}.raw.snvmix.vcf.multi.vcf "
 		fi
 		if [ $somatic_calling == "YES" ]
 		then
@@ -364,10 +342,6 @@ else
 					#Combine Variants
 					echo -e "starting to combine variants\n\n"
 					$script_path/combinevcf.sh "$input_var" $output/$sample.chr${chr}.snv.vcf $run_info yes
-					input_var="-V:MuTect $output/$sample.chr$chr.snv.mutect.vcf.multi.vcf -V:JSM $output/$sample.chr$chr.snv.jsm.vcf.multi.vcf -V:SomSniper $output/$sample.chr$chr.snv.ss.vcf.multi.vcf -priority SomSniper,JSM,MuTect"
-					#Combine Variants
-					echo -e "starting to combine variants\n\n"
-					$script_path/combinevcf.sh "$input_var" $output/$sample.chr${chr}.snv.vcf.multi.vcf $run_info yes
 				fi
 				### annotate vcfs if they haven't been already
 				in_bam="-I $input/$bam"
@@ -393,7 +367,6 @@ else
 				sample=${sampleArray[$i]}
 				tumor=$sample.chr$chr-sorted.bam
 				in=$in"-V $output/$sample.variants.chr${chr}.raw.snvmix.vcf "
-				in_mu=$in_mu"-V $output/$sample.variants.chr${chr}.raw.snvmix.vcf.multi.vcf "
 				$script_path/snvmix2.sh $sample $output/$tumor $output/$sample.variants.chr${chr}.raw.snvmix.vcf target "$param" $run_info
 			done
 			while [[ ! -s $output/${sampleArray[1]}.variants.chr${chr}.raw.snvmix.vcf ]]
@@ -402,21 +375,14 @@ else
 				sleep 2m	
 			done
 			$script_path/combinevcf.sh "$in" ${output}/variants.chr${chr}.raw.snvmix.vcf $run_info yes
-			$script_path/combinevcf.sh "$in_mu" ${output}/variants.chr${chr}.raw.snvmix.vcf.multi.vcf $run_info yes
 			#UNION
 			input_var="-V:GATK $output/variants.chr${chr}.raw.gatk.vcf -V:SNVMIX ${output}/variants.chr${chr}.raw.snvmix.vcf -priority GATK,SNVMIX"
 			#Combine Variants
 			$script_path/combinevcf.sh "$input_var" ${output}/variants.chr${chr}.raw.vcf $run_info yes
 			$script_path/annotate_vcf.sh $output/variants.chr${chr}.raw.vcf $run_info "$bam"
-			input_var="-V:GATK $output/variants.chr${chr}.raw.gatk.vcf.multi.vcf -V:SNVMIX ${output}/variants.chr${chr}.raw.snvmix.vcf.multi.vcf -priority GATK,SNVMIX"
-			#Combine Variants
-			$script_path/combinevcf.sh "$input_var" ${output}/variants.chr${chr}.raw.multi.vcf $run_info yes
-			$script_path/annotate_vcf.sh $output/variants.chr${chr}.raw.multi.vcf $run_info "$bam"
 		else
 			mv $output/variants.chr${chr}.raw.gatk.vcf ${output}/variants.chr${chr}.raw.vcf
-			mv $output/variants.chr${chr}.raw.gatk.vcf.multi.vcf $output/variants.chr${chr}.raw.multi.vcf
 			$script_path/annotate_vcf.sh ${output}/variants.chr${chr}.raw.vcf $run_info "$bam"
-			$script_path/annotate_vcf.sh $output/variants.chr${chr}.raw.multi.vcf $run_info "$bam"
 		fi		
 	fi
 	if [ $tool == "exome" ]
@@ -432,59 +398,42 @@ else
 	then
 		### INDEL
 		input_var=""
-		multi_var=""
 		for i in $(seq 2 ${#sampleArray[@]})
 		do
 			sample=${sampleArray[$i]}
 			indel=$sample.chr$chr.indel.vcf
-			multi=$sample.chr$chr.indel.vcf.multi.vcf
 			input_var="${input_var} -V $output/$indel"
-			multi_var="${multi_var} -V $output/$multi"
 		done
 		$script_path/combinevcf.sh "$input_var" $output/MergeAllSamples.chr$chr.Indels.raw.vcf $run_info yes
-		$script_path/combinevcf.sh "$multi_var" $output/MergeAllSamples.chr$chr.Indels.raw.multi.vcf $run_info yes
 
 		##Merge SNVs
 		input_var=""
-		multi_var=""
 		for i in $(seq 2 ${#sampleArray[@]})
 		do
 			sample=${sampleArray[$i]}
 			snv=$sample.chr$chr.snv.vcf
-			multi=$sample.chr$chr.snv.vcf.multi.vcf
 			input_var="${input_var} -V $output/$snv"
-			multi_var="${multi_var} -V $output/$multi"
 		done
 		$script_path/combinevcf.sh "$input_var" $output/MergeAllSamples.chr$chr.snvs.raw.vcf $run_info yes
         $script_path/unifiedgenotyper_backill.sh "-I $input/chr${chr}.cleaned.bam" $output/MergeAllSamples.chr$chr.snvs.raw.vcf BOTH EMIT_ALL_SITES $run_info
-		$script_path/combinevcf.sh "$multi_var" $output/MergeAllSamples.chr$chr.snvs.raw.multi.vcf $run_info yes
-		$script_path/unifiedgenotyper_backill.sh "-I $input/chr${chr}.cleaned.bam" $output/MergeAllSamples.chr$chr.snvs.raw.multi.vcf BOTH EMIT_ALL_SITES $run_info
 		## combine both snv and indel
 		in="$output/MergeAllSamples.chr$chr.snvs.raw.vcf $output/MergeAllSamples.chr$chr.Indels.raw.vcf"
 		$script_path/concatvcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.vcf $run_info yes
-		in="$output/MergeAllSamples.chr$chr.snvs.raw.multi.vcf $output/MergeAllSamples.chr$chr.Indels.raw.multi.vcf"
-		$script_path/concatvcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.multi.vcf $run_info yes
 	fi
 
 	## remove files and add ED blat field
 	if [ ${#sampleArray[@]} == 1 ]
 	then
 		### add the ED column
-		if [[ ! -s $output/${sampleArray[1]}.variants.chr$chr.raw.vcf  || ! -s $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf ]]
+		if [[ ! -s $output/${sampleArray[1]}.variants.chr$chr.raw.vcf ]]
 		then
 			echo "ERROR : variant calling failed for ${sampleArray[1]} in variantss.h script"	
 			exit 1;
 		fi
-		cat $output/${sampleArray[1]}.variants.chr$chr.raw.vcf | awk '$0 !~ /^#/ && $5 ~ /,/' > $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.multi
-        cat $output/${sampleArray[1]}.variants.chr$chr.raw.vcf | awk '$0 ~ /^#/ || $5 !~ /,/' > $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp
-        mv $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp $output/${sampleArray[1]}.variants.chr$chr.raw.vcf
-        cat $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.multi > $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp
-        $script_path/vcfsort.pl $ref.fai $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp > $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf
-        rm $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.multi
+		
         $script_path/vcf_blat_verify.pl -i $output/${sampleArray[1]}.variants.chr$chr.raw.vcf -o $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 		mv $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp $output/${sampleArray[1]}.variants.chr$chr.raw.vcf
-		$script_path/vcf_blat_verify.pl -i $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf -o $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params 
-		mv $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf.temp $output/${sampleArray[1]}.variants.chr$chr.raw.multi.vcf
+		
 		bam=chr${chr}.cleaned.bam
 		rm $output/$bam.$chr.bam
 		rm $output/$bam.$chr.bam.bai
@@ -497,34 +446,19 @@ else
 	fi
 	if [ ${#sampleArray[@]} -gt 1 ]
 	then
-		if [[ ! -s $output/variants.chr$chr.raw.vcf || ! -s $output/variants.chr$chr.raw.multi.vcf || ! -s $output/MergeAllSamples.chr$chr.raw.vcf || ! -s $output/MergeAllSamples.chr$chr.raw.multi.vcf ]]
+		if [[ ! -s $output/variants.chr$chr.raw.vcf || ! -s $output/MergeAllSamples.chr$chr.raw.vcf ]]
 		then
 			echo "ERROR : variant calling failed for pair in variants.sh script"	
 			exit 1;
 		fi
-		cat $output/variants.chr$chr.raw.vcf |  awk '$0 !~ /^#/ && $5 ~ /,/' > $output/variants.chr$chr.raw.vcf.multi
-		cat $output/variants.chr$chr.raw.vcf |  awk '$0 ~ /^#/ || $5 !~ /,/' > $output/variants.chr$chr.raw.vcf.temp
-		mv $output/variants.chr$chr.raw.vcf.temp $output/variants.chr$chr.raw.vcf
-		cat $output/variants.chr$chr.raw.multi.vcf $output/variants.chr$chr.raw.vcf.multi > $output/variants.chr$chr.raw.multi.vcf.temp
-		$script_path/vcfsort.pl $ref.fai $output/variants.chr$chr.raw.multi.vcf.temp > $output/variants.chr$chr.raw.multi.vcf
-		rm $output/variants.chr$chr.raw.multi.vcf.temp $output/variants.chr$chr.raw.vcf.multi
+		
 		$script_path/vcf_blat_verify.pl -i $output/variants.chr$chr.raw.vcf -o $output/variants.chr$chr.raw.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 		mv $output/variants.chr$chr.raw.vcf.temp $output/variants.chr$chr.raw.vcf
-		$script_path/vcf_blat_verify.pl -i $output/variants.chr$chr.raw.multi.vcf -o $output/variants.chr$chr.raw.multi.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
-		mv $output/variants.chr$chr.raw.multi.vcf.temp $output/variants.chr$chr.raw.multi.vcf
-		
+				
 		if [ $somatic_calling == "YES" ]
 		then
-			cat $output/MergeAllSamples.chr$chr.raw.vcf |  awk '$0 !~ /^#/ && $5 ~ /,/' > $output/MergeAllSamples.chr$chr.raw.vcf.multi
-			cat $output/MergeAllSamples.chr$chr.raw.vcf |  awk '$0 ~ /^#/ || $5 !~ /,/' > $output/MergeAllSamples.chr$chr.raw.vcf.temp
-			mv $output/MergeAllSamples.chr$chr.raw.vcf.temp $output/MergeAllSamples.chr$chr.raw.vcf
-			cat $output/MergeAllSamples.chr$chr.raw.multi.vcf $output/MergeAllSamples.chr$chr.raw.vcf.multi > $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp
-			$script_path/vcfsort.pl $ref.fai $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp > $output/MergeAllSamples.chr$chr.raw.multi.vcf
-			rm $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp $output/MergeAllSamples.chr$chr.raw.vcf.multi
 			$script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.vcf -o $output/MergeAllSamples.chr$chr.raw.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 			mv $output/MergeAllSamples.chr$chr.raw.vcf.temp $output/MergeAllSamples.chr$chr.raw.vcf
-			$script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.multi.vcf -o $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
-			mv $output/MergeAllSamples.chr$chr.raw.multi.vcf.temp $output/MergeAllSamples.chr$chr.raw.multi.vcf 
 			for i in $(seq 1 ${#sampleArray[@]})
 			do	
 				rm $output/${sampleArray[$i]}.chr$chr.rg.bam

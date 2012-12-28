@@ -75,10 +75,6 @@ else
 	
 	### script to convert text output to vcf output 
 	$script_path/jsm2vcf.pl -i $output/$output_file.txt -o $output/$output_file -ns $normal_sample -ts $tumor_sample $JSM_Filter
-	cat $output/$output_file | awk '$0 ~ /^#/ || $5 ~ /,/' > $output/$output_file.multi.vcf
-	cat $output/$output_file | awk '$0 ~ /^#/ || $5 !~ /,/' > $output/$output_file.tmp
-	
-	mv $output/$output_file.tmp $output/$output_file
 	rm $output/$output_file.txt
         
 	if [ $only_ontarget == "YES" ]

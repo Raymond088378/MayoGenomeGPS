@@ -753,7 +753,7 @@ else
 				do
 					bamfile=$sample.sorted.bam
 					align_dir=$output_dir/alignment/$sample;	
-					### setting the bams and its path for multiple sample anaylysis
+					### setting the bams and its path for multiple sample analysis
 					names_samples=$names_samples"$sample:"
 					bam_samples=$bam_samples"$sample.sorted.bam:"
 					input_dirs=$input_dirs"$output_dir/alignment/$sample:"

@@ -65,10 +65,6 @@ else
         mv $output.temp $output
     fi    
 	
-	cat $output | awk '$0 ~ /^#/ || $5 ~ /,/' > $output.multi.vcf
-	cat $output | awk '$0 ~ /^#/ || $5 !~ /,/' > $output.temp
-	mv $output.temp $output	
-	
     if [ -s $output ]
     then
         rm $temp

@@ -55,8 +55,8 @@ else
     $somatic_sniper/bam-somaticsniper $command_line_params -F vcf -f $ref $tumor_bam $normal_bam $output/$snv
     #rm $normal_bam $tumor_bam
 	
-	cat $output/$snv | awk 'BEGIN {OFS="\t"} {if($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,"PASS",$8,$9,$10,$11;}' | sed -e "/NORMAL/s//$normal_sample/g" | sed -e "/TUMOR/s//$tumor_sample/g"  | awk '$0 ~ /^#/ || $5 !~ /,/' | $script_path/ssniper_vcf_add_AD.pl > $output/$output_file
-    cat $output/$snv | awk 'BEGIN {OFS="\t"} {if($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,"PASS",$8,$9,$10,$11;}' | sed -e "/NORMAL/s//$normal_sample/g" | sed -e "/TUMOR/s//$tumor_sample/g"  | awk '$0 ~ /^#/ || $5 ~ /,/' | $script_path/ssniper_vcf_add_AD.pl > $output/$output_file.multi.vcf    
+	cat $output/$snv | awk 'BEGIN {OFS="\t"} {if($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,"PASS",$8,$9,$10,$11;}' \
+	| sed -e "/NORMAL/s//$normal_sample/g" | sed -e "/TUMOR/s//$tumor_sample/g" | $script_path/ssniper_vcf_add_AD.pl > $output/$output_file
     
     only_ontarget=$( cat $tool_info | grep -w '^TARGETTED' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
     TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )

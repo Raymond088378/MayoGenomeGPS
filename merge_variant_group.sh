@@ -53,7 +53,6 @@ else
 		for i in $chrs
 		do
 			inputfile=$input/$group/MergeAllSamples.chr$i.raw.vcf 
-			multi=$input/$group/MergeAllSamples.chr$i.raw.multi.vcf 
 			if [ ! -s $inputfile ]
 			then		
 				touch $inputfile.fix.log
@@ -61,13 +60,9 @@ else
 				$script_path/wait.sh $inputfile.fix.log
 			fi	
 			inputargs=$inputargs"$inputfile "
-			inputargs_multi=$inputargs_multi"$multi "
 		done
 		
 		$script_path/concatvcf.sh "$inputargs" $out/$group.somatic.variants.raw.vcf $run_info no
-		$script_path/concatvcf.sh "$inputargs_multi" $out/$group.somatic.variants.raw.multi.vcf $run_info yes
-		cat $out/$group.somatic.variants.raw.multi.vcf | sed -e 's/-1/\./g' > $out/$group.somatic.variants.raw.multi.vcf.tmp
-		mv $out/$group.somatic.variants.raw.multi.vcf.tmp $out/$group.somatic.variants.raw.multi.vcf
 		
 		if [ $somatic_filter_variants == "YES" ]
 		then
@@ -96,11 +91,9 @@ else
 	fi
 	### multi sample calling	
     inputargs=""
-	inputargs_multi=""
     for i in $chrs
     do
         inputfile=$input/$group/variants.chr$i.raw.vcf 
-		multi=$input/$group/variants.chr$i.raw.multi.vcf 
         if [ ! -s $inputfile ]
         then		
             touch $inputfile.fix.log
@@ -108,13 +101,9 @@ else
 			$script_path/wait.sh $inputfile.fix.log
 		fi
         inputargs=$inputargs"$inputfile "
-		inputargs_multi=$inputargs_multi"$multi "
     done
 
 	$script_path/concatvcf.sh "$inputargs" $out/$group.variants.raw.vcf $run_info no
-	$script_path/concatvcf.sh "$inputargs_multi" $out/$group.variants.raw.multi.vcf $run_info yes
-	cat $out/$group.variants.raw.multi.vcf | sed -e 's/-1/\./g' > $out/$group.variants.raw.multi.vcf.tmp
-	mv $out/$group.variants.raw.multi.vcf.tmp $out/$group.variants.raw.multi.vcf
 	
     if [ $filter_variants == "YES" ]
     then
