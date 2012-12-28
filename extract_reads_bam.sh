@@ -82,41 +82,13 @@ else
 			$samtools/samtools view -H $output/$sample.extra.bam | grep -w -E -v "$gr" | $samtools/samtools reheader - $output/$sample.extra.bam > $output/$sample.extra.re.bam
 			mv $output/$sample.extra.re.bam $output/$sample.extra.bam
 			$samtools/samtools index $output/$sample.extra.bam
-			if [ $delivery_folder != "NA" ]
-			then
-				if [ -d $delivery_folder ]
-				then
-					if [ ! -d $out ]
-					then
-						mkdir -p $out
-						chmod -Rf 777 $out
-					fi
-					mv $output/$sample.extra.bam $out/
-					mv $output/$sample.extra.bam.bai $out/
-				fi
-			else
-				mv $output/$sample.extra.bam $igv/
-				mv $output/$sample.extra.bam.bai $igv/
-			fi		
+			mv $output/$sample.extra.bam $igv/
+			mv $output/$sample.extra.bam.bai $igv/		
 		done
 		rm $output/$bam.extra.bam $output/$bam.extra.bam.bai
 	else
-		if [ $delivery_folder != "NA" ]
-		then
-			if [ -d $delivery_folder ]
-			then
-				if [ ! -d $out ]
-				then
-					mkdir -p $out
-					chmod -Rf 777 $out
-				fi
-				mv $output/$bam.extra.bam $out/
-				mv $output/$bam.extra.bam.bai $out/
-			fi
-		else	
-			mv $output/$bam.extra.bam $igv/
-			mv $output/$bam.extra.bam.bai $igv/
-		fi		
+		mv $output/$bam.extra.bam $igv/
+		mv $output/$bam.extra.bam.bai $igv/		
 	fi
 	echo `date`
 fi 

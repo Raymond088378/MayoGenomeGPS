@@ -89,15 +89,24 @@ else
 						input_bam="$input_bam $output/$sample.$i.chr$chr.bam"
 					fi
 				done
-                $samtools/samtools merge -h $output/$sample/$sample.$i.header.sam $output/$sample/$i.igv-sorted.bam $input_bam 
-            else
+				$samtools/samtools merge -h $output/$sample/$sample.$i.header.sam $output/$sample/$i.igv-sorted.bam $input_bam $output/$i.sorted.bam.extra.bam 
+			else
                 chr=${chrArray[1]}
-				cp $output/$sample.$i.chr$chr.bam $output/$sample/$i.igv-sorted.bam
+				$samtools/samtools view -H $output/$sample.$i.chr$chr.bam > $output/$sample/$sample.1.header.sam
+				$samtools/samtools merge -h $output/$sample/$sample.1.header.sam $output/$sample/$i.igv-sorted.bam $output/$sample.$i.chr$chr.bam $output/$i.sorted.bam.extra.bam 
+				rm $output/$sample/$sample.1.header.sam
             fi
             if [ -s $output/$sample/$i.igv-sorted.bam ]
             then
                 $samtools/samtools index $output/$sample/$i.igv-sorted.bam
-                rm $output/$sample/$sample.$i.header.sam
+                if [ -s $output/$sample/$sample.$i.header.sam ]
+				then
+					rm $output/$sample/$sample.$i.header.sam
+				fi
+				if [ -s $output/$i.sorted.bam.extra.bam ]
+				then
+					rm $output/$i.sorted.bam.extra.bam
+				fi
 				if [ $analysis != "variant" ]
 				then
 					if [ $remove_bam == "YES" ]
@@ -142,15 +151,23 @@ else
 					index="$index $input/$sample/chr${chrArray[$i]}.cleaned.bam.bai"
 				fi
 			done
-            $samtools/samtools merge -h $output/$sample.header.sam $output/$sample.igv-sorted.bam $input_bam
+            $samtools/samtools merge -h $output/$sample.header.sam $output/$sample.igv-sorted.bam $input_bam $output/$sample.sorted.bam.extra.bam 
         else
-            cp  $input/$sample/chr${chrArray[1]}.cleaned.bam $output/$sample.igv-sorted.bam
+			$samtools/samtools view -H $input/$sample/chr${chrArray[1]}.cleaned.bam > $output/$sample.header.sam
+            $samtools/samtools merge -h $output/$sample.header.sam $output/$sample.igv-sorted.bam $input/$sample/chr${chrArray[1]}.cleaned.bam $output/$sample.sorted.bam.extra.bam 
         fi
         
         if [ -s $output/$sample.igv-sorted.bam ]
         then
             $samtools/samtools index $output/$sample.igv-sorted.bam
-            rm $output/$sample.header.sam
+            if [ -s $output/$sample.header.sam ]
+			then
+				rm $output/$sample.header.sam
+			fi
+			if [ -s $output/$sample.sorted.bam.extra.bam ]
+			then
+				rm $output/$sample.sorted.bam.extra.bam
+			fi	
 			if [ $analysis != "variant" ]
 			then
 				if [ $remove_bam == "YES" ]
