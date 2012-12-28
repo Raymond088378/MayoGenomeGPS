@@ -77,7 +77,7 @@ else
         touch $sift/${sam}_chr${chr}_predictions.tsv
         echo -e "Coordinates\tCodons\tTranscript ID\tProtein ID\tSubstitution\tRegion\tdbSNP ID\tSNP Type\tPrediction\tScore\tMedian Info\t# Seqs at position\tGene ID\tGene Name\tOMIM Disease\tAverage Allele Freqs\tUser Comment" > $sift/${sam}_chr${chr}_predictions.tsv
     else
-        cat $input/$snv_file | awk '$0 !~ /^#/' | sed -e '/chr/s///g' | awk '{print $1","$2",1,"$4"/"$5}' > $sift/$snv_file.sift
+        cat $input/$snv_file | awk '$0 !~ /^#/' | awk '$5 !~ /,/' | sed -e '/chr/s///g' | awk '{print $1","$2",1,"$4"/"$5}' > $sift/$snv_file.sift
         a=`pwd`
         #running SIFT for each sample
         cd $sift_path

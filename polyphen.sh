@@ -49,7 +49,7 @@ else
 		$script_path/filesize.sh polyphen $sam $input $snv_file $run_info
 	fi
     
-    cat $input/$snv_file | awk '$0 !~ /^#/' | awk '{print $1":"$2"\t"$4"/"$5}' > $polyphen/$snv_file.poly
+    cat $input/$snv_file | awk '$0 !~ /^#/' | awk '$5 !~ /,/' | awk '{print $1":"$2"\t"$4"/"$5}' > $polyphen/$snv_file.poly
     num=`cat $polyphen/$snv_file.poly |wc -l `
     ### get the uniport id
     if [ $num -gt 0 ]

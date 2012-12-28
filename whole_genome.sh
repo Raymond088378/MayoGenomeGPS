@@ -797,13 +797,13 @@ else
 					mem=$( cat $memory_info | grep -w '^split_bam_chr' | cut -d '=' -f2)
 					qsub_args="-N $type.$version.split_bam_chr.$group.$run_num.$identify -hold_jid $type.$version.reformat_pairBAM.$group.$run_num.$identify -t 1-$numchrs:1 -l h_vmem=$mem"
 					qsub $args $qsub_args $script_path/split_bam_chr.sh $realign_dir $group $run_info
-					variant_id="$type.$version.split_bam_chr.$group.$run_num.$identify"
-					vvid="$type.$version.split_bam_chr.$group.$run_num.$identify"
+					variant_id="$type.$version.split_bam_chr.$group.$run_num.$identify,$type.$version.extract_reads_bam.$group.$run_num.$identify"
+					vvid="$type.$version.split_bam_chr.$group.$run_num.$identify,$type.$version.extract_reads_bam.$group.$run_num.$identify"
 				else        
 					vvid=""
 					for sample in $samples
 					do
-						vvid=$vvid"$type.$version.processBAM.$sample.$run_num.$identify,"
+						vvid=$vvid"$type.$version.processBAM.$sample.$run_num.$identify,$type.$version.extract_reads_bam.$sample.$run_num.$identify"
 					done    
 					$script_path/check_qstat.sh $limit
 					mem=$( cat $memory_info | grep -w '^realign_recal' | cut -d '=' -f2)
