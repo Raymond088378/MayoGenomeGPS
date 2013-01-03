@@ -41,14 +41,14 @@ else
 		touch $snpeff/$sample.chr${which_chr}.indel.eff.fix.log
 		$script_path/wait.sh $snpeff/$sample.chr${which_chr}.indel.eff.fix.log
 	fi
-	$script_path/add_snpeff_indel.pl -i $TempReports/$indel_file.rsIDs.frequencies -s $snpeff/$sample.chr${which_chr}.indel.eff -o $TempReports/$sample.chr${which_chr}.INDEL.report 
+	$script_path/add_snpeff.pl -i $TempReports/$indel_file.rsIDs.frequencies -s $snpeff/$sample.chr${which_chr}.indel.eff -o $TempReports/$sample.chr${which_chr}.INDEL.report -t INDEL
 	if [ ! -f $snpeff/$sample.chr${which_chr}.indel.filtered.eff ]
 	then
 		$script_path/email.sh $snpeff/$sample.chr${which_chr}.indel.filtered.eff "not found" snpeff.sh $run_info
 		touch $snpeff/$sample.chr${which_chr}.indel.filtered.eff.fix.log
 		$script_path/wait.sh $snpeff/$sample.chr${which_chr}.indel.filtered.eff.fix.log
 	fi
-	$script_path/add_snpeff_indel_filter.pl -i $TempReports/$indel_file.rsIDs.frequencies -s $snpeff/$sample.chr${which_chr}.indel.filtered.eff -o $TempReports/$sample.chr${which_chr}.filtered.INDEL.report 
+	$script_path/add_snpeff.pl -i $TempReports/$indel_file.rsIDs.frequencies -s $snpeff/$sample.chr${which_chr}.indel.filtered.eff -o $TempReports/$sample.chr${which_chr}.filtered.INDEL.report -t INDEL 
 	num=`cat $TempReports/$sample.chr${which_chr}.INDEL.report | awk '{print $1"_"$2"_"$3"_"$9"_"$10}' | sort | uniq | wc -l`
 	num_b=`cat $TempReports/$sample.chr${which_chr}.filtered.INDEL.report  | wc -l `
 	for report in $TempReports/$sample.chr${which_chr}.INDEL.report $TempReports/$sample.chr${which_chr}.filtered.INDEL.report
@@ -60,6 +60,6 @@ else
 	done
 	$script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.INDEL.report $run_info INDEL > $TempReports/$sample.chr${which_chr}.INDEL.xls
 	$script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.filtered.INDEL.report $run_info INDEL > $TempReports/$sample.chr${which_chr}.filtered.INDEL.xls
-	rm $TempReports/$sample.chr${which_chr}.INDEL.report $TempReports/$sample.chr${which_chr}.filtered.INDEL.report
+	rm $TempReports/$sample.chr${which_chr}.INDEL.report $TempReports/$sample.chr${which_chr}.filtered.INDEL.report $TempReports/$indel_file.rsIDs.frequencies
 	echo `date`
 fi	

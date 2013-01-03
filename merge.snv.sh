@@ -241,14 +241,14 @@ else
 		touch $snpeff/$sample.chr${which_chr}.snv.eff.fix.log
 		$script_path/wait.sh $snpeff/$sample.chr${which_chr}.snv.eff.fix.log
 	fi	
-	$script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $snpeff/$sample.chr${which_chr}.snv.eff -o $TempReports/$sample.chr${which_chr}.SNV.report
+	$script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $snpeff/$sample.chr${which_chr}.snv.eff -o $TempReports/$sample.chr${which_chr}.SNV.report -t SNV
 	if [ ! -f $snpeff/$sample.chr${which_chr}.snv.filtered.eff ]
 	then
 		$script_path/email.sh $snpeff/$sample.chr${which_chr}.snv.filtered.eff "not found" snpeff.sh $run_info
 		touch $snpeff/$sample.chr${which_chr}.snv.filtered.eff.fix.log
 		$script_path/wait.sh $snpeff/$sample.chr${which_chr}.snv.filtered.eff.fix.log
 	fi
-	$script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $snpeff/$sample.chr${which_chr}.snv.filtered.eff -o $TempReports/$sample.chr${which_chr}.filtered.SNV.report
+	$script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $snpeff/$sample.chr${which_chr}.snv.filtered.eff -o $TempReports/$sample.chr${which_chr}.filtered.SNV.report -t SNV
 	num_a=`cat $TempReports/$sample.chr${which_chr}.SNV.report | awk -F'\t' '{print $1"_"$2}' | sort | uniq | wc -l`
 	num_b=`cat $TempReports/$sample.chr${which_chr}.filtered.SNV.report | wc -l `
     rm $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly	

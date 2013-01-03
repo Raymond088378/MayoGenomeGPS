@@ -63,8 +63,8 @@ else
 		rm $tumor_bam.jsm.header
     fi
     ### removing duplicates from the bam files
-	$samtools/samtools view -b -F 1024 $tumor_bam > $output_file/$tumor_sample.chr$chr.jsm.bam
-	$samtools/samtools view -b -F 1024 $normal_bam > $output_file/$normal_sample.chr$chr.jsm.bam
+	$samtools/samtools view -b -f 2 -F 1024 $tumor_bam > $output_file/$tumor_sample.chr$chr.jsm.bam
+	$samtools/samtools view -b -f 2 -F 1024 $normal_bam > $output_file/$normal_sample.chr$chr.jsm.bam
 	
 	normal_bam=$output_file/$normal_sample.chr$chr.jsm.bam
 	tumor_bam=$output_file/$tumor_sample.chr$chr.jsm.bam

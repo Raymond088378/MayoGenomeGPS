@@ -47,13 +47,13 @@ else
 	fi	
 	rm $normal_bam.$chr.header
 	### removing duplicates from the bam files
-	#$samtools/samtools view -b -F 1024 $tumor_bam > $output_file/$tumor_sample.chr$chr.ss.bam
-	#$samtools/samtools view -b -F 1024 $normal_bam > $output_file/$normal_sample.chr$chr.ss.bam
+	$samtools/samtools view -b -f 2 -F 1024 $tumor_bam > $output_file/$tumor_sample.chr$chr.ss.bam
+	$samtools/samtools view -b -f 2 -F 1024 $normal_bam > $output_file/$normal_sample.chr$chr.ss.bam
 	
-	#normal_bam=$output_file/$normal_sample.chr$chr.ss.bam
-	#tumor_bam=$output_file/$tumor_sample.chr$chr.ss.bam
+	normal_bam=$output_file/$normal_sample.chr$chr.ss.bam
+	tumor_bam=$output_file/$tumor_sample.chr$chr.ss.bam
     $somatic_sniper/bam-somaticsniper $command_line_params -F vcf -f $ref $tumor_bam $normal_bam $output/$snv
-    #rm $normal_bam $tumor_bam
+    rm $normal_bam $tumor_bam
 	
 	cat $output/$snv | awk 'BEGIN {OFS="\t"} {if($0 ~ /^#/) print $0; else print $1,$2,$3,$4,$5,$6,"PASS",$8,$9,$10,$11;}' \
 	| sed -e "/NORMAL/s//$normal_sample/g" | sed -e "/TUMOR/s//$tumor_sample/g" | $script_path/ssniper_vcf_add_AD.pl > $output/$output_file

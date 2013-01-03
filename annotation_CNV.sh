@@ -38,11 +38,12 @@ else
     chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2)
     chrIndexes=$( echo $chrs | tr ":" "\n" )
 	Rsoft=$( cat $tool_info | grep -w '^R_SOFT' | cut -d '=' -f2 )
+	somatic_calling=$( cat $tool_info | grep -w '^SOMATIC_CALLING' | cut -d '=' -f2 )
 	export PATH=$Rsoft:$PATH
 ##############################################################		
     CNV_dir=$output_dir
             
-    if [ $multi_sample != "YES" ]
+    if [ $multi_sample != "YES"  || $somatic_calling == "NO" ]
     then
 	echo "Single sample"
         ### preparing cnvnator files

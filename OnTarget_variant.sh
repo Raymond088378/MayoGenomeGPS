@@ -44,6 +44,7 @@ else
     distance=$( cat $tool_info | grep -w '^SNP_DISTANCE_INDEL' | cut -d '=' -f2 )
 	gene_body=$( cat $tool_info | grep -w '^MATER_GENE_BODY' | cut -d '=' -f2 )
 	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
+	somatic_calling=$( cat $tool_info | grep -w '^SOMATIC_CALLING' | cut -d '=' -f2 )
 ##############################################################		
     if [ $analysis == "ontarget" ]
 	then
@@ -171,55 +172,57 @@ else
 				$script_path/errorlog.sh $OnTarget/$group.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
 			fi
 		fi	
-		
-		### for somatic calls
-		if [ ! -s $input/$group.somatic.variants.chr$chr.filter.vcf ]
+		if [ $somatic_calling == "YES" ]
 		then
-			$script_path/email.sh $input/$group.somatic.variants.chr$chr.filter.vcf "doesn't exist" $previous $run_info
-			touch $input/$group.somatic.variants.chr$chr.filter.vcf.fix.log
-			$script_path/wait.sh $input/$group.somatic.variants.chr$chr.filter.vcf.fix.log
-		fi   
-		$script_path/vcf_to_variant_vcf.pl -i $input/$group.somatic.variants.chr$chr.filter.vcf -v $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf -l $input/TUMOR.$group.variants.chr$chr.INDEL.filter.vcf -t both -f
-		$bedtools/intersectBed -header -a $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.vcf
-		rm $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf
-		$bedtools/intersectBed -header -a $input/TUMOR.$group.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.vcf
-		rm $input/TUMOR.$group.variants.chr$chr.INDEL.filter.vcf
-		if [ $tool == "exome" ]
-		then
-			$bedtools/intersectBed -header -a $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.vcf -b $CaptureKit -c |  $script_path/add.info.capture.vcf.pl  > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf
-			$bedtools/intersectBed -header -a $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.vcf -b $CaptureKit -c | $script_path/add.info.capture.vcf.pl  > $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf 
-		else    
-			cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.vcf | $script_path/add.info.capture.vcf.pl > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf
-			cat $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.vcf | $script_path/add.info.capture.vcf.pl > $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf
-		fi
-		rm $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.vcf
-		rm $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.vcf
-		if [ `cat $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
-		then
-			if [ `cat $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf | wc -l` -lt 1 ]
+			### for somatic calls
+			if [ ! -s $input/$group.somatic.variants.chr$chr.filter.vcf ]
 			then
-				$script_path/errorlog.sh $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf OnTarget_variants.sh ERROR "failed to generate"
-				exit 1;
-			else	
-				$script_path/errorlog.sh $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
-			fi
-			cp $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
-			cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf
-		else   
-			$script_path/markSnv_IndelnPos.pl -s $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
-			cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf
-		fi
-		rm $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
-		if [ `cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
-		then
-			if [ `cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf | wc -l` -lt 1 ]
+				$script_path/email.sh $input/$group.somatic.variants.chr$chr.filter.vcf "doesn't exist" $previous $run_info
+				touch $input/$group.somatic.variants.chr$chr.filter.vcf.fix.log
+				$script_path/wait.sh $input/$group.somatic.variants.chr$chr.filter.vcf.fix.log
+			fi   
+			$script_path/vcf_to_variant_vcf.pl -i $input/$group.somatic.variants.chr$chr.filter.vcf -v $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf -l $input/TUMOR.$group.variants.chr$chr.INDEL.filter.vcf -t both -f
+			$bedtools/intersectBed -header -a $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.vcf
+			rm $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf
+			$bedtools/intersectBed -header -a $input/TUMOR.$group.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.vcf
+			rm $input/TUMOR.$group.variants.chr$chr.INDEL.filter.vcf
+			if [ $tool == "exome" ]
 			then
-				$script_path/errorlog.sh $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh ERROR "failed to generate"
-				exit 1;
-			else	
-				$script_path/errorlog.sh $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+				$bedtools/intersectBed -header -a $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.vcf -b $CaptureKit -c |  $script_path/add.info.capture.vcf.pl  > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf
+				$bedtools/intersectBed -header -a $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.vcf -b $CaptureKit -c | $script_path/add.info.capture.vcf.pl  > $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf 
+			else    
+				cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.vcf | $script_path/add.info.capture.vcf.pl > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf
+				cat $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.vcf | $script_path/add.info.capture.vcf.pl > $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf
 			fi
-		fi   
-    fi
+			rm $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.vcf
+			rm $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.vcf
+			if [ `cat $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
+			then
+				if [ `cat $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf | wc -l` -lt 1 ]
+				then
+					$script_path/errorlog.sh $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf OnTarget_variants.sh ERROR "failed to generate"
+					exit 1;
+				else	
+					$script_path/errorlog.sh $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+				fi
+				cp $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
+				cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf
+			else   
+				$script_path/markSnv_IndelnPos.pl -s $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf -i $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.c.vcf -n $distance -o $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
+				cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf
+			fi
+			rm $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.pos.vcf
+			if [ `cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf | awk '$0 !~ /^#/' | wc -l` -lt 1 ]
+			then
+				if [ `cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf | wc -l` -lt 1 ]
+				then
+					$script_path/errorlog.sh $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh ERROR "failed to generate"
+					exit 1;
+				else	
+					$script_path/errorlog.sh $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
+				fi
+			fi   
+		fi
+	fi
     echo `date`
 fi

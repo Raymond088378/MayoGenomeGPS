@@ -66,10 +66,9 @@ else
 		
         if [ $num_snvs -ge 1 ]
         then
-            $java/java -Xmx2g -Xms512m -jar $snpeff_path/snpEff.jar eff -o txt -chr chr -noStats -noLog \
-                -c $snpeff_path/snpEff.config $genome_version $input/$snv_file | $script_path/snpeff.pl > $snpeff/$sam.chr${chr}.snv.eff
             $java/java -Xmx2g -Xms512m -jar $snpeff_path/snpEff.jar eff -o vcf -chr chr -noStats -noLog \
-                -c $snpeff_path/snpEff.config $genome_version $input/$snv_file | awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"3.0c (build 2012-07-30), by Pablo Cingolani\""; else print $0;}' > $snpeff/$sam.chr${chr}.snv.eff.vcf
+                -c $snpeff_path/snpEff.config $genome_version $input/$snv_file | awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"3.0c (build 2012-07-30), by Pablo Cingolani\""; else print $0;}' > $snpeff/$sam.chr${chr}.snv.eff.vcf 
+			cat $snpeff/$sam.chr${chr}.snv.eff.vcf | $script_path/snpeff.pl > $snpeff/$sam.chr${chr}.snv.eff
 			
             ### use GATK to filter the multiple transcript
             $java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar -T VariantAnnotator \
@@ -102,7 +101,7 @@ else
 
     if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]	
     then
-	indel_file=$sam.variants.chr$chr.INDEL.filter.i.c.vcf
+		indel_file=$sam.variants.chr$chr.INDEL.filter.i.c.vcf
         if [ ! -s $input/$indel_file ]
         then
             touch $input/$indel_file.snpeff.fix.log
@@ -112,11 +111,10 @@ else
         num_indels=`cat $input/$indel_file | awk '$0 !~ /^#/' | wc -l`
         if [ $num_indels -ge 1 ]
         then
-            $java/java -Xmx2g -Xms512m -jar $snpeff_path/snpEff.jar eff -o txt -chr chr -noStats -noLog \
-                -c $snpeff_path/snpEff.config $genome_version $input/$indel_file  | $script_path/snpeff.pl > $snpeff/$sam.chr${chr}.indel.eff
-            $java/java -Xmx2g -Xms512m -jar $snpeff_path/snpEff.jar eff -o vcf -chr chr -noStats -noLog \
-                -c $snpeff_path/snpEff.config $genome_version $input/$indel_file | awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"3.0c (build 2012-07-30), by Pablo Cingolani\""; else print $0;}' > $snpeff/$sam.chr${chr}.indel.eff.vcf
-            
+             $java/java -Xmx2g -Xms512m -jar $snpeff_path/snpEff.jar eff -o vcf -chr chr -noStats -noLog \
+                -c $snpeff_path/snpEff.config $genome_version $input/$indel_file | awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"3.0c (build 2012-07-30), by Pablo Cingolani\""; else print $0;}' > $snpeff/$sam.chr${chr}.indel.eff.vcf	
+			cat $snpeff/$sam.chr${chr}.indel.eff.vcf | $script_path/snpeff.pl > $snpeff/$sam.chr${chr}.indel.eff
+           
             ### use GATK to filter the multiple transcript
             $java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar -T VariantAnnotator \
             -et NO_ET -K $gatk/Hossain.Asif_mayo.edu.key \
@@ -133,7 +131,7 @@ else
             
             $script_path/parse_snpeffect.pl $snpeff/$indel_file.annotate.INFO > $snpeff/$sam.chr${chr}.indel.filtered.eff
             rm $snpeff/$indel_file.annotate.INFO $snpeff/$indel_file.annotate.log $snpeff/$sam.chr${chr}.indel.eff.vcf
-            rm $snpeff/$sam.chr${chr}.indel.eff.vcf.idx $snpeff/$indel_file.annotate.vcf.vcfidx $snpeff/$indel_file.annotate.vcf.idx $snpeff/$indel_file.annotate.vcf
+           rm $snpeff/$sam.chr${chr}.indel.eff.vcf.idx $snpeff/$indel_file.annotate.vcf.vcfidx $snpeff/$indel_file.annotate.vcf.idx $snpeff/$indel_file.annotate.vcf
 		else
 			echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tEffect\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList" > $snpeff/$sam.chr${chr}.indel.eff
 			echo -e "chromosome\tposition\treference\tChange\tHomozygous\tBio_type\taccession\tExon_ID\tExon_Rank\tEffect\tFunctionalClass\tFunctionalImpact\taminoAcids\tproteinPosition\tCodon_Degeneracy\tgeneList\n" >  $snpeff/$sam.chr${chr}.indel.filtered.eff

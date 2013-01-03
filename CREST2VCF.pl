@@ -139,7 +139,7 @@ sub getFASTABaseSamtools
     my $fastapath = shift;
     my $samtools = shift;
     my @result = `$samtools/samtools faidx $fastapath $chrID:$basepos-$basepos`;
-    chomp($result[1]);
+    chomp($result[1]) if defined $result[1];
     return uc($result[1]);
 } 
 

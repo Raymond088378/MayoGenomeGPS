@@ -15,7 +15,7 @@
 #####		added -r 10 parmeter min supported reads
 ########################################################
 
-if [ $# -le 3 ]
+if [ $# -le 4 ]
 then
     echo -e "script to run break dancer for single or multiple samples\nUsage: samplenames input_bams </path/to/output directory> </path/to/run_info.txt> <group name>";
 else
@@ -25,10 +25,12 @@ else
     input=$2
     output_dir=$3
     run_info=$4
-    if [ $5 ]
-    then
-        group=$5
-    fi
+    group=$5
+    if [ $6 ]
+	then
+		SGE_TASK_ID=$6
+	fi
+	
 #SGE_TASK_ID=1
 
 ########################################################	
@@ -48,6 +50,7 @@ else
     blacklist_sv=$( cat $tool_info | grep -w '^BLACKLIST_SV' | cut -d '=' -f2 )
     bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
 	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
+	somatic_calling=$( cat $tool_info | grep -w '^SOMATIC_CALLING' | cut -d '=' -f2 |  tr "[a-z]" "[A-Z]")
 ##############################################################		
     if [ $analysis == "variant" ]
 	then
@@ -68,15 +71,15 @@ else
 		if (($SGE_TASK_ID <= $numchrs))
 		then
 			input_bam=$input/$samples/chr${chr}.cleaned.bam
-			$samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
-			if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
+			$samtools/samtools view -H $input_bam 1>$input_bam.$chr.break.header 2>$input_bam.$chr.fix.break.log
+			if [ `cat $input_bam.$chr.fix.break.log | wc -l` -gt 0 ]
 			then
 				$script_path/email.sh $input_bam "bam is truncated or corrupt" $previous $run_info
-				$script_path/wait.sh $input_bam.fix.break.log 
+				$script_path/wait.sh $input_bam.$chr.fix.break.log 
 			else
-				rm $input_bam.fix.break.log
+				rm $input_bam.$chr.fix.break.log
 			fi	
-			rm $input_bam.break.header
+			rm $input_bam.$chr.break.header
 			out=$output_dir/$samples/
 			## extarcting bam for $sample
 			$samtools/samtools view -h $input_bam  | cut -f 1-11 | $samtools/samtools view -bS - > $out/$samples.$chr.bam
@@ -113,13 +116,13 @@ else
 		else	
 			out=$output_dir/$samples/
 			input_bam=$input/$samples.igv-sorted.bam
-			$samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
-			if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
+			$samtools/samtools view -H $input_bam 1>$input_bam.$chr.break.header 2>$input_bam.$chr.fix.break.log
+			if [ `cat $input_bam.$chr.fix.break.log | wc -l` -gt 0 ]
 			then
 				$script_path/email.sh $input_bam "bam is truncated or corrupt" $previous $run_info
-				$script_path/wait.sh $input_bam.fix.break.log
+				$script_path/wait.sh $input_bam.$chr.fix.break.log
 			else
-				rm $input_bam.fix.break.log
+				rm $input_bam.$chr.fix.break.log
 			fi	
 			rm $input_bam.break.header
 			$samtools/samtools view -h $input_bam | head -n 10000 | cut -f 1-11 | $samtools/samtools view -bS - > $out/$samples.tmp.bam
@@ -164,21 +167,30 @@ else
 		fi
 	else
 	    sample=$samples
-	    mkdir -p $output_dir/$sample
-	    input_bam=$input/$group.$sample.chr${chr}.bam
-		$samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
-		if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
+	    if [ $somatic_calling == "YES" ]
 		then
-			$script_path/email.sh $input_bam "bam is truncated or corrupt" $previous $run_info
-			$script_path/wait.sh $input_bam.fix.break.log
-		else
-			rm $input_bam.fix.break.log
-		fi	
-		rm $input_bam.break.header
+			mkdir -p $output_dir/$sample
+	    fi
+		
 	    if (($SGE_TASK_ID <= $numchrs))
 	    then	
-            out=$output_dir/$sample/
-            $samtools/samtools view -h $input_bam  | cut -f 1-11 | $samtools/samtools view -bS - >  $out/$sample.${chr}.bam
+            input_bam=$input/$group.$sample.chr${chr}.bam
+			$samtools/samtools view -H $input_bam 1>$input_bam.$chr.break.header 2>$input_bam.$chr.fix.break.log
+			if [ `cat $input_bam.$chr.fix.break.log | wc -l` -gt 0 ]
+			then
+				$script_path/email.sh $input_bam "bam is truncated or corrupt" $previous $run_info
+				$script_path/wait.sh $input_bam.$chr.fix.break.log
+			else
+				rm $input_bam.$chr.fix.break.log
+			fi	
+			rm $input_bam.$chr.break.header
+			if [ $somatic_calling == "YES" ]
+			then
+				out=$output_dir/$sample/
+            else
+				out=$output_dir/
+			fi
+			$samtools/samtools view -h $input_bam  | cut -f 1-11 | $samtools/samtools view -bS - >  $out/$sample.${chr}.bam
             $perl $breakdancer/bam2cfg.pl $out/$sample.$chr.bam > $out/$sample.$chr.cfg
 		
             if [ -s $out/$sample.$chr.cfg ]
@@ -209,17 +221,22 @@ else
                 mv $out/$sample.$chr.break.vcf.sort $out/$sample.$chr.break.vcf
             fi
 	    else	
-            out=$output_dir/$sample/
+            if [ $somatic_calling == "YES" ]
+			then
+				out=$output_dir/$sample/
+            else
+				out=$output_dir/
+			fi
             input_bam=$input/$group/${sample}.igv-sorted.bam
-            $samtools/samtools view -H $input_bam 1>$input_bam.break.header 2>$input_bam.fix.break.log
-			if [ `cat $input_bam.fix.break.log | wc -l` -gt 0 ]
+            $samtools/samtools view -H $input_bam 1>$input_bam.$chr.break.header 2>$input_bam.$chr.fix.break.log
+			if [ `cat $input_bam.$chr.fix.break.log | wc -l` -gt 0 ]
 			then
 				$script_path/email.sh $input_bam "bam is truncated or corrupt" $previous $run_info
-				$script_path/wait.sh $input_bam.fix.break.log
+				$script_path/wait.sh $input_bam.$chr.fix.break.log
 			else
-				rm $input_bam.fix.break.log
+				rm $input_bam.$chr.fix.break.log
 			fi
-			rm $input_bam.break.header	
+			rm $input_bam.$chr.break.header	
 			$samtools/samtools view -h $input_bam | head -n 10000 | cut -f 1-11 | $samtools/samtools view -bS - > $out/$sample.tmp.bam
             if [ -s $out/$sample.tmp.bam ]
             then
@@ -252,6 +269,7 @@ else
 					rm  $out/$sample.inter.break.vcf.fail
                     perl $script_path/vcfsort.pl ${ref_genome}.fai $out/$sample.inter.break.vcf > $out/$sample.inter.break.vcf.sort
                     mv $out/$sample.inter.break.vcf.sort $out/$sample.inter.break.vcf
+					rm $out/$sample.tmp.bam
                 fi
             else
                 $script_path/errorlog.sh $out/$sample.tmp.bam run_breakdancer.sh ERROR "not created"

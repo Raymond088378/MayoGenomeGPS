@@ -3,17 +3,18 @@
 use strict;
 use Getopt::Std;
 
-our ($opt_i, $opt_s, $opt_o);
+our ($opt_i, $opt_s, $opt_o,$opt_t);
 print "INFO: script to add snpeff results to the variant report\n";
 print "RAW paramters: @ARGV\n";
-getopt('iso');
-if ( (!defined $opt_i) && (!defined $opt_s) && (!defined $opt_o) ) {
-	die ("Usage: $0 \n\t-i [variant file] \n\t-s [snpeff] \n\t-o [output file] \n");
+getopt('isot');
+if ( (!defined $opt_i) && (!defined $opt_s) && (!defined $opt_o) && (!defined $opt_t) ) {
+	die ("Usage: $0 \n\t-i [variant file] \n\t-s [snpeff] \n\t-o [output file] \n\t-t[type(SNV/INDEL)]\n");
 }
 else    {
 	my $source = $opt_i;
 	my $eff = $opt_s;
 	my $dest = $opt_o;
+	my $type=$opt_t;
 	my %hashreport=();
 	my %hasheff=();
 	
@@ -26,6 +27,7 @@ else    {
 	my $len_eff=$#eff_head_array;
 	my $num_bock=$len_eff+1;
 	my $num_tabs=$#eff_head_array-4;
+	my ($ref,$alt);
 	while(my $line = <REPORT>)	{
 		chomp $line;
 		if ($. == 1)	{
@@ -38,7 +40,12 @@ else    {
 		else	{
 			chomp $line;
 			my @array = split(/\t/,$line);
-			${$hashreport{$array[1]}{$array[17]}{$array[18]}}=join("\t",@array);
+			
+			if ($type eq "SNV")	{ 
+				$ref=$array[17];$alt=$array[18];}
+			else	{
+				$ref=$array[8];$alt=$array[9];}
+			${$hashreport{$array[1]}{$ref}{$alt}}=join("\t",@array);
 		}
 	}	
 	close REPORT;

@@ -39,7 +39,7 @@ else
 	then
 		file=`basename $dbsnp_rsids_snv`
 		base=`basename $snv`
-		cat $dbsnp_rsids_snv | grep -w chr$chr | grep -v 'cDNA' | sort -n -k 3,12n -k 4,12n > $TempReports/$file.chr$chr.$snv
+		cat $dbsnp_rsids_snv | grep -w chr$chr | grep -v 'cDNA' > $TempReports/$file.chr$chr.$snv
 		$script_path/add.rsids.pl -i $TempReports/$snv.forrsIDs -s $TempReports/$file.chr$chr.$snv -o $TempReports/$snv.forrsIDs.added
 		rm  $TempReports/$file.chr$chr.$snv 
 		## add column to add flag for disease variant

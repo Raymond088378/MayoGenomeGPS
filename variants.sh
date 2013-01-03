@@ -397,28 +397,31 @@ else
     if [ ${#sampleArray[@]} -gt 1 ]
 	then
 		### INDEL
-		input_var=""
-		for i in $(seq 2 ${#sampleArray[@]})
-		do
-			sample=${sampleArray[$i]}
-			indel=$sample.chr$chr.indel.vcf
-			input_var="${input_var} -V $output/$indel"
-		done
-		$script_path/combinevcf.sh "$input_var" $output/MergeAllSamples.chr$chr.Indels.raw.vcf $run_info yes
+		if [ $somatic_calling == "YES" ]
+		then
+			input_var=""
+			for i in $(seq 2 ${#sampleArray[@]})
+			do
+				sample=${sampleArray[$i]}
+				indel=$sample.chr$chr.indel.vcf
+				input_var="${input_var} -V $output/$indel"
+			done
+			$script_path/combinevcf.sh "$input_var" $output/MergeAllSamples.chr$chr.Indels.raw.vcf $run_info yes
 
-		##Merge SNVs
-		input_var=""
-		for i in $(seq 2 ${#sampleArray[@]})
-		do
-			sample=${sampleArray[$i]}
-			snv=$sample.chr$chr.snv.vcf
-			input_var="${input_var} -V $output/$snv"
-		done
-		$script_path/combinevcf.sh "$input_var" $output/MergeAllSamples.chr$chr.snvs.raw.vcf $run_info yes
-        $script_path/unifiedgenotyper_backill.sh "-I $input/chr${chr}.cleaned.bam" $output/MergeAllSamples.chr$chr.snvs.raw.vcf BOTH EMIT_ALL_SITES $run_info
-		## combine both snv and indel
-		in="$output/MergeAllSamples.chr$chr.snvs.raw.vcf $output/MergeAllSamples.chr$chr.Indels.raw.vcf"
-		$script_path/concatvcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.vcf $run_info yes
+			##Merge SNVs
+			input_var=""
+			for i in $(seq 2 ${#sampleArray[@]})
+			do
+				sample=${sampleArray[$i]}
+				snv=$sample.chr$chr.snv.vcf
+				input_var="${input_var} -V $output/$snv"
+			done
+			$script_path/combinevcf.sh "$input_var" $output/MergeAllSamples.chr$chr.snvs.raw.vcf $run_info yes
+			$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" $output/MergeAllSamples.chr$chr.snvs.raw.vcf BOTH EMIT_ALL_SITES $run_info
+			## combine both snv and indel
+			in="$output/MergeAllSamples.chr$chr.snvs.raw.vcf $output/MergeAllSamples.chr$chr.Indels.raw.vcf"
+			$script_path/concatvcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.vcf $run_info yes
+		fi
 	fi
 
 	## remove files and add ED blat field
@@ -446,12 +449,19 @@ else
 	fi
 	if [ ${#sampleArray[@]} -gt 1 ]
 	then
-		if [[ ! -s $output/variants.chr$chr.raw.vcf || ! -s $output/MergeAllSamples.chr$chr.raw.vcf ]]
+		if [ $somatic_calling == "NO" ]
 		then
-			echo "ERROR : variant calling failed for pair in variants.sh script"	
-			exit 1;
+			if [ ! -s $output/variants.chr$chr.raw.vcf ]
+			then
+				echo "ERROR : variant calling failed for pair in variants.sh script"
+			fi	
+		else
+			if [[ ! -s $output/variants.chr$chr.raw.vcf || ! -s $output/MergeAllSamples.chr$chr.raw.vcf ]]
+			then
+				echo "ERROR : variant calling failed for pair in variants.sh script"	
+				exit 1;
+			fi	
 		fi
-		
 		$script_path/vcf_blat_verify.pl -i $output/variants.chr$chr.raw.vcf -o $output/variants.chr$chr.raw.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 		mv $output/variants.chr$chr.raw.vcf.temp $output/variants.chr$chr.raw.vcf
 				

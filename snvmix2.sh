@@ -36,7 +36,7 @@ else
 	fi		
 	rm $bam.snvmix.header
 	mkfifo $bam.pileup 
-	$samtools/samtools mpileup -A -s -f $ref $bam > $bam.pileup &
+	$samtools/samtools view -b -f 2 $bam | $samtools/samtools mpileup -A -s -f $ref - > $bam.pileup &
 	pileup=$bam.pileup
 
     if [ $mode == "all" ]

@@ -38,6 +38,7 @@ else
     if [ $FASTQC == "YES" ]
     then
         $fastqc_path/fastqc -o $fastqc_dir/ $output/$read
+		rm $fastqc_dir/${file1}_fastqc.zip
     else
         ln -s $FOLDER_FASTQC/${file1}_fastqc $fastqc_dir/
     fi		

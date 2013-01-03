@@ -14,9 +14,9 @@
 ######		Output files:	BAM files. 
 ########################################################
 
-if [ $# -le 3 ]
+if [ $# -le 4 ]
 then
-    echo -e "script to run cnvnator on a bam file\nUsage: ./run_cnvator.sh <samplename> <input folder> </path/to/output directory> </path/to/run_info.txt>";
+    echo -e "script to run cnvnator on a bam file\nUsage: ./run_cnvator.sh <samplename> <input folder> </path/to/output directory> <flag for multi sample/single sample> </path/to/run_info.txt>";
 else
     set -x
     echo `date`
@@ -24,9 +24,10 @@ else
     input=$2
     output_dir=$3
     run_info=$4
-    if [ $5 ]
+    flag=$5
+	if [ $6 ]
     then
-    	SGE_TASK_ID=$5
+    	SGE_TASK_ID=$6
     fi	
 
 ########################################################	
@@ -50,13 +51,22 @@ else
 ######		
 	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
 ##############################################################		
-    if [ $analysis == "variant" ]
+    mkdir -p $output_dir
+	if [ $analysis == "variant" ]
 	then
 		previous="split_bam_chr.sh"
 	else
 		previous="realign_recal.sh"		
 	fi	
-    input_bam=$input/chr${chr}.cleaned.bam
+    if [ $flag == "single" ]
+	then
+		input_bam=$input/chr${chr}.cleaned.bam
+	else
+		sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
+		sam=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2| tr "\t" "\n" | head -n $flag | tail -1) 
+		input_bam=$input/$sample.$sam.chr$chr.bam
+		sample=$sam	
+	fi
 	
 	$samtools/samtools view -H $input_bam 1>$input_bam.cnv.header 2>$input_bam.fix.cnv.log
 	if [ `cat $input_bam.fix.cnv.log | wc -l` -gt 0 ]

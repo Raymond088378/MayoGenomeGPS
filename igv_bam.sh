@@ -105,7 +105,7 @@ else
 				fi
 				if [ -s $output/$i.sorted.bam.extra.bam ]
 				then
-					rm $output/$i.sorted.bam.extra.bam
+					rm $output/$i.sorted.bam.extra.bam $output/$i.sorted.bam.extra.bam.bai
 				fi
 				if [ $analysis != "variant" ]
 				then
@@ -166,7 +166,7 @@ else
 			fi
 			if [ -s $output/$sample.sorted.bam.extra.bam ]
 			then
-				rm $output/$sample.sorted.bam.extra.bam
+				rm $output/$sample.sorted.bam.extra.bam $output/$sample.sorted.bam.extra.bam.bai
 			fi	
 			if [ $analysis != "variant" ]
 			then

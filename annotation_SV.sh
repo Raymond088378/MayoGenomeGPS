@@ -35,11 +35,12 @@ else
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
 	Rsoft=$( cat $tool_info | grep -w '^R_SOFT' | cut -d '=' -f2 )
 	export PATH=$Rsoft:$PATH
+	somatic_calling=$( cat $tool_info | grep -w '^SOMATIC_CALLING' | cut -d '=' -f2 )
 ##############################################################		
         
     SV_dir=$output_dir/Reports_per_Sample/
     
-    if [ $multi_sample != "YES" ]
+     if [ $multi_sample != "YES"  || $somatic_calling == "NO" ]
     then
         echo "Single sample"
         ### preparing breakdancer files

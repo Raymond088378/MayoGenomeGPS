@@ -45,8 +45,7 @@ B<--help,-h>
 
 use strict;
 use warnings;
-#use Data::Dumper;
-#use File::Basename;
+use File::Basename;
 use Pod::Usage;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 
@@ -125,10 +124,13 @@ $index =~ s/:$//;
 my @parameters=split(/\//,$options{input});
 my $input_dir= $options{input};
 my $delivery = $options{input} =~ s/primary/secondary/g;
+my $path  = dirname($0); 
+`cp $path/config/memory_info.txt $options{output}`;
+`cp $path/config/tool_info.txt $options{output}`;
 print R_INFO "TOOL=GENOME_GPS\n" . "VERSION=1.2\n" . "TYPE=\n" . "DISEASE=NA\n" . "READLENGTH=\n" . "PAIRED=\n" . "ANALYSIS=\n" . "PI=$parameters[3]\n"
 . "MULTISAMPLE=\n" . "INPUT_DIR=$input_dir\n" . "BASE_OUTPUT_DIR=/data2/bsi/secondary/\n" . "SAMPLENAMES=" .$sample. "\n" . "GROUPNAMES=\n" . "LANEINDEX=" .$lane. "\n".
-"LABINDEXES=" .$index. "\n" . "CHRINDEX=1:2:3:4:5:6:7:8:9:10:11:12:13:14:15:16:17:18:19:20:21:22:X:Y:M\n" . "TOOL_INFO=\n" 
-. "SAMPLE_INFO=$options{output}/sample_info.txt\n"  . "MEMORY_INFO=\n" . "OUTPUT_FOLDER=$parameters[4]\n" .
+"LABINDEXES=" .$index. "\n" . "CHRINDEX=1:2:3:4:5:6:7:8:9:10:11:12:13:14:15:16:17:18:19:20:21:22:X:Y:M\n" . "TOOL_INFO=$options{output}/tool_info.txt\n" 
+. "SAMPLE_INFO=$options{output}/sample_info.txt\n"  . "MEMORY_INFO=$options{output}/memory_info.txt\n" . "OUTPUT_FOLDER=$parameters[4]\n" .
 "GENOMEBUILD=hg19\nALIGNER=NOVOALIGN\nFASTQC=NO\nFOLDER_FASTQC=/data2/bsi/reports/$parameters[4]/fastqc\nVARIANT_TYPE=BOTH\nSNV_CALLER=GATK\nSOMATIC_CALLER=SOMATICSNIPER\n"
 . "SAMPLEINFORMATION=\n" . "DELIVERY_FOLDER=$delivery\n"
 . "TERTIARY_FOLDER=/data2/bsi/tertiary/$parameters[3]/<analsyis type>/$parameters[4]";

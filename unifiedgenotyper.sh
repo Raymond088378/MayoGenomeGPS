@@ -84,6 +84,7 @@ else
     done 
 	
 	$script_path/convertvcf.pl $vcf > $vcf.tmp
+	mv $vcf.tmp $vcf
 	
     if [ ! -s $vcf.idx ]
     then
