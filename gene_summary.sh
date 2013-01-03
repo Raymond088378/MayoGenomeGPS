@@ -364,10 +364,26 @@ else
 			samples=$( cat $sample_info | grep -w "^$group" | cut -d '=' -f2 )
 			let num_tumor=`echo $samples|tr " " "\n"|wc -l`-1
 			tumor_list=`echo $samples | tr " " "\n" | tail -$num_tumor`
+			if [ $somatic_calling == "NO" ]
+			then
+				tumor_list=$samples
+			fi	
 			for sample in $tumor_list    
 			do
-				cat $master_gene_file | cut -f4 > $report_dir/$group.$sample.gene.temp
-				file=$SNV_dir/TUMOR.$group.SNV.filtered.xls
+				if [ $somatic_calling == "YES" ]
+				then
+					sampe=$group.$sample
+				else
+					sampe=$sample
+				fi	
+				cat $master_gene_file | cut -f4 > $report_dir/$sampe.gene.temp
+				if [ $somatic_calling == "YES" ]
+				then
+					file=$SNV_dir/TUMOR.$group.SNV.filtered.xls
+				else
+					file=$SNV_dir/$group.SNV.filtered.xls
+				fi
+				
 				if [ ! -f $file ]
 				then
 					$script_path/errorlog.sh $file gene_summary.sh ERROR "not found"
@@ -375,46 +391,51 @@ else
 				fi	
 				function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 				gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
-                                sam=`awk -v sam=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == sam) {print i} } }' $file`
+                sam=`awk -v sam=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == sam) {print i} } }' $file`
 				
-				cat $file | awk 'NR>2' | awk -v sam=$sam '$sam !~ /n\/a/'| cut -f "$function","$gene" > $SNV_dir/$group.$sample.SNV.tmp
+				cat $file | awk 'NR>2' | awk -v sam=$sam '$sam !~ /n\/a/'| cut -f "$function","$gene" > $SNV_dir/$sampe.SNV.tmp
 				for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
 				do
-					cat $SNV_dir/$group.$sample.SNV.tmp | grep "$snv" | cut -f2 | tr "," "\n" > $SNV_dir/in.$group.$sample.$snv.tmp
-					if [ ! -s $SNV_dir/$group.$sample.$snv.tmp ]
+					cat $SNV_dir/$sampe.SNV.tmp | grep "$snv" | cut -f2 | tr "," "\n" > $SNV_dir/in.$sampe.$snv.tmp
+					if [ ! -s $SNV_dir/$sampe.$snv.tmp ]
 					then
-						echo "NOGENE"  >> $SNV_dir/in.$group.$sample.$snv.tmp
+						echo "NOGENE"  >> $SNV_dir/in.$sampe.$snv.tmp
 					fi	
 				done    
 			
-				Rscript $script_path/summary.SNV.r $report_dir/$group.$sample.gene.temp $SNV_dir/in.$group.$sample.SPLICE_SITE_ACCEPTOR.tmp $SNV_dir/in.$group.$sample.SPLICE_SITE_DONOR.tmp $SNV_dir/in.$group.$sample.START_LOST.tmp $SNV_dir/in.$group.$sample.STOP_GAINED.tmp $SNV_dir/in.$group.$sample.STOP_LOST.tmp $SNV_dir/in.$group.$sample.RARE_AMINO_ACID.tmp $SNV_dir/in.$group.$sample.NON_SYNONYMOUS_CODING.tmp $SNV_dir/in.$group.$sample.SYNONYMOUS_START.tmp $SNV_dir/in.$group.$sample.NON_SYNONYMOUS_START.tmp $SNV_dir/in.$group.$sample.START_GAINED.tmp $SNV_dir/in.$group.$sample.SYNONYMOUS_CODING.tmp $SNV_dir/in.$group.$sample.SYNONYMOUS_STOP.tmp $SNV_dir/in.$group.$sample.NON_SYNONYMOUS_STOP.tmp $SNV_dir/in.$group.$sample.UTR_5_PRIME.tmp $SNV_dir/in.$group.$sample.UTR_3_PRIME.tmp $SNV_dir/$group.$sample.SPLICE_SITE_ACCEPTOR.tmp $SNV_dir/$group.$sample.SPLICE_SITE_DONOR.tmp $SNV_dir/$group.$sample.START_LOST.tmp $SNV_dir/$group.$sample.STOP_GAINED.tmp $SNV_dir/$group.$sample.STOP_LOST.tmp $SNV_dir/$group.$sample.RARE_AMINO_ACID.tmp $SNV_dir/$group.$sample.NON_SYNONYMOUS_CODING.tmp $SNV_dir/$group.$sample.SYNONYMOUS_START.tmp $SNV_dir/$group.$sample.NON_SYNONYMOUS_START.tmp $SNV_dir/$group.$sample.START_GAINED.tmp $SNV_dir/$group.$sample.SYNONYMOUS_CODING.tmp $SNV_dir/$group.$sample.SYNONYMOUS_STOP.tmp $SNV_dir/$group.$sample.NON_SYNONYMOUS_STOP.tmp $SNV_dir/$group.$sample.UTR_5_PRIME.tmp $SNV_dir/$group.$sample.UTR_3_PRIME.tmp
+				Rscript $script_path/summary.SNV.r $report_dir/$sampe.gene.temp $SNV_dir/in.$sampe.SPLICE_SITE_ACCEPTOR.tmp $SNV_dir/in.$sampe.SPLICE_SITE_DONOR.tmp $SNV_dir/in.$sampe.START_LOST.tmp $SNV_dir/in.$sampe.STOP_GAINED.tmp $SNV_dir/in.$sampe.STOP_LOST.tmp $SNV_dir/in.$sampe.RARE_AMINO_ACID.tmp $SNV_dir/in.$sampe.NON_SYNONYMOUS_CODING.tmp $SNV_dir/in.$sampe.SYNONYMOUS_START.tmp $SNV_dir/in.$sampe.NON_SYNONYMOUS_START.tmp $SNV_dir/in.$sampe.START_GAINED.tmp $SNV_dir/in.$sampe.SYNONYMOUS_CODING.tmp $SNV_dir/in.$sampe.SYNONYMOUS_STOP.tmp $SNV_dir/in.$sampe.NON_SYNONYMOUS_STOP.tmp $SNV_dir/in.$sampe.UTR_5_PRIME.tmp $SNV_dir/in.$sampe.UTR_3_PRIME.tmp $SNV_dir/$sampe.SPLICE_SITE_ACCEPTOR.tmp $SNV_dir/$sampe.SPLICE_SITE_DONOR.tmp $SNV_dir/$sampe.START_LOST.tmp $SNV_dir/$sampe.STOP_GAINED.tmp $SNV_dir/$sampe.STOP_LOST.tmp $SNV_dir/$sampe.RARE_AMINO_ACID.tmp $SNV_dir/$sampe.NON_SYNONYMOUS_CODING.tmp $SNV_dir/$sampe.SYNONYMOUS_START.tmp $SNV_dir/$sampe.NON_SYNONYMOUS_START.tmp $SNV_dir/$sampe.START_GAINED.tmp $SNV_dir/$sampe.SYNONYMOUS_CODING.tmp $SNV_dir/$sampe.SYNONYMOUS_STOP.tmp $SNV_dir/$sampe.NON_SYNONYMOUS_STOP.tmp $SNV_dir/$sampe.UTR_5_PRIME.tmp $SNV_dir/$sampe.UTR_3_PRIME.tmp
 			
-				join $SNV_dir/$group.$sample.SPLICE_SITE_ACCEPTOR.tmp $SNV_dir/$group.$sample.SPLICE_SITE_DONOR.tmp > $SNV_dir/$group.$sample.join1.txt
-				join $SNV_dir/$group.$sample.join1.txt $SNV_dir/$group.$sample.START_LOST.tmp > $SNV_dir/$group.$sample.join2.txt
-				join $SNV_dir/$group.$sample.join2.txt $SNV_dir/$group.$sample.STOP_GAINED.tmp > $SNV_dir/$group.$sample.join3.txt
-				join $SNV_dir/$group.$sample.join3.txt $SNV_dir/$group.$sample.STOP_LOST.tmp > $SNV_dir/$group.$sample.join4.txt
-				join $SNV_dir/$group.$sample.join4.txt $SNV_dir/$group.$sample.RARE_AMINO_ACID.tmp > $SNV_dir/$group.$sample.join5.txt
-				join $SNV_dir/$group.$sample.join5.txt $SNV_dir/$group.$sample.NON_SYNONYMOUS_CODING.tmp > $SNV_dir/$group.$sample.join6.txt
-				join $SNV_dir/$group.$sample.join6.txt $SNV_dir/$group.$sample.SYNONYMOUS_START.tmp > $SNV_dir/$group.$sample.join7.txt
-				join $SNV_dir/$group.$sample.join7.txt $SNV_dir/$group.$sample.NON_SYNONYMOUS_START.tmp > $SNV_dir/$group.$sample.join8.txt
-				join $SNV_dir/$group.$sample.join8.txt $SNV_dir/$group.$sample.START_GAINED.tmp > $SNV_dir/$group.$sample.join9.txt
-				join $SNV_dir/$group.$sample.join9.txt $SNV_dir/$group.$sample.SYNONYMOUS_CODING.tmp > $SNV_dir/$group.$sample.join10.txt
-				join $SNV_dir/$group.$sample.join10.txt $SNV_dir/$group.$sample.SYNONYMOUS_STOP.tmp > $SNV_dir/$group.$sample.join11.txt
-				join $SNV_dir/$group.$sample.join11.txt $SNV_dir/$group.$sample.NON_SYNONYMOUS_STOP.tmp > $SNV_dir/$group.$sample.join12.txt
-				join $SNV_dir/$group.$sample.join12.txt $SNV_dir/$group.$sample.UTR_5_PRIME.tmp > $SNV_dir/$group.$sample.join13.txt
-				join $SNV_dir/$group.$sample.join13.txt $SNV_dir/$group.$sample.UTR_3_PRIME.tmp > $SNV_dir/$group.$sample.join14.txt
-				cat $SNV_dir/$group.$sample.join14.txt | tr " " "\t" > $SNV_dir/$group.$sample.join15.txt
+				join $SNV_dir/$sampe.SPLICE_SITE_ACCEPTOR.tmp $SNV_dir/$sampe.SPLICE_SITE_DONOR.tmp > $SNV_dir/$sampe.join1.txt
+				join $SNV_dir/$sampe.join1.txt $SNV_dir/$sampe.START_LOST.tmp > $SNV_dir/$sampe.join2.txt
+				join $SNV_dir/$sampe.join2.txt $SNV_dir/$sampe.STOP_GAINED.tmp > $SNV_dir/$sampe.join3.txt
+				join $SNV_dir/$sampe.join3.txt $SNV_dir/$sampe.STOP_LOST.tmp > $SNV_dir/$sampe.join4.txt
+				join $SNV_dir/$sampe.join4.txt $SNV_dir/$sampe.RARE_AMINO_ACID.tmp > $SNV_dir/$sampe.join5.txt
+				join $SNV_dir/$sampe.join5.txt $SNV_dir/$sampe.NON_SYNONYMOUS_CODING.tmp > $SNV_dir/$sampe.join6.txt
+				join $SNV_dir/$sampe.join6.txt $SNV_dir/$sampe.SYNONYMOUS_START.tmp > $SNV_dir/$sampe.join7.txt
+				join $SNV_dir/$sampe.join7.txt $SNV_dir/$sampe.NON_SYNONYMOUS_START.tmp > $SNV_dir/$sampe.join8.txt
+				join $SNV_dir/$sampe.join8.txt $SNV_dir/$sampe.START_GAINED.tmp > $SNV_dir/$sampe.join9.txt
+				join $SNV_dir/$sampe.join9.txt $SNV_dir/$sampe.SYNONYMOUS_CODING.tmp > $SNV_dir/$sampe.join10.txt
+				join $SNV_dir/$sampe.join10.txt $SNV_dir/$sampe.SYNONYMOUS_STOP.tmp > $SNV_dir/$sampe.join11.txt
+				join $SNV_dir/$sampe.join11.txt $SNV_dir/$sampe.NON_SYNONYMOUS_STOP.tmp > $SNV_dir/$sampe.join12.txt
+				join $SNV_dir/$sampe.join12.txt $SNV_dir/$sampe.UTR_5_PRIME.tmp > $SNV_dir/$sampe.join13.txt
+				join $SNV_dir/$sampe.join13.txt $SNV_dir/$sampe.UTR_3_PRIME.tmp > $SNV_dir/$sampe.join14.txt
+				cat $SNV_dir/$sampe.join14.txt | tr " " "\t" > $SNV_dir/$sampe.join15.txt
 					
-				touch $SNV_dir/$group.$sample.SNV.summary
-				echo -e "\tSPLICE_SITE_ACCEPTOR\tSPLICE_SITE_DONOR\tSTART_LOST\tSTOP_GAINED\tSTOP_LOST\tRARE_AMINO_ACID\tNON_SYNONYMOUS_CODING\tSYNONYMOUS_START\tNON_SYNONYMOUS_START\tSTART_GAINED\tSYNONYMOUS_CODING\tSYNONYMOUS_STOP\tNON_SYNONYMOUS_STOP\tUTR_5_PRIME\tUTR_3_PRIME" >> $SNV_dir/$group.$sample.SNV.summary
-				cat $SNV_dir/$group.$sample.join15.txt >> $SNV_dir/$group.$sample.SNV.summary
-				Rscript $script_path/sum.cols.r $SNV_dir/$group.$sample.SNV.summary $SNV_dir/$group.$sample.SNV.sum
+				touch $SNV_dir/$sampe.SNV.summary
+				echo -e "\tSPLICE_SITE_ACCEPTOR\tSPLICE_SITE_DONOR\tSTART_LOST\tSTOP_GAINED\tSTOP_LOST\tRARE_AMINO_ACID\tNON_SYNONYMOUS_CODING\tSYNONYMOUS_START\tNON_SYNONYMOUS_START\tSTART_GAINED\tSYNONYMOUS_CODING\tSYNONYMOUS_STOP\tNON_SYNONYMOUS_STOP\tUTR_5_PRIME\tUTR_3_PRIME" >> $SNV_dir/$sampe.SNV.summary
+				cat $SNV_dir/$sampe.join15.txt >> $SNV_dir/$sampe.SNV.summary
+				Rscript $script_path/sum.cols.r $SNV_dir/$sampe.SNV.summary $SNV_dir/$sampe.SNV.sum
 					
-				rm $SNV_dir/$group.$sample.*.tmp $SNV_dir/in.$group.$sample.*.tmp $SNV_dir/$group.$sample.join*.txt
+				rm $SNV_dir/$sampe.*.tmp $SNV_dir/in.$sampe.*.tmp $SNV_dir/$sampe.join*.txt
 
 				#################################################################################################	
 				### summarizing INDEL files           
-				file=$INDEL_dir/TUMOR.$group.INDEL.filtered.xls
+				if [ $somatic_calling == "YES" ]
+				then
+					file=$INDEL_dir/TUMOR.$group.INDEL.filtered.xls
+				else
+					file=$INDEL_dir/$group.INDEL.filtered.xls
+				fi
 				if [ ! -f $file ]
 				then
 					$script_path/errorlog.sh $file gene_summary.sh ERROR "not found"
@@ -423,57 +444,57 @@ else
 				function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 				gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
                                 sam=`awk -v sam=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == sam) {print i} } }' $file`
-				cat $file | awk 'NR>2' | awk -v sam=$sam '$sam !~ /n\/a/'|  cut -f "$function","$gene" > $INDEL_dir/$group.$sample.INDEL.tmp
+				cat $file | awk 'NR>2' | awk -v sam=$sam '$sam !~ /n\/a/'|  cut -f "$function","$gene" > $INDEL_dir/$sampe.INDEL.tmp
 
 				for indel in EXON_DELETED FRAME_SHIFT CODON_CHANGE UTR_5_DELETED UTR_3_DELETED CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR UTR_5_PRIME UTR_3_PRIME		
 				do
-					cat $INDEL_dir/$group.$sample.INDEL.tmp | grep "$indel" | cut -f2 | tr "," "\n" > $INDEL_dir/in.$group.$sample.$indel.tmp
-					if [ ! -s $INDEL_dir/$group.$sample.$indel.tmp ]
+					cat $INDEL_dir/$sampe.INDEL.tmp | grep "$indel" | cut -f2 | tr "," "\n" > $INDEL_dir/in.$sampe.$indel.tmp
+					if [ ! -s $INDEL_dir/$sampe.$indel.tmp ]
 					then
-						echo "NOGENE"  >> $INDEL_dir/in.$group.$sample.$indel.tmp
+						echo "NOGENE"  >> $INDEL_dir/in.$sampe.$indel.tmp
 					fi				
 				done
 				
-				Rscript $script_path/summary.INDEL.r $report_dir/$group.$sample.gene.temp $INDEL_dir/in.$group.$sample.EXON_DELETED.tmp $INDEL_dir/in.$group.$sample.FRAME_SHIFT.tmp $INDEL_dir/in.$group.$sample.CODON_CHANGE.tmp $INDEL_dir/in.$group.$sample.UTR_5_DELETED.tmp $INDEL_dir/in.$group.$sample.UTR_3_DELETED.tmp $INDEL_dir/in.$group.$sample.CODON_INSERTION.tmp $INDEL_dir/in.$group.$sample.CODON_CHANGE_PLUS_CODON_INSERTION.tmp $INDEL_dir/in.$group.$sample.CODON_DELETION.tmp $INDEL_dir/in.$group.$sample.CODON_CHANGE_PLUS_CODON_DELETION.tmp $INDEL_dir/in.$group.$sample.SPLICE_SITE_ACCEPTOR.tmp $INDEL_dir/in.$group.$sample.SPLICE_SITE_DONOR.tmp $INDEL_dir/in.$group.$sample.UTR_5_PRIME.tmp $INDEL_dir/in.$group.$sample.UTR_3_PRIME.tmp $INDEL_dir/$group.$sample.EXON_DELETED.tmp $INDEL_dir/$group.$sample.FRAME_SHIFT.tmp $INDEL_dir/$group.$sample.CODON_CHANGE.tmp $INDEL_dir/$group.$sample.UTR_5_DELETED.tmp $INDEL_dir/$group.$sample.UTR_3_DELETED.tmp $INDEL_dir/$group.$sample.CODON_INSERTION.tmp $INDEL_dir/$group.$sample.CODON_CHANGE_PLUS_CODON_INSERTION.tmp $INDEL_dir/$group.$sample.CODON_DELETION.tmp $INDEL_dir/$group.$sample.CODON_CHANGE_PLUS_CODON_DELETION.tmp $INDEL_dir/$group.$sample.SPLICE_SITE_ACCEPTOR.tmp $INDEL_dir/$group.$sample.SPLICE_SITE_DONOR.tmp $INDEL_dir/$group.$sample.UTR_5_PRIME.tmp $INDEL_dir/$group.$sample.UTR_3_PRIME.tmp
+				Rscript $script_path/summary.INDEL.r $report_dir/$sampe.gene.temp $INDEL_dir/in.$sampe.EXON_DELETED.tmp $INDEL_dir/in.$sampe.FRAME_SHIFT.tmp $INDEL_dir/in.$sampe.CODON_CHANGE.tmp $INDEL_dir/in.$sampe.UTR_5_DELETED.tmp $INDEL_dir/in.$sampe.UTR_3_DELETED.tmp $INDEL_dir/in.$sampe.CODON_INSERTION.tmp $INDEL_dir/in.$sampe.CODON_CHANGE_PLUS_CODON_INSERTION.tmp $INDEL_dir/in.$sampe.CODON_DELETION.tmp $INDEL_dir/in.$sampe.CODON_CHANGE_PLUS_CODON_DELETION.tmp $INDEL_dir/in.$sampe.SPLICE_SITE_ACCEPTOR.tmp $INDEL_dir/in.$sampe.SPLICE_SITE_DONOR.tmp $INDEL_dir/in.$sampe.UTR_5_PRIME.tmp $INDEL_dir/in.$sampe.UTR_3_PRIME.tmp $INDEL_dir/$sampe.EXON_DELETED.tmp $INDEL_dir/$sampe.FRAME_SHIFT.tmp $INDEL_dir/$sampe.CODON_CHANGE.tmp $INDEL_dir/$sampe.UTR_5_DELETED.tmp $INDEL_dir/$sampe.UTR_3_DELETED.tmp $INDEL_dir/$sampe.CODON_INSERTION.tmp $INDEL_dir/$sampe.CODON_CHANGE_PLUS_CODON_INSERTION.tmp $INDEL_dir/$sampe.CODON_DELETION.tmp $INDEL_dir/$sampe.CODON_CHANGE_PLUS_CODON_DELETION.tmp $INDEL_dir/$sampe.SPLICE_SITE_ACCEPTOR.tmp $INDEL_dir/$sampe.SPLICE_SITE_DONOR.tmp $INDEL_dir/$sampe.UTR_5_PRIME.tmp $INDEL_dir/$sampe.UTR_3_PRIME.tmp
 				
-				join $INDEL_dir/$group.$sample.EXON_DELETED.tmp $INDEL_dir/$group.$sample.FRAME_SHIFT.tmp > $INDEL_dir/$group.$sample.join1.txt
-				join $INDEL_dir/$group.$sample.join1.txt $INDEL_dir/$group.$sample.CODON_CHANGE.tmp > $INDEL_dir/$group.$sample.join2.txt
-				join $INDEL_dir/$group.$sample.join2.txt $INDEL_dir/$group.$sample.UTR_5_DELETED.tmp > $INDEL_dir/$group.$sample.join3.txt
-				join $INDEL_dir/$group.$sample.join3.txt $INDEL_dir/$group.$sample.UTR_3_DELETED.tmp > $INDEL_dir/$group.$sample.join4.txt
-				join $INDEL_dir/$group.$sample.join4.txt $INDEL_dir/$group.$sample.CODON_INSERTION.tmp > $INDEL_dir/$group.$sample.join5.txt
-				join $INDEL_dir/$group.$sample.join5.txt $INDEL_dir/$group.$sample.CODON_CHANGE_PLUS_CODON_INSERTION.tmp > $INDEL_dir/$group.$sample.join6.txt
-				join $INDEL_dir/$group.$sample.join6.txt $INDEL_dir/$group.$sample.CODON_DELETION.tmp > $INDEL_dir/$group.$sample.join7.txt
-				join $INDEL_dir/$group.$sample.join7.txt $INDEL_dir/$group.$sample.CODON_CHANGE_PLUS_CODON_DELETION.tmp > $INDEL_dir/$group.$sample.join8.txt
-				join $INDEL_dir/$group.$sample.join8.txt $INDEL_dir/$group.$sample.SPLICE_SITE_ACCEPTOR.tmp > $INDEL_dir/$group.$sample.join9.txt
-				join $INDEL_dir/$group.$sample.join9.txt $INDEL_dir/$group.$sample.SPLICE_SITE_DONOR.tmp > $INDEL_dir/$group.$sample.join10.txt
-				join $INDEL_dir/$group.$sample.join10.txt $INDEL_dir/$group.$sample.UTR_5_PRIME.tmp > $INDEL_dir/$group.$sample.join11.txt
-				join $INDEL_dir/$group.$sample.join11.txt $INDEL_dir/$group.$sample.UTR_3_PRIME.tmp > $INDEL_dir/$group.$sample.join12.txt
+				join $INDEL_dir/$sampe.EXON_DELETED.tmp $INDEL_dir/$sampe.FRAME_SHIFT.tmp > $INDEL_dir/$sampe.join1.txt
+				join $INDEL_dir/$sampe.join1.txt $INDEL_dir/$sampe.CODON_CHANGE.tmp > $INDEL_dir/$sampe.join2.txt
+				join $INDEL_dir/$sampe.join2.txt $INDEL_dir/$sampe.UTR_5_DELETED.tmp > $INDEL_dir/$sampe.join3.txt
+				join $INDEL_dir/$sampe.join3.txt $INDEL_dir/$sampe.UTR_3_DELETED.tmp > $INDEL_dir/$sampe.join4.txt
+				join $INDEL_dir/$sampe.join4.txt $INDEL_dir/$sampe.CODON_INSERTION.tmp > $INDEL_dir/$sampe.join5.txt
+				join $INDEL_dir/$sampe.join5.txt $INDEL_dir/$sampe.CODON_CHANGE_PLUS_CODON_INSERTION.tmp > $INDEL_dir/$sampe.join6.txt
+				join $INDEL_dir/$sampe.join6.txt $INDEL_dir/$sampe.CODON_DELETION.tmp > $INDEL_dir/$sampe.join7.txt
+				join $INDEL_dir/$sampe.join7.txt $INDEL_dir/$sampe.CODON_CHANGE_PLUS_CODON_DELETION.tmp > $INDEL_dir/$sampe.join8.txt
+				join $INDEL_dir/$sampe.join8.txt $INDEL_dir/$sampe.SPLICE_SITE_ACCEPTOR.tmp > $INDEL_dir/$sampe.join9.txt
+				join $INDEL_dir/$sampe.join9.txt $INDEL_dir/$sampe.SPLICE_SITE_DONOR.tmp > $INDEL_dir/$sampe.join10.txt
+				join $INDEL_dir/$sampe.join10.txt $INDEL_dir/$sampe.UTR_5_PRIME.tmp > $INDEL_dir/$sampe.join11.txt
+				join $INDEL_dir/$sampe.join11.txt $INDEL_dir/$sampe.UTR_3_PRIME.tmp > $INDEL_dir/$sampe.join12.txt
 
-				cat $INDEL_dir/$group.$sample.join12.txt | tr " " "\t" > $INDEL_dir/$group.$sample.join13.txt
+				cat $INDEL_dir/$sampe.join12.txt | tr " " "\t" > $INDEL_dir/$sampe.join13.txt
 				
-				touch $INDEL_dir/$group.$sample.INDEL.summary
-				echo -e "\tEXON_DELETED\tFRAME_SHIFT\tCODON_CHANGE\tUTR_5_DELETED\tUTR_3_DELETED\tCODON_INSERTION\tCODON_CHANGE_PLUS_CODON_INSERTION\tCODON_DELETION\tCODON_CHANGE_PLUS_CODON_DELETION\tSPLICE_SITE_ACCEPTOR\tSPLICE_SITE_DONOR\tUTR_5_PRIME\tUTR_3_PRIME" >> $INDEL_dir/$group.$sample.INDEL.summary
-				cat $INDEL_dir/$group.$sample.join13.txt >> $INDEL_dir/$group.$sample.INDEL.summary
-				Rscript $script_path/sum.cols.r $INDEL_dir/$group.$sample.INDEL.summary $INDEL_dir/$group.$sample.INDEL.sum
+				touch $INDEL_dir/$sampe.INDEL.summary
+				echo -e "\tEXON_DELETED\tFRAME_SHIFT\tCODON_CHANGE\tUTR_5_DELETED\tUTR_3_DELETED\tCODON_INSERTION\tCODON_CHANGE_PLUS_CODON_INSERTION\tCODON_DELETION\tCODON_CHANGE_PLUS_CODON_DELETION\tSPLICE_SITE_ACCEPTOR\tSPLICE_SITE_DONOR\tUTR_5_PRIME\tUTR_3_PRIME" >> $INDEL_dir/$sampe.INDEL.summary
+				cat $INDEL_dir/$sampe.join13.txt >> $INDEL_dir/$sampe.INDEL.summary
+				Rscript $script_path/sum.cols.r $INDEL_dir/$sampe.INDEL.summary $INDEL_dir/$sampe.INDEL.sum
 				
-				rm $INDEL_dir/$group.$sample.*.tmp $INDEL_dir/in.$group.$sample.*.tmp $INDEL_dir/$group.$sample.join*.txt	
+				rm $INDEL_dir/$sampe.*.tmp $INDEL_dir/in.$sampe.*.tmp $INDEL_dir/$sampe.join*.txt	
 				
 				
-				cat $master_gene_file | awk '{print $4"\t"$1"\t"$2"\t"$3"\t"$5}' > $report_dir/$group.$sample.GeneList.forsummary.txt
-				cat $master_entrez_file | awk '{print $2}' > $report_dir/$group.$sample.EntrezID.txt
-				touch $report_dir/$group.$sample.Gene.Summary.txt
-				echo -e "\t\t\t\t\t\t\t\t\t\t$group.$sample" >> $report_dir/$group.$sample.Gene.Summary.txt
-				echo -e "\t\t\t\t\t\t\t\tSNV_BREAKDOWN\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tINDEL_BREAKDOWN" >> $report_dir/$group.$sample.Gene.Summary.txt
-				echo -e "GENE\tCHROMOSOME\tSTART\tSTOP\tSTRAND\tENTREZ_GENE_ID\tTOTAL_SNVs\tTOTAL_INDELs\tSPLICE_SITE_ACCEPTOR\tSPLICE_SITE_DONOR\tSTART_LOST\tSTOP_GAINED\tSTOP_LOST\tRARE_AMINO_ACID\tNON_SYNONYMOUS_CODING\tSYNONYMOUS_START\tNON_SYNONYMOUS_START\tSTART_GAINED\tSYNONYMOUS_CODING\tSYNONYMOUS_STOP\tNON_SYNONYMOUS_STOP\tUTR_5_PRIME\tUTR_3_PRIME\tEXON_DELETED\tFRAME_SHIFT\tCODON_CHANGE\tUTR_5_DELETED\tUTR_3_DELETED\tCODON_INSERTION\tCODON_CHANGE_PLUS_CODON_INSERTION\tCODON_DELETION\tCODON_CHANGE_PLUS_CODON_DELETION\tSPLICE_SITE_ACCEPTOR\tSPLICE_SITE_DONOR\tUTR_5_PRIME\tUTR_3_PRIME" >> $report_dir/$group.$sample.Gene.Summary.txt
-				sed -i '1d' $SNV_dir/$group.$sample.SNV.summary
-				sed -i '1d' $INDEL_dir/$group.$sample.INDEL.summary
-				cat $SNV_dir/$group.$sample.SNV.summary | cut -f2-16 > $SNV_dir/$group.$sample.SNV.tmp
-				cat $INDEL_dir/$group.$sample.INDEL.summary | cut -f2-14 > $INDEL_dir/$group.$sample.INDEL.tmp
+				cat $master_gene_file | awk '{print $4"\t"$1"\t"$2"\t"$3"\t"$5}' > $report_dir/$sampe.GeneList.forsummary.txt
+				cat $master_entrez_file | awk '{print $2}' > $report_dir/$sampe.EntrezID.txt
+				touch $report_dir/$sampe.Gene.Summary.txt
+				echo -e "\t\t\t\t\t\t\t\t\t\t$sampe" >> $report_dir/$sampe.Gene.Summary.txt
+				echo -e "\t\t\t\t\t\t\t\tSNV_BREAKDOWN\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tINDEL_BREAKDOWN" >> $report_dir/$sampe.Gene.Summary.txt
+				echo -e "GENE\tCHROMOSOME\tSTART\tSTOP\tSTRAND\tENTREZ_GENE_ID\tTOTAL_SNVs\tTOTAL_INDELs\tSPLICE_SITE_ACCEPTOR\tSPLICE_SITE_DONOR\tSTART_LOST\tSTOP_GAINED\tSTOP_LOST\tRARE_AMINO_ACID\tNON_SYNONYMOUS_CODING\tSYNONYMOUS_START\tNON_SYNONYMOUS_START\tSTART_GAINED\tSYNONYMOUS_CODING\tSYNONYMOUS_STOP\tNON_SYNONYMOUS_STOP\tUTR_5_PRIME\tUTR_3_PRIME\tEXON_DELETED\tFRAME_SHIFT\tCODON_CHANGE\tUTR_5_DELETED\tUTR_3_DELETED\tCODON_INSERTION\tCODON_CHANGE_PLUS_CODON_INSERTION\tCODON_DELETION\tCODON_CHANGE_PLUS_CODON_DELETION\tSPLICE_SITE_ACCEPTOR\tSPLICE_SITE_DONOR\tUTR_5_PRIME\tUTR_3_PRIME" >> $report_dir/$sampe.Gene.Summary.txt
+				sed -i '1d' $SNV_dir/$sampe.SNV.summary
+				sed -i '1d' $INDEL_dir/$sampe.INDEL.summary
+				cat $SNV_dir/$sampe.SNV.summary | cut -f2-16 > $SNV_dir/$sampe.SNV.tmp
+				cat $INDEL_dir/$sampe.INDEL.summary | cut -f2-14 > $INDEL_dir/$sampe.INDEL.tmp
 				
-				paste $report_dir/$group.$sample.GeneList.forsummary.txt $report_dir/$group.$sample.EntrezID.txt $SNV_dir/$group.$sample.SNV.sum $INDEL_dir/$group.$sample.INDEL.sum $SNV_dir/$group.$sample.SNV.tmp $INDEL_dir/$group.$sample.INDEL.tmp >> $report_dir/$group.$sample.Gene.Summary.txt
+				paste $report_dir/$sampe.GeneList.forsummary.txt $report_dir/$sampe.EntrezID.txt $SNV_dir/$sampe.SNV.sum $INDEL_dir/$sampe.INDEL.sum $SNV_dir/$sampe.SNV.tmp $INDEL_dir/$sampe.INDEL.tmp >> $report_dir/$sampe.Gene.Summary.txt
 				
-				rm $SNV_dir/$group.$sample.SNV.tmp $INDEL_dir/$group.$sample.INDEL.tmp $report_dir/$group.$sample.GeneList.forsummary.txt $INDEL_dir/$group.$sample.INDEL.summary $INDEL_dir/$group.$sample.INDEL.sum $SNV_dir/$group.$sample.SNV.summary $SNV_dir/$group.$sample.SNV.sum $report_dir/$group.$sample.EntrezID.txt
-				rm $report_dir/$group.$sample.gene.temp
+				rm $SNV_dir/$sampe.SNV.tmp $INDEL_dir/$sampe.INDEL.tmp $report_dir/$sampe.GeneList.forsummary.txt $INDEL_dir/$sampe.INDEL.summary $INDEL_dir/$sampe.INDEL.sum $SNV_dir/$sampe.SNV.summary $SNV_dir/$sampe.SNV.sum $report_dir/$sampe.EntrezID.txt
+				rm $report_dir/$sampe.gene.temp
 			done				
 		else
 			### summarizing SNV files
@@ -481,10 +502,26 @@ else
 			samples=$( cat $sample_info | grep -w "^$group" | cut -d '=' -f2 )
 			let num_tumor=`echo $samples|tr " " "\n"|wc -l`-1
 			tumor_list=`echo $samples | tr " " "\n" | tail -$num_tumor`
+			if [ $somatic_calling == "NO" ]
+			then
+				tumor_list=$samples
+			fi	
 			for sample in $tumor_list    
 			do
-				cat $master_gene_file | cut -f4 > $report_dir/$group.$sample.gene.temp
-				file=$SNV_dir/TUMOR.$group.SNV.filtered.xls
+				if [ $somatic_calling == "YES" ]
+				then
+					sampe=$sampe
+				else
+					sampe=$sample
+				fi	
+				cat $master_gene_file | cut -f4 > $report_dir/$sampe.gene.temp
+				if [ $somatic_calling == "NO" ]
+				then
+					file=$SNV_dir/$group.SNV.filtered.xls
+				else
+					file=$SNV_dir/TUMOR.$group.SNV.filtered.xls
+				fi
+				
 				if [ ! -f $file ]
 				then
 					$script_path/errorlog.sh $file gene_summary.sh ERROR "not found"
@@ -493,45 +530,50 @@ else
 				function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 				gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
 				sam=`awk -v sam=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == sam) {print i} } }' $file`
-				cat $file | awk 'NR>2' |  awk -v sam=$sam '$sam !~ /n\/a/'| cut -f "$function","$gene" > $SNV_dir/$group.$sample.SNV.tmp
+				cat $file | awk 'NR>2' |  awk -v sam=$sam '$sam !~ /n\/a/'| cut -f "$function","$gene" > $SNV_dir/$sampe.SNV.tmp
 				
 				for snv in SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST STOP_GAINED STOP_LOST RARE_AMINO_ACID NON_SYNONYMOUS_CODING SYNONYMOUS_START NON_SYNONYMOUS_START START_GAINED SYNONYMOUS_CODING SYNONYMOUS_STOP NON_SYNONYMOUS_STOP UTR_5_PRIME UTR_3_PRIME
 				do
-					cat $SNV_dir/$group.$sample.SNV.tmp | grep "$snv" | cut -f2 | tr "," "\n" > $SNV_dir/in.$group.$sample.$snv.tmp
-					if [ ! -s $SNV_dir/$group.$sample.$snv.tmp ]
+					cat $SNV_dir/$sampe.SNV.tmp | grep "$snv" | cut -f2 | tr "," "\n" > $SNV_dir/in.$sampe.$snv.tmp
+					if [ ! -s $SNV_dir/$sampe.$snv.tmp ]
 					then
-						echo "NOGENE"  >> $SNV_dir/in.$group.$sample.$snv.tmp
+						echo "NOGENE"  >> $SNV_dir/in.$sampe.$snv.tmp
 					fi	
 				done    
 			
-				Rscript $script_path/summary.SNV.r $report_dir/$group.$sample.gene.temp $SNV_dir/in.$group.$sample.SPLICE_SITE_ACCEPTOR.tmp $SNV_dir/in.$group.$sample.SPLICE_SITE_DONOR.tmp $SNV_dir/in.$group.$sample.START_LOST.tmp $SNV_dir/in.$group.$sample.STOP_GAINED.tmp $SNV_dir/in.$group.$sample.STOP_LOST.tmp $SNV_dir/in.$group.$sample.RARE_AMINO_ACID.tmp $SNV_dir/in.$group.$sample.NON_SYNONYMOUS_CODING.tmp $SNV_dir/in.$group.$sample.SYNONYMOUS_START.tmp $SNV_dir/in.$group.$sample.NON_SYNONYMOUS_START.tmp $SNV_dir/in.$group.$sample.START_GAINED.tmp $SNV_dir/in.$group.$sample.SYNONYMOUS_CODING.tmp $SNV_dir/in.$group.$sample.SYNONYMOUS_STOP.tmp $SNV_dir/in.$group.$sample.NON_SYNONYMOUS_STOP.tmp $SNV_dir/in.$group.$sample.UTR_5_PRIME.tmp $SNV_dir/in.$group.$sample.UTR_3_PRIME.tmp $SNV_dir/$group.$sample.SPLICE_SITE_ACCEPTOR.tmp $SNV_dir/$group.$sample.SPLICE_SITE_DONOR.tmp $SNV_dir/$group.$sample.START_LOST.tmp $SNV_dir/$group.$sample.STOP_GAINED.tmp $SNV_dir/$group.$sample.STOP_LOST.tmp $SNV_dir/$group.$sample.RARE_AMINO_ACID.tmp $SNV_dir/$group.$sample.NON_SYNONYMOUS_CODING.tmp $SNV_dir/$group.$sample.SYNONYMOUS_START.tmp $SNV_dir/$group.$sample.NON_SYNONYMOUS_START.tmp $SNV_dir/$group.$sample.START_GAINED.tmp $SNV_dir/$group.$sample.SYNONYMOUS_CODING.tmp $SNV_dir/$group.$sample.SYNONYMOUS_STOP.tmp $SNV_dir/$group.$sample.NON_SYNONYMOUS_STOP.tmp $SNV_dir/$group.$sample.UTR_5_PRIME.tmp $SNV_dir/$group.$sample.UTR_3_PRIME.tmp
+				Rscript $script_path/summary.SNV.r $report_dir/$sampe.gene.temp $SNV_dir/in.$sampe.SPLICE_SITE_ACCEPTOR.tmp $SNV_dir/in.$sampe.SPLICE_SITE_DONOR.tmp $SNV_dir/in.$sampe.START_LOST.tmp $SNV_dir/in.$sampe.STOP_GAINED.tmp $SNV_dir/in.$sampe.STOP_LOST.tmp $SNV_dir/in.$sampe.RARE_AMINO_ACID.tmp $SNV_dir/in.$sampe.NON_SYNONYMOUS_CODING.tmp $SNV_dir/in.$sampe.SYNONYMOUS_START.tmp $SNV_dir/in.$sampe.NON_SYNONYMOUS_START.tmp $SNV_dir/in.$sampe.START_GAINED.tmp $SNV_dir/in.$sampe.SYNONYMOUS_CODING.tmp $SNV_dir/in.$sampe.SYNONYMOUS_STOP.tmp $SNV_dir/in.$sampe.NON_SYNONYMOUS_STOP.tmp $SNV_dir/in.$sampe.UTR_5_PRIME.tmp $SNV_dir/in.$sampe.UTR_3_PRIME.tmp $SNV_dir/$sampe.SPLICE_SITE_ACCEPTOR.tmp $SNV_dir/$sampe.SPLICE_SITE_DONOR.tmp $SNV_dir/$sampe.START_LOST.tmp $SNV_dir/$sampe.STOP_GAINED.tmp $SNV_dir/$sampe.STOP_LOST.tmp $SNV_dir/$sampe.RARE_AMINO_ACID.tmp $SNV_dir/$sampe.NON_SYNONYMOUS_CODING.tmp $SNV_dir/$sampe.SYNONYMOUS_START.tmp $SNV_dir/$sampe.NON_SYNONYMOUS_START.tmp $SNV_dir/$sampe.START_GAINED.tmp $SNV_dir/$sampe.SYNONYMOUS_CODING.tmp $SNV_dir/$sampe.SYNONYMOUS_STOP.tmp $SNV_dir/$sampe.NON_SYNONYMOUS_STOP.tmp $SNV_dir/$sampe.UTR_5_PRIME.tmp $SNV_dir/$sampe.UTR_3_PRIME.tmp
 			
-				join $SNV_dir/$group.$sample.SPLICE_SITE_ACCEPTOR.tmp $SNV_dir/$group.$sample.SPLICE_SITE_DONOR.tmp > $SNV_dir/$group.$sample.join1.txt
-				join $SNV_dir/$group.$sample.join1.txt $SNV_dir/$group.$sample.START_LOST.tmp > $SNV_dir/$group.$sample.join2.txt
-				join $SNV_dir/$group.$sample.join2.txt $SNV_dir/$group.$sample.STOP_GAINED.tmp > $SNV_dir/$group.$sample.join3.txt
-				join $SNV_dir/$group.$sample.join3.txt $SNV_dir/$group.$sample.STOP_LOST.tmp > $SNV_dir/$group.$sample.join4.txt
-				join $SNV_dir/$group.$sample.join4.txt $SNV_dir/$group.$sample.RARE_AMINO_ACID.tmp > $SNV_dir/$group.$sample.join5.txt
-				join $SNV_dir/$group.$sample.join5.txt $SNV_dir/$group.$sample.NON_SYNONYMOUS_CODING.tmp > $SNV_dir/$group.$sample.join6.txt
-				join $SNV_dir/$group.$sample.join6.txt $SNV_dir/$group.$sample.SYNONYMOUS_START.tmp > $SNV_dir/$group.$sample.join7.txt
-				join $SNV_dir/$group.$sample.join7.txt $SNV_dir/$group.$sample.NON_SYNONYMOUS_START.tmp > $SNV_dir/$group.$sample.join8.txt
-				join $SNV_dir/$group.$sample.join8.txt $SNV_dir/$group.$sample.START_GAINED.tmp > $SNV_dir/$group.$sample.join9.txt
-				join $SNV_dir/$group.$sample.join9.txt $SNV_dir/$group.$sample.SYNONYMOUS_CODING.tmp > $SNV_dir/$group.$sample.join10.txt
-				join $SNV_dir/$group.$sample.join10.txt $SNV_dir/$group.$sample.SYNONYMOUS_STOP.tmp > $SNV_dir/$group.$sample.join11.txt
-				join $SNV_dir/$group.$sample.join11.txt $SNV_dir/$group.$sample.NON_SYNONYMOUS_STOP.tmp > $SNV_dir/$group.$sample.join12.txt
-				join $SNV_dir/$group.$sample.join12.txt $SNV_dir/$group.$sample.UTR_5_PRIME.tmp > $SNV_dir/$group.$sample.join13.txt
-				join $SNV_dir/$group.$sample.join13.txt $SNV_dir/$group.$sample.UTR_3_PRIME.tmp > $SNV_dir/$group.$sample.join14.txt
-				cat $SNV_dir/$group.$sample.join14.txt | tr " " "\t" > $SNV_dir/$group.$sample.join15.txt
+				join $SNV_dir/$sampe.SPLICE_SITE_ACCEPTOR.tmp $SNV_dir/$sampe.SPLICE_SITE_DONOR.tmp > $SNV_dir/$sampe.join1.txt
+				join $SNV_dir/$sampe.join1.txt $SNV_dir/$sampe.START_LOST.tmp > $SNV_dir/$sampe.join2.txt
+				join $SNV_dir/$sampe.join2.txt $SNV_dir/$sampe.STOP_GAINED.tmp > $SNV_dir/$sampe.join3.txt
+				join $SNV_dir/$sampe.join3.txt $SNV_dir/$sampe.STOP_LOST.tmp > $SNV_dir/$sampe.join4.txt
+				join $SNV_dir/$sampe.join4.txt $SNV_dir/$sampe.RARE_AMINO_ACID.tmp > $SNV_dir/$sampe.join5.txt
+				join $SNV_dir/$sampe.join5.txt $SNV_dir/$sampe.NON_SYNONYMOUS_CODING.tmp > $SNV_dir/$sampe.join6.txt
+				join $SNV_dir/$sampe.join6.txt $SNV_dir/$sampe.SYNONYMOUS_START.tmp > $SNV_dir/$sampe.join7.txt
+				join $SNV_dir/$sampe.join7.txt $SNV_dir/$sampe.NON_SYNONYMOUS_START.tmp > $SNV_dir/$sampe.join8.txt
+				join $SNV_dir/$sampe.join8.txt $SNV_dir/$sampe.START_GAINED.tmp > $SNV_dir/$sampe.join9.txt
+				join $SNV_dir/$sampe.join9.txt $SNV_dir/$sampe.SYNONYMOUS_CODING.tmp > $SNV_dir/$sampe.join10.txt
+				join $SNV_dir/$sampe.join10.txt $SNV_dir/$sampe.SYNONYMOUS_STOP.tmp > $SNV_dir/$sampe.join11.txt
+				join $SNV_dir/$sampe.join11.txt $SNV_dir/$sampe.NON_SYNONYMOUS_STOP.tmp > $SNV_dir/$sampe.join12.txt
+				join $SNV_dir/$sampe.join12.txt $SNV_dir/$sampe.UTR_5_PRIME.tmp > $SNV_dir/$sampe.join13.txt
+				join $SNV_dir/$sampe.join13.txt $SNV_dir/$sampe.UTR_3_PRIME.tmp > $SNV_dir/$sampe.join14.txt
+				cat $SNV_dir/$sampe.join14.txt | tr " " "\t" > $SNV_dir/$sampe.join15.txt
 					
-				touch $SNV_dir/$group.$sample.SNV.summary
-				echo -e "\tSPLICE_SITE_ACCEPTOR\tSPLICE_SITE_DONOR\tSTART_LOST\tSTOP_GAINED\tSTOP_LOST\tRARE_AMINO_ACID\tNON_SYNONYMOUS_CODING\tSYNONYMOUS_START\tNON_SYNONYMOUS_START\tSTART_GAINED\tSYNONYMOUS_CODING\tSYNONYMOUS_STOP\tNON_SYNONYMOUS_STOP\tUTR_5_PRIME\tUTR_3_PRIME" >> $SNV_dir/$group.$sample.SNV.summary
-				cat $SNV_dir/$group.$sample.join15.txt >> $SNV_dir/$group.$sample.SNV.summary
-				Rscript $script_path/sum.cols.r $SNV_dir/$group.$sample.SNV.summary $SNV_dir/$group.$sample.SNV.sum
+				touch $SNV_dir/$sampe.SNV.summary
+				echo -e "\tSPLICE_SITE_ACCEPTOR\tSPLICE_SITE_DONOR\tSTART_LOST\tSTOP_GAINED\tSTOP_LOST\tRARE_AMINO_ACID\tNON_SYNONYMOUS_CODING\tSYNONYMOUS_START\tNON_SYNONYMOUS_START\tSTART_GAINED\tSYNONYMOUS_CODING\tSYNONYMOUS_STOP\tNON_SYNONYMOUS_STOP\tUTR_5_PRIME\tUTR_3_PRIME" >> $SNV_dir/$sampe.SNV.summary
+				cat $SNV_dir/$sampe.join15.txt >> $SNV_dir/$sampe.SNV.summary
+				Rscript $script_path/sum.cols.r $SNV_dir/$sampe.SNV.summary $SNV_dir/$sampe.SNV.sum
 					
-				rm $SNV_dir/$group.$sample.*.tmp $SNV_dir/in.$group.$sample.*.tmp $SNV_dir/$group.$sample.join*.txt
+				rm $SNV_dir/$sampe.*.tmp $SNV_dir/in.$sampe.*.tmp $SNV_dir/$sampe.join*.txt
 
 				#################################################################################################	
 				### summarizing INDEL files           
-				file=$INDEL_dir/TUMOR.$group.INDEL.filtered.xls
+				if [ $somatic_calling == "NO" ]
+				then
+					file=$INDEL_dir/$group.INDEL.filtered.xls
+				else
+					file=$INDEL_dir/TUMOR.$group.INDEL.filtered.xls
+				fi	
 				if [ ! -f $file ]
 				then
 					$script_path/errorlog.sh $file gene_summary.sh ERROR "not found"
@@ -540,116 +582,122 @@ else
 				function=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Effect") {print i} } }' $file`
 				gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "geneList") {print i} } }' $file`
 				sam=`awk -v sam=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == sam) {print i} } }' $file`
-				cat $file | awk 'NR>2' |  awk -v sam=$sam '$sam !~ /n\/a/' | cut -f "$function","$gene" > $INDEL_dir/$group.$sample.INDEL.tmp
+				cat $file | awk 'NR>2' |  awk -v sam=$sam '$sam !~ /n\/a/' | cut -f "$function","$gene" > $INDEL_dir/$sampe.INDEL.tmp
 				for indel in EXON_DELETED FRAME_SHIFT CODON_CHANGE UTR_5_DELETED UTR_3_DELETED CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR UTR_5_PRIME UTR_3_PRIME		
 				do
-					cat $INDEL_dir/$group.$sample.INDEL.tmp | grep "$indel" | cut -f2 | tr "," "\n" > $INDEL_dir/in.$group.$sample.$indel.tmp
-					if [ ! -s $INDEL_dir/$group.$sample.$indel.tmp ]
+					cat $INDEL_dir/$sampe.INDEL.tmp | grep "$indel" | cut -f2 | tr "," "\n" > $INDEL_dir/in.$sampe.$indel.tmp
+					if [ ! -s $INDEL_dir/$sampe.$indel.tmp ]
 					then
-						echo "NOGENE"  >> $INDEL_dir/in.$group.$sample.$indel.tmp
+						echo "NOGENE"  >> $INDEL_dir/in.$sampe.$indel.tmp
 					fi				
 				done
 				
-				Rscript $script_path/summary.INDEL.r $report_dir/$group.$sample.gene.temp $INDEL_dir/in.$group.$sample.EXON_DELETED.tmp $INDEL_dir/in.$group.$sample.FRAME_SHIFT.tmp $INDEL_dir/in.$group.$sample.CODON_CHANGE.tmp $INDEL_dir/in.$group.$sample.UTR_5_DELETED.tmp $INDEL_dir/in.$group.$sample.UTR_3_DELETED.tmp $INDEL_dir/in.$group.$sample.CODON_INSERTION.tmp $INDEL_dir/in.$group.$sample.CODON_CHANGE_PLUS_CODON_INSERTION.tmp $INDEL_dir/in.$group.$sample.CODON_DELETION.tmp $INDEL_dir/in.$group.$sample.CODON_CHANGE_PLUS_CODON_DELETION.tmp $INDEL_dir/in.$group.$sample.SPLICE_SITE_ACCEPTOR.tmp $INDEL_dir/in.$group.$sample.SPLICE_SITE_DONOR.tmp $INDEL_dir/in.$group.$sample.UTR_5_PRIME.tmp $INDEL_dir/in.$group.$sample.UTR_3_PRIME.tmp $INDEL_dir/$group.$sample.EXON_DELETED.tmp $INDEL_dir/$group.$sample.FRAME_SHIFT.tmp $INDEL_dir/$group.$sample.CODON_CHANGE.tmp $INDEL_dir/$group.$sample.UTR_5_DELETED.tmp $INDEL_dir/$group.$sample.UTR_3_DELETED.tmp $INDEL_dir/$group.$sample.CODON_INSERTION.tmp $INDEL_dir/$group.$sample.CODON_CHANGE_PLUS_CODON_INSERTION.tmp $INDEL_dir/$group.$sample.CODON_DELETION.tmp $INDEL_dir/$group.$sample.CODON_CHANGE_PLUS_CODON_DELETION.tmp $INDEL_dir/$group.$sample.SPLICE_SITE_ACCEPTOR.tmp $INDEL_dir/$group.$sample.SPLICE_SITE_DONOR.tmp $INDEL_dir/$group.$sample.UTR_5_PRIME.tmp $INDEL_dir/$group.$sample.UTR_3_PRIME.tmp
+				Rscript $script_path/summary.INDEL.r $report_dir/$sampe.gene.temp $INDEL_dir/in.$sampe.EXON_DELETED.tmp $INDEL_dir/in.$sampe.FRAME_SHIFT.tmp $INDEL_dir/in.$sampe.CODON_CHANGE.tmp $INDEL_dir/in.$sampe.UTR_5_DELETED.tmp $INDEL_dir/in.$sampe.UTR_3_DELETED.tmp $INDEL_dir/in.$sampe.CODON_INSERTION.tmp $INDEL_dir/in.$sampe.CODON_CHANGE_PLUS_CODON_INSERTION.tmp $INDEL_dir/in.$sampe.CODON_DELETION.tmp $INDEL_dir/in.$sampe.CODON_CHANGE_PLUS_CODON_DELETION.tmp $INDEL_dir/in.$sampe.SPLICE_SITE_ACCEPTOR.tmp $INDEL_dir/in.$sampe.SPLICE_SITE_DONOR.tmp $INDEL_dir/in.$sampe.UTR_5_PRIME.tmp $INDEL_dir/in.$sampe.UTR_3_PRIME.tmp $INDEL_dir/$sampe.EXON_DELETED.tmp $INDEL_dir/$sampe.FRAME_SHIFT.tmp $INDEL_dir/$sampe.CODON_CHANGE.tmp $INDEL_dir/$sampe.UTR_5_DELETED.tmp $INDEL_dir/$sampe.UTR_3_DELETED.tmp $INDEL_dir/$sampe.CODON_INSERTION.tmp $INDEL_dir/$sampe.CODON_CHANGE_PLUS_CODON_INSERTION.tmp $INDEL_dir/$sampe.CODON_DELETION.tmp $INDEL_dir/$sampe.CODON_CHANGE_PLUS_CODON_DELETION.tmp $INDEL_dir/$sampe.SPLICE_SITE_ACCEPTOR.tmp $INDEL_dir/$sampe.SPLICE_SITE_DONOR.tmp $INDEL_dir/$sampe.UTR_5_PRIME.tmp $INDEL_dir/$sampe.UTR_3_PRIME.tmp
 				
-				join $INDEL_dir/$group.$sample.EXON_DELETED.tmp $INDEL_dir/$group.$sample.FRAME_SHIFT.tmp > $INDEL_dir/$group.$sample.join1.txt
-				join $INDEL_dir/$group.$sample.join1.txt $INDEL_dir/$group.$sample.CODON_CHANGE.tmp > $INDEL_dir/$group.$sample.join2.txt
-				join $INDEL_dir/$group.$sample.join2.txt $INDEL_dir/$group.$sample.UTR_5_DELETED.tmp > $INDEL_dir/$group.$sample.join3.txt
-				join $INDEL_dir/$group.$sample.join3.txt $INDEL_dir/$group.$sample.UTR_3_DELETED.tmp > $INDEL_dir/$group.$sample.join4.txt
-				join $INDEL_dir/$group.$sample.join4.txt $INDEL_dir/$group.$sample.CODON_INSERTION.tmp > $INDEL_dir/$group.$sample.join5.txt
-				join $INDEL_dir/$group.$sample.join5.txt $INDEL_dir/$group.$sample.CODON_CHANGE_PLUS_CODON_INSERTION.tmp > $INDEL_dir/$group.$sample.join6.txt
-				join $INDEL_dir/$group.$sample.join6.txt $INDEL_dir/$group.$sample.CODON_DELETION.tmp > $INDEL_dir/$group.$sample.join7.txt
-				join $INDEL_dir/$group.$sample.join7.txt $INDEL_dir/$group.$sample.CODON_CHANGE_PLUS_CODON_DELETION.tmp > $INDEL_dir/$group.$sample.join8.txt
-				join $INDEL_dir/$group.$sample.join8.txt $INDEL_dir/$group.$sample.SPLICE_SITE_ACCEPTOR.tmp > $INDEL_dir/$group.$sample.join9.txt
-				join $INDEL_dir/$group.$sample.join9.txt $INDEL_dir/$group.$sample.SPLICE_SITE_DONOR.tmp > $INDEL_dir/$group.$sample.join10.txt
-				join $INDEL_dir/$group.$sample.join10.txt $INDEL_dir/$group.$sample.UTR_5_PRIME.tmp > $INDEL_dir/$group.$sample.join11.txt
-				join $INDEL_dir/$group.$sample.join11.txt $INDEL_dir/$group.$sample.UTR_3_PRIME.tmp > $INDEL_dir/$group.$sample.join12.txt
+				join $INDEL_dir/$sampe.EXON_DELETED.tmp $INDEL_dir/$sampe.FRAME_SHIFT.tmp > $INDEL_dir/$sampe.join1.txt
+				join $INDEL_dir/$sampe.join1.txt $INDEL_dir/$sampe.CODON_CHANGE.tmp > $INDEL_dir/$sampe.join2.txt
+				join $INDEL_dir/$sampe.join2.txt $INDEL_dir/$sampe.UTR_5_DELETED.tmp > $INDEL_dir/$sampe.join3.txt
+				join $INDEL_dir/$sampe.join3.txt $INDEL_dir/$sampe.UTR_3_DELETED.tmp > $INDEL_dir/$sampe.join4.txt
+				join $INDEL_dir/$sampe.join4.txt $INDEL_dir/$sampe.CODON_INSERTION.tmp > $INDEL_dir/$sampe.join5.txt
+				join $INDEL_dir/$sampe.join5.txt $INDEL_dir/$sampe.CODON_CHANGE_PLUS_CODON_INSERTION.tmp > $INDEL_dir/$sampe.join6.txt
+				join $INDEL_dir/$sampe.join6.txt $INDEL_dir/$sampe.CODON_DELETION.tmp > $INDEL_dir/$sampe.join7.txt
+				join $INDEL_dir/$sampe.join7.txt $INDEL_dir/$sampe.CODON_CHANGE_PLUS_CODON_DELETION.tmp > $INDEL_dir/$sampe.join8.txt
+				join $INDEL_dir/$sampe.join8.txt $INDEL_dir/$sampe.SPLICE_SITE_ACCEPTOR.tmp > $INDEL_dir/$sampe.join9.txt
+				join $INDEL_dir/$sampe.join9.txt $INDEL_dir/$sampe.SPLICE_SITE_DONOR.tmp > $INDEL_dir/$sampe.join10.txt
+				join $INDEL_dir/$sampe.join10.txt $INDEL_dir/$sampe.UTR_5_PRIME.tmp > $INDEL_dir/$sampe.join11.txt
+				join $INDEL_dir/$sampe.join11.txt $INDEL_dir/$sampe.UTR_3_PRIME.tmp > $INDEL_dir/$sampe.join12.txt
 
-				cat $INDEL_dir/$group.$sample.join12.txt | tr " " "\t" > $INDEL_dir/$group.$sample.join13.txt
+				cat $INDEL_dir/$sampe.join12.txt | tr " " "\t" > $INDEL_dir/$sampe.join13.txt
 				
-				touch $INDEL_dir/$group.$sample.INDEL.summary
-				echo -e "\tEXON_DELETED\tFRAME_SHIFT\tCODON_CHANGE\tUTR_5_DELETED\tUTR_3_DELETED\tCODON_INSERTION\tCODON_CHANGE_PLUS_CODON_INSERTION\tCODON_DELETION\tCODON_CHANGE_PLUS_CODON_DELETION\tSPLICE_SITE_ACCEPTOR\tSPLICE_SITE_DONOR\tUTR_5_PRIME\tUTR_3_PRIME" >> $INDEL_dir/$group.$sample.INDEL.summary
-				cat $INDEL_dir/$group.$sample.join13.txt >> $INDEL_dir/$group.$sample.INDEL.summary
-				Rscript $script_path/sum.cols.r $INDEL_dir/$group.$sample.INDEL.summary $INDEL_dir/$group.$sample.INDEL.sum
+				touch $INDEL_dir/$sampe.INDEL.summary
+				echo -e "\tEXON_DELETED\tFRAME_SHIFT\tCODON_CHANGE\tUTR_5_DELETED\tUTR_3_DELETED\tCODON_INSERTION\tCODON_CHANGE_PLUS_CODON_INSERTION\tCODON_DELETION\tCODON_CHANGE_PLUS_CODON_DELETION\tSPLICE_SITE_ACCEPTOR\tSPLICE_SITE_DONOR\tUTR_5_PRIME\tUTR_3_PRIME" >> $INDEL_dir/$sampe.INDEL.summary
+				cat $INDEL_dir/$sampe.join13.txt >> $INDEL_dir/$sampe.INDEL.summary
+				Rscript $script_path/sum.cols.r $INDEL_dir/$sampe.INDEL.summary $INDEL_dir/$sampe.INDEL.sum
 				
-				rm $INDEL_dir/$group.$sample.*.tmp $INDEL_dir/in.$group.$sample.*.tmp $INDEL_dir/$group.$sample.join*.txt	
+				rm $INDEL_dir/$sampe.*.tmp $INDEL_dir/in.$sampe.*.tmp $INDEL_dir/$sampe.join*.txt	
 
 				#################################################################################################	
 				### summarizing CNV files
-                                    file=$CNV_dir/ANNOT/$group.$sample.CNV.annotated.txt
-                                    gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Gene") {print i} } }' $file`
-                                    type=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "CNV_Type") {print i} } }' $file`
-                                    cat $file | awk 'NR>2' | cut -f "$gene","$type" | tr "_" "\t" | cut -f1,3 | grep DUP > $CNV_dir/$group.$sample.DUP.tmp
-                                    cat $file | awk 'NR>2' | cut -f "$gene","$type" | tr "_" "\t" | cut -f1,3 | grep DEL > $CNV_dir/$group.$sample.DEL.tmp
-				
-                                    if [ ! -s $CNV_dir/$group.$sample.DUP.tmp ]
-                                    then
-                                    	echo "NOGENE" >> $CNV_dir/$group.$sample.DUP.tmp
-                                    fi
-                                    if [ ! -s $CNV_dir/$group.$sample.DEL.tmp ]
-                                    then
-					echo "NOGENE" >> $CNV_dir/$group.$sample.DEL.tmp
-                                    fi
+				if [ $somatic_calling == "NO" ]
+				then
+					sampe=$sample
+				else
+					sampe=$group.$sample
+				fi	
+				file=$CNV_dir/ANNOT/$sampe.CNV.annotated.txt
+				gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Gene") {print i} } }' $file`
+				type=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "CNV_Type") {print i} } }' $file`
+				cat $file | awk 'NR>2' | cut -f "$gene","$type" | tr "_" "\t" | cut -f1,3 | grep DUP > $CNV_dir/$sampe.DUP.tmp
+				cat $file | awk 'NR>2' | cut -f "$gene","$type" | tr "_" "\t" | cut -f1,3 | grep DEL > $CNV_dir/$sampe.DEL.tmp
 
-                                    Rscript $script_path/summary.CNV.r $report_dir/$group.$sample.gene.temp $CNV_dir/$group.$sample.DEL.tmp $CNV_dir/$group.$sample.DUP.tmp $CNV_dir/$group.$sample.DEL.txt $CNV_dir/$group.$sample.DUP.txt
-				
-                                    join $CNV_dir/$group.$sample.DEL.txt $CNV_dir/$group.$sample.DUP.txt > $CNV_dir/$group.$sample.join.txt
-                                    cat $CNV_dir/$group.$sample.join.txt | tr " " "\t" > $CNV_dir/$group.$sample.join1.txt
-			
-                                    touch $CNV_dir/$group.$sample.CNV.summary
-                                    echo -e "DEL\tDUP" >> $CNV_dir/$group.$sample.CNV.summary
-                                    cat $CNV_dir/$group.$sample.join1.txt >> $CNV_dir/$group.$sample.CNV.summary
-                                    Rscript $script_path/sum.cols.r $CNV_dir/$group.$sample.CNV.summary $CNV_dir/$group.$sample.CNV.sum
-				
-                                    rm $CNV_dir/$group.$sample.*.tmp $CNV_dir/$group.$sample.join*.txt $CNV_dir/$group.$sample.DEL.txt $CNV_dir/$group.$sample.DUP.txt
+				if [ ! -s $CNV_dir/$sampe.DUP.tmp ]
+				then
+					echo "NOGENE" >> $CNV_dir/$sampe.DUP.tmp
+				fi
+				if [ ! -s $CNV_dir/$sampe.DEL.tmp ]
+				then
+					echo "NOGENE" >> $CNV_dir/$sampe.DEL.tmp
+				fi
+
+				Rscript $script_path/summary.CNV.r $report_dir/$sampe.gene.temp $CNV_dir/$sampe.DEL.tmp $CNV_dir/$sampe.DUP.tmp $CNV_dir/$sampe.DEL.txt $CNV_dir/$sampe.DUP.txt
+
+				join $CNV_dir/$sampe.DEL.txt $CNV_dir/$sampe.DUP.txt > $CNV_dir/$sampe.join.txt
+				cat $CNV_dir/$sampe.join.txt | tr " " "\t" > $CNV_dir/$sampe.join1.txt
+
+				touch $CNV_dir/$sampe.CNV.summary
+				echo -e "DEL\tDUP" >> $CNV_dir/$sampe.CNV.summary
+				cat $CNV_dir/$sampe.join1.txt >> $CNV_dir/$sampe.CNV.summary
+				Rscript $script_path/sum.cols.r $CNV_dir/$sampe.CNV.summary $CNV_dir/$sampe.CNV.sum
+
+				rm $CNV_dir/$sampe.*.tmp $CNV_dir/$sampe.join*.txt $CNV_dir/$sampe.DEL.txt $CNV_dir/$sampe.DUP.txt
 		#################################################################################################					### summarizing SV files
-                                    file=$SV_dir/ANNOT/$group.$sample.SV.annotated.txt
-                                    gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "GeneA_GeneB") {print i} } }' $file`
-                                    type=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "SV_Type") {print i} } }' $file`
-                                    for i in INV INS DEL ITX CTX
-                                    do
-                                    	cat $file | awk 'NR>2' | cut -f "$type","$gene" | sed -e '/NA_/s//NOGENE_/g' -e '/_NA/s//_NOGENE/g' | tr "_" "\t" | cut -f2,3,4 | grep $i | tr " " "\t" > $SV_dir/$group.$sample.$i.tmp
+				file=$SV_dir/ANNOT/$sampe.SV.annotated.txt
+				gene=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "GeneA_GeneB") {print i} } }' $file`
+				type=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "SV_Type") {print i} } }' $file`
+				for i in INV INS DEL ITX CTX
+				do
+					cat $file | awk 'NR>2' | cut -f "$type","$gene" | sed -e '/NA_/s//NOGENE_/g' -e '/_NA/s//_NOGENE/g' | tr "_" "\t" | cut -f2,3,4 | grep $i | tr " " "\t" > $SV_dir/$sampe.$i.tmp
 				
-					if [ ! -s $SV_dir/$group.$sample.$i.tmp ]
+					if [ ! -s $SV_dir/$sampe.$i.tmp ]
 					then
-						echo "NOGENE" >> $SV_dir/$group.$sample.$i.tmp
+						echo "NOGENE" >> $SV_dir/$sampe.$i.tmp
 					fi
-                                    done
-                                    Rscript $script_path/summary.SV.r $report_dir/$group.$sample.gene.temp $SV_dir/$group.$sample.ITX.tmp $SV_dir/$group.$sample.INV.tmp $SV_dir/$group.$sample.DEL.tmp $SV_dir/$group.$sample.INS.tmp $SV_dir/$group.$sample.CTX.tmp $SV_dir/$group.$sample.ITX.txt $SV_dir/$group.$sample.INV.txt $SV_dir/$group.$sample.DEL.txt $SV_dir/$group.$sample.INS.txt $SV_dir/$group.$sample.CTX.txt
+				done
+				Rscript $script_path/summary.SV.r $report_dir/$sampe.gene.temp $SV_dir/$sampe.ITX.tmp $SV_dir/$sampe.INV.tmp $SV_dir/$sampe.DEL.tmp $SV_dir/$sampe.INS.tmp $SV_dir/$sampe.CTX.tmp $SV_dir/$sampe.ITX.txt $SV_dir/$sampe.INV.txt $SV_dir/$sampe.DEL.txt $SV_dir/$sampe.INS.txt $SV_dir/$sampe.CTX.txt
 				
-    				join $SV_dir/$group.$sample.ITX.txt $SV_dir/$group.$sample.INV.txt > $SV_dir/$group.$sample.join1.txt
-				join $SV_dir/$group.$sample.join1.txt $SV_dir/$group.$sample.DEL.txt > $SV_dir/$group.$sample.join2.txt
-				join $SV_dir/$group.$sample.join2.txt $SV_dir/$group.$sample.INS.txt > $SV_dir/$group.$sample.join3.txt
-				join $SV_dir/$group.$sample.join3.txt $SV_dir/$group.$sample.CTX.txt > $SV_dir/$group.$sample.join4.txt
-				cat $SV_dir/$group.$sample.join4.txt | tr " " "\t" > $SV_dir/$group.$sample.join5.txt
+				join $SV_dir/$sampe.ITX.txt $SV_dir/$sampe.INV.txt > $SV_dir/$sampe.join1.txt
+				join $SV_dir/$sampe.join1.txt $SV_dir/$sampe.DEL.txt > $SV_dir/$sampe.join2.txt
+				join $SV_dir/$sampe.join2.txt $SV_dir/$sampe.INS.txt > $SV_dir/$sampe.join3.txt
+				join $SV_dir/$sampe.join3.txt $SV_dir/$sampe.CTX.txt > $SV_dir/$sampe.join4.txt
+				cat $SV_dir/$sampe.join4.txt | tr " " "\t" > $SV_dir/$sampe.join5.txt
 				
-				touch $SV_dir/$group.$sample.SV.summary
-				echo -e "\tITX\tINV\tDEL\tINS\tCTX" >> $SV_dir/$group.$sample.SV.summary
-				cat $SV_dir/$group.$sample.join5.txt >> $SV_dir/$group.$sample.SV.summary
-				Rscript $script_path/sum.cols.r $SV_dir/$group.$sample.SV.summary $SV_dir/$group.$sample.SV.sum
+				touch $SV_dir/$sampe.SV.summary
+				echo -e "\tITX\tINV\tDEL\tINS\tCTX" >> $SV_dir/$sampe.SV.summary
+				cat $SV_dir/$sampe.join5.txt >> $SV_dir/$sampe.SV.summary
+				Rscript $script_path/sum.cols.r $SV_dir/$sampe.SV.summary $SV_dir/$sampe.SV.sum
 				
-				rm $SV_dir/$group.$sample.*.tmp $SV_dir/$group.$sample.join*.txt $SV_dir/$group.$sample.ITX.txt $SV_dir/$group.$sample.INV.txt $SV_dir/$group.$sample.DEL.txt $SV_dir/$group.$sample.INS.txt $SV_dir/$group.$sample.CTX.txt 
+				rm $SV_dir/$sampe.*.tmp $SV_dir/$sampe.join*.txt $SV_dir/$sampe.ITX.txt $SV_dir/$sampe.INV.txt $SV_dir/$sampe.DEL.txt $SV_dir/$sampe.INS.txt $SV_dir/$sampe.CTX.txt 
 		#################################################################################################					### generating gene summary file
-				cat $master_gene_file | awk '{print $4"\t"$1"\t"$2"\t"$3"\t"$5}' > $report_dir/$group.$sample.GeneList.forsummary.txt
-				cat $master_entrez_file | awk '{print $2}' > $report_dir/$group.$sample.EntrezID.txt
-				touch $report_dir/$group.$sample.Gene.Summary.txt
-				echo -e "\t\t\t\t\t\t\t\t\t\t$sample" >> $report_dir/$group.$sample.Gene.Summary.txt
-				echo -e "\t\t\t\t\t\t\t\t\t\tSNV_BREAKDOWN\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tINDEL_BREAKDOWN\t\t\t\t\t\t\t\t\t\t\t\t\tCNV_BREAKDOWN\t\tSV_BREAKDOWN\t\t\t\t" >> $report_dir/$group.$sample.Gene.Summary.txt
-				echo -e "GENE\tCHROMOSOME\tSTART\tSTOP\tSTRAND\tENTREZ_GENE_ID\tTOTAL_SNVs\tTOTAL_INDELs\tTOTAL_CNVs\tTOTAL_SVs\tSPLICE_SITE_ACCEPTOR\tSPLICE_SITE_DONOR\tSTART_LOST\tSTOP_GAINED\tSTOP_LOST\tRARE_AMINO_ACID\tNON_SYNONYMOUS_CODING\tSYNONYMOUS_START\tNON_SYNONYMOUS_START\tSTART_GAINED\tSYNONYMOUS_CODING\tSYNONYMOUS_STOP\tNON_SYNONYMOUS_STOP\tUTR_5_PRIME\tUTR_3_PRIME\tEXON_DELETED\tFRAME_SHIFT\tCODON_CHANGE\tUTR_5_DELETED\tUTR_3_DELETED\tCODON_INSERTION\tCODON_CHANGE_PLUS_CODON_INSERTION\tCODON_DELETION\tCODON_CHANGE_PLUS_CODON_DELETION\tSPLICE_SITE_ACCEPTOR\tSPLICE_SITE_DONOR\tUTR_5_PRIME\tUTR_3_PRIME\tDELETION\tDUPLICATION\tITX\tINV\tDEL\tINS\tCTX" >> $report_dir/$group.$sample.Gene.Summary.txt
-				sed -i '1d' $SNV_dir/$group.$sample.SNV.summary
-				sed -i '1d' $INDEL_dir/$group.$sample.INDEL.summary
-				sed -i '1d' $CNV_dir/$group.$sample.CNV.summary
-				sed -i '1d' $SV_dir/$group.$sample.SV.summary
-				cat $SNV_dir/$group.$sample.SNV.summary | cut -f 2-16 > $SNV_dir/$group.$sample.SNV.tmp
-				cat $INDEL_dir/$group.$sample.INDEL.summary | cut -f 2-14 > $INDEL_dir/$group.$sample.INDEL.tmp
-				cat $CNV_dir/$group.$sample.CNV.summary | cut -f 2,3 > $CNV_dir/$group.$sample.CNV.tmp
-				cat $SV_dir/$group.$sample.SV.summary | cut -f 2-6 > $SV_dir/$group.$sample.SV.tmp
+				cat $master_gene_file | awk '{print $4"\t"$1"\t"$2"\t"$3"\t"$5}' > $report_dir/$sampe.GeneList.forsummary.txt
+				cat $master_entrez_file | awk '{print $2}' > $report_dir/$sampe.EntrezID.txt
+				touch $report_dir/$sampe.Gene.Summary.txt
+				echo -e "\t\t\t\t\t\t\t\t\t\t$sample" >> $report_dir/$sampe.Gene.Summary.txt
+				echo -e "\t\t\t\t\t\t\t\t\t\tSNV_BREAKDOWN\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tINDEL_BREAKDOWN\t\t\t\t\t\t\t\t\t\t\t\t\tCNV_BREAKDOWN\t\tSV_BREAKDOWN\t\t\t\t" >> $report_dir/$sampe.Gene.Summary.txt
+				echo -e "GENE\tCHROMOSOME\tSTART\tSTOP\tSTRAND\tENTREZ_GENE_ID\tTOTAL_SNVs\tTOTAL_INDELs\tTOTAL_CNVs\tTOTAL_SVs\tSPLICE_SITE_ACCEPTOR\tSPLICE_SITE_DONOR\tSTART_LOST\tSTOP_GAINED\tSTOP_LOST\tRARE_AMINO_ACID\tNON_SYNONYMOUS_CODING\tSYNONYMOUS_START\tNON_SYNONYMOUS_START\tSTART_GAINED\tSYNONYMOUS_CODING\tSYNONYMOUS_STOP\tNON_SYNONYMOUS_STOP\tUTR_5_PRIME\tUTR_3_PRIME\tEXON_DELETED\tFRAME_SHIFT\tCODON_CHANGE\tUTR_5_DELETED\tUTR_3_DELETED\tCODON_INSERTION\tCODON_CHANGE_PLUS_CODON_INSERTION\tCODON_DELETION\tCODON_CHANGE_PLUS_CODON_DELETION\tSPLICE_SITE_ACCEPTOR\tSPLICE_SITE_DONOR\tUTR_5_PRIME\tUTR_3_PRIME\tDELETION\tDUPLICATION\tITX\tINV\tDEL\tINS\tCTX" >> $report_dir/$sampe.Gene.Summary.txt
+				sed -i '1d' $SNV_dir/$sampe.SNV.summary
+				sed -i '1d' $INDEL_dir/$sampe.INDEL.summary
+				sed -i '1d' $CNV_dir/$sampe.CNV.summary
+				sed -i '1d' $SV_dir/$sampe.SV.summary
+				cat $SNV_dir/$sampe.SNV.summary | cut -f 2-16 > $SNV_dir/$sampe.SNV.tmp
+				cat $INDEL_dir/$sampe.INDEL.summary | cut -f 2-14 > $INDEL_dir/$sampe.INDEL.tmp
+				cat $CNV_dir/$sampe.CNV.summary | cut -f 2,3 > $CNV_dir/$sampe.CNV.tmp
+				cat $SV_dir/$sampe.SV.summary | cut -f 2-6 > $SV_dir/$sampe.SV.tmp
 				
-				paste $report_dir/$group.$sample.GeneList.forsummary.txt $report_dir/$group.$sample.EntrezID.txt $SNV_dir/$group.$sample.SNV.sum $INDEL_dir/$group.$sample.INDEL.sum $CNV_dir/$group.$sample.CNV.sum $SV_dir/$group.$sample.SV.sum $SNV_dir/$group.$sample.SNV.tmp $INDEL_dir/$group.$sample.INDEL.tmp $CNV_dir/$group.$sample.CNV.tmp $SV_dir/$group.$sample.SV.tmp >> $report_dir/$group.$sample.Gene.Summary.txt
+				paste $report_dir/$sampe.GeneList.forsummary.txt $report_dir/$sampe.EntrezID.txt $SNV_dir/$sampe.SNV.sum $INDEL_dir/$sampe.INDEL.sum $CNV_dir/$sampe.CNV.sum $SV_dir/$sampe.SV.sum $SNV_dir/$sampe.SNV.tmp $INDEL_dir/$sampe.INDEL.tmp $CNV_dir/$sampe.CNV.tmp $SV_dir/$sampe.SV.tmp >> $report_dir/$sampe.Gene.Summary.txt
 				
-				rm $SNV_dir/$group.$sample.SNV.tmp $INDEL_dir/$group.$sample.INDEL.tmp $CNV_dir/$group.$sample.CNV.tmp $SV_dir/$group.$sample.SV.tmp $report_dir/$group.$sample.GeneList.forsummary.txt $SV_dir/$group.$sample.SV.summary 
-				rm $SV_dir/$group.$sample.SV.sum $CNV_dir/$group.$sample.CNV.summary $CNV_dir/$group.$sample.CNV.sum $INDEL_dir/$group.$sample.INDEL.summary $INDEL_dir/$group.$sample.INDEL.sum $SNV_dir/$group.$sample.SNV.summary $SNV_dir/$group.$sample.SNV.sum $report_dir/$group.$sample.EntrezID.txt
-				rm $report_dir/$group.$sample.gene.temp
+				rm $SNV_dir/$sampe.SNV.tmp $INDEL_dir/$sampe.INDEL.tmp $CNV_dir/$sampe.CNV.tmp $SV_dir/$sampe.SV.tmp $report_dir/$sampe.GeneList.forsummary.txt $SV_dir/$sampe.SV.summary 
+				rm $SV_dir/$sampe.SV.sum $CNV_dir/$sampe.CNV.summary $CNV_dir/$sampe.CNV.sum $INDEL_dir/$sampe.INDEL.summary $INDEL_dir/$sampe.INDEL.sum $SNV_dir/$sampe.SNV.summary $SNV_dir/$sampe.SNV.sum $report_dir/$sampe.EntrezID.txt
+				rm $report_dir/$sampe.gene.temp
 			done
 		fi
 	fi

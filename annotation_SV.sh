@@ -40,7 +40,7 @@ else
         
     SV_dir=$output_dir/Reports_per_Sample/
     
-     if [ $multi_sample != "YES"  || $somatic_calling == "NO" ]
+    if [[ $multi_sample != "YES"  || $somatic_calling == "NO" ]]
     then
         echo "Single sample"
         ### preparing breakdancer files

@@ -1089,7 +1089,6 @@ else
 					fi	
 				done
 			fi    
-			read -p "press enter .."
 			for group in `echo $groups | tr ":" "\n"`
 			do
 				$script_path/check_qstat.sh $limit
@@ -1117,14 +1116,12 @@ else
 					id=$id"$type.$version.getCoverage.$group.$run_num.$identify,$type.$version.sample_numbers.$group.$run_num.$identify,$type.$version.gene_summary.$group.$run_num.$identify,$type.$version.igv_bam.$group.$run_num.$identify,$type.$version.sample_report.$group.$run_num.$identify,"
 				done    
 			fi
-			read -p "press enter ..."
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^merge_sample' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.merge_sample.$run_num.$identify -hold_jid $id -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/merge_sample.sh $output_dir $run_info	
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^generate_html' | cut -d '=' -f2)
-			read -p "press enter ..."
 			qsub_args="-N $type.$version.generate_html.$run_num.$identify -hold_jid $type.$version.merge_sample.$run_num.$identify -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/generate_html.sh $output_dir $run_info 	
 		fi

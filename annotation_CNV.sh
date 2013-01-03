@@ -43,7 +43,7 @@ else
 ##############################################################		
     CNV_dir=$output_dir
             
-    if [ $multi_sample != "YES"  || $somatic_calling == "NO" ]
+    if [[ $multi_sample != "YES"  || $somatic_calling == "NO" ]]
     then
 	echo "Single sample"
         ### preparing cnvnator files

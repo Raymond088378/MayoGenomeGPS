@@ -259,9 +259,12 @@ else    {
 	
 	if ($multi eq 'YES')	{
 		print OUT "<br><br><table cellspacing=\"0\" class=\"sofT\"><tr>
-        <td class=\"helpHed\">GroupName</td>
-        <td class=\"helpHed\">Normal Sample</td>
-        <td class=\"helpHed\">Tumor Samples</td></tr>";	
+        <td class=\"helpHed\">GroupName</td>";
+        if ($somatic_calling eq "YES")	{
+		print OUT "<td class=\"helpHed\">Normal Sample</td>
+        <td class=\"helpHed\">Tumor Samples</td></tr>";
+		}else{
+		print OUT "<td class=\"helpHed\">Samples</td></tr>";}	
 		for (my $i = 0; $i < $num_groups; $i++)	{
 			my $sams=`cat $sample_info | grep -w "^$groupArray[$i]" | cut -d '=' -f2`;
 			my @sam=split('\s+',$sams);
@@ -269,12 +272,17 @@ else    {
 			my $tumor=$sams;
 			$tumor=~ s/$normal//g;
 			# $tumor=~ s/\s+//g;
+			if ($somatic_calling eq "YES")	{
 			print OUT "
 			<td class=\"helpBod\">$groupArray[$i]</td>
                         <td class=\"helpBod\">$normal</td>
                         <td class=\"helpBod\">$tumor</td></tr>
-                        \n";
-						
+                        \n";}
+			else	{
+			print OUT"	
+					<td class=\"helpBod\">$groupArray[$i]</td>
+                        <td class=\"helpBod\">$sams</td></tr>
+                        \n";}	
 		}
 	}	
     print OUT "<td class=\"helpHed\"></td><td class=\"helpHed\"></td><td class=\"helpHed\"></td></tr>";
