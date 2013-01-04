@@ -222,7 +222,7 @@ else
 	#### sge paramters
 	TO=$USER
 	email=`finger $USER | awk -F ';' '{print $2}'`
-	args="-V -wd $output_dir/logs -q $queue -m ae -M $email -l h_stack=10M"
+	args="-V -wd $output_dir/logs -q $queue -m a -M $email -l h_stack=10M"
 	echo -e "\nRCF arguments used : $args\n" >> $output_dir/log.txt
 	#echo -e "Started the ${tool} analysis for ${run_num} for ${PI}\n\n${info}\n\nCourtesy: $workflow $version" | mailx -v -s "Analysis Started" -c Kahl.Jane@mayo.edu "$email"
     #############################################################
@@ -767,6 +767,10 @@ else
 					bam_samples=$bam_samples"$sample.sorted.bam:"
 					input_dirs=$input_dirs"$output_dir/alignment/$sample:"
 				done
+                                bam_samples=`echo $bam_samples | sed '$s/.$//'`
+                                input_dirs=`echo $input_dirs | sed '$s/.$//'`
+                                names_samples=`echo $names_samples | sed '$s/.$//'`
+                                
 				realign_dir=$output_dir/realign/$group
 				variant_dir=$output_dir/variants/$group
 				mkdir -p $realign_dir $variant_dir

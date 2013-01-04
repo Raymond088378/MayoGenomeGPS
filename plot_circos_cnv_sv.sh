@@ -25,14 +25,14 @@ else
 	else	
 		previous="summaryze_struct_single.sh"
 	fi
-    if [ ! -s $sv_file ]
+    if [ ! -f $sv_file ]
     then
 		$script_path/email.sh $sv_file "not exist" $previous $run_info
 		touch $sv_file.fix.log
 		$script_path/wait.sh $sv_file.fix.log
     fi    
     
-    if [ ! -s $cnv_file ]
+    if [ ! -f $cnv_file ]
     then
 		$script_path/email.sh $cnv_file "not exist" $previous $run_info
 		touch $cnv_file.fix.log

@@ -47,11 +47,11 @@ else
 	fi	
 	rm $normal_bam.$chr.header
 	### removing duplicates from the bam files
-	$samtools/samtools view -b -f 2 -F 1024 $tumor_bam > $output_file/$tumor_sample.chr$chr.ss.bam
-	$samtools/samtools view -b -f 2 -F 1024 $normal_bam > $output_file/$normal_sample.chr$chr.ss.bam
+	$samtools/samtools view -b -f 2 -F 1024 $tumor_bam > $output/$tumor_sample.chr$chr.ss.bam
+	$samtools/samtools view -b -f 2 -F 1024 $normal_bam > $output/$normal_sample.chr$chr.ss.bam
 	
-	normal_bam=$output_file/$normal_sample.chr$chr.ss.bam
-	tumor_bam=$output_file/$tumor_sample.chr$chr.ss.bam
+	normal_bam=$output/$normal_sample.chr$chr.ss.bam
+	tumor_bam=$output/$tumor_sample.chr$chr.ss.bam
     $somatic_sniper/bam-somaticsniper $command_line_params -F vcf -f $ref $tumor_bam $normal_bam $output/$snv
     rm $normal_bam $tumor_bam
 	

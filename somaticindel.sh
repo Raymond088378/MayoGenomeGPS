@@ -101,6 +101,7 @@ else
         else
             cat $output/$output_file | awk '$0 ~ /^#/ || $8 ~ /SOMATIC/' > $output/$output_file.tmp
 		fi
+            mv   $output/$output_file.tmp   $output/$output_file 
         rm $output/$output_file.idx
     fi
     echo `date`

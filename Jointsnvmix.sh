@@ -63,11 +63,11 @@ else
 		rm $tumor_bam.jsm.header
     fi
     ### removing duplicates from the bam files
-	$samtools/samtools view -b -f 2 -F 1024 $tumor_bam > $output_file/$tumor_sample.chr$chr.jsm.bam
-	$samtools/samtools view -b -f 2 -F 1024 $normal_bam > $output_file/$normal_sample.chr$chr.jsm.bam
+	$samtools/samtools view -b -f 2 -F 1024 $tumor_bam > $output/$tumor_sample.chr$chr.jsm.bam
+	$samtools/samtools view -b -f 2 -F 1024 $normal_bam > $output/$normal_sample.chr$chr.jsm.bam
 	
-	normal_bam=$output_file/$normal_sample.chr$chr.jsm.bam
-	tumor_bam=$output_file/$tumor_sample.chr$chr.jsm.bam
+	normal_bam=$output/$normal_sample.chr$chr.jsm.bam
+	tumor_bam=$output/$tumor_sample.chr$chr.jsm.bam
    
 	### run joint snvmix classify to call the somatic mutation
 	$python/python $jointsnvmix/build/scripts-2.7/jsm.py classify --model snvmix2 $command_line_params --chromosome chr$chr --out_file $output/$output_file.txt --parameters_file $jointsnvmix/config/params.cfg $ref $normal_bam $tumor_bam
