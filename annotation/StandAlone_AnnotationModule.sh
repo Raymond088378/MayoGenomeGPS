@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 if [ $# != 7 ]
 then
@@ -71,7 +71,7 @@ else
 		then
 			cat $file | $script_path/convert.vcf.pl > $output/$ff
 		else
-			col=`cat $file | awk '$0 ~ /#CHROM/' | awk -v num=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == num) {print i} } }'`
+			col=`cat $file | head -5000 |awk '$0 ~ /#CHROM/' | awk -v num=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == num) {print i} } }'`
 			if [ ${#col} -ne 0 ]
 			then
 				cat $file | awk -v num=$col 'BEGIN {OFS="\t"} { if ($0 ~ /^##/) print $0; else print $1,$2,$3,$4,$5,$6,$7,$8,$9,$num; }' | $script_path/convert.vcf.pl > $output/$ff
@@ -84,9 +84,10 @@ else
 	rm $file
 	
 	### extract multi-allelic variants and keep that as a vcf file
-	cat $output/$ff | awk '$0 ~ /^#/ || $5 ~ /,/ || $4 ~ /,/' > $output/$sample.multi.vcf
-	cat $output/$ff | awk '$0 ~ /^#/ || ($5 !~ /,/ && $4 !~ /,/)' > $output/$ff.temp
-	mv $output/$ff.temp $output/$ff
+	#cat $output/$ff | awk '$0 ~ /^#/ || $5 ~ /,/ || $4 ~ /,/' > $output/$sample.multi.vcf
+	#cat $output/$ff | awk '$0 ~ /^#/ || ($5 !~ /,/ && $4 !~ /,/)' > $output/$ff.temp
+	#mv $output/$ff.temp $output/$ff
+	
 	if [ `cat $output/$ff | awk '$0 !~ /^#/' | head -100 | wc -l` -le 0 ]
 	then
 		echo " There is no variants in the VCF file"
@@ -118,15 +119,14 @@ else
 	fi
 	## RUN SIFT
 	echo " Running SIFT "
-	$script_path/sift.sh $output $ff $sift $sift_ref $script_path $sample $thread &
+	$script_path/sift.sh $output $ff $sift $sift_ref $script_path $sample $thread > $output/sift.log 2>&1 &
 
 	### RUN SNPEFF
 	echo " Running SNPEFF "
-	$script_path/snpeff.sh $java $snpeff $GenomeBuild $output $ff $gatk $ref $vcftools $script_path $sample &
+	$script_path/snpeff.sh $java $snpeff $GenomeBuild $output $ff $gatk $ref $vcftools $script_path $sample > $output/snpeff.log 2>&1&
 	### POLYPHEN
 	echo " Running Polyphen "
-	$script_path/polyphen.sh $output $ff $pph $script_path $GenomeBuild $sample $thread &
-
+	$script_path/polyphen.sh $output $ff $pph $script_path $GenomeBuild $sample $thread > $output/polyphen.log 2>&1&
 
 	#### now add annotations
 	bed=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
@@ -289,8 +289,8 @@ else
 	## polyphen
 	$script_path/add_polphen.pl $file.sift.codons.map.repeat.base.snp.UCSCtracks $output/$sample.polyphen.txt $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly
 	rm $output/$sample.polyphen.txt $file.sift.codons.map.repeat.base.snp.UCSCtracks
-	$script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $output/$sample.SNV.eff -o $output/$sample.SNV.report
-	$script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $output/$sample.SNV.filtered.eff -o $output/$sample.filtered.SNV.report
+	$script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $output/$sample.SNV.eff -o $output/$sample.SNV.report -t SNV
+	$script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $output/$sample.SNV.filtered.eff -o $output/$sample.filtered.SNV.report -t SNV
 	rm $output/$sample.SNV.eff $output/$sample.SNV.filtered.eff $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly
 	echo " polyphen and snpeff are added to the report "
     for report in $output/$sample.SNV.report $output/$sample.filtered.SNV.report
@@ -329,8 +329,8 @@ else
 	rm $file.rsIDs $file.rsIDs.forfrequencies.cosmic.txt
 	## add snpeff prediction
 	echo " annotated reports should be done soon "
-	$script_path/add_snpeff_indel.pl -i $file.rsIDs.frequencies -s $output/$sample.INDEL.eff -o $output/$sample.INDEL.report
-	$script_path/add_snpeff_indel_filter.pl -i $file.rsIDs.frequencies -s $output/$sample.INDEL.filtered.eff -o $output/$sample.filtered.INDEL.report
+	$script_path/add_snpeff.pl -i $file.rsIDs.frequencies -s $output/$sample.INDEL.eff -o $output/$sample.INDEL.report -t INDEL
+	$script_path/add_snpeff.pl -i $file.rsIDs.frequencies -s $output/$sample.INDEL.filtered.eff -o $output/$sample.filtered.INDEL.report -t INDEL
 	rm $output/$sample.INDEL.eff $output/$sample.INDEL.filtered.eff $file.rsIDs.frequencies
 	for report in $output/$sample.INDEL.report $output/$sample.filtered.INDEL.report
 	do

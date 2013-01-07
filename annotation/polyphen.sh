@@ -1,3 +1,4 @@
+#!/bin/sh
 output=$1
 ff=$2
 pph=$3

@@ -66,12 +66,12 @@ else
 		
         if [ $num_snvs -ge 1 ]
         then
-            $java/java -Xmx2g -Xms512m -jar $snpeff_path/snpEff.jar eff -o vcf -chr chr -noStats -noLog \
+            $java/java -Xmx2g -Xms512m -Djava.io.tmpdir=$snpeff -jar $snpeff_path/snpEff.jar eff -o vcf -chr chr -noStats -noLog \
                 -c $snpeff_path/snpEff.config $genome_version $input/$snv_file | awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"3.0c (build 2012-07-30), by Pablo Cingolani\""; else print $0;}' > $snpeff/$sam.chr${chr}.snv.eff.vcf 
 			cat $snpeff/$sam.chr${chr}.snv.eff.vcf | $script_path/snpeff.pl > $snpeff/$sam.chr${chr}.snv.eff
 			
             ### use GATK to filter the multiple transcript
-            $java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar -T VariantAnnotator \
+            $java/java -Xmx2g -Xms512m -Djava.io.tmpdir=$snpeff -jar $gatk/GenomeAnalysisTK.jar -T VariantAnnotator \
             -et NO_ET -K $gatk/Hossain.Asif_mayo.edu.key \
             -R $ref -A SnpEff --variant $input/$snv_file \
             --snpEffFile $snpeff/$sam.chr${chr}.snv.eff.vcf \
@@ -111,12 +111,12 @@ else
         num_indels=`cat $input/$indel_file | awk '$0 !~ /^#/' | wc -l`
         if [ $num_indels -ge 1 ]
         then
-             $java/java -Xmx2g -Xms512m -jar $snpeff_path/snpEff.jar eff -o vcf -chr chr -noStats -noLog \
+             $java/java -Xmx2g -Xms512m -Djava.io.tmpdir=$snpeff -jar $snpeff_path/snpEff.jar eff -o vcf -chr chr -noStats -noLog \
                 -c $snpeff_path/snpEff.config $genome_version $input/$indel_file | awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"3.0c (build 2012-07-30), by Pablo Cingolani\""; else print $0;}' > $snpeff/$sam.chr${chr}.indel.eff.vcf	
 			cat $snpeff/$sam.chr${chr}.indel.eff.vcf | $script_path/snpeff.pl > $snpeff/$sam.chr${chr}.indel.eff
            
             ### use GATK to filter the multiple transcript
-            $java/java -Xmx2g -Xms512m -jar $gatk/GenomeAnalysisTK.jar -T VariantAnnotator \
+            $java/java -Xmx2g -Xms512m -Djava.io.tmpdir=$snpeff -jar $gatk/GenomeAnalysisTK.jar -T VariantAnnotator \
             -et NO_ET -K $gatk/Hossain.Asif_mayo.edu.key \
             -R $ref -A SnpEff --variant $input/$indel_file \
             --snpEffFile $snpeff/$sam.chr${chr}.indel.eff.vcf -L $input/$indel_file \

@@ -1,3 +1,4 @@
+#!/bin/sh
 if [ $# != 6 ]
 then
     echo "Usage : <in_vcf_file> <out_file> <run_info><type of variant> <script path> <sample name>";
