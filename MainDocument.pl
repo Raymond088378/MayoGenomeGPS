@@ -844,10 +844,10 @@ else    {
 							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 							for (my $c=0; $c < $num_samples;$c++)	{
 								print OUT "<td class=\"helpHed\"></td>";
-								print SOUT "\t";
+								#print SOUT "\t";
 							}		
 							print OUT "</tr>\n";
-							print SOUT "\n";
+							#print SOUT "\n";
 						}	
 					}		
 				}
@@ -859,10 +859,10 @@ else    {
 							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 							for (my $c=0; $c < $num_samples;$c++)	{
 								print OUT "<td class=\"helpHed\"></td>";
-								print SOUT "\t";
+								#print SOUT "\t";
 							}		
 							print OUT "</tr>\n";
-							print SOUT "\n";
+							#print SOUT "\n";
 						}	
 					}			
 				}
@@ -877,10 +877,10 @@ else    {
 						print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
-							print SOUT "\t";
+							#print SOUT "\t";
 						}		
 						print OUT "</tr>\n";
-						print SOUT "\n";
+						#print SOUT "\n";
 					}	
 				}
 				if ($variant_type eq 'BOTH')	{
@@ -891,10 +891,10 @@ else    {
 							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 							for (my $c=0; $c < $num_samples;$c++)	{
 								print OUT "<td class=\"helpHed\"></td>";
-								print SOUT "\t";
+								#print SOUT "\t";
 							}		
 							print OUT "</tr>\n";
-							print SOUT "\n";
+							#print SOUT "\n";
 						}	
 					}	
 				}
@@ -907,10 +907,10 @@ else    {
 						print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 						for (my $c=0; $c < $num_samples;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
-							print SOUT "\t";
+							#print SOUT "\t";
 						}		
 						print OUT "</tr>\n";
-						print SOUT "\n";
+						#print SOUT "\n";
 					}	
 				}	
 			}
@@ -923,10 +923,10 @@ else    {
 					print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 					for (my $c=0; $c < $num_samples;$c++)	{
 						print OUT "<td class=\"helpHed\"></td>";
-						print SOUT "\t";
+						#print SOUT "\t";
 					}		
 					print OUT "</tr>\n";
-					print SOUT "\n";
+					#print SOUT "\n";
 				}	
 			}	
 		}
@@ -940,10 +940,10 @@ else    {
 							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 							for (my $c=0; $c < $num_samples;$c++)	{
 								print OUT "<td class=\"helpHed\"></td>";
-								print SOUT "\t";
+								#print SOUT "\t";
 							}		
 							print OUT "</tr>\n";
-							print SOUT "\n";
+							#print SOUT "\n";
 						}	
 					}		
 				}
@@ -955,10 +955,10 @@ else    {
 							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 							for (my $c=0; $c < $num_samples;$c++)	{
 								print OUT "<td class=\"helpHed\"></td>";
-								print SOUT "\t";
+								#print SOUT "\t";
 							}		
 							print OUT "</tr>\n";
-							print SOUT "\n";
+							#print SOUT "\n";
 						}	
 					}
 				}	
@@ -974,8 +974,8 @@ else    {
 								print OUT "<td class=\"helpHed\"></td>";
 								print SOUT "\t";
 							}		
-							print OUT "</tr>\n";
-							print SOUT "\n";
+							#print OUT "</tr>\n";
+							#print SOUT "\n";
 						}	
 					}			
 				}
@@ -986,10 +986,10 @@ else    {
 							print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 							for (my $c=0; $c < $num_samples;$c++)	{
 								print OUT "<td class=\"helpHed\"></td>";
-								print SOUT "\t";
+								#print SOUT "\t";
 							}		
 							print OUT "</tr>\n";
-							print SOUT "\n";
+							#print SOUT "\n";
 						}	
 					}			
 				}
