@@ -42,9 +42,6 @@ else
 	fi
 	
 	$script_path/MainDocument.pl -r $run_info -p $output_dir
-	
-	## create tsv file for sample statistcs
-	$script_path/SampleStatistics.pl -r $run_info -p $output_dir
 	### generate readme file
 	$script_path/generate_readme.sh $output_dir $run_info
 	END=`date`

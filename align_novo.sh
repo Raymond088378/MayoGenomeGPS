@@ -94,35 +94,26 @@ else
     if [ $paired == 1 ]
     then
         $novoalign $paramaters -d $genome_novo $qual -f $fastq/$R1 $fastq/$R2 \
-            -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$sample\tPL:$platform\tCN:$center" > $output_dir_sample/$sample.$SGE_TASK_ID.sam
+            -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$sample\tPL:$platform\tCN:$center" |  $samtools/samtools view -bS - > $output_dir_sample/$sample.$SGE_TASK_ID.bam
     else
         $novoalign $paramaters -d $genome_novo $qual -f $fastq/$R1 \
-            -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" > $output_dir_sample/$sample.$SGE_TASK_ID.sam      
+            -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center"  | $samtools/samtools view -bS - > $output_dir_sample/$sample.$SGE_TASK_ID.bam      
     fi    
-    
-    if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.sam ]
+    $script_path/filesize.sh alignment.out $sample $output_dir_sample $sample.$SGE_TASK_ID.bam $run_info
+    $samtools/samtools view -H $output_dir_sample/$sample.$SGE_TASK_ID.bam 1>$output_dir_sample/$sample.$SGE_TASK_ID.bam.header 2> $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log
+    if [[ `cat $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log | wc -l` -gt 0 || `cat $output_dir_sample/$sample.$SGE_TASK_ID.bam.header | wc -l` -le 0 ]]	
     then
-        $script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.sam align_novo.sh ERROR "empty"
-        exit 1;
+            $script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.bam align_novo.sh ERROR "truncated or corrupt"
+            exit 1;
     else
-		$script_path/filesize.sh alignment.out $sample $output_dir_sample $sample.$SGE_TASK_ID.sam $run_info
-		if [ $paired == 0 ]
-        then
-            rm $fastq/$R1
-        else
-            rm $fastq/$R1 $fastq/$R2
-        fi    
-    fi  
-
-    $samtools/samtools view -bS $output_dir_sample/$sample.$SGE_TASK_ID.sam > $output_dir_sample/$sample.$SGE_TASK_ID.bam 
-	$samtools/samtools view -H $output_dir_sample/$sample.$SGE_TASK_ID.bam 1>$output_dir_sample/$sample.$SGE_TASK_ID.bam.header 2> $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log
-	if [[ `cat $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log | wc -l` -gt 0 || `cat $output_dir_sample/$sample.$SGE_TASK_ID.bam.header | wc -l` -le 0 ]]	
-	then
-		$script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.bam align_novo.sh ERROR "truncated or corrupt"
-		exit 1;
-	else
-		rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log $output_dir_sample/$sample.$SGE_TASK_ID.sam
-	fi	
+            rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log
+            if [ $paired == 0 ]
+            then
+                rm $fastq/$R1
+            else
+                rm $fastq/$R1 $fastq/$R2
+            fi    
+    fi	
     rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.header
 ########################################################	
 ######		Sort BAM, adds RG & remove duplicates

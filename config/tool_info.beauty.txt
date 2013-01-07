@@ -112,7 +112,7 @@ PLATFORM=illumina
 CENTER=mayo
 QUEUE=ngs-sec -l medp=TRUE
 STOP_AFTER_REALIGNMENT=NO
-
+ANNOTATION_FLAG=YES
 #Tool Parameters
 SNVMIX2_params=-q 30 -Q 30
 SNVMIX2_Filter=-p 0.8

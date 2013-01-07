@@ -135,7 +135,7 @@ else
 			cat $cnvnator/$group.$tumor.cnvnator.intersect.bed | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$7"\t"$8"\t"$10"\t"$9}' > $cnvnator/$group.$tumor.cnvnator.intersect.annotated.bed
 			$bedtools/sortBed -i $cnvnator/$group.$tumor.cnvnator.intersect.annotated.bed > $cnvnator/$group.$tumor.cnvnator.intersect.annotated.sorted.bed
 
-			if [ ! -s $cnvnator/$group.$tumor.cnvnator.intersect.annotated.sorted.bed ]
+			if [ ! -f $cnvnator/$group.$tumor.cnvnator.intersect.annotated.sorted.bed ]
 			then
 				$script_path/errorlog.sh $cnvnator/$group.$tumor.cnvnator.intersect.annotated.sorted.bed annotation_CNV.sh ERROR "failed to create"
 			fi

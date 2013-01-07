@@ -127,8 +127,10 @@ else
 	info=$(cat $run_info | grep -w '^SAMPLEINFORMATION' | cut -d '=' -f2 )
 	workflow=$( cat $run_info | grep '^TOOL=' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 	version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
-	somatic_calling=$( cat $tool_info | grep -w '^SOMATIC_CALLING' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )   
-	
+	somatic_calling=$( cat $tool_info | grep -w '^SOMATIC_CALLING' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
+        annot_flag=$( cat $tool_info | grep -w '^ANNOTATION_FLAG' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
+        stop_after_realignment=$( cat $tool_info | grep -w '^STOP_AFTER_REALIGNMENT' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
+        
 	if [[ $somatic_caller == "JOINTSNVMIX" || $somatic_caller == "BEAUTY_EXOME" ]]
 	then
 		python_path=`which python`
@@ -398,7 +400,11 @@ else
 				mem=$( cat $memory_info | grep -w '^igv_bam' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.igv_bam.$sample.$run_num.$identify -hold_jid $variant_id,$type.$version.extract_reads_bam.$sample.$run_num.$identify -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/igv_bam.sh $output_realign $igv $sample $output_align $run_info
-				$script_path/check_qstat.sh $limit
+				if [ $stop_after_realignment == "YES" ]
+                                then
+                                    continue;
+                                fi
+                                $script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^variants' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.variants.$sample.$run_num.$identify -hold_jid $variant_id -pe threaded $threads -t 1-$numchrs:1 -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/variants.sh $realign_dir $sample $variant_dir 1 $run_info
@@ -470,34 +476,43 @@ else
 			then
 				if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
 				then
-					$script_path/check_qstat.sh $limit
-					mem=$( cat $memory_info | grep -w '^sift' | cut -d '=' -f2)
-					qsub_args="-N $type.$version.sift.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
-					qsub $args $qsub_args $script_path/sift.sh $sift $output_OnTarget $sample $run_info germline
-					$script_path/check_qstat.sh $limit
-					mem=$( cat $memory_info | grep -w '^polyphen' | cut -d '=' -f2)
-					qsub_args="-N $type.$version.polyphen.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
-					qsub $args $qsub_args $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info germline	    	
-				fi
-				$script_path/check_qstat.sh $limit
-				mem=$( cat $memory_info | grep -w '^snpeff' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.snpeff.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info germline		
-				if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
-				then
-					hold="-hold_jid $type.$version.sift.$sample.$run_num.$identify,$type.$version.polyphen.$sample.$run_num.$identify,$type.$version.snpeff.$sample.$run_num.$identify"
-				else
-					hold="-hold_jid $type.$version.snpeff.$sample.$run_num.$identify"
+					if [ $annot_flag == "YES" ]
+                                        then
+                                            $script_path/check_qstat.sh $limit
+                                            mem=$( cat $memory_info | grep -w '^sift' | cut -d '=' -f2)
+                                            qsub_args="-N $type.$version.sift.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
+                                            qsub $args $qsub_args $script_path/sift.sh $sift $output_OnTarget $sample $run_info germline
+                                            $script_path/check_qstat.sh $limit
+                                            mem=$( cat $memory_info | grep -w '^polyphen' | cut -d '=' -f2)
+                                            qsub_args="-N $type.$version.polyphen.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
+                                            qsub $args $qsub_args $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info germline	    	
+                                        fi
+                                fi
+				if [ $annot_flag == "YES" ]
+                                then
+                                    $script_path/check_qstat.sh $limit
+                                    mem=$( cat $memory_info | grep -w '^snpeff' | cut -d '=' -f2)
+                                    qsub_args="-N $type.$version.snpeff.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
+                                    qsub $args $qsub_args $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info germline		
+                                fi
+                                if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
+                                then
+                                    hold="-hold_jid $type.$version.sift.$sample.$run_num.$identify,$type.$version.polyphen.$sample.$run_num.$identify,$type.$version.snpeff.$sample.$run_num.$identify"
+                                else
+				    hold="-hold_jid $type.$version.snpeff.$sample.$run_num.$identify"
 				fi	
-				$script_path/check_qstat.sh $limit
-				mem=$( cat $memory_info | grep -w '^reports' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.reports.$sample.$run_num.$identify $hold -t 1-$numchrs:1 -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir germline
-				$script_path/check_qstat.sh $limit
-				mem=$( cat $memory_info | grep -w '^sample_report' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.sample_report.$sample.$run_num.$identify -hold_jid $type.$version.reports.$sample.$run_num.$identify -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/sample_report.sh $output_dir $TempReports $sample $run_info germline
-				if [[ $tool == "whole_genome"  && $analysis != "annotation" ]]
+				if [ $annot_flag == "YES" ]
+                                then
+                                    $script_path/check_qstat.sh $limit
+                                    mem=$( cat $memory_info | grep -w '^reports' | cut -d '=' -f2)
+                                    qsub_args="-N $type.$version.reports.$sample.$run_num.$identify $hold -t 1-$numchrs:1 -l h_vmem=$mem"
+                                    qsub $args $qsub_args $script_path/reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir germline
+                                    $script_path/check_qstat.sh $limit
+                                    mem=$( cat $memory_info | grep -w '^sample_report' | cut -d '=' -f2)
+                                    qsub_args="-N $type.$version.sample_report.$sample.$run_num.$identify -hold_jid $type.$version.reports.$sample.$run_num.$identify -l h_vmem=$mem"
+                                    qsub $args $qsub_args $script_path/sample_report.sh $output_dir $TempReports $sample $run_info germline
+				fi
+                                if [[ $tool == "whole_genome"  && $analysis != "annotation" ]]
 				then
 					crest=$output_dir/struct/crest
 					break=$output_dir/struct/break
@@ -541,9 +556,11 @@ else
 					cnv_file=$cnv/$sample.cnv.filter.bed
 					qsub $args $qsub_args $script_path/plot_circos_cnv_sv.sh $break_file $crest_file $cnv_file $sample $circos $run_info	
 				fi
-				if [[ $tool == "whole_genome" && $analysis != "alignment" && $analysis != "annotation" && $analysis != "ontarget" ]]
-				then
-					mkdir -p $output_dir/Reports_per_Sample/ANNOT
+				if [ $annot_flag == "YES" ]
+                                then
+                                    if [[ $tool == "whole_genome" && $analysis != "alignment" && $analysis != "annotation" && $analysis != "ontarget" ]]
+                                    then
+                                    	mkdir -p $output_dir/Reports_per_Sample/ANNOT
 					$script_path/check_qstat.sh $limit
 					mem=$( cat $memory_info | grep -w '^annotation_CNV' | cut -d '=' -f2)
 					qsub_args="-N $type.$version.annotation_CNV.$sample.$run_num.$identify -hold_jid $type.$version.plot_circos_cnv_sv.$sample.$run_num.$identify -l h_vmem=$mem"
@@ -552,7 +569,8 @@ else
 					mem=$( cat $memory_info | grep -w '^annotation_SV' | cut -d '=' -f2)
 					qsub_args="-N $type.$version.annotation_SV.sh.$sample.$run_num.$identify -hold_jid $type.$version.plot_circos_cnv_sv.$sample.$run_num.$identify -l h_vmem=$mem"
 					qsub $args $qsub_args $script_path/annotation_SV.sh $output_dir $run_info $annot $sample
-				fi	
+				fi
+                            fi
 			fi
 			if [[ $analysis != "annotation" && $analysis != "alignment" ]]
 			then
@@ -570,7 +588,9 @@ else
 			then
 				hold_args="-hold_jid $type.$version.processBAM.$sample.$run_num.$identify"
 			fi	
-			$script_path/check_qstat.sh $limit
+			if [ $annot_flag == "YES" ]
+                                then
+                                $script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^sample_numbers' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.sample_numbers.$sample.$run_num.$identify $hold_args -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/sample_numbers.sh $output_dir $sample $run_info $numbers
@@ -581,9 +601,12 @@ else
 				qsub_args="-N $type.$version.gene_summary.$sample.$run_num.$identify $hold_args -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/gene_summary.sh $output_dir $sample $run_info $RSample		
 			fi
+                    fi
 		done
 		### concat raw varaints
-		if [[  $tool == "exome"  && $all_sites == "YES" ]]
+		if [ $stop_after_realignment == "NO" ]
+                then
+                                if [[  $tool == "exome"  && $all_sites == "YES" ]]
 		then
 			id=""
 			for s in `echo $samples | tr ":" "\n"`
@@ -599,18 +622,25 @@ else
 			qsub_args="-N $type.$version.concat_raw_variants.$run_num.$identify -hold_jid $type.$version.merge_raw_variants.$run_num.$identify -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/concat_raw_variants.sh $output_dir $run_info	    
 		fi	
-		if [ $analysis != "alignment" ]
+            fi
+          if [ $stop_after_realignment == "NO" ]
+                then
+                    if [ $analysis != "alignment" ]
 		then
 			id=""
 			for s in `echo $samples | tr ":" "\n"`
 			do
 				id=$id"$type.$version.sample_report.$s.$run_num.$identify,"
 			done 
-			$script_path/check_qstat.sh $limit
+			if [ $annot_flag == "YES" ]
+                                then
+                                $script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^merge_sample' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.merge_sample.$run_num.$identify -hold_jid $id -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/merge_sample.sh $output_dir $run_info    
 		fi
+            fi
+        fi
 		id_igv=""
 		id_numbers=""
 		id_gene_summary=""
@@ -644,11 +674,17 @@ else
 			fi
 		fi
 		## generate html page for all the module
-		$script_path/check_qstat.sh $limit
+		if [ $stop_after_realignment == "NO" ]
+                then
+                if [ $annot_flag == "YES" ]
+                                then
+                                $script_path/check_qstat.sh $limit
 		mem=$( cat $memory_info | grep -w '^generate_html' | cut -d '=' -f2)
 		qsub_args="-N $type.$version.generate_html.$run_num.$identify $hold -l h_vmem=$mem"
 		qsub $args $qsub_args $script_path/generate_html.sh $output_dir $run_info
-	else
+            fi
+        fi
+        else
 		echo "Multi-sample"
 		numgroups=$(cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2 | tr ":" "\n" | wc -l)
 		
@@ -839,7 +875,10 @@ else
 				mem=$( cat $memory_info | grep -w '^igv_bam' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.igv_bam.$group.$run_num.$identify -hold_jid $type.$version.split_sample_pair.$group.$run_num.$identify -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/igv_bam.sh $output_realign $igv $group $output_align $run_info 
-				
+				if [ $stop_after_realignment == "YES" ]
+                                then
+                                       continue;
+                                fi    
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^variants' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.variants.$group.$run_num.$identify -hold_jid $variant_id -pe threaded $threads -t 1-$numchrs:1 -l h_vmem=$mem"
@@ -874,7 +913,9 @@ else
 				
 				### annotation for the called variants started
 				## SIFT
-				$script_path/check_qstat.sh $limit
+				if [ $annot_flag == "YES" ]
+                                then
+                                    $script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^sift' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.sift.$group.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/sift.sh $sift $output_OnTarget $group $run_info germline
@@ -930,7 +971,7 @@ else
 					qsub_args="-N $type.$version.sample_report.$group.$run_num.$identify -hold_jid $type.$version.reports.$group.$run_num.$identify -l h_vmem=$mem"
 					qsub $args $qsub_args $script_path/sample_report.sh $output_dir $TempReports $group $run_info somatic
 				fi
-				
+                            fi
 				### structural variant calls
 				if [ $tool == "whole_genome" ]
 				then
@@ -1041,7 +1082,11 @@ else
 			done
 			
 			mkdir -p $annot
-			if [ $tool == "whole_genome" ]
+			if [ $stop_after_realignment == "NO" ]
+                    then
+                    if [ $annot_flag == "YES" ]
+                        then
+                            if [ $tool == "whole_genome" ]
 			then
 				if [ $somatic_calling == "YES" ]
 				then
@@ -1073,7 +1118,7 @@ else
 					done		
 				fi	
 			fi
-			
+                    fi
 			### generate reports for all the samples
 			id=""
 			for group in `echo $groups | tr ":" "\n"`
@@ -1093,7 +1138,9 @@ else
 					fi	
 				done
 			fi    
-			for group in `echo $groups | tr ":" "\n"`
+			if [ $annot_flag == "YES" ]
+                        then
+                            for group in `echo $groups | tr ":" "\n"`
 			do
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^sample_numbers' | cut -d '=' -f2)
@@ -1127,7 +1174,9 @@ else
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^generate_html' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.generate_html.$run_num.$identify -hold_jid $type.$version.merge_sample.$run_num.$identify -l h_vmem=$mem"
-			qsub $args $qsub_args $script_path/generate_html.sh $output_dir $run_info 	
+			qsub $args $qsub_args $script_path/generate_html.sh $output_dir $run_info
+                    fi
+                fi
 		fi
 	fi
 	echo `date`

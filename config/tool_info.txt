@@ -111,6 +111,7 @@ PLATFORM=illumina
 CENTER=mayo
 QUEUE=ngs-sec -l medp=TRUE
 STOP_AFTER_REALIGNMENT=NO
+ANNOTATION_FLAG=YES
 
 #Parameters
 SNVMIX2_params=

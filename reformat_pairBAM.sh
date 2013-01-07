@@ -14,15 +14,11 @@ else
 ######		Reading run_info.txt and assigning to variables
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2)
-    picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
     reorder=$( cat $tool_info | grep -w '^REORDERSAM' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
     ref_path=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
-    java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     GenomeBuild=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2 )
-    max_files=$( cat $tool_info | grep -w '^MAX_FILE_HANDLES' | cut -d '=' -f2 )
-    max_reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     samples=$(cat $sample_info | grep -w "^$group" | cut -d '=' -f2 | tr "\t" " ")	
 	########################################################	
@@ -32,13 +28,13 @@ else
     cd $input
     for file in $input/*sorted.bam
     do
-		$samtools/samtools view -H $file 1>$file.rf.header 2> $file.fix.log
-		if [[ `cat $file.fix.log | wc -l` -gt 0 || `cat $file.rf.header | wc -l` -le 0 ]]
+		$samtools/samtools view -H $file 1>$file.rf.header 2> $file.rf.fix.log
+		if [[ `cat $file.rf.fix.log | wc -l` -gt 0 || `cat $file.rf.header | wc -l` -le 0 ]]
 		then
 			$script_path/email.sh $file "bam is truncated or corrupt" "primary_script" $run_info
-			$script_path/wait.sh $file.fix.log
+			$script_path/wait.sh $file.rf.fix.log
 		else
-			rm $file.fix.log 
+			rm $file.rf.fix.log 
 		fi	
 		rm $file.rf.header
 		INPUTARGS="INPUT="$file" "$INPUTARGS;

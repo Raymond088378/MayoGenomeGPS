@@ -34,20 +34,22 @@ else
 		let sidx=($SGE_TASK_ID*2)
 		R1=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
         R2=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" | head -n $sidx | tail -n 1`
-		$bwa/bwa sampe -r "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" $genome_bwa $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai $output_dir_sample/$sample.$SGE_TASK_ID.R2.sai $fastq/$R1 $fastq/$R2 > $output_dir_sample/$sample.$SGE_TASK_ID.sam 
+		$bwa/bwa sampe -r "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" $genome_bwa $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai $output_dir_sample/$sample.$SGE_TASK_ID.R2.sai $fastq/$R1 $fastq/$R2 | $samtools/samtools view -bS - > $output_dir_sample/$sample.$SGE_TASK_ID.bam
 	else
 		let fidx=($SGE_TASK_ID*2)-1 
 		R1=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
-		$bwa/bwa samse -r "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" $genome_bwa $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai $fastq/$R1 > $output_dir_sample/$sample.$SGE_TASK_ID.sam 	
+		$bwa/bwa samse -r "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" $genome_bwa $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai $fastq/$R1 | $samtools/samtools view -bS - > $output_dir_sample/$sample.$SGE_TASK_ID.bam	
 	fi
-	
-	if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.sam ]
-    then
-        $script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.sam align_bwa.sh ERROR "is empty"
-        exit 1;
-    else
-		$script_path/filesize.sh alignment.out $sample $output_dir_sample $sample.$SGE_TASK_ID.sam $run_info
-        if [ $paired == 0 ]
+		$script_path/filesize.sh alignment.out $sample $output_dir_sample $sample.$SGE_TASK_ID.bam $run_info
+ 
+	$samtools/samtools view -H $output_dir_sample/$sample.$SGE_TASK_ID.bam 1>$output_dir_sample/$sample.$SGE_TASK_ID.bam.header 2> $output_dir_sample/$sample.$SGE_TASK_ID.bam.log
+	if [[ `cat $output_dir_sample/$sample.$SGE_TASK_ID.bam.log | wc -l` -gt 0 || `cat $output_dir_sample/$sample.$SGE_TASK_ID.bam.header | wc -l` -le 0 ]]	
+	then
+		$script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.bam align_bwa.sh ERROR "truncated or corrupt"
+		exit 1;
+	else
+		rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.log
+                if [ $paired == 0 ]
         then
             rm $fastq/$R1
             rm $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai
@@ -55,16 +57,6 @@ else
             rm $fastq/$R1 $fastq/$R2
             rm $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai $output_dir_sample/$sample.$SGE_TASK_ID.R2.sai
         fi    
-    fi  
-
-    $samtools/samtools view -bt $ref.fai $output_dir_sample/$sample.$SGE_TASK_ID.sam > $output_dir_sample/$sample.$SGE_TASK_ID.bam  
-	$samtools/samtools view -H $output_dir_sample/$sample.$SGE_TASK_ID.bam 1>$output_dir_sample/$sample.$SGE_TASK_ID.bam.header 2> $output_dir_sample/$sample.$SGE_TASK_ID.bam.log
-	if [[ `cat $output_dir_sample/$sample.$SGE_TASK_ID.bam.log | wc -l` -gt 0 || `cat $output_dir_sample/$sample.$SGE_TASK_ID.bam.header | wc -l` -le 0 ]]	
-	then
-		$script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.bam align_bwa.sh ERROR "truncated or corrupt"
-		exit 1;
-	else
-		rm $output_dir_sample/$sample.$SGE_TASK_ID.sam $output_dir_sample/$sample.$SGE_TASK_ID.bam.log
 	fi	
 	rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.header
 	########################################################	

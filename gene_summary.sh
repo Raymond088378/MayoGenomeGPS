@@ -18,7 +18,7 @@
 
 if [ $# != 4 ]
 then
-    echo "script to get the gene summary file with information about the vaianats and SVs\nUsage: </path/to/output directory> <sample name> </path/to/run_info.txt> </path/yo/Reports_per_Sample>";
+    echo -e "script to get the gene summary file with information about the vaianats and SVs\nUsage: </path/to/output directory> <sample name> </path/to/run_info.txt> </path/yo/Reports_per_Sample>";
 else
     set -x
     echo `date`
@@ -40,7 +40,7 @@ else
 
     input=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    email=$( cat $run_info | grep -w '^EMAIL' | cut -d '=' -f2)
+    
     type=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     bedtools=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
@@ -50,6 +50,7 @@ else
     queue=$( cat $run_info | grep -w '^QUEUE' | cut -d '=' -f2)
     multi_sample=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2)
 	Rsoft=$( cat $tool_info | grep -w '^R_SOFT' | cut -d '=' -f2 )
+	somatic_calling=$( cat $tool_info | grep -w '^SOMATIC_CALLING' | cut -d '=' -f2 )
 	export PATH=$Rsoft:$PATH
 ##############################################################		
 

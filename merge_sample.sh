@@ -4,7 +4,7 @@ if [ $# != 2 ]
 then
     echo -e "script to merge the per sample report\nUsage : <output_dir> <run_info>";
 else
-#    set -x
+	set -x
     echo `date`
     output_dir=$1
     run_info=$2
@@ -22,6 +22,7 @@ else
     ### Beauty Specific
     BEAUTYDIR="$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )/beauty_annot_module"
     BEAUTYDB=$( cat $tool_info | grep -w '^ANNOTATION_MODULE_DATA' | cut -d '=' -f2 )
+	somatic_calling=$( cat $tool_info | grep -w '^SOMATIC_CALLING' | cut -d '=' -f2 )
     ### merge per sample files to make merged report to be uploaded to TBB
     ##Merge the unfiltered file
     cd $output_dir/Reports_per_Sample/
@@ -116,59 +117,64 @@ else
 		perl $script_path/union.indel.pl list.filter.indel multi $output_dir/Reports/INDEL.filtered.xls	
 		rm list.snv list.filter.snv list.indel list.filter.indel	
     	### Merge the TUMOR files
-    	for group in $groups
-		do
-			if [ ! -s TUMOR.$group.SNV.xls ]
-			then
-				$script_path/email.sh TUMOR.$group.SNV.xls "doesn't exist" "sample_report.sh" $run_info
-				touch TUMOR.$group.SNV.xls.fix.log
-				$script_path/wait.sh TUMOR.$group.SNV.xls.fix.log 
-			fi
-			ls TUMOR.$group.SNV.xls >> list.snv
-			if [ ! -s TUMOR.$group.SNV.filtered.xls ]
-			then
-				$script_path/email.sh TUMOR.$group.SNV.filtered.xls "doesn't exist" "sample_report.sh" $run_info
-				touch TUMOR.$group.SNV.filtered.xls.fix.log
-				$script_path/wait.sh TUMOR.$group.SNV.filtered.xls.fix.log 
-			fi
-			ls TUMOR.$group.SNV.filtered.xls >> list.filter.snv
-			if [ ! -s TUMOR.$group.INDEL.xls ]
-			then
-				$script_path/email.sh TUMOR.$group.INDEL.xls "doesn't exist" "sample_report.sh" $run_info
-				touch TUMOR.$group.INDEL.xls.fix.log
-				$script_path/wait.sh TUMOR.$group.INDEL.xls.fix.log 
-			fi
-			ls TUMOR.$group.INDEL.xls >> list.indel
-			if [ ! -s $group.SNV.filtered.xls ]
-			then
-				$script_path/email.sh TUMOR.$group.INDEL.filtered.xls "doesn't exist" "sample_report.sh" $run_info
-				touch TUMOR.$group.INDEL.filtered.xls.fix.log
-				$script_path/wait.sh TUMOR.$group.INDEL.filtered.xls.fix.log 
-			fi
-			ls TUMOR.$group.INDEL.filtered.xls >> list.filter.indel
-		done
-		perl $script_path/union.snv.pl list.snv multi $output_dir/Reports/TUMOR.SNV.xls
-		perl $script_path/union.snv.pl list.filter.snv multi $output_dir/Reports/TUMOR.SNV.filtered.xls
-		perl $script_path/union.indel.pl list.indel multi $output_dir/Reports/TUMOR.INDEL.xls
-		perl $script_path/union.indel.pl list.filter.indel multi $output_dir/Reports/TUMOR.INDEL.filtered.xls	
-		rm list.snv list.filter.snv list.indel list.filter.indel	
+    	if [ $somatic_calling == "YES" ]
+		then
+			for group in $groups
+			do
+				if [ ! -s TUMOR.$group.SNV.xls ]
+				then
+					$script_path/email.sh TUMOR.$group.SNV.xls "doesn't exist" "sample_report.sh" $run_info
+					touch TUMOR.$group.SNV.xls.fix.log
+					$script_path/wait.sh TUMOR.$group.SNV.xls.fix.log 
+				fi
+				ls TUMOR.$group.SNV.xls >> list.snv
+				if [ ! -s TUMOR.$group.SNV.filtered.xls ]
+				then
+					$script_path/email.sh TUMOR.$group.SNV.filtered.xls "doesn't exist" "sample_report.sh" $run_info
+					touch TUMOR.$group.SNV.filtered.xls.fix.log
+					$script_path/wait.sh TUMOR.$group.SNV.filtered.xls.fix.log 
+				fi
+				ls TUMOR.$group.SNV.filtered.xls >> list.filter.snv
+				if [ ! -s TUMOR.$group.INDEL.xls ]
+				then
+					$script_path/email.sh TUMOR.$group.INDEL.xls "doesn't exist" "sample_report.sh" $run_info
+					touch TUMOR.$group.INDEL.xls.fix.log
+					$script_path/wait.sh TUMOR.$group.INDEL.xls.fix.log 
+				fi
+				ls TUMOR.$group.INDEL.xls >> list.indel
+				if [ ! -s $group.SNV.filtered.xls ]
+				then
+					$script_path/email.sh TUMOR.$group.INDEL.filtered.xls "doesn't exist" "sample_report.sh" $run_info
+					touch TUMOR.$group.INDEL.filtered.xls.fix.log
+					$script_path/wait.sh TUMOR.$group.INDEL.filtered.xls.fix.log 
+				fi
+				ls TUMOR.$group.INDEL.filtered.xls >> list.filter.indel
+			done
+			perl $script_path/union.snv.pl list.snv multi $output_dir/Reports/TUMOR.SNV.xls
+			perl $script_path/union.snv.pl list.filter.snv multi $output_dir/Reports/TUMOR.SNV.filtered.xls
+			perl $script_path/union.indel.pl list.indel multi $output_dir/Reports/TUMOR.INDEL.xls
+			perl $script_path/union.indel.pl list.filter.indel multi $output_dir/Reports/TUMOR.INDEL.filtered.xls	
+			rm list.snv list.filter.snv list.indel list.filter.indel
+		fi	
 	fi
+	if [ $snv_caller == "BEAUTY_EXOME" ]
+	then
+	
+		###Intended to reduce repitious coding.
+		callJasonsScripts(){
+			INFILTER="$output_dir/Reports/$1.filtered.xls"
+			CANCTMP="$output_dir/Reports/$1.cancerDrug.xls"
+			PANLTMP="$output_dir/Reports/$1.clinPanel.xls"
+			KINOMTPM="$output_dir/Reports/$1.kinome.xls"
 
-	###Intended to reduce repitious coding.
-	callJasonsScripts(){
-		INFILTER="$output_dir/Reports/$1.filtered.xls"
-		CANCTMP="$output_dir/Reports/$1.cancerDrug.xls"
-		PANLTMP="$output_dir/Reports/$1.clinPanel.xls"
-		KINOMTPM="$output_dir/Reports/$1.kinome.xls"
+			perl $BEAUTYDIR/addCancerDrugs.pl $BEAUTYDB/NCCN.CancerDrugs.txt $INFILTER $CANCTMP
+			perl $BEAUTYDIR/addClinPanel.pl $BEAUTYDB/uniq_genes_in_clinical_panels.txt $CANCTMP $PANLTMP
+			perl $BEAUTYDIR/addKinome.pl $BEAUTYDB/kinome.genes.txt $PANLTMP $KINOMTPM
 
-		perl $BEAUTYDIR/addCancerDrugs.pl $BEAUTYDB/NCCN.CancerDrugs.txt $INFILTER $CANCTMP
- 		perl $BEAUTYDIR/addClinPanel.pl $BEAUTYDB/uniq_genes_in_clinical_panels.txt $CANCTMP $PANLTMP
-		perl $BEAUTYDIR/addKinome.pl $BEAUTYDB/kinome.genes.txt $PANLTMP $KINOMTPM
-
-		rm $INFILTER $CANCTMP $PANLTMP
-		mv $KINOMTPM $INFILTER
-	}
-
+			rm $INFILTER $CANCTMP $PANLTMP
+			mv $KINOMTPM $INFILTER
+		}
+	fi
 
 	### Adding Beauty Anntation Module
 	if [ $snv_caller == "BEAUTY_EXOME" ]
