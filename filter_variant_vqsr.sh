@@ -269,8 +269,9 @@ else
         rm $inputvcf.INDEL.vcf
     fi    
 	### combine both the indels and SNVs
-	in="-V $outfile.INDEL.vcf -V $outfile.SNV.vcf"
-	$script_path/combinevcf.sh "$in" $outfile $run_info YES
+	#in="-V $outfile.INDEL.vcf -V $outfile.SNV.vcf"
+	in="$outfile.INDEL.vcf $outfile.SNV.vcf"
+	$script_path/concatvcf.sh "$in" $outfile $run_info YES
 	if [ ! -s $outfile ]
 	then
 		$script_path/errorlog.sh $outfile filter_variant_vqsr.sh ERROR "failed to create"
