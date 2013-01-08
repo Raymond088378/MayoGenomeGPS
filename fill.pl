@@ -8,6 +8,8 @@ use warnings;
 open FH, "$ARGV[0]" or die "";
 my $header=<FH>;
 chomp $header;
+
+# This might have been supposed to be \s+ for multiple spaces in the header
 my @head=split('/s+',$header);
 print "$header\n";
 
