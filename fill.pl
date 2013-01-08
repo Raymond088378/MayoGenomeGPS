@@ -1,5 +1,7 @@
 #!/usr/local/biotools/perl/5.10.0/bin/perl
 
+
+# Fills all lines in a tab-delimited file with '-''s in place of nulls
 use strict;
 use warnings;
 
