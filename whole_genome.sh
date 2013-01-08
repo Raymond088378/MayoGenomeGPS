@@ -128,8 +128,8 @@ else
 	workflow=$( cat $run_info | grep '^TOOL=' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 	version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
 	somatic_calling=$( cat $tool_info | grep -w '^SOMATIC_CALLING' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
-        annot_flag=$( cat $tool_info | grep -w '^ANNOTATION_FLAG' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
-        stop_after_realignment=$( cat $tool_info | grep -w '^STOP_AFTER_REALIGNMENT' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
+    annot_flag=$( cat $tool_info | grep -w '^ANNOTATION_FLAG' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
+    stop_after_realignment=$( cat $tool_info | grep -w '^STOP_AFTER_REALIGNMENT' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
         
 	if [[ $somatic_caller == "JOINTSNVMIX" || $somatic_caller == "BEAUTY_EXOME" ]]
 	then
@@ -226,7 +226,7 @@ else
 	email=`finger $USER | awk -F ';' '{print $2}'`
 	args="-V -wd $output_dir/logs -q $queue -m a -M $email -l h_stack=10M"
 	echo -e "\nRCF arguments used : $args\n" >> $output_dir/log.txt
-	#echo -e "Started the ${tool} analysis for ${run_num} for ${PI}\n\n${info}\n\nCourtesy: $workflow $version" | mailx -v -s "Analysis Started" -c Kahl.Jane@mayo.edu "$email"
+	echo -e "Started the ${tool} analysis for ${run_num} for ${PI}\n\n${info}\n\nCourtesy: $workflow $version" | mailx -v -s "Analysis Started" -c Kahl.Jane@mayo.edu "$email"
     #############################################################
 	
 	if [ $multi_sample != "YES" ]

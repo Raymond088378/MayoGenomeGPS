@@ -83,11 +83,6 @@ else
 	fi
 	rm $file
 	
-	### extract multi-allelic variants and keep that as a vcf file
-	#cat $output/$ff | awk '$0 ~ /^#/ || $5 ~ /,/ || $4 ~ /,/' > $output/$sample.multi.vcf
-	#cat $output/$ff | awk '$0 ~ /^#/ || ($5 !~ /,/ && $4 !~ /,/)' > $output/$ff.temp
-	#mv $output/$ff.temp $output/$ff
-	
 	if [ `cat $output/$ff | awk '$0 !~ /^#/' | head -100 | wc -l` -le 0 ]
 	then
 		echo " There is no variants in the VCF file"

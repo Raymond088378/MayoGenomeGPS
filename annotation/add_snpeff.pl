@@ -4,8 +4,8 @@ use strict;
 use Getopt::Std;
 
 our ($opt_i, $opt_s, $opt_o,$opt_t);
-print "INFO: script to add snpeff results to the variant report\n";
-print "RAW paramters: @ARGV\n";
+#print "INFO: script to add snpeff results to the variant report\n";
+#print "RAW paramters: @ARGV\n";
 getopt('isot');
 if ( (!defined $opt_i) && (!defined $opt_s) && (!defined $opt_o) && (!defined $opt_t) ) {
 	die ("Usage: $0 \n\t-i [variant file] \n\t-s [snpeff] \n\t-o [output file] \n\t-t[type(SNV/INDEL)]\n");

@@ -40,7 +40,13 @@ else
         $fastqc_path/fastqc -o $fastqc_dir/ $output/$read
 		rm $fastqc_dir/${file1}_fastqc.zip
     else
-        ln -s $FOLDER_FASTQC/${file1}_fastqc $fastqc_dir/
+        if [ -f $FOLDER_FASTQC/${file1}_fastqc ]
+		then
+			ln -s $FOLDER_FASTQC/${file1}_fastqc $fastqc_dir/
+		else
+			echo "ERROR : $FOLDER_FASTQC mentioned doesn't have any fastqc results"
+			exit 1;
+		fi	
     fi		
     echo `date`
 fi	
