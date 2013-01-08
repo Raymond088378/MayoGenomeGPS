@@ -44,7 +44,7 @@ else
 		then
 			ln -s $FOLDER_FASTQC/${file1}_fastqc $fastqc_dir/
 		else
-			echo "ERROR : $FOLDER_FASTQC mentioned doesn't have any fastqc results"
+			 $script_path/errorlog.sh $FOLDER_FASTQC fastq.sh ERROR "doesn't have fastqc results"
 			exit 1;
 		fi	
     fi		
