@@ -13,10 +13,10 @@ sample=${10}
 	
 	if [ `cat $output/$ff.SNV.vcf | awk '$0 !~ /^#/' | head -100 | wc -l`  -gt 0 ]
 	then
-		$java/java -Xmx6g -Xms512m -Djava.io.tmpdir=$output -jar $snpeff/snpEff.jar eff -o vcf -chr chr -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.SNV.vcf | awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"3.0c (build 2012-07-30), by Pablo Cingolani\""; else print $0;}' >  $output/$ff.SNV.vcf.eff.vcf
+		$java/java -Xmx32g -Xms512m -Djava.io.tmpdir=$output -jar $snpeff/snpEff.jar eff -o vcf -chr chr -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.SNV.vcf | awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"3.0c (build 2012-07-30), by Pablo Cingolani\""; else print $0;}' >  $output/$ff.SNV.vcf.eff.vcf
 		cat $output/$ff.SNV.vcf.eff.vcf | $script_path/snpeff.pl > $output/$sample.SNV.eff
 		
-		$java/java -Xmx6g -Xms512m -Djava.io.tmpdir=$output -jar $gatk/GenomeAnalysisTK.jar \
+		$java/java -Xmx32g -Xms512m -Djava.io.tmpdir=$output -jar $gatk/GenomeAnalysisTK.jar \
 		-T VariantAnnotator \
 		-et NO_ET \
 		-K $gatk/Hossain.Asif_mayo.edu.key \
@@ -50,12 +50,12 @@ sample=${10}
 	## INDELs 
 	if [ `cat $output/$ff.INDEL.vcf| awk '$0 !~ /^#/' | head -100 | wc -l` -ge 1 ]
 	then
-		$java/java -Xmx4g -Xms512m -Djava.io.tmpdir=$output -jar $snpeff/snpEff.jar eff -o vcf -chr chr -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.INDEL.vcf | awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"3.0c (build 2012-07-30), by Pablo Cingolani\""; else print $0;}' > $output/$ff.INDEL.vcf.eff.vcf
+		$java/java -Xmx32g -Xms512m -Djava.io.tmpdir=$output -jar $snpeff/snpEff.jar eff -o vcf -chr chr -noStats -noLog -c $snpeff/snpEff.config $GenomeBuild $output/$ff.INDEL.vcf | awk '{if ($0 ~ /##SnpEffVersion/) print "##SnpEffVersion=\"3.0c (build 2012-07-30), by Pablo Cingolani\""; else print $0;}' > $output/$ff.INDEL.vcf.eff.vcf
 
 		cat $output/$ff.INDEL.vcf.eff.vcf | $script_path/snpeff.pl > $output/$sample.INDEL.eff	
 		
 		### use GATK to filter the multiple transcript
-		$java/java -Xmx4g -Xms512m -Djava.io.tmpdir=$output  -jar $gatk/GenomeAnalysisTK.jar \
+		$java/java -Xmx32g -Xms512m -Djava.io.tmpdir=$output  -jar $gatk/GenomeAnalysisTK.jar \
 		-T VariantAnnotator \
 		-et NO_ET \
 		-K $gatk/Hossain.Asif_mayo.edu.key \
