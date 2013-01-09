@@ -6,7 +6,7 @@ script_path=$4
 GenomeBuild=$5
 sample=$6
 thread=$7
-    cat $output/$ff.SNV.vcf | awk '$0 !~ /^#/' | awk '{print $1":"$2"\t"$4"/"$5}' > $output/$sample.SNV.poly
+    cat $output/$ff.SNV.vcf | awk '$0 !~ /^#/' | awk '$5 !~ /,/' |awk '{print $1":"$2"\t"$4"/"$5}' > $output/$sample.SNV.poly
     $script_path/parallel.poly.pl $thread $output/$sample.SNV.poly $GenomeBuild $pph $output/$sample.SNV.poly.uniprot
     rm $output/$sample.SNV.poly
     uniprot=`awk '{ for(i=1;i<=NF;i++){ if ($i == "spacc") {print i} } }' $output/$sample.SNV.poly.uniprot`
