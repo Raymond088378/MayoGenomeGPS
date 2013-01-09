@@ -101,7 +101,8 @@ else
 	fi
 	$script_path/vcfsort.pl $ref.fai $output/$ff > $output/$ff.sort
 	mv $output/$ff.sort $output/$ff
-	n=`cat $output/$ff |   awk '$0 ~ /^#/' | awk '$0 ~ /^##INFO=<ID=CAPTURE/' | wc -l`
+	n=`cat $output/$ff | awk '$0 ~ /^#/' | awk '$0 ~ /^##INFO=<ID=CAPTURE/' | wc -l`
+	echo " Splitting the vcf file into SNVs and INDELs "
 	$script_path/vcf_to_variant_vcf.pl -i $output/$ff -v $output/$ff.SNV.vcf -l $output/$ff.INDEL.vcf -t both
 	rm $output/$ff
 
