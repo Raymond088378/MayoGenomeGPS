@@ -280,7 +280,7 @@ else
 		sleep 2m
 	done
 	rm $output/$ff.SNV.vcf $output/$ff.INDEL.vcf
-	rm $output/log
+	#rm $output/log
 	## polyphen
 	$script_path/add_polphen.pl $file.sift.codons.map.repeat.base.snp.UCSCtracks $output/$sample.polyphen.txt $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly
 	rm $output/$sample.polyphen.txt $file.sift.codons.map.repeat.base.snp.UCSCtracks
