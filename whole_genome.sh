@@ -229,6 +229,7 @@ else
 	echo -e "Started the ${tool} analysis for ${run_num} for ${PI}\n\n${info}\n\nCourtesy: $workflow $version" | mailx -v -s "Analysis Started" -c Kahl.Jane@mayo.edu "$email"
     #############################################################
 	
+	### Mult-sample workflow
 	if [ $multi_sample != "YES" ]
 	then
 		echo "Single sample"
@@ -512,7 +513,7 @@ else
                                     qsub_args="-N $type.$version.sample_report.$sample.$run_num.$identify -hold_jid $type.$version.reports.$sample.$run_num.$identify -l h_vmem=$mem"
                                     qsub $args $qsub_args $script_path/sample_report.sh $output_dir $TempReports $sample $run_info germline
 				fi
-                                if [[ $tool == "whole_genome"  && $analysis != "annotation" ]]
+                if [[ $tool == "whole_genome"  && $analysis != "annotation" ]]
 				then
 					crest=$output_dir/struct/crest
 					break=$output_dir/struct/break
@@ -683,8 +684,9 @@ else
 		qsub_args="-N $type.$version.generate_html.$run_num.$identify $hold -l h_vmem=$mem"
 		qsub $args $qsub_args $script_path/generate_html.sh $output_dir $run_info
             fi
-        fi
-        else
+    ### End of Single Sample Workflow
+	fi 
+	else
 		echo "Multi-sample"
 		numgroups=$(cat $run_info | grep -w '^GROUPNAMES' | cut -d '=' -f2 | tr ":" "\n" | wc -l)
 		
