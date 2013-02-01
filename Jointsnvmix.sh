@@ -65,13 +65,18 @@ else
     ### removing duplicates from the bam files
 	$samtools/samtools view -b -f 2 -F 1024 $tumor_bam > $output/$tumor_sample.chr$chr.jsm.bam
 	$samtools/samtools view -b -f 2 -F 1024 $normal_bam > $output/$normal_sample.chr$chr.jsm.bam
+	### Generate indexes 
+	$samtools/samtools index $output/$tumor_sample.chr$chr.jsm.bam
+    $samtools/samtools index $output/$normal_sample.chr$chr.jsm.bam
+	
+	
 	
 	normal_bam=$output/$normal_sample.chr$chr.jsm.bam
 	tumor_bam=$output/$tumor_sample.chr$chr.jsm.bam
    
 	### run joint snvmix classify to call the somatic mutation
 	$python/python $jointsnvmix/build/scripts-2.7/jsm.py classify --model snvmix2 $command_line_params --chromosome chr$chr --out_file $output/$output_file.txt --parameters_file $jointsnvmix/config/params.cfg $ref $normal_bam $tumor_bam
-	rm $normal_bam $tumor_bam
+	rm $normal_bam $tumor_bam ${normal_bam}.bai ${tumor_bam}.bai
 	
 	### script to convert text output to vcf output 
 	$script_path/jsm2vcf.pl -i $output/$output_file.txt -o $output/$output_file -ns $normal_sample -ts $tumor_sample $JSM_Filter
