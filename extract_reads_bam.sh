@@ -1,5 +1,16 @@
 #!/bin/bash
 
+###
+### extract_reads_bam.sh 
+### accepts output folder, a bam file, run_info, igv location, and whether this is part of a sample-group
+### produces bams for each chromosome, and a merged bam containing all unmapped reads for all of the sample-group
+### that is placed in the igv directory
+### dependencies
+###		samtools
+###		MergeBam.sh
+
+
+
 if [ $# -le 3 ]
 then
 	echo -e "script to extract reads not used for downstream processing\nUsage: ./extract_read_bam.sh </path/to/input diretcory><bam file></path/to/run info></path/to/igv folder><single/pair>"
@@ -43,13 +54,15 @@ else
 		rm $output/$bam.erb.fix.log
 	fi
 	rm $output/$bam.erb.header
-	## extract read for specfic chromosome
+	
+	## if missing index file for 
 	if [ ! -s $output/$bam.bai ]
 	then
 		$samtools/samtools index $output/$bam
 	fi	
 	
 	input=""
+	## extract reads for each chromosome from the input bam file
 	for i in $(seq 1 ${#chrArray[@]})
 	do
 		chr=${chrArray[$i]}
@@ -64,6 +77,8 @@ else
 	input=$input" INPUT=$output/$bam.unmapped.bam"
 	$script_path/MergeBam.sh "$input" $output/$bam.extra.bam $output true $run_info
 	
+	## $group = $5, so why use $5 here?
+	## this handles multiple bams as a single sample 
 	if [ $5 ]
 	then
 		sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
@@ -87,6 +102,7 @@ else
 		done
 		rm $output/$bam.extra.bam $output/$bam.extra.bam.bai
 	else
+		### no group information
 		mv $output/$bam.extra.bam $igv/
 		mv $output/$bam.extra.bam.bai $igv/		
 	fi

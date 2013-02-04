@@ -16,13 +16,12 @@
 
 if [ $# -le 3 ]
 then
-	echo -e "script to run seg seq on tumor normal bam file\nUsage: <groupname> </path/to/input directory> </path/to/output directory> </path/to/run_info.txt>";
+	echo -e "script to run SegSeq on tumor normal bam file\nUsage: <groupname> </path/to/input directory> </path/to/output directory> </path/to/run_info.txt>";
 else
 	set -x
 	echo `date`
-	group=$1	#from run ifo and sample info file (default=pair)
-	input=$2
-	#colon separated list of full paths of bams to use
+	group=$1	#from run info and sample info file (default=pair)
+	input=$2	#colon separated list of full paths of bams to use
 	output_dir=$3	#where you want it to go
 	run_info=$4	#run_info
 	if [ $5 ]
@@ -68,6 +67,7 @@ else
 		#Create info and map files
 		infofile=$outdir/info/$sample_tumor.$chr.info
 		echo -e "File\tSample\tType" > $infofile
+		
 		#Create info and map files for normal
 		# $samtools/samtools view -b -r $sample_normal $input_bam > $outdir/$sample_normal.bam
 		ln -s $input/$group.$sample_normal.chr$chr.bam $outdir/$sample_normal.$chr.bam
@@ -81,6 +81,7 @@ else
 			|awk 'BEGIN{OFS="\t"} {if ($3>0) print $1,$2,0; else print $1,$2,1}' > $outdir/map/$sample_normal.$lane.$chr.map
 		done
         rm $outdir/$sample_normal.$chr.bam $outdir/$sample_normal.$chr.bam.bai
+		
 		# $samtools/samtools view -b -r $sample_tumor $input_bam > $outdir/$sample_tumor.bam
 		ln -s $input/$group.$sample_tumor.chr$chr.bam $outdir/$sample_tumor.$chr.bam
 		$samtools/samtools index $outdir/$sample_tumor.$chr.bam 

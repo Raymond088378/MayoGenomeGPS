@@ -1,5 +1,7 @@
 #!/bin/bash
 
+
+### Called by processBAM.sh
 if [ $# != 8 ]
 then
     echo -e "script to remove or flag the duplicates from a BAM file dending on the flag passed\nUsage: ./rmdup.sh <input bam> <outputbam><temp dir><max files to split><remove of flag dupluicate(true/false)><assume file is aorted or not(true/false)><do indexing or not(true/false)<run info>"

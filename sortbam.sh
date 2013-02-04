@@ -1,5 +1,6 @@
 #!/bin/bash
 
+### Called by ProcessBAM.sh
 if [ $# != 6 ]
 then
     echo -e "Script to sort the bam file using picard samtools\nUsage: ./sortbam.sh <input bam> <outputbam></path/to/temp dir><sorting order><flag for indexing(true/false)></path/to/run info>"

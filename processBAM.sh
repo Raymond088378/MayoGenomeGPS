@@ -2,16 +2,25 @@
 
 ########################################################
 ###### 	Merge BAMs for a sample,  FOR WHOLE GENOME ANALYSIS PIPELINE
-
-######		Program:			merge_align.bam.sh
+######		Program:			merge_align.bam.sh ???
 ######		Date:				07/27/2011
-######		Summary:			Using PICARD to sort and mark duplicates in bam 
+######		Summary:			Using PICARD to sort and mark duplicates in bam ??? 
 ######		Input files:		$1	=	/path/to/input directory
 ######							$2	=	sample name
 ######							$3	=	/path/to/run_info.txt
-######		Output files:		Sorted and clean BAM
+######		Output files:		Sorted and clean BAM 
 ######		TWIKI:				http://bioinformatics.mayo.edu/BMI/bin/view/Main/BioinformaticsCore/Analytics/WholeGenomeWo
 ########################################################
+### Dependencies
+### 	checkBAMsorted.pl
+###	 	sortbam.sh
+### 	addreadgroup.sh
+###		rmdup.sh
+###		samtools
+###
+###		dashboard.sh, filesize.sh, email.sh, wait.sh
+###		
+
 
 if [ $# != 3 ];
 then
@@ -82,9 +91,11 @@ else
 		SORT_FLAG=`$script_path/checkBAMsorted.pl -i $input/$sample.bam -s $samtools`
 		if [ $SORT_FLAG == 1 ]
 		then
+			### Already sorted, just index
 			mv $input/$sample.bam $input/$sample.sorted.bam
 			$samtools/samtools index $input/$sample.sorted.bam
 		else
+			### sort and index the bam file (index set true)
 			$script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate true $run_info
 		fi
 	else	
@@ -98,7 +109,7 @@ else
 		done			
 	fi
 	
-    ### add read grouup information
+    ### add read group information
     RG_ID=`$samtools/samtools view -H $input/$sample.sorted.bam | grep "^@RG" | tr '\t' '\n' | grep "^ID"| cut -f 2 -d ":"`
 
     if [ "$RG_ID" == "$sample" ]
@@ -116,6 +127,7 @@ else
 		    $script_path/rmdup.sh $input/$sample.sorted.bam $input/$sample.sorted.rmdup.bam $input/$sample.dup.metrics $input $dup_flag true true $run_info   
 		fi
     fi
+    
     ## reorder if required
     if [ $reorder == "YES" ]
     then
@@ -125,13 +137,17 @@ else
     then
         $samtools/samtools flagstat $input/$sample.sorted.bam > $input/$sample.flagstat
     fi
+    
+    ### NECESSARY??
     ### index the bam again to maintain the time stamp for bam and index generation for down stream tools
     if [ $input/$sample.sorted.bam -nt $input/$sample.sorted.bam.bai ]
     then
         $samtools/samtools index $input/$sample.sorted.bam
     fi
+    
     ## dashboard
     $script_path/dashboard.sh $sample $run_info Alignment complete
+    
 	## size of the bam file
 	$script_path/filesize.sh Alignment.out $sample $input $sample.sorted.bam $run_info
     echo `date`

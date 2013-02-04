@@ -1,5 +1,8 @@
 #!/bin/bash
 
+### Dependencies
+###		samtools
+
 if [ $# != 5 ]
 then
     echo -e "script to merge multiple BAm files and outputs a sorted BAM\nUsage: ./mergeBam.sh <input bam> <outputbam><temp dir><indexing flag (true/false)><run info>"
