@@ -6,6 +6,8 @@ then
 else
     set -x
     echo `date`
+    
+    #### XXX TOFIX TODO THESE ARE AT ODDS WITH THE ORDER IN THE HELP MESSAGE!!!!!
     tumor_bam=$1
     normal_bam=$2
     chr=$3
