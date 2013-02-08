@@ -1,5 +1,7 @@
 #!/bin/bash
 
+### called from merge_variant_group and merge_variant_single
+
 if [ $# -le  3 ]
 then
     echo -e "Script to filter the variants using VQSR\nUsage: ./filter_variant_vqsr.sh <raw vcf complete path><outputfile><type={BOTH,SNP,INDEL}><run info>"
