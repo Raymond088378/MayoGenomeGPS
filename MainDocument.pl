@@ -197,6 +197,9 @@ else    {
 	my @user=split(/[:;]/,`finger $username`);
 	print OUT "<a name=\"Project Description\" id=\"Project Description\"></a><p align='left'><b><u> II. Project Description</p></b></u>";
 	print OUT "<ul><a name=\"Background\" id=\"Background\"></a><p align='left'> 1. Background</p>";
+	
+	### Added link to tool_info CR 2/11/2013 ###
+	
 	print OUT "<table cellspacing=\"0\" class=\"sofT\"><tr>
 	<td class=\"helpHed\">Item</td>
 	<td class=\"helpHed\">Description</td></tr>
