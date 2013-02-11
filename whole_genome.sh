@@ -192,7 +192,7 @@ then
 	exit 1;
 fi	
 
-## copy cofig files
+## copy config files
 $script_path/copy_config.sh $output_dir $run_info
 run_info=$output_dir/run_info.txt
 
