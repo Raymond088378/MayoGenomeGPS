@@ -1,13 +1,13 @@
 #!/usr/local/biotools/perl/5.10.0/bin/perl
 
-#use strict;
+# use strict;
 # use warnings;
 use Getopt::Std;
 our ($opt_r,$opt_p);
 print "RAW paramters: @ARGV\n";
 getopt('rp');
 if ( (!defined $opt_r) && (!defined $opt_p) ) {
-        die ("Usage: $0 \n\t-r [ un info file ] \n\t-p [ ath output folder ] \n");
+        die ("Usage: $0 \n\t-r [ run info file ] \n\t-p [ output folder path ] \n");
 }
 else    {
 	my ($run_info) = $opt_r;chomp $run_info;
