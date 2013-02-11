@@ -75,6 +75,7 @@ else    {
 	print "Type of Tool: $tool\n";
 	print "ReadLength: $read_length\n";
 	print "AnalysisType: $analysis\n";
+	print "Delivery Folder: $delivery\n";
 	my $output = "$path/Main_Document.html";
 	my $s_output= "$path/SampleStatistics.tsv";
 	print "Generating the Document... \n";
@@ -113,10 +114,16 @@ else    {
 	print DESC "</head>";
 	print DESC "<body>";
 	
-	##########################################################
-	
+	##################
+	### PAGE TITLE ###
+	##################
+	 
 	print OUT "<p align='center'> §§§ <b>Mayo BIC PI Support</b> §§§   </p>";
-	# making the index for the document
+	
+	###########################
+	# GENERATE DOCUMENT INDEX #
+	###########################
+	
 	print OUT "<a name=\"top\"></a>";
 	print OUT "
 	<table id=\"toc\" class=\"toc\" ><tr><td><div id=\"toctitle\"><h2>Contents</h2></div>
@@ -167,8 +174,19 @@ else    {
 	<span class=\"toctext\">Useful Links</span></a></li></ul><br>
 	</td></tr></table>
 	</script>";
+	
+	#############################
+	# SECTION I - Project Title #
+	#############################
+	
 	print OUT "<a name=\"Project Title\" id=\"Project Title\"></a><p align='left'><b><u> I. Project Title : </p></b></u>\n";
 	print OUT "<ul><table cellspacing=\"0\" class=\"sofT\" > <tr> <td class=\"helpHed\">NGS Bioinformatics for ${tool} sequencing</td> </tr> </table> <br></ul>\n";
+	
+	
+	####################################
+	# SECTION II - Project Description #
+	####################################
+	
 	my $read_call;	if($paired == 1)	{	$read_call = 'PE';	}	else	{	$read_call = 'SR';	}	
 	my $num_samples=scalar(@sampleArray);
 	my $num_groups=scalar(@groupArray);
@@ -197,7 +215,11 @@ else    {
 	<td class=\"helpBod\">EndDate</td><td class=\"helpBod\">$mon/$mday/$year</td></tr>
 	<td class=\"helpBod\">Results Compiled By</td><td class=\"helpBod\">$user[2]</td></tr>
 	</table>";
+	
+	#### SECTION II TABLE COMMENT
 	print OUT "Note: Further raw NGS data will be used for statistical analysis<br>\n";
+	
+	### SECTION II DELIVERY SUMMARY ###
 	my $loc=$path;
 	$loc =~ s/\//\\/g;
 	$tertiary=~ s/\//\\/g;
@@ -211,6 +233,8 @@ else    {
 		print OUT "Results Location:: <b><u>\\\\rcfcluster-cifs$delivery</b></u> <br>";
 		print OUT "(Data is available for 60 Days from the Delivered Date)<br>";
 	}
+	
+	### SECTION II STUDY DESIGN ###
 	print OUT "<a name=\"Study design\" id=\"Study design\"></a><p align='left'> 2. Study design</p>";
 	print OUT "<ul>
 	<li><b> What are the samples? </b><br>
@@ -229,15 +253,27 @@ else    {
 	}	
 	print OUT "</ul></ul>\n";
 	print OUT "<p align='right'><a href=\"#top\">-top-</a></p>";
+	
+	###################################
+	### SECTION III - ANALYSIS PLAN ###
+	###################################
+	
 	print OUT "<a name=\"Analysis Plan\" id=\"Analysis Plan\"></a><p align='left'><b><u> III. Analysis Plan</p></b></u><br>\n";
 	print OUT "<b><P ALIGN=\"CENTER\">What's new: New features and updates </b> <a href= \"http://bioinformatics.mayo.edu/BMI/bin/view/Main/BioinformaticsCore/Analytics/$workflow\"target=\"_blank\">$workflow</a></P>";
 	print OUT "<a href= \"${tool}_workflow.png\"target=\"_blank\"><P ALIGN=\"CENTER\"><img border=\"0\" src=\"${tool}_workflow.png\" width=\"700\" height=\"478\"><b><u><caption align=\"bottom\">$workflow  $version</caption></b></u></p>";
 	print OUT "<p align='right'><a href=\"#top\">-top-</a></p>";
+	
+	##################################
+	### SECTION IV - RECEIVED DATA ###
+	##################################
+	
 	print OUT "<a name=\"Received Data\" id=\"Received Data\"></a><p align='left'><b><u> IV. Received Data</p></b></u> 
 	<ul>
 	1. Run Name<br>
 	<br><table cellspacing=\"0\" class=\"sofT\"><tr><td class=\"helpHed\">Run #</td><td class=\"helpBod\">$run_num</td> </table><br>\n";
-	# printing the samples information table
+	
+	
+	# Build sample information table #
 	
 	print OUT "<a name=\"Sample Summary\" id=\"Sample Summary\"></a> 2. Sample Summary<br>
 	<br><table cellspacing=\"0\" class=\"sofT\"><tr>
@@ -291,8 +327,13 @@ else    {
 	print OUT "</table>";
 	print OUT "<p align='right'><a href=\"#top\">-top-</a></p>";
 	
+	###################################
+	### SECTION V - RESULTS SUMMARY ### 
+	###################################
+	
 	print OUT "</ul>
 	<a name=\"Results Summary\" id=\"Results Summary\"></a><p align='left'><u><b> V.  Results Summary:</p></u></b>\n";
+	
 	if ( ($analysis eq "mayo") || ($analysis eq "realign-mayo") || ($analysis eq "external" ) || ($analysis eq "alignment") )	{
 		if($fastqc eq "YES")	{
 			print OUT "
