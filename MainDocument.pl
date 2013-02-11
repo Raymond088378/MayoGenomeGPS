@@ -76,6 +76,7 @@ else    {
 	print "ReadLength: $read_length\n";
 	print "AnalysisType: $analysis\n";
 	print "Delivery Folder: $delivery\n";
+	print "Tool Info: $tool_info\n";
 	my $output = "$path/Main_Document.html";
 	my $s_output= "$path/SampleStatistics.tsv";
 	print "Generating the Document... \n";
@@ -201,7 +202,8 @@ else    {
 	<td class=\"helpHed\">Description</td></tr>
 	<td class=\"helpBod\">Disease Type</td><td class=\"helpBod\">$disease</td></tr>
 	<td class=\"helpBod\">Number of Samples</td><td class=\"helpBod\">$num_samples</td></tr>
-	<td class=\"helpBod\">Workflow</td><td class=\"helpBod\">$workflow $version</td></tr>";
+	<td class=\"helpBod\">Workflow</td><td class=\"helpBod\">$workflow $version</td></tr>
+	<td class=\"helpBod\">Tool Info</td><td class=\"helpBod\"><a href=\"config/tool_info.txt\" target=\"_blank\">Tool Info File</a></td></tr>";
 	if ($tool eq 'exome')	{
 		my $target=$target_region/1000000;$target=sprintf("%.2f",$target);
 		print OUT "<td class=\"helpBod\">Capture Kit used</td><td class=\"helpBod\">$ontarget ($target Mbp)</td></tr>";
@@ -334,6 +336,11 @@ else    {
 	print OUT "</ul>
 	<a name=\"Results Summary\" id=\"Results Summary\"></a><p align='left'><u><b> V.  Results Summary:</p></u></b>\n";
 	
+	
+	##########
+	### QC ###
+	##########
+	
 	if ( ($analysis eq "mayo") || ($analysis eq "realign-mayo") || ($analysis eq "external" ) || ($analysis eq "alignment") )	{
 		if($fastqc eq "YES")	{
 			print OUT "
@@ -356,14 +363,21 @@ else    {
 		print OUT "</ul></ul>";
 		}	
 	}
+	
+	##################
+	### STATISTICS ###
+	##################
+	
 	print OUT"
 	<ul><li><a name=\"Statistics based on per sample analysis\" id=\"Statistics based on per sample analysis\"></a>Statistics based on per Sample Analysis(<u><a href=\"StatisticsDescription.html\"target=\"_blank\">ColumnDescription</a></u>)<br>\n";
 	print OUT "<br><table cellspacing=\"0\" class=\"sofT\"><tr><td class=\"helpHed\"><p align='center'></td>";
 	my %sample_numbers=();
 	my $uniq;
+	
 	# storing all the numbers in a Hash per sample
 	chomp $multi;
 	print SOUT "SampleNamesUsed/info";
+	
 	if ($multi eq 'NO')	{
 		for(my $k = 0; $k < $num_samples;$k++)	
 		{
@@ -410,7 +424,9 @@ else    {
 				close SAMPLE;
 			}
 		}	
-	}
+	} 
+	
+	
 	print SOUT "\n";
 	print SOUT "lanes";
 	if ($multi eq "NO")	{
@@ -462,22 +478,19 @@ else    {
 		}
 		print SOUT "\n";
 	}
-	
-	
 	print OUT "</tr>";
+	
+	
 	my @To_find;
 	my ( $avg_per, $avg_mapped_reads, $per_mapped, $per_mapped_reads );
 	my @what;
 	$multi =~ s/\s+$//;
 	$analysis =~ s/\s+$//;
-	# header description
-	#####################################
-	################# NEW
-	#####################################
 	
 	my (@align,@snv,@indel,@sv);
 	my (@align_h,@snv_h,@indel_h,@sv_h);
 	my (@names,@values);
+	
 	if ($multi eq 'NO')	{
 		if ($analysis eq 'realignment' || $analysis eq 'realign-mayo' || $analysis eq 'mayo' || $analysis eq 'external')	{
 			if ($tool eq 'exome')	{
@@ -1441,7 +1454,6 @@ else    {
 	close OUT;
 	print "Document is generated with path as $output.......... \n";
 }
-sub trim($);
 	
 sub CommaFormatted
 {
