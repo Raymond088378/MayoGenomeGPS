@@ -2,7 +2,8 @@
 
 if [ $# != 6 ]
 then
-    echo -e "script to run unified genotyper\nUsage: ./unifiedgenotyper.sh <bams><vcf output><type of varint> <range of positions> <output mode><run info file>"
+    echo -e "script to run unified genotyper\nUsage: ./unifiedgenotyper.sh <bamfile> <vcf output> \
+<type of variant> <range of positions> <output mode> <run info file>"
 else
     set -x
     echo `date`
