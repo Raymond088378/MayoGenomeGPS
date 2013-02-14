@@ -1,5 +1,7 @@
 #!/bin/bash
 
+### Operates IN PLACE On Passed VCF File (output filename is same as input filename)
+
 if [ $# != 3 ]
 then
 	### Print usage and exit
@@ -31,6 +33,7 @@ then
 fi
     
 export PATH=$java:$PATH
+
 ### annotate SNVs or INDELs
 $java/java $mem -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
 -R $ref \
