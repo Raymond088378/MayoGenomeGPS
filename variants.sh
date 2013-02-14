@@ -90,7 +90,8 @@ done
 
 mkdir -p $output/temp
 
-### if multiple samples then split BAMs using read group and validate otherwise just validate
+### if multiple samples, validate
+### if multiple and somatic calling, then split BAMs using read group and validate 
 if [ ${#sampleArray[@]} -gt 1 ]
 then
 	#bams are splitted using read group information
@@ -349,6 +350,7 @@ else
 	
 	if [ $somatic_caller == "BEAUTY_EXOME" ]
 	then
+		### Start snvmix calling on normal sample 0xDEADBEEF (get pid here, wait later)
 		$script_path/snvmix2.sh ${sampleArray[1]} "$inputfiles" $output/${sampleArray[1]}.variants.chr${chr}.raw.snvmix.vcf target "$param" $run_info &
 		in="-V $output/${sampleArray[1]}.variants.chr${chr}.raw.snvmix.vcf "
 	fi
@@ -373,6 +375,8 @@ else
 				$script_path/mutect.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.vcf $run_info
 			elif [ $somatic_caller == "BEAUTY_EXOME" ]
 			then
+				
+				### Start mutect, jointsnv, somatic sniper calling on samples 2..N
 				$script_path/mutect.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.mutect.vcf $run_info
 				$script_path/Jointsnvmix.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.jsm.vcf $run_info & 
 				$script_path/somaticsnipper.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.ss.vcf $run_info &
@@ -385,31 +389,46 @@ else
 					sleep 2m	
 				done
 				
-				#Combine vcf's into one VCF
+				### combine INPUT .snv.mutect.vcf, .snv.jsm.vcf, .snv.ss.vcf
 				input_var="-V:MuTect $output/$sample.chr$chr.snv.mutect.vcf -V:JSM $output/$sample.chr$chr.snv.jsm.vcf -V:SomSniper $output/$sample.chr$chr.snv.ss.vcf -priority SomSniper,JSM,MuTect"
-				#Combine Variants
 				echo -e "starting to combine variants\n\n"
 				$script_path/combinevcf.sh "$input_var" $output/$sample.chr${chr}.snv.vcf $run_info yes
+				### OUTPUT -- $output/$sample.chr${chr}.snv.vcf
 			fi
-			### annotate vcfs if they haven't been already
+			
+			### annotate snvs (Beauty handles later)
 			in_bam="-I $input/$bam"
 			if [ $somatic_caller != "BEAUTY_EXOME" ]
 			then
 				$script_path/annotate_vcf.sh $output/$sample.chr$chr.snv.vcf $run_info "$in_bam"
 			fi
+			
 			### somatic indel calling
 			$script_path/somaticindel.sh $output/$tumor $output/$normal $chr "$param" $sample $output $sample.chr$chr.indel.vcf $run_info
-			### annoatte vcfs
+			
+			### annotate indels 
 			$script_path/annotate_vcf.sh $output/$sample.chr$chr.indel.vcf $run_info "$in_bam"
+			
+			### OUTPUT -- $output/$sample.chr$chr.indel.vcf
 		done
+		### finished samples 2..N 
 	fi
-	## Germline / somatic calling
-	
+	### endif somatic calling
+
+	##########################################
+	### Germline Calling on Main .bam File ###
+	### Multiple Samples Case              ###
+	##########################################
+
 	bam="-I $input/$bam"
 	$script_path/unifiedgenotyper.sh "$bam" $output/variants.chr${chr}.raw.gatk.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info
-	### call snvs using snvmix
+	
+	#### $output/variants.chr${chr}.raw.gatk.vcf is later merged into ${output}/variants.chr${chr}.raw.vcf
+	
 	if [ $somatic_caller == "BEAUTY_EXOME" ]
 	then
+		### call snvs using snvmix on samples 2..N
+		### could this be relocated into above loop?? 
 		for i in $(seq 2 ${#sampleArray[@]})
 		do
 			sample=${sampleArray[$i]}
@@ -417,13 +436,17 @@ else
 			in=$in"-V $output/$sample.variants.chr${chr}.raw.snvmix.vcf "
 			$script_path/snvmix2.sh $sample $output/$tumor $output/$sample.variants.chr${chr}.raw.snvmix.vcf target "$param" $run_info
 		done
+		
+		### TODO: Replace with PID/wait instead of unbounded loop see:0xDEADBEEF
 		while [[ ! -s $output/${sampleArray[1]}.variants.chr${chr}.raw.snvmix.vcf ]]
 		do
 			echo "waiting for snvmix2 complete for normal sample "
 			sleep 2m	
 		done
+		
 		$script_path/combinevcf.sh "$in" ${output}/variants.chr${chr}.raw.snvmix.vcf $run_info yes
-		#UNION
+		
+		#UNION - combine .gatk.vcf, .snvmix.vcf 
 		input_var="-V:GATK $output/variants.chr${chr}.raw.gatk.vcf -V:SNVMIX ${output}/variants.chr${chr}.raw.snvmix.vcf -priority GATK,SNVMIX"
 		#Combine Variants
 		$script_path/combinevcf.sh "$input_var" ${output}/variants.chr${chr}.raw.vcf $run_info yes
@@ -432,7 +455,11 @@ else
 		mv $output/variants.chr${chr}.raw.gatk.vcf ${output}/variants.chr${chr}.raw.vcf
 		$script_path/annotate_vcf.sh ${output}/variants.chr${chr}.raw.vcf $run_info "$bam"
 	fi		
-fi
+	
+fi ### Done with multiple sample part of script
+
+### XXX here we should have $output/variants.chr${chr}.raw.vcf no matter what XXX
+
 if [ $tool == "exome" ]
 then
 	if [ -f $output/chr$chr.target.bed ]
@@ -440,14 +467,14 @@ then
 		rm $output/chr$chr.target.bed
 	fi
 fi
-### after this we get multiple indels and snp files which need to be merged for Multi samples but just filter for
-	
-    if [ ${#sampleArray[@]} -gt 1 ]
+
+### after this we get multiple indels and snp files which need to be merged and backfilled for somatic samples 
+if [ ${#sampleArray[@]} -gt 1 ]
 then
-	### INDEL
 	if [ $somatic_calling == "YES" ]
 	then
 		input_var=""
+		### Merge INDEL Files Across Samples 2..N
 		for i in $(seq 2 ${#sampleArray[@]})
 		do
 			sample=${sampleArray[$i]}
@@ -456,7 +483,7 @@ then
 		done
 		$script_path/combinevcf.sh "$input_var" $output/MergeAllSamples.chr$chr.Indels.raw.vcf $run_info yes
 
-			##Merge SNVs
+		###Merge SNVs Across Samples 2..N
 		input_var=""
 		for i in $(seq 2 ${#sampleArray[@]})
 		do
@@ -464,27 +491,29 @@ then
 			snv=$sample.chr$chr.snv.vcf
 			input_var="${input_var} -V $output/$snv"
 		done
+		
 		$script_path/combinevcf.sh "$input_var" $output/MergeAllSamples.chr$chr.snvs.raw.vcf $run_info yes
+		
+		### Perform Backfilling on SNVs in Samples 2..N
 		$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" $output/MergeAllSamples.chr$chr.snvs.raw.vcf BOTH EMIT_ALL_SITES $run_info
+		
 		## combine both snv and indel
 		in="$output/MergeAllSamples.chr$chr.snvs.raw.vcf $output/MergeAllSamples.chr$chr.Indels.raw.vcf"
 		$script_path/concatvcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.vcf $run_info yes
-		fi
 	fi
+fi
 
-	## remove files and add ED blat field
+### Cleanup single sample
 if [ ${#sampleArray[@]} == 1 ]
 then
-	### add the ED column
+	### remove files and add ED blat field column
 	if [[ ! -s $output/${sampleArray[1]}.variants.chr$chr.raw.vcf ]]
 	then
-		echo "ERROR : variant calling failed for ${sampleArray[1]} in variantss.h script"	
+		echo "ERROR : variant calling failed for ${sampleArray[1]} in variants.sh script"	
 		exit 1;
 	fi
-	
-$script_path/vcf_blat_verify.pl -i $output/${sampleArray[1]}.variants.chr$chr.raw.vcf -o $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
+	$script_path/vcf_blat_verify.pl -i $output/${sampleArray[1]}.variants.chr$chr.raw.vcf -o $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 	mv $output/${sampleArray[1]}.variants.chr$chr.raw.vcf.temp $output/${sampleArray[1]}.variants.chr$chr.raw.vcf
-	
 	bam=chr${chr}.cleaned.bam
 	rm $output/$bam.$chr.bam
 	rm $output/$bam.$chr.bam.bai
@@ -496,6 +525,7 @@ $script_path/vcf_blat_verify.pl -i $output/${sampleArray[1]}.variants.chr$chr.ra
 	$script_path/filesize.sh VariantCalling ${sampleArray[1]} $output ${sampleArray[1]}.variants.chr$chr.raw.vcf $JOB_ID $run_info
 fi
 
+### Cleanup multiple samples
 if [ ${#sampleArray[@]} -gt 1 ]
 then
 	if [ $somatic_calling == "NO" ]
@@ -511,10 +541,8 @@ then
 			exit 1;
 		fi	
 	fi
-	
 	$script_path/vcf_blat_verify.pl -i $output/variants.chr$chr.raw.vcf -o $output/variants.chr$chr.raw.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 	mv $output/variants.chr$chr.raw.vcf.temp $output/variants.chr$chr.raw.vcf
-			
 	if [ $somatic_calling == "YES" ]
 	then
 		$script_path/vcf_blat_verify.pl -i $output/MergeAllSamples.chr$chr.raw.vcf -o $output/MergeAllSamples.chr$chr.raw.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
