@@ -2,7 +2,10 @@
 
 if [ $# -le 4 ]
 then
-	echo -e "script to run variant calling on set of BAM files\nUsage: ./variants.sh </path/to/input dir><samples ':' sep[normal:tumor1:tumor2:tumorN]> </path/to/output directory> <1 or 0 chopped or not ><path/to/run info><SGE_TASK_ID(optional)>\nNOTE: first sample is considered as normal and others are considered as tumor[Assumption]";
+	echo -e "script to run variant calling on set of BAM files\nUsage: ./variants.sh \
+</path/to/input dir> <samples ':' sep[normal:tumor1:tumor2:tumorN]> </path/to/output directory> \
+<1 or 0 chopped or not > <path/to/run info> <SGE_TASK_ID(optional)>\
+\nNOTE: first sample is considered as normal and others are considered as tumor[Assumption]";
 	exit 1;
 fi
 
@@ -128,7 +131,13 @@ then
 	cat $TargetKit | grep -w chr$chr > $output/chr$chr.target.bed
 fi
 
-	### If we only have one sample
+### OUTPUT (SINGLE SAMPLE:GATK:EXOME:ALLSITES) : $output/$sample.variants.chr${chr}.raw.all.vcf.bgz  (no ./. calls)
+### OUTPUT (SINGLE SAMPLE:GATK:EXOME:KNOWN SITES) : $output/$sample.variants.chr${chr}.raw.vcf
+### OUTPUT (SINGLE SAMPLE:GATK:WHOLEGENOME:KNOWN SITES) : $output/$sample.variants.chr${chr}.raw.vcf 
+			
+
+
+### If we only have one sample
 if [ ${#sampleArray[@]} == 1 ] 
 then
 	sample=${sampleArray[1]}
@@ -146,18 +155,19 @@ then
 			fi
 			bam="-I $output/$sample.chr${chr}-sorted.bam"
 			$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.all.vcf BOTH "$param" EMIT_ALL_SITES $run_info
-			## add phase by transmission if pedigree information provided.
+			
+			### add phase by transmission if pedigree information provided.
 			if [ $ped != "NA" ]
 			then
 				$script_path/phaseByTransmission.sh $output/$sample.variants.chr${chr}.raw.all.vcf $output/$sample.variants.chr${chr}.raw.all.pbt.vcf $run_info
 			fi
+			
 			### filter this file to keep only the variants calls
 			cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "." || $0 ~ /^#/' | grep -v "\./\."  | grep -v "0\/0" > $output/$sample.variants.chr${chr}.raw.vcf
 			sed '/^$/d' $output/$sample.variants.chr${chr}.raw.vcf > $output/$sample.variants.chr${chr}.raw.vcf.temp
 			mv $output/$sample.variants.chr${chr}.raw.vcf.temp $output/$sample.variants.chr${chr}.raw.vcf
 			
-			### prepare the file for backfilling
-			### delete all lines containing ./. 
+			### prepare the file for backfilling, delete all lines containing ./. 
 			cat $output/$sample.variants.chr${chr}.raw.all.vcf | grep -v "\./\." > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
 			mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
 			
@@ -167,6 +177,7 @@ then
 			
 			### call tabix and zip up the vcf
 			$tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
+			
 		elif [ $tool == "exome" ] ### all_sites == "NO"
 		then
 			len=`cat $output/chr$chr.target.bed |wc -l`
@@ -178,22 +189,35 @@ then
 			fi
 			bam="-I $output/$sample.chr${chr}-sorted.bam"
 			$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info
+			
+			
 			## add phase by transmission if pedigree information provided.
 			if [ $ped != "NA" ]
 			then
-				$script_path/phaseByTransmission.sh $output/$sample.variants.chr${chr}.raw.all.vcf $output/$sample.variants.chr${chr}.raw.all.pbt.vcf $run_info
+				### FIXED: THIS REFERED TO A FILE THAT SHOULD NOT EXIST AT THIS POINT (.all.vcf) CR, 2/14/2013
+				$script_path/phaseByTransmission.sh $output/$sample.variants.chr${chr}.raw.vcf $output/$sample.variants.chr${chr}.raw.pbt.vcf $run_info
 			fi
 			$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam"
-		else ### tool == whole_genome 
+			
+			### OUTPUT (SINGLE SAMPLE:GATK:EXOME:KNOWN SITES) : $output/$sample.variants.chr${chr}.raw.vcf 
+			
+			
+		else 
+			### tool == whole_genome ASSUMED all_sites=="NO"
 			param="-L chr$chr"
 			bam="-I $output/$sample.chr${chr}-sorted.bam"
 			$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info
 			## add phase by transmission if pedigree information provided.
 			if [ $ped != "NA" ]
 			then
-				$script_path/phaseByTransmission.sh $output/$sample.variants.chr${chr}.raw.all.vcf $output/$sample.variants.chr${chr}.raw.all.pbt.vcf $run_info
+				### FIXED: THIS REFERED TO A FILE THAT SHOULD NOT EXIST AT THIS POINT (.all.vcf) CR, 2/14/2013
+				$script_path/phaseByTransmission.sh $output/$sample.variants.chr${chr}.raw.vcf $output/$sample.variants.chr${chr}.raw.pbt.vcf $run_info
 			fi
+			
 			$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam"
+			
+			### OUTPUT (SINGLE SAMPLE:GATK:WHOLEGENOME:KNOWN SITES) : $output/$sample.variants.chr${chr}.raw.vcf 
+			
 		fi
 	elif [ $SNV_caller == "SNVMIX" ]
 	then
@@ -466,6 +490,7 @@ $script_path/vcf_blat_verify.pl -i $output/${sampleArray[1]}.variants.chr$chr.ra
 	### update the file size
 	$script_path/filesize.sh VariantCalling ${sampleArray[1]} $output ${sampleArray[1]}.variants.chr$chr.raw.vcf $JOB_ID $run_info
 fi
+
 if [ ${#sampleArray[@]} -gt 1 ]
 then
 	if [ $somatic_calling == "NO" ]
@@ -481,6 +506,7 @@ then
 			exit 1;
 		fi	
 	fi
+	
 	$script_path/vcf_blat_verify.pl -i $output/variants.chr$chr.raw.vcf -o $output/variants.chr$chr.raw.vcf.temp -r $ref -b $blat -sam $samtools -br $blat_ref $blat_params
 	mv $output/variants.chr$chr.raw.vcf.temp $output/variants.chr$chr.raw.vcf
 			
@@ -503,7 +529,7 @@ then
 	$script_path/filesize.sh VariantCalling multi_sample $output variants.chr$chr.raw.vcf $JOB_ID $run_info
 fi
 
-	## update dash board
+### update dash board
 if [ $SGE_TASK_ID == 1 ]
 then
 	for i in `echo $samples | tr ":" " "`
