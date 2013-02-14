@@ -422,8 +422,7 @@ else
 
 	bam="-I $input/$bam"
 	$script_path/unifiedgenotyper.sh "$bam" $output/variants.chr${chr}.raw.gatk.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info
-	
-	#### $output/variants.chr${chr}.raw.gatk.vcf is later merged into ${output}/variants.chr${chr}.raw.vcf
+	### $output/variants.chr${chr}.raw.gatk.vcf is later merged into ${output}/variants.chr${chr}.raw.vcf
 	
 	if [ $somatic_caller == "BEAUTY_EXOME" ]
 	then
