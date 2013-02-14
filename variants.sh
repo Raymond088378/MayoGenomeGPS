@@ -503,6 +503,10 @@ then
 	fi
 fi
 
+###############
+### CLEANUP ###
+###############
+
 ### Cleanup single sample
 if [ ${#sampleArray[@]} == 1 ]
 then
