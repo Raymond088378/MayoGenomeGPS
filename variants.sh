@@ -132,6 +132,7 @@ then
 fi
 
 ### OUTPUT (SINGLE SAMPLE:GATK:EXOME:ALLSITES) : $output/$sample.variants.chr${chr}.raw.all.vcf.bgz  (no ./. calls)
+### 											 $output/$sample.variants.chr${chr}.raw.vcf
 ### OUTPUT (SINGLE SAMPLE:GATK:EXOME:KNOWN SITES) : $output/$sample.variants.chr${chr}.raw.vcf
 ### OUTPUT (SINGLE SAMPLE:GATK:WHOLEGENOME:KNOWN SITES) : $output/$sample.variants.chr${chr}.raw.vcf 
 			
@@ -162,7 +163,7 @@ then
 				$script_path/phaseByTransmission.sh $output/$sample.variants.chr${chr}.raw.all.vcf $output/$sample.variants.chr${chr}.raw.all.pbt.vcf $run_info
 			fi
 			
-			### filter this file to keep only the variants calls
+			### filter raw.all.vcf file to keep only the variant calls
 			cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "." || $0 ~ /^#/' | grep -v "\./\."  | grep -v "0\/0" > $output/$sample.variants.chr${chr}.raw.vcf
 			sed '/^$/d' $output/$sample.variants.chr${chr}.raw.vcf > $output/$sample.variants.chr${chr}.raw.vcf.temp
 			mv $output/$sample.variants.chr${chr}.raw.vcf.temp $output/$sample.variants.chr${chr}.raw.vcf
@@ -198,10 +199,6 @@ then
 				$script_path/phaseByTransmission.sh $output/$sample.variants.chr${chr}.raw.vcf $output/$sample.variants.chr${chr}.raw.pbt.vcf $run_info
 			fi
 			$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam"
-			
-			### OUTPUT (SINGLE SAMPLE:GATK:EXOME:KNOWN SITES) : $output/$sample.variants.chr${chr}.raw.vcf 
-			
-			
 		else 
 			### tool == whole_genome ASSUMED all_sites=="NO"
 			param="-L chr$chr"
@@ -215,9 +212,6 @@ then
 			fi
 			
 			$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.vcf $run_info "$bam"
-			
-			### OUTPUT (SINGLE SAMPLE:GATK:WHOLEGENOME:KNOWN SITES) : $output/$sample.variants.chr${chr}.raw.vcf 
-			
 		fi
 	elif [ $SNV_caller == "SNVMIX" ]
 	then
@@ -238,11 +232,14 @@ then
 			$script_path/snvmix2.sh $sample "$bam" $output/$sample.variants.chr${chr}.raw.snv.all.vcf all "$param" $run_info
 			### annoatte vcf
 			$script_path/annotate_vcf.sh $output/$sample.variants.chr${chr}.raw.snv.all.vcf $run_info "$bam"
-			### merge snvs and indels to give on vcf
+			### merge snvs and indels to give .raw.all.vcf
 			in="$output/$sample.variants.chr${chr}.raw.snv.all.vcf $output/$sample.variants.chr${chr}.raw.indel.all.vcf "
 			$script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.all.vcf $run_info yes
+			
+			### Remove uncalled variants to give .raw.vcf
 			cat $output/$sample.variants.chr${chr}.raw.all.vcf | awk '$5 != "." || $0 ~ /^#/' | grep -v "\./\."  | grep -v "0\/0" > $output/$sample.variants.chr${chr}.raw.vcf
 			$tabix/bgzip $output/$sample.variants.chr${chr}.raw.all.vcf
+			
 		elif [ $tool == "exome" ]
 		then
 			len=`cat $output/chr$chr.target.bed |wc -l`
@@ -297,12 +294,14 @@ then
 			$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.gatk.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info &
 			### call snvs using snvmix
 			$script_path/snvmix2.sh $sample "$bam" $output/$sample.variants.chr${chr}.raw.snvmix.vcf target "$param" $run_info &
-			#UNION    
+			
+			### TODO: Change to pid/wait instead of unbound loop
 			while [[ ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf  ]]
 			do
 				echo " waiting for gatk and snvnix to complete to complete "
 				sleep 2m	
 			done
+			
 			input_var=""
 			input_var="-V:GATK $output/$sample.variants.chr${chr}.raw.gatk.vcf -V:SNVMix $output/$sample.variants.chr${chr}.raw.snvmix.vcf -priority GATK,SNVMix"
 			#Combine Variants
@@ -314,12 +313,15 @@ then
 			$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.gatk.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info &
 			### call snvs using snvmix
 			$script_path/snvmix2.sh $sample "$bam" $output/$sample.variants.chr${chr}.raw.snvmix.vcf target "$param" $run_info &
-			#UNION    
+			
+			### TODO: Change to pid / wait instead of unbound loop
 			while [[ ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf ]]
 			do
 				echo " waiting for gatk and snvnix to complete to complete "
 				sleep 2m	
 			done
+			
+			#UNION    
 			input_var=""
 			input_var="-V:GATK $output/$sample.variants.chr${chr}.raw.gatk.vcf -V:SNVMix $output/$sample.variants.chr${chr}.raw.snvmix.vcf -priority GATK,SNVMix"
 			#Combine Variants
@@ -375,11 +377,14 @@ else
 				$script_path/Jointsnvmix.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.jsm.vcf $run_info & 
 				$script_path/somaticsnipper.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.ss.vcf $run_info &
 				
+				
+				### TODO: Change this to a PID / wait statement instead of polling for file creation
 				while [[ ! -s $output/$sample.chr$chr.snv.jsm.vcf ||  ! -s $output/$sample.chr$chr.snv.ss.vcf ]]
 				do
 					echo " waiting for jointsnvmix somaticsniper to complete "
 					sleep 2m	
 				done
+				
 				#Combine vcf's into one VCF
 				input_var="-V:MuTect $output/$sample.chr$chr.snv.mutect.vcf -V:JSM $output/$sample.chr$chr.snv.jsm.vcf -V:SomSniper $output/$sample.chr$chr.snv.ss.vcf -priority SomSniper,JSM,MuTect"
 				#Combine Variants
