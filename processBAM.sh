@@ -42,6 +42,10 @@ else
 	dup_flag=$( cat $tool_info | grep -w '^REMOVE_DUP' | cut -d '=' -f2 )
 	dup=$( cat $tool_info | grep -w '^MARKDUP' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 	aligner=$( cat $run_info | grep -w '^ALIGNER' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
+	usenovosort=$( cat $tool_info | grep -w '^USENOVOSORT' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
+	novosort=$( cat $tool_info | grep -w '^NOVOSORT' | cut -d '=' -f2)
+	novosortopt=$( cat $tool_info | grep -w '^NOVOSORTOPT' | cut -d '=' -f2)
+	
 	if [ $aligner == "bwa" ]
 	then
 		previous="align_bwa.sh"
@@ -95,8 +99,15 @@ else
 			mv $input/$sample.bam $input/$sample.sorted.bam
 			$samtools/samtools index $input/$sample.sorted.bam
 		else
-			### sort and index the bam file (index set true)
-			$script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate true $run_info
+			if [ $usenovosort == "YES" ]
+			then
+				### NOVOSORT INJECTION
+				mkdir -p $input/temp
+				$novosort $novosortopt --index --tmpdir=$input/temp $input/$sample.bam -o $input/$sample.sorted.bam
+			else
+				### sort and index the bam file (index set true)
+				$script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate true $run_info
+			fi
 		fi
 	else	
 	    $script_path/MergeBam.sh "$INPUTARGS" $input/$sample.sorted.bam $input true $run_info
