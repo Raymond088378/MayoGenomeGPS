@@ -52,7 +52,7 @@ then
 fi
 
 
-### This is an annoyance - we can obtain the full path from readlink -f $run_info -CR 1/29/2013 ??
+### This is an annoyance - we obtain the full path from readlink -f $run_info -CR 1/29/2013 ??
 dir_info=`dirname $run_info`
 if [ "$dir_info" = "." ]
 then

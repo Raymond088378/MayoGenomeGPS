@@ -10,6 +10,15 @@
 ######					$3	=	/path/to/run_info.txt
 ########################################################
 
+
+### inputs
+###	$input/$sample.variants.chr$chr.raw.vcf
+###
+### outputs
+### $out/$sample.variants.raw.vcf
+### $out/$sample.variants.filter.vcf
+
+
 if [ $# != 4 ];
 then
     echo -e "script to merge the varaiants and then apply filters to the vcf file\nUsage: ./merge_variant_single.sh </path/to/input directory> <sample name> </path/to/output folder> </path/to/run_info.txt>";
@@ -21,8 +30,7 @@ else
     out=$3
     run_info=$4
     
-########################################################	
-######		Reading run_info.txt and assigning to variables
+	### reading run_info.txt and assign variables
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 ) 
     chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" )
@@ -94,3 +102,4 @@ else
     fi  
 	echo `date`	
 fi  
+

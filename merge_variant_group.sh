@@ -2,7 +2,6 @@
 
 ########################################################
 ###### 	Merges variants from vcf files by chromosome
-
 ######		Program:			merge_variant_group.sh
 ######		Date:				12/13/2011
 ######		Summary:			Using PICARD to sort and mark duplicates in bam 
@@ -10,6 +9,22 @@
 ######					$2	=	group name
 ######					$3	=	/path/to/run_info.txt
 ########################################################
+
+### SOMATIC INPUTS
+### inputs
+###	$input/MergeAllSamples.chr$chr.raw.vcf
+###
+### outputs
+### $out/$group.somatic.variants.raw.vcf
+### $out/$group.somatic.variants.filter.vcf
+###
+### INDIVIDUAL SAMPLES
+###
+### inputs
+### $input/$group/variants.chr$chr.raw.vcf
+### outputs
+### $out/$group.variants.raw.vcf
+### $out/$group.variants.raw.filter.vcf
 
 if [ $# != 4 ];
 then
@@ -22,8 +37,8 @@ else
     out=$3
     run_info=$4
 	
-########################################################	
-######		Reading run_info.txt and assigning to variables
+	
+	###	read run_info.txt and assign variables
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
@@ -44,7 +59,7 @@ else
 	export PATH=$PERL5LIB:$PATH
 	export PATH=$java:$PATH
     somatic_calling=$( cat $tool_info | grep -w '^SOMATIC_CALLING' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )    
-########################################################	
+	########################################################	
 
     if [ $somatic_calling == "YES" ]
 	then
@@ -89,6 +104,7 @@ else
 		done
 		fi
 	fi
+	
 	### multi sample calling	
     inputargs=""
     for i in $chrs
