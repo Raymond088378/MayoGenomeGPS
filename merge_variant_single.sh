@@ -2,7 +2,6 @@
 
 ########################################################
 ###### 	Merges variants from vcf files by chromosome
-
 ######		Program:			merge_variant_group.sh
 ######		Date:				12/13/2011
 ######		Summary:			Using PICARD to sort and mark duplicates in bam 
@@ -43,6 +42,7 @@ else
     export PATH=$java:$PATH
 	
     
+    ### loop over all chromosomes to create list of files to merge
     inputargs=""
     for i in $chrs
     do
@@ -56,6 +56,7 @@ else
 		inputargs=$inputargs"$inputfile "
     done
 	
+	### concatenate all vcf files in file list together
     $script_path/concatvcf.sh "$inputargs" $out/$sample.variants.raw.vcf $run_info no
 	
     ### filter the variant calls
@@ -65,6 +66,8 @@ else
     else
         cp $out/$sample.variants.raw.vcf $out/$sample.variants.filter.vcf
     fi
+    
+    ### check whether vqsr produced output / file was copied correctly
 	if [ ! -s $out/$sample.variants.filter.vcf ]
     then
     	touch $out/$sample.variants.filter.vcf.fix.log
