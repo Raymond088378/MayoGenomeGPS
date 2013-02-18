@@ -2,15 +2,16 @@
 
 if [ $# != 5 ]
 then
-    echo -e "script to run unified genotyper and backfill the positions\nUsage: ./unifiedgenotyper.sh <bams><vcf output><type of varint> <output mode><run info file>"
+    echo -e "script to run unified genotyper and backfill the positions\nUsage: ./unifiedgenotyper.sh <bams> <vcf allele source > <type of variant> <output mode> <run info file>"
 else
     set -x
     echo `date`
     bam=$1
-    vcf=$2
-    type=$3
-    mode=$4
-    run_info=$5
+    vcf_in=$2
+    vcf_out=$3
+    type=$4
+    mode=$5
+    run_info=$6
 
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     ped=$( cat $tool_info | grep -w '^PEDIGREE' | cut -d '=' -f2)
@@ -26,7 +27,7 @@ else
     mem=$( cat $memory_info | grep -w '^UnifiedGenotyper_JVM' | cut -d '=' -f2)
 	 
     let check=0
-    out=`dirname $vcf`
+    out=`dirname $vcf_in`
     
     if [ ! -d $out/temp ]
 	then
@@ -42,11 +43,11 @@ else
 		-T UnifiedGenotyper \
 		--output_mode $mode \
 		--genotyping_mode GENOTYPE_GIVEN_ALLELES \
-		--alleles $vcf \
+		--alleles $vcf_in \
 		-glm $type \
-		-L $vcf \
+		-L $vcf_in \
 		$bam \
-		--out $vcf.tmp.vcf $command_line_params
+		--out $vcf_out.tmp.vcf $command_line_params
 		sleep 5
         check=`[ -s $vcf.tmp.vcf.idx ] && echo "1" || echo "0"`
         if [ $check -eq 0 ]
@@ -64,9 +65,10 @@ else
     done 
     	
 	### add AD,DP,DP4 to the original vcf file
-	$script_path/revertvcf_formatfields.pl -o $vcf -i $vcf.tmp.vcf -v $vcf.correct.vcf
-	rm $vcf.tmp.vcf $vcf.tmp.vcf.idx
-	mv $vcf.correct.vcf $vcf	
-	rm $vcf.idx	
+	### overwrite the original .vcf input
+	$script_path/revertvcf_formatfields.pl -o $vcf_out -i $vcf_out.tmp.vcf -v $vcf_out.correct.vcf
+	rm $vcf_out.tmp.vcf $vcf_out.tmp.vcf.idx
+	mv $vcf_out.correct.vcf $vcf_out	
+	rm $vcf_out.idx	
     echo `date`
 fi
