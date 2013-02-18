@@ -416,6 +416,7 @@ else
 		### finished samples 2..N 
 	fi
 	### endif somatic calling
+	### somatic variants sample 2..N in $output/$sample.chr$chr.indel.vcf and $output/$sample.chr$chr.snv.vcf
 
 	##########################################
 	### Germline Calling on Main .bam File ###
@@ -424,7 +425,7 @@ else
 
 	bam="-I $input/$bam"
 	$script_path/unifiedgenotyper.sh "$bam" $output/variants.chr${chr}.raw.gatk.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info
-	### $output/variants.chr${chr}.raw.gatk.vcf is later merged into ${output}/variants.chr${chr}.raw.vcf
+	### $output/variants.chr${chr}.raw.gatk.vcf is later merged into or moved to ${output}/variants.chr${chr}.raw.vcf
 	
 	if [ $somatic_caller == "BEAUTY_EXOME" ]
 	then
@@ -453,13 +454,14 @@ else
 		$script_path/combinevcf.sh "$input_var" ${output}/variants.chr${chr}.raw.vcf $run_info yes
 		$script_path/annotate_vcf.sh $output/variants.chr${chr}.raw.vcf $run_info "$bam"
 	else
+		### NON-BEAUTY Case, Move Germline Variants to .raw.vcf 
 		mv $output/variants.chr${chr}.raw.gatk.vcf ${output}/variants.chr${chr}.raw.vcf
 		$script_path/annotate_vcf.sh ${output}/variants.chr${chr}.raw.vcf $run_info "$bam"
 	fi		
 	
 fi ### Done with multiple sample part of script
 
-### XXX here we should have $output/variants.chr${chr}.raw.vcf no matter what XXX
+### XXX here we should have germline variants in $output/variants.chr${chr}.raw.vcf no matter what XXX
 
 if [ $tool == "exome" ]
 then
@@ -495,17 +497,27 @@ then
 		
 		$script_path/combinevcf.sh "$input_var" $output/MergeAllSamples.chr$chr.snvs.raw.vcf $run_info yes
 		
-		### Perform Backfilling on SNVs in Samples 2..N
+		### Perform Backfilling on somatic SNVs in Samples 2..N
 		$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" $output/MergeAllSamples.chr$chr.snvs.raw.vcf $output/MergeAllSamples.chr$chr.snvs.raw.vcf BOTH EMIT_ALL_SITES $run_info
 		
 		## combine both snv and indel
 		in="$output/MergeAllSamples.chr$chr.snvs.raw.vcf $output/MergeAllSamples.chr$chr.Indels.raw.vcf"
 		$script_path/concatvcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.vcf $run_info yes
 		
-		### TODO Backfill Non-somatic Variants using Somatic
-		### $output/variants.chr${chr}.raw.gatk.vcf
+		### Create merged allele list 
+		### bfalleles = "-V ${output}/variants.chr${chr}.raw.vcf -V $output/MergeAllSamples.chr$chr.raw.vcf"
+		### $script_path/combinevcf.sh "$bfalleles" $output/bfalleles.chr$chr.raw.vcf.temp $run_info NO
+
+		### Backfill Non-somatic Variants in ${output}/variants.chr${chr}.raw.vcf using somatic & non-somatic 
+		### $script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" $output/bfalleles.chr$chr.raw.vcf.temp \
+		###	${output}/variants.chr${chr}.raw.vcf BOTH EMIT_ALL_SITES $run_info
+		### rm $output/bfalleles.chr$chr.raw.vcf.temp
+		echo Backfill Somatic&Nonsomatic
 	else
-		### TODO Backfill Non-somatic Variants
+		### Backfill Non-somatic Variants in ${output}/variants.chr${chr}.raw.vcf using germline
+		### $script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" ${output}/variants.chr${chr}.raw.vcf \
+	   	###	${output}/variants.chr${chr}.raw.vcf BOTH EMIT_ALL_SITES $run_info
+		echo Backfill Nonsomatic Only
 	fi
 fi
 
