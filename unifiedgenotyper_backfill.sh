@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $# != 5 ]
+if [ $# != 6 ]
 then
-    echo -e "script to run unified genotyper and backfill the positions\nUsage: ./unifiedgenotyper.sh <bams> <vcf allele source > <type of variant> <output mode> <run info file>"
+    echo -e "script to run unified genotyper and backfill the positions\nUsage: ./unifiedgenotyper.sh <bams> <vcf allele source > <vcf output> <type of variant> <output mode> <run info file>"
 else
     set -x
     echo `date`
