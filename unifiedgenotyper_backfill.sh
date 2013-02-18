@@ -49,14 +49,14 @@ else
 		$bam \
 		--out $vcf_out.tmp.vcf $command_line_params
 		sleep 5
-        check=`[ -s $vcf.tmp.vcf.idx ] && echo "1" || echo "0"`
+        check=`[ -s $vcf_out.tmp.vcf.idx ] && echo "1" || echo "0"`
         if [ $check -eq 0 ]
         then
 			if [[  `find . -name '*.log'` ]]
 			then
-				if [ `grep -l $vcf.tmp.vcf *.log` ]
+				if [ `grep -l $vcf_out.tmp.vcf *.log` ]
 				then
-					rm `grep -l $vcf.tmp.vcf *.log`
+					rm `grep -l $vcf_out.tmp.vcf *.log`
 					rm core.*
 				fi
 			fi
