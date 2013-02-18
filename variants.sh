@@ -565,7 +565,10 @@ then
 	$script_path/filesize.sh VariantCalling multi_sample $output variants.chr$chr.raw.vcf $JOB_ID $run_info
 fi
 
-### update dash board
+### update dash board if the first chromosome is finished 
+### TODO: Move to a separate qsub submission that checks all chromosomes and does the update CR 2/18/2013
+### 
+
 if [ $SGE_TASK_ID == 1 ]
 then
 	for i in `echo $samples | tr ":" " "`
