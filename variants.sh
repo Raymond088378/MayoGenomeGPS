@@ -113,20 +113,21 @@ then
 			$samtools/samtools view -H $output/$sample.chr$chr.rg.bam | grep -w -E -v "$gr" | $samtools/samtools reheader - $output/$sample.chr$chr.rg.bam > $output/$sample.chr$chr.rg.re.bam
 				mv $output/$sample.chr$chr.rg.re.bam $output/$sample.chr$chr.rg.bam
 
-				if [ ! -s $output/$sample.chr$chr.rg.bam ]
-				then
-					$script_path/errorlog.sh $output/$sample.chr$chr.rg.bam variants.sh ERROR "failed to create"
+			if [ ! -s $output/$sample.chr$chr.rg.bam ]
+			then
+				$script_path/errorlog.sh $output/$sample.chr$chr.rg.bam variants.sh ERROR "failed to create"
 				exit 1;
 			fi
 			$script_path/samplecheckBAM.sh $output $sample.chr$chr.rg.bam $output $run_info $sample $chopped $chr
 		done
 	fi
 else
+	### Single Sample
 	sample=${sampleArray[1]}
-		$script_path/samplecheckBAM.sh $input $bam $output $run_info $sample $chopped $chr
-	fi
+	$script_path/samplecheckBAM.sh $input $bam $output $run_info $sample $chopped $chr
+fi
 
-	inputfiles=""
+inputfiles=""
 if [ $tool == "exome" ]
 then
 	cat $TargetKit | grep -w chr$chr > $output/chr$chr.target.bed
@@ -169,7 +170,8 @@ then
 			sed '/^$/d' $output/$sample.variants.chr${chr}.raw.vcf > $output/$sample.variants.chr${chr}.raw.vcf.temp
 			mv $output/$sample.variants.chr${chr}.raw.vcf.temp $output/$sample.variants.chr${chr}.raw.vcf
 			
-			### prepare the file for backfilling, delete all lines containing ./. 
+			### prepare the file for backfilling (backfill a single sample? -CR) 
+			### delete all lines containing ./. 
 			cat $output/$sample.variants.chr${chr}.raw.all.vcf | grep -v "\./\." > $output/$sample.variants.chr${chr}.raw.all.vcf.temp
 			mv $output/$sample.variants.chr${chr}.raw.all.vcf.temp $output/$sample.variants.chr${chr}.raw.all.vcf
 			
