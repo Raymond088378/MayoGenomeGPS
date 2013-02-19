@@ -139,6 +139,7 @@ REALIGN_params=--maxReadsForRealignment 20000 --maxReadsInMemory 150000
 BLAT_params=-w 50 -m 70 -t 90 
 NOVOSORTPBOPT=--ram 12G --threads 4
 NOVOSORTALGNOPT=--ram 3G --threads 4
+
 ### paramters
 CNVNATOR_BINSIZE=1000
 PCT_READS_SEGSEQ=0.05
