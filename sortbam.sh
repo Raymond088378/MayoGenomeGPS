@@ -23,9 +23,9 @@ else
     reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
     mem=$( cat $memory_info | grep -w '^SORT_JVM' | cut -d '=' -f2)
     ### Included for future use 
-    usenovosort=$( cat $tool_info | grep -w '^USENOVOSORT' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
-	novosort=$( cat $tool_info | grep -w '^NOVOSORT' | cut -d '=' -f2)
-	novosortopt=$( cat $tool_info | grep -w '^NOVOSORTOPT' | cut -d '=' -f2)
+    ### usenovosort=$( cat $tool_info | grep -w '^USENOVOSORT' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
+	### novosort=$( cat $tool_info | grep -w '^NOVOSORT' | cut -d '=' -f2)
+	### novosortopt=$( cat $tool_info | grep -w '^NOVOSORTPBOPT' | cut -d '=' -f2)
 	
 	$java/java $mem -jar $picard/SortSam.jar \
     INPUT=$inbam \

@@ -99,7 +99,7 @@ else
 			mv $input/$sample.bam $input/$sample.sorted.bam
 			$samtools/samtools index $input/$sample.sorted.bam
 		else
-			if [ $usenovosort == "YES" ]
+			if [ $usenovosort == "yes" ]
 			then
 				### NOVOSORT INJECTION
 				mkdir -p $input/temp

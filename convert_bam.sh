@@ -63,7 +63,7 @@ else
     then
         ln -s $input/$input_bam $input/$sample.sorted.bam
     else
-    	if [ $usenovosort == "YES" ]
+    	if [ $usenovosort == "yes" ]
 		then
 			### NOVOSORT INJECTION
 			mkdir -p $input/temp
