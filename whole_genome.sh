@@ -808,7 +808,7 @@ else
 		bamfile=$sample.sorted.bam
 		align_dir=$output_dir/alignment/$sample;
 		mkdir -p $align_dir
-		if [[ $analysis == "mayo" || $analysis == "external" ]]
+		if [[ $analysis == "mayo" || $analysis == "external" || $analysis == "alignment" ]]
 		then
 			if [ $paired == 1 ]
 			then
