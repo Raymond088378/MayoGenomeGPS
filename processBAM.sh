@@ -44,7 +44,7 @@ else
 	aligner=$( cat $run_info | grep -w '^ALIGNER' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
 	usenovosort=$( cat $tool_info | grep -w '^USENOVOSORT' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
 	novosort=$( cat $tool_info | grep -w '^NOVOSORT' | cut -d '=' -f2)
-	novosortopt=$( cat $tool_info | grep -w '^NOVOSORTOPT' | cut -d '=' -f2)
+	novosortopt=$( cat $tool_info | grep -w '^NOVOSORTPBOPT' | cut -d '=' -f2)
 	
 	if [ $aligner == "bwa" ]
 	then
