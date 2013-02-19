@@ -115,8 +115,15 @@ else
             fi    
     fi	
     rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.header
-########################################################	
-######		Sort BAM, adds RG & remove duplicates
+    
+    
+	#############################################	
+	### Sort BAM, adds RG & remove duplicates ###
+	#############################################
+
+	### TODO: Break Out Convert_Bam.SH and run as a separate task to avail different memory settings
+	### than the novoalign or bwa process (for sorting)
+
     $script_path/convert_bam.sh $output_dir_sample $sample.$SGE_TASK_ID.bam $sample.$SGE_TASK_ID $SGE_TASK_ID $run_info
 	if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.flagstat ]
     then
