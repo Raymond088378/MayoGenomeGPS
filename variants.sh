@@ -253,14 +253,25 @@ then
 				param="-L chr$chr"
 			fi
 			bam="-I $output/$sample.chr${chr}-sorted.bam"
+			
+			### call indels using GATK
 			$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.indel.vcf INDEL "$param" EMIT_VARIANTS_ONLY $run_info &
+			gatkpid=$!
+			
 			### call snvs using snvmix
 			$script_path/snvmix2.sh $sample "$bam" $output/$sample.variants.chr${chr}.raw.snv.vcf target "$param" $run_info &
-			while [[ ! -s $output/$sample.variants.chr${chr}.raw.indel.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snv.vcf ]]
-			do
-				echo " waiting for gatk and snvnix to complete to complete "
-				sleep 2m	
-			done
+			snvmixpid=$!
+			
+			echo " waiting for gatk and snvnix to complete to complete "
+			wait gatkpid snvmixpid
+			
+			### DONE: Change to wait on PID CR 2/19/2013
+			### while [[ ! -s $output/$sample.variants.chr${chr}.raw.indel.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snv.vcf ]]
+			### do
+			###	echo " waiting for gatk and snvnix to complete to complete "
+			###	sleep 2m	
+			### done
+			
 			### merge snvs and indels to give on vcf
 			in="$output/$sample.variants.chr${chr}.raw.snv.vcf $output/$sample.variants.chr${chr}.raw.indel.vcf"
 			$script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.vcf $run_info yes
@@ -269,13 +280,19 @@ then
 			param="-L chr$chr"
 			bam="-I $output/$sample.chr${chr}-sorted.bam"
 			$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.indel.vcf INDEL "$param" EMIT_VARIANTS_ONLY $run_info &
+			gatkpid=$!
 			### call snvs using snvmix
 			$script_path/snvmix2.sh $sample "$bam" $output/$sample.variants.chr${chr}.raw.snv.vcf target "$param" $run_info &
-			while [[ ! -s $output/$sample.variants.chr${chr}.raw.indel.vcf  || ! -s $output/$sample.variants.chr${chr}.raw.snv.vcf ]]
-			do
-				echo " waiting for gatk and snvnix to complete to complete "
-				sleep 2m	
-			done
+			snvmixpid=$!
+			
+			echo " waiting for gatk and snvnix to complete to complete "
+			wait gatkpid snvmixpid
+			
+			###	while [[ ! -s $output/$sample.variants.chr${chr}.raw.indel.vcf  || ! -s $output/$sample.variants.chr${chr}.raw.snv.vcf ]]
+			### do
+			###				
+			### sleep 2m	
+			### done
 			### merge snvs and indels to give on vcf
 			in="$output/$sample.variants.chr${chr}.raw.snv.vcf $output/$sample.variants.chr${chr}.raw.indel.vcf"
 			$script_path/concatvcf.sh "$in" $output/$sample.variants.chr${chr}.raw.vcf $run_info yes
@@ -295,15 +312,18 @@ then
 			fi
 			bam="-I $output/$sample.chr${chr}-sorted.bam"
 			$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.gatk.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info &
+			gatkpid=$!
 			### call snvs using snvmix
 			$script_path/snvmix2.sh $sample "$bam" $output/$sample.variants.chr${chr}.raw.snvmix.vcf target "$param" $run_info &
+			snvmixpid=$!
+			echo " waiting for gatk and snvnix to complete to complete "
+			wait gatkpid snvmixpid
 			
-			### TODO: Change to pid/wait instead of unbound loop
-			while [[ ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf  ]]
-			do
-				echo " waiting for gatk and snvnix to complete to complete "
-				sleep 2m	
-			done
+			### DONE: Change to pid/wait instead of unbound loop CR 2/19/13
+			### while [[ ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf  ]]
+			### do
+			###	sleep 2m	
+			### done
 			
 			input_var=""
 			input_var="-V:GATK $output/$sample.variants.chr${chr}.raw.gatk.vcf -V:SNVMix $output/$sample.variants.chr${chr}.raw.snvmix.vcf -priority GATK,SNVMix"
@@ -314,15 +334,18 @@ then
 			param="-L chr$chr"
 			bam="-I $output/$sample.chr${chr}-sorted.bam"
 			$script_path/unifiedgenotyper.sh "$bam" $output/$sample.variants.chr${chr}.raw.gatk.vcf BOTH "$param" EMIT_VARIANTS_ONLY $run_info &
+			gatkpid=$!
 			### call snvs using snvmix
 			$script_path/snvmix2.sh $sample "$bam" $output/$sample.variants.chr${chr}.raw.snvmix.vcf target "$param" $run_info &
-			
-			### TODO: Change to pid / wait instead of unbound loop
-			while [[ ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf ]]
-			do
-				echo " waiting for gatk and snvnix to complete to complete "
-				sleep 2m	
-			done
+			snvmixpid=$!
+			echo " waiting for gatk and snvnix to complete to complete "
+			wait gatkpid snvmixpid
+								
+			### DONE: Change to pid / wait instead of unbound loop CR 2/19/2013
+			### while [[ ! -s $output/$sample.variants.chr${chr}.raw.gatk.vcf || ! -s $output/$sample.variants.chr${chr}.raw.snvmix.vcf ]]
+			### do
+			###	sleep 2m	
+			### done
 			
 			#UNION    
 			input_var=""
@@ -354,6 +377,7 @@ else
 	then
 		### Start snvmix calling on normal sample 0xDEADBEEF (get pid here, wait later)
 		$script_path/snvmix2.sh ${sampleArray[1]} "$inputfiles" $output/${sampleArray[1]}.variants.chr${chr}.raw.snvmix.vcf target "$param" $run_info &
+		snvmixnormal=$!
 		in="-V $output/${sampleArray[1]}.variants.chr${chr}.raw.snvmix.vcf "
 	fi
 	
@@ -381,15 +405,18 @@ else
 				### Start mutect, jointsnv, somatic sniper calling on samples 2..N
 				$script_path/mutect.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.mutect.vcf $run_info
 				$script_path/Jointsnvmix.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.jsm.vcf $run_info & 
+				jointsnvmixpid = $!
 				$script_path/somaticsnipper.sh $output/$normal $output/$tumor $output $chr $sample ${sampleArray[1]} $sample.chr$chr.snv.ss.vcf $run_info &
+				somaticsniperpid = $!
+
+				echo " waiting for jointsnvmix somaticsniper to complete "
+				wait $jointsnvmixpid $somaticsniperpid
 				
-				
-				### TODO: Change this to a PID / wait statement instead of polling for file creation
-				while [[ ! -s $output/$sample.chr$chr.snv.jsm.vcf ||  ! -s $output/$sample.chr$chr.snv.ss.vcf ]]
-				do
-					echo " waiting for jointsnvmix somaticsniper to complete "
-					sleep 2m	
-				done
+				### DONE: Change this to a PID / wait statement instead of polling for file creation CR 2/19/13
+				### while [[ ! -s $output/$sample.chr$chr.snv.jsm.vcf ||  ! -s $output/$sample.chr$chr.snv.ss.vcf ]]
+				### do
+				###	sleep 2m	
+				### done
 				
 				### combine INPUT .snv.mutect.vcf, .snv.jsm.vcf, .snv.ss.vcf
 				input_var="-V:MuTect $output/$sample.chr$chr.snv.mutect.vcf -V:JSM $output/$sample.chr$chr.snv.jsm.vcf -V:SomSniper $output/$sample.chr$chr.snv.ss.vcf -priority SomSniper,JSM,MuTect"
@@ -439,12 +466,14 @@ else
 			$script_path/snvmix2.sh $sample $output/$tumor $output/$sample.variants.chr${chr}.raw.snvmix.vcf target "$param" $run_info
 		done
 		
-		### TODO: Replace with PID/wait instead of unbounded loop see:0xDEADBEEF
-		while [[ ! -s $output/${sampleArray[1]}.variants.chr${chr}.raw.snvmix.vcf ]]
-		do
-			echo "waiting for snvmix2 complete for normal sample "
-			sleep 2m	
-		done
+		echo "waiting for snvmix2 complete for normal sample "
+		wait $snvmixnormal 
+		
+		### DONE: Replace with PID/wait instead of unbounded loop see:0xDEADBEEF
+		### while [[ ! -s $output/${sampleArray[1]}.variants.chr${chr}.raw.snvmix.vcf ]]
+		### do
+		###	sleep 2m	
+		### done
 		
 		$script_path/combinevcf.sh "$in" ${output}/variants.chr${chr}.raw.snvmix.vcf $run_info yes
 		
