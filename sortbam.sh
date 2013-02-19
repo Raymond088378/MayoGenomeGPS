@@ -1,6 +1,6 @@
 #!/bin/bash
 
-### Called by ProcessBAM.sh
+### Called by ProcessBAM.sh, 
 if [ $# != 6 ]
 then
     echo -e "Script to sort the bam file using picard samtools\nUsage: ./sortbam.sh <input bam> <outputbam></path/to/temp dir><sorting order><flag for indexing(true/false)></path/to/run info>"
@@ -22,6 +22,10 @@ else
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )	
     reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
     mem=$( cat $memory_info | grep -w '^SORT_JVM' | cut -d '=' -f2)
+    ### Included for future use 
+    usenovosort=$( cat $tool_info | grep -w '^USENOVOSORT' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
+	novosort=$( cat $tool_info | grep -w '^NOVOSORT' | cut -d '=' -f2)
+	novosortopt=$( cat $tool_info | grep -w '^NOVOSORTOPT' | cut -d '=' -f2)
 	
 	$java/java $mem -jar $picard/SortSam.jar \
     INPUT=$inbam \

@@ -2,7 +2,6 @@
 
 ########################################################
 ###### 	SORT BAM, adds RG & REMOVE DUPLICATES SCRIPT FOR WHOLE GENOME ANALYSIS PIPELINE
-
 ######		Program:			convert.bam.sh
 ######		Date:				07/27/2011
 ######		Summary:			Using PICARD to sort and mark duplicates in bam 
@@ -35,6 +34,10 @@ else
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     ref_path=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
 	aligner=$( cat $run_info | grep -w '^ALIGNER' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
+	usenovosort=$( cat $tool_info | grep -w '^USENOVOSORT' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
+	novosort=$( cat $tool_info | grep -w '^NOVOSORT' | cut -d '=' -f2)
+	novosortopt=$( cat $tool_info | grep -w '^NOVOSORTOPT' | cut -d '=' -f2)
+	
 	if [ $aligner == "bwa" ]
 	then
 		previous="align_bwa.sh"
@@ -60,7 +63,14 @@ else
     then
         ln -s $input/$input_bam $input/$sample.sorted.bam
     else
-        $script_path/sortbam.sh $input/$input_bam $input/$sample.sorted.bam $input coordinate true $run_info
+    	if [ $usenovosort == "YES" ]
+		then
+			### NOVOSORT INJECTION
+			mkdir -p $input/temp
+			$novosort $novosortopt --index --tmpdir=$input/temp $input/$sample.bam -o $input/$sample.sorted.bam
+		else
+        	$script_path/sortbam.sh $input/$input_bam $input/$sample.sorted.bam $input coordinate true $run_info
+		fi 
     fi
 
 #############################################################	
