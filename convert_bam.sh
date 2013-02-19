@@ -67,7 +67,7 @@ else
 		then
 			### NOVOSORT INJECTION
 			mkdir -p $input/temp
-			$novosort $novosortopt --tmpdir=$input/temp $input/$sample.bam -o $input/$sample.sorted.bam
+			$novosort $novosortopt --index --tmpdir=$input/temp $input/$sample.bam -o $input/$sample.sorted.bam
 		else
         	$script_path/sortbam.sh $input/$input_bam $input/$sample.sorted.bam $input coordinate true $run_info
 		fi 
