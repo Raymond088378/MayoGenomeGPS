@@ -512,7 +512,7 @@ then
 		### $script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" $output/bfalleles.chr$chr.raw.vcf.temp \
 		###	${output}/variants.chr${chr}.raw.vcf BOTH EMIT_ALL_SITES $run_info
 		### rm $output/bfalleles.chr$chr.raw.vcf.temp
-		echo Backfill Somatic&Nonsomatic
+		echo Backfill Somatic Nonsomatic
 	else
 		### Backfill Non-somatic Variants in ${output}/variants.chr${chr}.raw.vcf using germline
 		### $script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" ${output}/variants.chr${chr}.raw.vcf \
