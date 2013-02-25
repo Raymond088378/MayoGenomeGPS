@@ -275,7 +275,7 @@ then
 			bamfile=$sample.sorted.bam
 		fi
 		
-		if [ $analysis == "mayo" || $analysis == "external" || $analysis == "alignment" ]
+		if [[ $analysis == "mayo" || $analysis == "external" || $analysis == "alignment" ]]
 		then
 			mkdir -p $align_dir
 			if [ $paired == 1 ]
