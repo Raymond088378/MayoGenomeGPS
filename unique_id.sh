@@ -19,8 +19,8 @@ else
 	then
 		echo -e "IDENTIFICATION_NUMBER=$unique_id" >> $run_info
 	else
-		echo "ERROR : unique identification for the workflow was not generated"
-		exit 1;
+		echo -e "IDENTIFICATION_NUMBER=0" >> $run_info
+		echo "ERROR : unique identification for the workflow was not generated, continuing without."
 	fi	
 	echo `date`
 fi	

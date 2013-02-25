@@ -70,27 +70,6 @@ fi
 cat $run_info | sed 's/^[ \t]*//;s/[ \t]*$//' > $run_info.tmp
 mv $run_info.tmp $run_info
 
-#### check for unique identification number
-identify=$( cat $run_info | grep -w '^IDENTIFICATION_NUMBER' | cut -d '=' -f2)
-if echo $identify | egrep -q '^[0-9]+$'
-then
-	echo -e "HURRAY !!! you are good to run the workflow"
-else
-	echo -e "ERROR : unique identification for the workflow was not generated, please run the unique_id.sh script to generate the same before running the workflow script."
-	exit 1;
-fi
-
-### check that temporary ID is absent and if so, generate one to mark this workflow as having been executed
-temp_id=$( cat $run_info | grep -w '^TEMPORARY_ID' | cut -d '=' -f2)
-if echo $temp_id | egrep -q '^[0-9]+$'
-then
-	echo -e "ERROR : unique identification for the workflow is not new, please run the unique_id.sh script to generate the same before running the workflow script."
-	exit 1;	
-else
-	echo -e "HURRAY !!! you are good to run the workflow"
-	echo -e "TEMPORARY_ID=$identify" >> $run_info
-fi
-
 ### check for tool info file
 tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 if [ ! -s $tool_info ]
@@ -180,6 +159,30 @@ then
 else
 	rm $run_info.configuration_errors.log
 fi	
+
+### Automatically generate unique_id
+$script_path/unique_id.sh $run_info
+
+#### check for unique identification number
+identify=$( cat $run_info | grep -w '^IDENTIFICATION_NUMBER' | cut -d '=' -f2)
+if echo $identify | egrep -q '^[0-9]+$'
+then
+	echo -e "HURRAY !!! you are good to run the workflow"
+else
+	echo -e "ERROR : unique identification for the workflow was not generated, please run the unique_id.sh script to generate the same before running the workflow script."
+	exit 1;
+fi
+
+### check that temporary ID is absent and if so, generate one to mark this workflow as having been executed
+temp_id=$( cat $run_info | grep -w '^TEMPORARY_ID' | cut -d '=' -f2)
+if echo $temp_id | egrep -q '^[0-9]+$'
+then
+	echo -e "ERROR : unique identification for the workflow is not new, please run the unique_id.sh script to generate the same before running the workflow script."
+	exit 1;	
+else
+	echo -e "HURRAY !!! you are good to run the workflow"
+	echo -e "TEMPORARY_ID=$identify" >> $run_info
+fi
 
 ### create folders
 $script_path/create_folder.sh $run_info
