@@ -534,8 +534,8 @@ then
 		$script_path/concatvcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.vcf $run_info yes
 		
 		### Create merged allele list 
-		### bfalleles = "-V ${output}/variants.chr${chr}.raw.vcf -V $output/MergeAllSamples.chr$chr.raw.vcf"
-		### $script_path/combinevcf.sh "$bfalleles" $output/bfalleles.chr$chr.raw.vcf.temp $run_info NO
+		bfalleles = "-V ${output}/variants.chr${chr}.raw.vcf -V $output/MergeAllSamples.chr$chr.raw.vcf"
+		$script_path/combinevcf.sh "$bfalleles" $output/bfalleles.chr$chr.raw.vcf.temp $run_info NO
 
 		### Backfill Non-somatic Variants in ${output}/variants.chr${chr}.raw.vcf using somatic & non-somatic 
 		$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" $output/bfalleles.chr$chr.raw.vcf.temp \
