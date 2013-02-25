@@ -196,9 +196,11 @@ rm $run_info.tmp
 mv $run_info $config/run_info.txt
 run_info=$config/run_info.txt
 ## tool info file
+
 tool_info=$output_dir/tool_info.txt
 mv $tool_info $config/tool_info.txt
 tool_info=$config/tool_info.txt
+
 ## sample info file
 sample_info=$output_dir/sample_info.txt
 mv $sample_info $config/sample_info.txt
