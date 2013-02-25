@@ -66,8 +66,7 @@ else
     done 
     	
 	### add AD,DP,DP4 to the original vcf file
-	### overwrite the original .vcf input
-	$script_path/revertvcf_formatfields.pl -o $vcf_out -i $vcf_out.tmp.vcf -v $vcf_out.correct.vcf
+	$script_path/revertvcf_formatfields.pl -o $vcf_in -i $vcf_out.tmp.vcf -v $vcf_out.correct.vcf
 	rm $vcf_out.tmp.vcf $vcf_out.tmp.vcf.idx
 	mv $vcf_out.correct.vcf $vcf_out	
 	rm $vcf_out.idx	
