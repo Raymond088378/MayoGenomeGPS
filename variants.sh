@@ -532,19 +532,32 @@ then
 		## combine both snv and indel
 		in="$output/MergeAllSamples.chr$chr.snvs.raw.vcf $output/MergeAllSamples.chr$chr.Indels.raw.vcf"
 		$script_path/concatvcf.sh "$in" $output/MergeAllSamples.chr$chr.raw.vcf $run_info yes
-		
-		### Create merged allele list 
+	fi
+fi
+
+#####################################
+### BACKFILL NON-SOMATIC VARIANTS ###
+#####################################
+
+### TODO Add error checking
+if [ ${#sampleArray[@]} -gt 1 ]
+then
+	if [ $somatic_calling == "YES" ]
+	then
+		### Create merged allele list (don't erase originals)
 		bfalleles="-V ${output}/variants.chr${chr}.raw.vcf -V $output/MergeAllSamples.chr$chr.raw.vcf"
 		$script_path/combinevcf.sh "$bfalleles" $output/bfalleles.chr$chr.raw.vcf.temp $run_info NO
 
 		### Backfill Non-somatic Variants in ${output}/variants.chr${chr}.raw.vcf using somatic & non-somatic 
 		$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" $output/bfalleles.chr$chr.raw.vcf.temp \
-		${output}/variants.chr${chr}.raw.backfilled.vcf BOTH EMIT_ALL_SITES $run_info
-		### rm $output/bfalleles.chr$chr.raw.vcf.temp ### remove allele list during cleanup
+		${output}/variants.chr${chr}.raw.vcf BOTH EMIT_ALL_SITES $run_info
+		
+		### Remove the allele list now we're done with it
+		rm $output/bfalleles.chr$chr.raw.vcf.temp ### remove allele list during cleanup
 		echo Backfill Somatic Nonsomatic
 	else
 		### Backfill Non-somatic Variants in ${output}/variants.chr${chr}.raw.vcf using germline
-		$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" ${output}/variants.chr${chr}.raw.vcf ${output}/variants.chr${chr}.raw.backfilled.vcf BOTH EMIT_ALL_SITES $run_info
+		$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" ${output}/variants.chr${chr}.raw.vcf ${output}/variants.chr${chr}.raw.vcf BOTH EMIT_ALL_SITES $run_info
 		echo Backfill Nonsomatic Only
 	fi
 fi
