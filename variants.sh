@@ -542,6 +542,7 @@ fi
 ### TODO Add error checking
 if [ ${#sampleArray[@]} -gt 1 ]
 then
+	### We have multiple samples, thus requiring a backfilling step
 	if [ $somatic_calling == "YES" ]
 	then
 		### Create merged allele list (don't erase originals)
@@ -554,6 +555,8 @@ then
 		
 		### Remove the allele list now we're done with it
 		rm $output/bfalleles.chr$chr.raw.vcf.temp ### remove allele list during cleanup
+		rm $output/bfalleles.chr$chr.raw.vcf.temp.idx ### remove allele list during cleanup
+		
 		echo Backfill Somatic Nonsomatic
 	else
 		### Backfill Non-somatic Variants in ${output}/variants.chr${chr}.raw.vcf using germline
