@@ -169,19 +169,8 @@ if echo $identify | egrep -q '^[0-9]+$'
 then
 	echo -e "HURRAY !!! you are good to run the workflow"
 else
-	echo -e "ERROR : unique identification for the workflow was not generated, please run the unique_id.sh script to generate the same before running the workflow script."
-	exit 1;
-fi
-
-### check that temporary ID is absent and if so, generate one to mark this workflow as having been executed
-temp_id=$( cat $run_info | grep -w '^TEMPORARY_ID' | cut -d '=' -f2)
-if echo $temp_id | egrep -q '^[0-9]+$'
-then
-	echo -e "ERROR : unique identification for the workflow is not new, please run the unique_id.sh script to generate the same before running the workflow script."
-	exit 1;	
-else
-	echo -e "HURRAY !!! you are good to run the workflow"
-	echo -e "TEMPORARY_ID=$identify" >> $run_info
+	echo -e "ERROR : unique identification for the workflow was not generated, please check the unique_id.sh script."
+	### exit 1; don't exit on error, just run the workflow
 fi
 
 ### create folders
