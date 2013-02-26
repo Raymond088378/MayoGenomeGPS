@@ -99,6 +99,7 @@ T_DEPTH_FILTER=6
 PLATFORM=illumina
 CENTER=mayo
 QUEUE=ngs-sec -l medp=TRUE
+GATKQUEUE=ngs-gatk -l medp=TRUE
 DEPTH_FILTER=0
 
 ## flags
