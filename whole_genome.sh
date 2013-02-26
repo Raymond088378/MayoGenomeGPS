@@ -116,6 +116,7 @@ tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
 type=$( cat $run_info | grep -w '^TOOL' | cut -d '=' -f2|tr "[a-z]" "[A-Z]")
 version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
 queue=$( cat $tool_info | grep -w '^QUEUE' | sed -e '/QUEUE=/s///g')
+gatkqueue=$( cat $tool_info | grep -w '^GATKQUEUE' | sed -e '/GATKQUEUE=/s///g')
 run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
 script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
 multi_sample=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
@@ -249,7 +250,10 @@ echo -e "MEMORY INFO  file used : $memory_info" >>  $output_dir/log.txt
 #### sge paramters
 TO=$USER
 email=`finger $USER | awk -F ';' '{print $2}'`
+
 args="-V -wd $output_dir/logs -q $queue -m a -M $email -l h_stack=10M"
+gatk_args="-V -wd $output_dir/logs -q $gatkqueue -m a -M $email -l h_stack=10M"
+
 echo -e "\nRCF arguments used : $args\n" >> $output_dir/log.txt
 echo -e "Started the ${tool} analysis for ${run_num} for ${PI}\n\n${info}\n\nCourtesy: $workflow $version" | mailx -v -s "Analysis Started" -c Kahl.Jane@mayo.edu "$email"
 #############################################################
@@ -454,7 +458,7 @@ then
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^realign_recal' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.realign_recal.$sample.$run_num.$identify -hold_jid $type.$version.processBAM.$sample.$run_num.$identify -t 1-$numchrs:1 -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/realign_recal.sh $align_dir $bamfile $sample $realign_dir $run_info 1	
+				qsub $gatk_args $qsub_args $script_path/realign_recal.sh $align_dir $bamfile $sample $realign_dir $run_info 1	
 				variant_id="$type.$version.realign_recal.$sample.$run_num.$identify"
 			fi
 			
@@ -478,7 +482,7 @@ then
             $script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^variants' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.variants.$sample.$run_num.$identify -hold_jid $variant_id -pe threaded $threads -t 1-$numchrs:1 -l h_vmem=$mem"
-			qsub $args $qsub_args $script_path/variants.sh $realign_dir $sample $variant_dir 1 $run_info
+			qsub $gatk_args $qsub_args $script_path/variants.sh $realign_dir $sample $variant_dir 1 $run_info
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^merge_variant_single' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.merge_variant_single.$sample.$run_num.$identify -pe threaded $threads -hold_jid $type.$version.variants.$sample.$run_num.$identify -l h_vmem=$mem"
@@ -490,7 +494,7 @@ then
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^OnTarget_PILEUP' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.OnTarget_PILEUP.$sample.$run_num.$identify -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=$mem"
-			qsub $args $qsub_args $script_path/OnTarget_PILEUP.sh $realign_dir $output_OnTarget $sample $run_info
+			qsub $gatk_args $qsub_args $script_path/OnTarget_PILEUP.sh $realign_dir $output_OnTarget $sample $run_info
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^getCoverage' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.getCoverage.$sample.$run_num.$identify -hold_jid $type.$version.OnTarget_PILEUP.$sample.$run_num.$identify -l h_vmem=$mem"
@@ -581,7 +585,7 @@ then
                             $script_path/check_qstat.sh $limit
                             mem=$( cat $memory_info | grep -w '^snpeff' | cut -d '=' -f2)
                             qsub_args="-N $type.$version.snpeff.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
-                            qsub $args $qsub_args $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info germline		
+                            qsub $gatk_args $qsub_args $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info germline		
                         fi
                         if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
                         then
@@ -637,7 +641,7 @@ then
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^summaryze_struct_single' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.summaryze_struct_single.$sample.$run_num.$identify -l h_vmem=$mem $hold"
-				qsub $args $qsub_args $script_path/summaryze_struct_single.sh $sample $output_dir $run_info
+				qsub $gatk_args $qsub_args $script_path/summaryze_struct_single.sh $sample $output_dir $run_info
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^plot_circos_cnv_sv' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.plot_circos_cnv_sv.$sample.$run_num.$identify -hold_jid $type.$version.summaryze_struct_single.$sample.$run_num.$identify -l h_vmem=$mem"
@@ -982,7 +986,7 @@ else
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^realign_recal' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.realign_recal.$group.$run_num.$identify -hold_jid $vvid -t 1-$numchrs:1 -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/realign_recal.sh $input_dirs $bam_samples $names_samples $realign_dir $run_info 1
+				qsub $gatk_args $qsub_args $script_path/realign_recal.sh $input_dirs $bam_samples $names_samples $realign_dir $run_info 1
 				variant_id="$type.$version.realign_recal.$group.$run_num.$identify"
 			fi
 			
@@ -1004,12 +1008,12 @@ else
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^variants' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.variants.$group.$run_num.$identify -hold_jid $variant_id -pe threaded $threads -t 1-$numchrs:1 -l h_vmem=$mem"
-			qsub $args $qsub_args $script_path/variants.sh $realign_dir $names_samples $variant_dir 1 $run_info
+			qsub $gatk_args $qsub_args $script_path/variants.sh $realign_dir $names_samples $variant_dir 1 $run_info
 			
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^merge_variant_group' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.merge_variant_group.$group.$run_num.$identify -pe threaded $threads -hold_jid $type.$version.variants.$group.$run_num.$identify -l h_vmem=$mem"
-			qsub $args $qsub_args $script_path/merge_variant_group.sh $output_variant $group $RSample $run_info 
+			qsub $gatk_args $qsub_args $script_path/merge_variant_group.sh $output_variant $group $RSample $run_info 
 			
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^OnTarget_BAM' | cut -d '=' -f2)
@@ -1019,7 +1023,7 @@ else
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^OnTarget_PILEUP' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.OnTarget_PILEUP.$group.$run_num.$identify -hold_jid $type.$version.split_sample_pair.$group.$run_num.$identify -t 1-$numchrs:1 -l h_vmem=$mem"
-			qsub $args $qsub_args $script_path/OnTarget_PILEUP.sh $realign_dir $output_OnTarget $group $run_info
+			qsub $gatk_args $qsub_args $script_path/OnTarget_PILEUP.sh $realign_dir $output_OnTarget $group $run_info
 			
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^getCoverage' | cut -d '=' -f2)
@@ -1029,7 +1033,7 @@ else
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^OnTarget_variant' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.OnTarget_variant.$group.$run_num.$identify -hold_jid $type.$version.merge_variant_group.$group.$run_num.$identify -t 1-$numchrs:1 -l h_vmem=$mem"
-			qsub $args $qsub_args $script_path/OnTarget_variant.sh $output_variant $output_OnTarget $group $run_info
+			qsub $gatk_args $qsub_args $script_path/OnTarget_variant.sh $output_variant $output_OnTarget $group $run_info
 			
 			hold_args="-hold_jid $type.$version.OnTarget_variant.$group.$run_num.$identify"
 			
@@ -1052,7 +1056,7 @@ else
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^snpeff' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.snpeff.$group.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/snpeff.sh $snpeff $output_OnTarget $group $run_info germline
+				qsub $gatk_args $qsub_args $script_path/snpeff.sh $snpeff $output_OnTarget $group $run_info germline
 				if [ $somatic_calling == "YES" ]
 				then
 					$script_path/check_qstat.sh $limit
@@ -1064,7 +1068,7 @@ else
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^polyphen' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.polyphen.$group.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/polyphen.sh $polyphen $output_OnTarget $group $run_info germline  
+				qsub $gatk_args $qsub_args $script_path/polyphen.sh $polyphen $output_OnTarget $group $run_info germline  
 				if [ $somatic_calling == "YES" ]
 				then
 					$script_path/check_qstat.sh $limit
@@ -1154,7 +1158,7 @@ else
 					$script_path/check_qstat.sh $limit
 					mem=$( cat $memory_info | grep -w '^summaryze_struct_group' | cut -d '=' -f2)
 					qsub_args="-N $type.$version.summaryze_struct_group.$group.$run_num.$identify -hold_jid $hhold -l h_vmem=$mem"
-					qsub $args $qsub_args $script_path/summaryze_struct_group.sh $group $output_dir $run_info
+					qsub $gatk_args $qsub_args $script_path/summaryze_struct_group.sh $group $output_dir $run_info
 				else
 					hhold="$type.$version.run_cnvnator.$group.$run_num.$identify,$type.$version.run_breakdancer.$group.$run_num.$identify,$type.$version.run_crest_multi_cover.$group.$run_num.$identify,"
 					$script_path/check_qstat.sh $limit
