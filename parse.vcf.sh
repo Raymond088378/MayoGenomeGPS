@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## added the filter field from vcf 2/25 SB
+
 if [ $# != 4 ]
 then
     echo -e "script to parse a vcf file to tab delimited file using vctools vcf-query\nUsage: ./parse.vcf.sh <in_vcf_file> <out_file> <run_info><type of variant>";
@@ -32,26 +34,26 @@ else
     do 
         if [ $type == 'SNV' ]
         then
-            samples="$samples""$i"'::::::' 
-            sample_cols=':GenotypeClass:Ref-SupportedReads:Alt-SupportedReads:ReadDepth:Quality:CloseToIndel'$sample_cols;
+            samples="$samples""$i"':::::::' 
+            sample_cols=':FilterFlag:GenotypeClass:Ref-SupportedReads:Alt-SupportedReads:ReadDepth:Quality:CloseToIndel'$sample_cols;
         else
-            samples="$samples""$i"'::';
-            sample_cols=':Indel-supportedRead:ReadDepth'$sample_cols;
+            samples="$samples""$i"':::';
+            sample_cols=':FilterFlag:Indel-supportedRead:ReadDepth'$sample_cols;
         fi    
     done
 
     samples=`echo $samples | sed -e 's/\(.*\)./\1/' | tr ':' '\t'`;
     sample_cols=`echo $sample_cols | tr ':' '\t'`;
 
-    if [ $type == 'SNV' ]
+	if [ $type == 'SNV' ]
     then
         echo -e "\t\t\t\t\t\t$samples">$outfile
         echo -e "Chr\tPosition\tInCaptureKit\t#AlternateHits\tRef\tAlt${sample_cols}" >>$outfile
-		$vcftools/bin/vcf-query $dir/$file_name.gz -f '%CHROM\t%POS\t%INFO/CAPTURE\t%INFO/ED\t%REF\t%ALT\t[%GT\t%AD\t%DP\t%GQ\t%C2I\t]\n' | $script_path/parse.snv.vcftools.pl >> $outfile
+		$vcftools/bin/vcf-query $dir/$file_name.gz -f '%CHROM\t%POS\t%INFO/CAPTURE\t%INFO/ED\t%REF\t%ALT\t%FILTER\t[%GT\t%AD\t%DP\t%GQ\t%C2I\t]\n' | $script_path/parse.snv.vcftools.pl >> $outfile
     else
         echo -e "\t\t\t\t\t\t\t\t$samples">$outfile
         echo -e "Chr\tStart\tStop\tInCaptureKit\t#AlternateHits\tRef\tAlt\tBase-Length${sample_cols}" >>$outfile
-        $vcftools/bin/vcf-query $dir/$file_name.gz -f '%CHROM\t%POS\t%INFO/CAPTURE\t%INFO/ED\t%REF\t%ALT\t[%AD\t%DP\t]\n' | $script_path/parse.pl >> $outfile
+        $vcftools/bin/vcf-query $dir/$file_name.gz -f '%CHROM\t%POS\t%INFO/CAPTURE\t%INFO/ED\t%REF\t%ALT\t%FILTER\t[%AD\t%DP\t]\n' | $script_path/parse.pl >> $outfile
     fi    
     num_a=`cat $outfile | awk 'NR>2' | wc -l`
 	if [ $num_a == $num ]

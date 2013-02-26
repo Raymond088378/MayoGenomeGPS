@@ -14,7 +14,8 @@ for ($i=0 ; $i <= $#a ; $i++)	{
 }	
 $num_samples=($#a-6+1)/5;	
 print "$a[0]\t$a[1]\t$a[2]\t$a[3]\t$a[4]\t$a[5]";
-my $init=5;
+## column 6th is filter should go in the per sample stats
+my $init=6;
 for (my $i=1; $i <=$num_samples; $i++)	{
 	$geno=$a[$init+1];
 	$geno =~ s/\///g if ($geno ne "n/a");
@@ -23,15 +24,17 @@ for (my $i=1; $i <=$num_samples; $i++)	{
 		$ref="n/a";
 		$alt="n/a";
 		$depth="n/a";
+		$filter="n/a";
 	}
 	else{	
-	($ref,$alt)=split(/,/,$read);
-	$depth=$ref+$alt;
+		($ref,$alt)=split(/,/,$read);
+		$depth=$ref+$alt;
+		$filter=$a[6];
 	}
 	$qual=$a[$init+4];
 	$c2i=$a[$init+5];
-	print "\t$geno\t$ref\t$alt\t$depth\t$qual\t$c2i";
-$init=$init+5;
-	}
+	print "\t$filter\t$geno\t$ref\t$alt\t$depth\t$qual\t$c2i";
+	$init=$init+5;
+}
 print "\n";
 }	

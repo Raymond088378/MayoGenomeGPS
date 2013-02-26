@@ -30,6 +30,7 @@ else
 	which_chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
 	
 	## prepocessing the input file from variant module or user added 
+	### converting vcf files to text files
 	if [[ $9 == "somatic" ]]
 	then
 		if [ ! -s $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf  ]

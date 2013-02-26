@@ -256,7 +256,11 @@ else
 			## remove the file
 			if [ -s $output/temp/$input_name.recal ]
 			then
-				rm $output/temp/$input_name.recal $output/temp/$input_name.recal.idx
+				rm $output/temp/$input_name.recal 
+				if [ -f $output/temp/$input_name.recal.idx ]
+				then
+					rm $output/temp/$input_name.recal.idx
+				fi	
 			fi
 			
 			if [ -s $output/temp/$input_name.tranches ]

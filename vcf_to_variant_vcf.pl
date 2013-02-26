@@ -28,8 +28,13 @@ if (not $type) {
 open OUT, ">$snv" or die "opening $snv : $! \n" if ($type eq "both" || $type eq "snv");
 open OUT1, ">$indel" or die "opening $indel : $! \n" if ($type eq "both" || $type eq "indel");
 
-
+ my $tag=substr($input, -2);
+        if ($tag eq "gz")       {      
+	open FH, "gunzip -c $input | " or die " opening $input : $! \n";
+}
+else{
 open FH, "$input" or die " opening $input : $! \n";
+}
 my $s;
 
 while (my $l = <FH>)	{

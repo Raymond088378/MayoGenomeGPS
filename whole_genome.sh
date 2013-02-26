@@ -52,7 +52,7 @@ then
 fi
 
 
-### This is an annoyance - we obtain the full path from readlink -f $run_info -CR 1/29/2013 ??
+
 dir_info=`dirname $run_info`
 if [ "$dir_info" = "." ]
 then
@@ -206,15 +206,13 @@ tool_info=$config/tool_info.txt
 sample_info=$output_dir/sample_info.txt
 mv $sample_info $config/sample_info.txt
 sample_info=$config/sample_info.txt
-
 ### memory info 
 memory_info=$output_dir/memory_info.txt
 mv $memory_info $config/memory_info.txt
 memory_info=$config/memory_info.txt
 
+### creating local variables
 output_align=$output_dir/alignment
-
-### Set Up Directories for all analysis types except alignment -- what happens in alignment case?? -CR
 if [ $analysis != "alignment" ]
 then
 	output_realign=$output_dir/realign/
@@ -255,7 +253,7 @@ args="-V -wd $output_dir/logs -q $queue -m a -M $email -l h_stack=10M"
 gatk_args="-V -wd $output_dir/logs -q $gatkqueue -m a -M $email -l h_stack=10M"
 
 echo -e "\nRCF arguments used : $args\n" >> $output_dir/log.txt
-echo -e "Started the ${tool} analysis for ${run_num} for ${PI}\n\n${info}\n\nCourtesy: $workflow $version" | mailx -v -s "Analysis Started" -c Kahl.Jane@mayo.edu "$email"
+echo -e "Started the ${tool} analysis for ${run_num} for ${PI}\n\n${info}\n\nCourtesy: $workflow $version" | mailx -v -s "Analysis Started" "$email"
 #############################################################
 
 ### Single sample workflow
@@ -287,7 +285,6 @@ then
 				echo "Sample info file is not properly configured, number of files in sample_info is zero."
 				exit 1;
 			fi	
-			
 			### Invoke dashboard for mayo internal job tracking only
 			if [ $analysis == "mayo" ]
 			then
@@ -382,9 +379,6 @@ then
 				fi	
 				rm $align_dir/$sample.$i.sorted.header
 				ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
-				### Tell dashboard that we're starting a particular chromosome
-				### Shouldn't this only be for realign mayo??
-				$script_path/dashboard.sh $sample $run_info Beginning started $i
 			done
 			  
 			### Sort, index, deduplicate the bam files 
@@ -566,7 +560,6 @@ then
 		then
 			if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
 			then
-			
 				if [ $annot_flag == "YES" ]
                                 then
                                     $script_path/check_qstat.sh $limit
@@ -593,17 +586,31 @@ then
                         else
 			    			hold="-hold_jid $type.$version.snpeff.$sample.$run_num.$identify"
 				fi
+            fi
+			if [ $annot_flag == "YES" ]
+			then
+				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^snpeff' | cut -d '=' -f2)
+				qsub_args="-N $type.$version.snpeff.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
+				qsub $args $qsub_args $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info germline		
+			fi
+			if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
+			then
+				hold="-hold_jid $type.$version.sift.$sample.$run_num.$identify,$type.$version.polyphen.$sample.$run_num.$identify,$type.$version.snpeff.$sample.$run_num.$identify"
+			else
+				hold="-hold_jid $type.$version.snpeff.$sample.$run_num.$identify"
+			fi
 				
 			if [ $annot_flag == "YES" ]
-                        then
-                            $script_path/check_qstat.sh $limit
-                            mem=$( cat $memory_info | grep -w '^reports' | cut -d '=' -f2)
-                            qsub_args="-N $type.$version.reports.$sample.$run_num.$identify $hold -t 1-$numchrs:1 -l h_vmem=$mem"
-                            qsub $args $qsub_args $script_path/reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir germline
-                            $script_path/check_qstat.sh $limit
-                            mem=$( cat $memory_info | grep -w '^sample_report' | cut -d '=' -f2)
-                            qsub_args="-N $type.$version.sample_report.$sample.$run_num.$identify -hold_jid $type.$version.reports.$sample.$run_num.$identify -l h_vmem=$mem"
-                            qsub $args $qsub_args $script_path/sample_report.sh $output_dir $TempReports $sample $run_info germline
+			then
+				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^reports' | cut -d '=' -f2)
+				qsub_args="-N $type.$version.reports.$sample.$run_num.$identify $hold -t 1-$numchrs:1 -l h_vmem=$mem"
+				qsub $args $qsub_args $script_path/reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir germline
+				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^sample_report' | cut -d '=' -f2)
+				qsub_args="-N $type.$version.sample_report.$sample.$run_num.$identify -hold_jid $type.$version.reports.$sample.$run_num.$identify -l h_vmem=$mem"
+				qsub $args $qsub_args $script_path/sample_report.sh $output_dir $TempReports $sample $run_info germline
 			fi
         if [[ $tool == "whole_genome"  && $analysis != "annotation" ]]
 			then

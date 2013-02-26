@@ -28,19 +28,21 @@ $num_samples=($#a-6+1)/2;
 
 	
 print "$a[0]\t$start\t$stop\t$a[2]\t$a[3]\t$a[4]\t$a[5]\t$bases";
-my $init=5;
+my $init=6;
 for (my $i=1; $i <=$num_samples; $i++)	{
 	$read=$a[$init+1];
 	if ($read eq "n/a")	{
 		$read="n/a";
 		$depth="n/a";
-		$alt="n/a"
+		$alt="n/a";
+		$flag="n/a";
 	}
 	else{	
 	($ref,$alt)=split(/,/,$read);
 	$depth=$ref+$alt;
+	$flag=$a[6];
 	}
-	print "\t$alt\t$depth";
+	print "\t$flag\t$alt\t$depth";
 $init=$init+2;
 	}
 print "\n";

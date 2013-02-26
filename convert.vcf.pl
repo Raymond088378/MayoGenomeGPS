@@ -24,7 +24,7 @@ while(<>)	{
 	@format= split (/:/,$fields[8]);
 	$num_format=$#format;
 	for ($i=9;$i <= $#nfields; $i++)	{
-		if ($fields[$i] eq "./." )	{
+		if ($fields[$i] eq "./."  || $fields[$i] eq "." )	{
 			print "\t." . ":." x $num_format; 
 		}
 		else	{

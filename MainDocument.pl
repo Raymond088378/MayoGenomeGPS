@@ -45,7 +45,7 @@ else    {
 	my $host=$vars->{TB_HOST};
 	my $script_path=$vars->{WORKFLOW_PATH};
 	my $upload_tb=$vars->{UPLOAD_TABLEBROWSER};
-	my $somatic_calling=$vars->{SOMATIC_CALLING}=$somatic_calling=uc($somatic_calling);
+	my $somatic_calling=$vars->{SOMATIC_CALLING};$somatic_calling=uc($somatic_calling);
 	
 	my @sampleArray = split(/:/,$sampleNames);
 	my @groupArray = split(/:/,$groupNames);
@@ -1064,6 +1064,7 @@ else    {
 		<br><a name=\"Statistics based on per Group analysis\" id=\"Statistics based on per Group analysis\"></a>Statistics based on per Group Analysis(<u><a href=\"StatisticsDescription.html\"target=\"_blank\">ColumnDescription</a></u>)<br>\n";
 		print OUT "<br><table cellspacing=\"0\" class=\"sofT\"><tr><td class=\"helpHed\"><p align='center'></td>";
 		my $tot=0;
+		print SOUT "GroupNamesUsed/info";
 		for(my $k = 0; $k < $num_groups;$k++)	
 		{
 			my $sams=`cat $sample_info | grep -w "^$groupArray[$k]" | cut -d '=' -f2`;
@@ -1094,7 +1095,7 @@ else    {
 		$tot=$tot-1;
 		print OUT "</tr>";
 		print SOUT "\n";
-		@align=("Combined Total Reads"," Combined Mapped Reads");
+		@align=("Combined Total Reads","Combined Mapped Reads");
 		@align_h=("Total number of combined reads of the pair after realignment and recalibration","Number of reads mapped of the pair after realignment and recalibration");
 		if ($tool eq 'exome')	{
 			@snv=("Total SNVs (${SNV_caller})","Filtered SNVs (${SNV_caller})","SNVs in CodingRegion","SNVs in CaptureRegion",
@@ -1128,7 +1129,7 @@ else    {
                         print OUT "<td class=\"helpHed\"></td>";
                 }               
                 print OUT "</tr>\n";
-				print SOUT "\n";
+				
         
 		foreach my $key (sort {$a <=> $b} keys %group_numbers)	{	
 			
@@ -1140,10 +1141,8 @@ else    {
 						print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 						for (my $c=0; $c <= $tot;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
-							print SOUT "\t";
 						}		
 						print OUT "</tr>\n";
-						print SOUT "\n";
 					}
 				}
 				my $flag=1;
@@ -1157,6 +1156,7 @@ else    {
 				}		
 				if ($flag == 1)	{
 						print OUT "<td class=\"helpHed\"><p align='left'><a href=\"#$names[$key]\" title=\"$values[$key]\">$names[$key]</a></td>";
+						print SOUT "$names[$key]";
 					for(my $k = 0; $k <= $tot;$k++)	{
 						my $print=CommaFormatted(${$group_numbers{$key}}[$k]);
 						print OUT "<td class=\"helpBod\">$print</td>\n";
@@ -1174,10 +1174,8 @@ else    {
 						print OUT "<th class=\"helpBod\"><b>$subheader[$h]<b></th>";
 						for (my $c=0; $c <= $tot;$c++)	{
 							print OUT "<td class=\"helpHed\"></td>";
-							print SOUT "\t";
 						}		
 						print OUT "</tr>\n";
-						print SOUT "\n";
 					}
 				}
 				my $flag=1;
@@ -1191,6 +1189,7 @@ else    {
 				}		
 				if ($flag == 1)	{
 						print OUT "<td class=\"helpHed\"><p align='left'><a href=\"#$names[$key]\" title=\"$values[$key]\">$names[$key]</a></td>";
+						print SOUT "$names[$key]";
 					for(my $k = 0; $k <= $tot;$k++)	{
 						my $print=CommaFormatted(${$group_numbers{$key}}[$k]);
 						print OUT "<td class=\"helpBod\">$print</td>\n";

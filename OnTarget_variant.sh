@@ -2,7 +2,7 @@
 	
 ########################################################
 ###### 	SNV ANNOTATION FOR TUMOR/NORMAL PAIR WHOLE GENOME ANALYSIS PIPELINE
-######		Program:			annotation.SNV.sh
+######		Program:			OnTarget_variant.sh
 ######		Date:				11/09/2011
 ######		Summary:			Annotates GATK SNV and INDEL outputs
 ######		Input 
@@ -75,7 +75,7 @@ else
 			touch $input/$sample.variants.chr$chr.filter.vcf.fix.log
 			$script_path/wait.sh $input/$sample.variants.chr$chr.filter.vcf.fix.log
 		fi    
-		$script_path/vcf_to_variant_vcf.pl -i $input/$sample.variants.chr$chr.filter.vcf -v $input/$sample.variants.chr$chr.SNV.filter.vcf -l $input/$sample.variants.chr$chr.INDEL.filter.vcf -t both -f 
+		$script_path/vcf_to_variant_vcf.pl -i $input/$sample.variants.chr$chr.filter.vcf -v $input/$sample.variants.chr$chr.SNV.filter.vcf -l $input/$sample.variants.chr$chr.INDEL.filter.vcf -t both
 		$bedtools/intersectBed -header -a $input/$sample.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/$sample.variants.chr$chr.SNV.filter.i.vcf
 		rm $input/$sample.variants.chr$chr.SNV.filter.vcf 
 		$bedtools/intersectBed -header -a $input/$sample.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/$sample.variants.chr$chr.INDEL.filter.i.vcf
@@ -131,7 +131,7 @@ else
 			touch $input/$group.variants.chr$chr.filter.vcf.fix.log
 			$script_path/wait.sh $input/$group.variants.chr$chr.filter.vcf.fix.log
 		fi   
-		$script_path/vcf_to_variant_vcf.pl -i $input/$group.variants.chr$chr.filter.vcf -v $input/$group.variants.chr$chr.SNV.filter.vcf -l $input/$group.variants.chr$chr.INDEL.filter.vcf -t both -f
+		$script_path/vcf_to_variant_vcf.pl -i $input/$group.variants.chr$chr.filter.vcf -v $input/$group.variants.chr$chr.SNV.filter.vcf -l $input/$group.variants.chr$chr.INDEL.filter.vcf -t both
 		$bedtools/intersectBed -header -a $input/$group.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/$group.variants.chr$chr.SNV.filter.i.vcf
 		rm $input/$group.variants.chr$chr.SNV.filter.vcf 
 		$bedtools/intersectBed -header -a $input/$group.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/$group.variants.chr$chr.INDEL.filter.i.vcf
@@ -181,7 +181,7 @@ else
 				touch $input/$group.somatic.variants.chr$chr.filter.vcf.fix.log
 				$script_path/wait.sh $input/$group.somatic.variants.chr$chr.filter.vcf.fix.log
 			fi   
-			$script_path/vcf_to_variant_vcf.pl -i $input/$group.somatic.variants.chr$chr.filter.vcf -v $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf -l $input/TUMOR.$group.variants.chr$chr.INDEL.filter.vcf -t both -f
+			$script_path/vcf_to_variant_vcf.pl -i $input/$group.somatic.variants.chr$chr.filter.vcf -v $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf -l $input/TUMOR.$group.variants.chr$chr.INDEL.filter.vcf -t both
 			$bedtools/intersectBed -header -a $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf -b $intersect_file > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.filter.i.vcf
 			rm $input/TUMOR.$group.variants.chr$chr.SNV.filter.vcf
 			$bedtools/intersectBed -header -a $input/TUMOR.$group.variants.chr$chr.INDEL.filter.vcf -b $intersect_file > $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.filter.i.vcf

@@ -145,10 +145,10 @@ else
     ### make tar balls
     cd $secondary
     rm -Rf logs/core*
-    tar -cvzf logs.tar.gz logs
+    tar -czf logs.tar.gz logs
     chmod -Rf 777 logs.tar.gz
 	rm -Rf $secondary/logs
-    tar -cvzf numbers.tar.gz numbers
+    tar -czf numbers.tar.gz numbers
     chmod -Rf 777 numbers.tar.gz
 	rm -Rf $secondary/numbers
     cp $secondary/numbers.tar.gz $delivery/
