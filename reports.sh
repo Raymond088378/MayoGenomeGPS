@@ -67,24 +67,29 @@ else
 		$script_path/parse.vcf.sh $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf $TempReports/$sample.chr${which_chr}.indel $run_info INDEL	
 		sam=$sample
 	fi	
-	
+	read -p "press enter"
 	if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
 	then
 		snv_var=$sam.chr${which_chr}.snv
 		## add rsids
-		$script_path/add.rsids_snvs.sh $TempReports $snv_var $which_chr $run_info
+		$script_path/add_rsids_snvs.sh $TempReports $snv_var $which_chr $run_info
+		read -p "press enter"
 		## add allele frequency
 		$script_path/add.frequencies.sh $TempReports $snv_var $which_chr $run_info
+		read -p "press enter"
 		## merge sift snpeff polyphen codon UCSC tracks and other tracks
-		$script_path/merge.snv.sh $TempReports $sam $which_chr $sift $snpeff $poly $snv_var $run_info
+		$script_path/merge_snv.sh $TempReports $sam $which_chr $sift $snpeff $poly $snv_var $run_info
+	read -p "press enter"
 	fi
 	
 	if [ $variant_type == "BOTH" -o $variant_type = "INDEL" ]
 	then	
 		indel_var=$sam.chr${which_chr}.indel
 		## add rsIDs
-		$script_path/add.rsids_indels.sh $TempReports $indel_var $which_chr $run_info
+		$script_path/add_rsids_indels.sh $TempReports $indel_var $which_chr $run_info
+		read -p "press enter"
 		$script_path/merge.indel.sh $TempReports $sam $which_chr $snpeff $indel_var $run_info
+		read -p "press enter"
 	fi
     echo `date`
 fi	

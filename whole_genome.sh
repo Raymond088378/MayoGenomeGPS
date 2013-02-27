@@ -561,30 +561,30 @@ then
 			if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
 			then
 				if [ $annot_flag == "YES" ]
-                                then
-                                    $script_path/check_qstat.sh $limit
-                                    mem=$( cat $memory_info | grep -w '^sift' | cut -d '=' -f2)
-                                    qsub_args="-N $type.$version.sift.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
-                                    qsub $args $qsub_args $script_path/sift.sh $sift $output_OnTarget $sample $run_info germline
-                                    $script_path/check_qstat.sh $limit
-                                    mem=$( cat $memory_info | grep -w '^polyphen' | cut -d '=' -f2)
-                                    qsub_args="-N $type.$version.polyphen.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
-                                    qsub $args $qsub_args $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info germline	    	
-                                fi
+				then
+					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^sift' | cut -d '=' -f2)
+					qsub_args="-N $type.$version.sift.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
+					qsub $args $qsub_args $script_path/sift.sh $sift $output_OnTarget $sample $run_info germline
+					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^polyphen' | cut -d '=' -f2)
+					qsub_args="-N $type.$version.polyphen.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
+					qsub $args $qsub_args $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info germline	    	
+				fi
                 fi
 			
 				if [ $annot_flag == "YES" ]
-                        then
-                            $script_path/check_qstat.sh $limit
-                            mem=$( cat $memory_info | grep -w '^snpeff' | cut -d '=' -f2)
-                            qsub_args="-N $type.$version.snpeff.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
-                            qsub $gatk_args $qsub_args $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info germline		
-                        fi
-                        if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
-                        then
-                            hold="-hold_jid $type.$version.sift.$sample.$run_num.$identify,$type.$version.polyphen.$sample.$run_num.$identify,$type.$version.snpeff.$sample.$run_num.$identify"
-                        else
-			    			hold="-hold_jid $type.$version.snpeff.$sample.$run_num.$identify"
+				then
+					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^snpeff' | cut -d '=' -f2)
+					qsub_args="-N $type.$version.snpeff.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
+					qsub $gatk_args $qsub_args $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info germline		
+				fi
+				if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
+				then
+					hold="-hold_jid $type.$version.sift.$sample.$run_num.$identify,$type.$version.polyphen.$sample.$run_num.$identify,$type.$version.snpeff.$sample.$run_num.$identify"
+				else
+					hold="-hold_jid $type.$version.snpeff.$sample.$run_num.$identify"
 				fi
             fi
 			if [ $annot_flag == "YES" ]

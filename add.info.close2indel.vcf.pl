@@ -26,8 +26,11 @@ while(<>)	{
 	if ( $fields[$#fields] ==1 )	{
 		print join ("\t",@fields[@first]) . "\t" . "$fields[8]" . ":C2I" ;
 		for ($i=9; $i <= $#nfields; $i++)	{
-			if ($fields[$i] ne "./.")	{
-			print "\t$fields[$i]:1";  
+			if ($fields[$i] =~ m/^(.:)+/){
+				print "\t$fields[$i]:.";
+			}	
+			elsif ($fields[$i] ne "./." && $fields[$i] ne "." )	{
+				print "\t$fields[$i]:1";  
 			}
 			else	{
 				print "\t$fields[$i]";
@@ -37,7 +40,10 @@ while(<>)	{
 	elsif ($fields[$#fields] == 0 && $fields[$#fields] =~ /^[+-]?\d+$/)	{
 		print join ("\t",@fields[@first]) . "\t" . "$fields[8]" . ":C2I" ; 
 		for ($i=9; $i <= $#nfields; $i++)	{
-			if ($fields[$i] ne "./.")	{
+			if ($fields[$i] =~ m/^(.:)+/){
+				print "\t$fields[$i]:.";
+			}	
+			elsif ($fields[$i] ne "./." && $fields[$i] ne ".")	{
 			print "\t$fields[$i]:0";  
 			}
 			else	{
@@ -48,7 +54,10 @@ while(<>)	{
 	else	{
 		print join ("\t",@fields[@first]) . "\t" . "$fields[8]" . ":C2I" ; 
 		for ($i=9; $i <= $#nfields; $i++)	{
-			if ($fields[$i] ne "./.")	{
+			if ($fields[$i] =~ m/^(.:)+/){
+				print "\t$fields[$i]:.";
+			}	
+			elsif ($fields[$i] ne "./." && $fields[$i] ne ".")	{
 			print "\t$fields[$i]:0";  
 			}
 			else	{

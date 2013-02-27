@@ -469,12 +469,6 @@ else
 		echo "waiting for snvmix2 complete for normal sample "
 		wait $snvmixnormal 
 		
-		### DONE: Replace with PID/wait instead of unbounded loop see:0xDEADBEEF
-		### while [[ ! -s $output/${sampleArray[1]}.variants.chr${chr}.raw.snvmix.vcf ]]
-		### do
-		###	sleep 2m	
-		### done
-		
 		$script_path/combinevcf.sh "$in" ${output}/variants.chr${chr}.raw.snvmix.vcf $run_info yes
 		
 		#UNION - combine .gatk.vcf, .snvmix.vcf 
