@@ -2,17 +2,18 @@
 
 if [ $# != 6 ]
 then
-    echo -e "script to run unified genotyper and backfill the positions\nUsage: ./unifiedgenotyper.sh <bams> <vcf allele source > <vcf output> <type of variant> <output mode> <run info file>"
+    echo -e "script to run unified genotyper and backfill the positions\nUsage: ./unifiedgenotyper.sh <bams> <vcf allele source > <original vcf> <vcf output> <type of variant> <output mode> <run info file>"
     echo -e "Note: overwrites the vcf output if present."
 else
     set -x
     echo `date`
     bam=$1
     vcf_in=$2
-    vcf_out=$3
-    type=$4
-    mode=$5
-    run_info=$6
+    vcf_original=$3
+    vcf_out=$4
+    type=$5
+    mode=$6
+    run_info=$7
 
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     ped=$( cat $tool_info | grep -w '^PEDIGREE' | cut -d '=' -f2)
@@ -66,7 +67,7 @@ else
     done 
     	
 	### add AD,DP,DP4 to the original vcf file
-	$script_path/revertvcf_formatfields.pl -o $vcf_in -i $vcf_out.tmp.vcf -v $vcf_out.correct.vcf
+	$script_path/revertvcf_formatfields.pl -o $vcf_original -i $vcf_out.tmp.vcf -v $vcf_out.correct.vcf
 	rm $vcf_out.tmp.vcf $vcf_out.tmp.vcf.idx
 	mv $vcf_out.correct.vcf $vcf_out	
 	rm $vcf_out.idx	

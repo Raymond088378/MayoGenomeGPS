@@ -527,7 +527,11 @@ then
 		$script_path/combinevcf.sh "$input_var" $output/MergeAllSamples.chr$chr.snvs.raw.vcf $run_info yes
 		
 		### Perform Backfilling on somatic SNVs in Samples 2..N
-		$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" $output/MergeAllSamples.chr$chr.snvs.raw.vcf $output/MergeAllSamples.chr$chr.snvs.raw.vcf BOTH EMIT_ALL_SITES $run_info
+		$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" \
+		$output/MergeAllSamples.chr$chr.snvs.raw.vcf \
+		$output/MergeAllSamples.chr$chr.snvs.raw.vcf \
+		$output/MergeAllSamples.chr$chr.snvs.raw.vcf \
+		BOTH EMIT_ALL_SITES $run_info
 		
 		## combine both snv and indel
 		in="$output/MergeAllSamples.chr$chr.snvs.raw.vcf $output/MergeAllSamples.chr$chr.Indels.raw.vcf"
@@ -550,7 +554,9 @@ then
 		$script_path/combinevcf.sh "$bfalleles" $output/bfalleles.chr$chr.raw.vcf.temp $run_info NO
 
 		### Backfill Non-somatic Variants in ${output}/variants.chr${chr}.raw.vcf using somatic & non-somatic 
-		$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" $output/bfalleles.chr$chr.raw.vcf.temp \
+		$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" \
+		$output/bfalleles.chr$chr.raw.vcf.temp \
+		${output}/variants.chr${chr}.raw.vcf \
 		${output}/variants.chr${chr}.raw.vcf BOTH EMIT_ALL_SITES $run_info
 		
 		### Remove the allele list now we're done with it
@@ -560,7 +566,11 @@ then
 		echo Backfill Somatic Nonsomatic
 	else
 		### Backfill Non-somatic Variants in ${output}/variants.chr${chr}.raw.vcf using germline
-		$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" ${output}/variants.chr${chr}.raw.vcf ${output}/variants.chr${chr}.raw.vcf BOTH EMIT_ALL_SITES $run_info
+		$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" \
+		${output}/variants.chr${chr}.raw.vcf \
+		${output}/variants.chr${chr}.raw.vcf \
+		${output}/variants.chr${chr}.raw.vcf \
+		BOTH EMIT_ALL_SITES $run_info
 		echo Backfill Nonsomatic Only
 	fi
 fi
