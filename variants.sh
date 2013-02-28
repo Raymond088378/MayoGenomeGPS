@@ -539,6 +539,15 @@ fi
 		# echo Backfill Nonsomatic Only
 	# fi
 # fi
+if [[ $SNV_caller != "GATK" ]]
+then
+	$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" \
+	${output}/variants.chr${chr}.raw.vcf \
+	${output}/variants.chr${chr}.raw.vcf \
+	${output}/variants.chr${chr}.raw.vcf \
+	BOTH EMIT_ALL_SITES $run_info
+fi	
+
 
 
 ###############
