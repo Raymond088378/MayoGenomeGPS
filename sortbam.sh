@@ -23,21 +23,26 @@ else
     reads=$( cat $tool_info | grep -w '^MAX_READS_MEM_SORT' | cut -d '=' -f2 )
     mem=$( cat $memory_info | grep -w '^SORT_JVM' | cut -d '=' -f2)
     ### Included for future use 
-    ### usenovosort=$( cat $tool_info | grep -w '^USENOVOSORT' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
-	### novosort=$( cat $tool_info | grep -w '^NOVOSORT' | cut -d '=' -f2)
-	### novosortopt=$( cat $tool_info | grep -w '^NOVOSORTPBOPT' | cut -d '=' -f2)
+    usenovosort=$( cat $tool_info | grep -w '^USENOVOSORT' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
+	novosort=$( cat $tool_info | grep -w '^NOVOSORT' | cut -d '=' -f2)
+	novosortopt=$( cat $tool_info | grep -w '^NOVOSORTPBOPT' | cut -d '=' -f2)
 	
-	$java/java $mem -jar $picard/SortSam.jar \
-    INPUT=$inbam \
-    OUTPUT=$outbam \
-    MAX_RECORDS_IN_RAM=$reads \
-    SO=$order \
-    TMP_DIR=$tmp_dir \
-	CREATE_INDEX=$index \
-    VALIDATION_STRINGENCY=SILENT	
-    file=`echo $outbam | sed -e 's/\(.*\)..../\1/'`
-	mv $file.bai $file.bam.bai
-    
+	if [ $usenovosort == "yes" ]
+	then
+		### NOVOSORT INJECTION
+		$novosort $novosortopt --index --tmpdir=$tmp_dir $inbam -o $outbam
+	else	
+		$java/java $mem -jar $picard/SortSam.jar \
+		INPUT=$inbam \
+		OUTPUT=$outbam \
+		MAX_RECORDS_IN_RAM=$reads \
+		SO=$order \
+		TMP_DIR=$tmp_dir \
+		CREATE_INDEX=$index \
+		VALIDATION_STRINGENCY=SILENT	
+		file=`echo $outbam | sed -e 's/\(.*\)..../\1/'`
+		mv $file.bai $file.bam.bai
+    fi
     if [ ! -s $outbam ]
     then
         $script_path/errorlog.sh sortbam.sh $outbam ERROR "is empty"

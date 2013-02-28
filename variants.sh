@@ -474,6 +474,12 @@ then
 			input_var="${input_var} -V $output/$indel"
 		done
 		$script_path/combinevcf.sh "$input_var" $output/MergeAllSamples.chr$chr.Indels.raw.vcf $run_info yes
+		### Perform Backfilling on somatic INDELs in Samples 2..N
+		$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" \
+		$output/MergeAllSamples.chr$chr.Indels.raw.vcf \
+		$output/MergeAllSamples.chr$chr.Indels.raw.vcf \
+		$output/MergeAllSamples.chr$chr.Indels.raw.vcf \
+		INDEL EMIT_ALL_SITES $run_info
 
 		###Merge SNVs Across Samples 2..N
 		input_var=""
@@ -485,13 +491,12 @@ then
 		done
 		
 		$script_path/combinevcf.sh "$input_var" $output/MergeAllSamples.chr$chr.snvs.raw.vcf $run_info yes
-		
 		### Perform Backfilling on somatic SNVs in Samples 2..N
 		$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" \
 		$output/MergeAllSamples.chr$chr.snvs.raw.vcf \
 		$output/MergeAllSamples.chr$chr.snvs.raw.vcf \
 		$output/MergeAllSamples.chr$chr.snvs.raw.vcf \
-		BOTH EMIT_ALL_SITES $run_info
+		SNP EMIT_ALL_SITES $run_info
 		
 		## combine both snv and indel
 		in="$output/MergeAllSamples.chr$chr.snvs.raw.vcf $output/MergeAllSamples.chr$chr.Indels.raw.vcf"
@@ -504,36 +509,36 @@ fi
 #####################################
 
 ### TODO Add error checking
-if [ ${#sampleArray[@]} -gt 1 ]
-then
-	### We have multiple samples, thus requiring a backfilling step
-	if [ $somatic_calling == "YES" ]
-	then
-		### Create merged allele list (don't erase originals)
-		bfalleles="-V ${output}/variants.chr${chr}.raw.vcf -V $output/MergeAllSamples.chr$chr.raw.vcf"
-		$script_path/combinevcf.sh "$bfalleles" $output/bfalleles.chr$chr.raw.vcf.temp $run_info NO
+# if [ ${#sampleArray[@]} -gt 1 ]
+# then
+	## We have multiple samples, thus requiring a backfilling step
+	# if [ $somatic_calling == "YES" ]
+	# then
+		## Create merged allele list (don't erase originals)
+		# bfalleles="-V ${output}/variants.chr${chr}.raw.vcf -V $output/MergeAllSamples.chr$chr.raw.vcf"
+		# $script_path/combinevcf.sh "$bfalleles" $output/bfalleles.chr$chr.raw.vcf.temp $run_info NO
 
-		### Backfill Non-somatic Variants in ${output}/variants.chr${chr}.raw.vcf using somatic & non-somatic 
-		$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" \
-		$output/bfalleles.chr$chr.raw.vcf.temp \
-		${output}/variants.chr${chr}.raw.vcf \
-		${output}/variants.chr${chr}.raw.vcf BOTH EMIT_ALL_SITES $run_info
+		## Backfill Non-somatic Variants in ${output}/variants.chr${chr}.raw.vcf using somatic & non-somatic 
+		# $script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" \
+		# $output/bfalleles.chr$chr.raw.vcf.temp \
+		# ${output}/variants.chr${chr}.raw.vcf \
+		# ${output}/variants.chr${chr}.raw.vcf BOTH EMIT_ALL_SITES $run_info
 		
-		### Remove the allele list now we're done with it
-		rm $output/bfalleles.chr$chr.raw.vcf.temp ### remove allele list during cleanup
-		rm $output/bfalleles.chr$chr.raw.vcf.temp.idx ### remove allele list during cleanup
+		## Remove the allele list now we're done with it
+		# rm $output/bfalleles.chr$chr.raw.vcf.temp ### remove allele list during cleanup
+		# rm $output/bfalleles.chr$chr.raw.vcf.temp.idx ### remove allele list during cleanup
 		
-		echo Backfill Somatic Nonsomatic
-	else
-		### Backfill Non-somatic Variants in ${output}/variants.chr${chr}.raw.vcf using germline
-		$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" \
-		${output}/variants.chr${chr}.raw.vcf \
-		${output}/variants.chr${chr}.raw.vcf \
-		${output}/variants.chr${chr}.raw.vcf \
-		BOTH EMIT_ALL_SITES $run_info
-		echo Backfill Nonsomatic Only
-	fi
-fi
+		# echo Backfill Somatic Nonsomatic
+	# else
+		## Backfill Non-somatic Variants in ${output}/variants.chr${chr}.raw.vcf using germline
+		# $script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" \
+		# ${output}/variants.chr${chr}.raw.vcf \
+		# ${output}/variants.chr${chr}.raw.vcf \
+		# ${output}/variants.chr${chr}.raw.vcf \
+		# BOTH EMIT_ALL_SITES $run_info
+		# echo Backfill Nonsomatic Only
+	# fi
+# fi
 
 
 ###############

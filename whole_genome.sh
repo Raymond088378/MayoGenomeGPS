@@ -50,9 +50,6 @@ then
 	echo "Perl path should point to /usr/local/biotools/perl/5.10.0/bin/perl if the user use the command which perl and user can change this using mayobiotools"
 	exit 1;
 fi
-
-
-
 dir_info=`dirname $run_info`
 if [ "$dir_info" = "." ]
 then
@@ -358,7 +355,6 @@ then
 				echo "sample info file is not properly configured"
 				exit 1;
 			fi
-			
 			### Mayo internal, call the dashboard
 			if [ $analysis == "realign-mayo" ]
 			then
@@ -571,28 +567,13 @@ then
 					qsub_args="-N $type.$version.polyphen.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
 					qsub $args $qsub_args $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info germline	    	
 				fi
-                fi
-			
-				if [ $annot_flag == "YES" ]
-				then
-					$script_path/check_qstat.sh $limit
-					mem=$( cat $memory_info | grep -w '^snpeff' | cut -d '=' -f2)
-					qsub_args="-N $type.$version.snpeff.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
-					qsub $gatk_args $qsub_args $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info germline		
-				fi
-				if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
-				then
-					hold="-hold_jid $type.$version.sift.$sample.$run_num.$identify,$type.$version.polyphen.$sample.$run_num.$identify,$type.$version.snpeff.$sample.$run_num.$identify"
-				else
-					hold="-hold_jid $type.$version.snpeff.$sample.$run_num.$identify"
-				fi
             fi
 			if [ $annot_flag == "YES" ]
 			then
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^snpeff' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.snpeff.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info germline		
+				qsub $gatk_args $qsub_args $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info germline		
 			fi
 			if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
 			then
@@ -600,80 +581,93 @@ then
 			else
 				hold="-hold_jid $type.$version.snpeff.$sample.$run_num.$identify"
 			fi
+        fi
+		if [ $annot_flag == "YES" ]
+		then
+			$script_path/check_qstat.sh $limit
+			mem=$( cat $memory_info | grep -w '^snpeff' | cut -d '=' -f2)
+			qsub_args="-N $type.$version.snpeff.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
+			qsub $args $qsub_args $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info germline		
+		fi
+		if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
+		then
+			hold="-hold_jid $type.$version.sift.$sample.$run_num.$identify,$type.$version.polyphen.$sample.$run_num.$identify,$type.$version.snpeff.$sample.$run_num.$identify"
+		else
+			hold="-hold_jid $type.$version.snpeff.$sample.$run_num.$identify"
+		fi
 				
-			if [ $annot_flag == "YES" ]
-			then
-				$script_path/check_qstat.sh $limit
-				mem=$( cat $memory_info | grep -w '^reports' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.reports.$sample.$run_num.$identify $hold -t 1-$numchrs:1 -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir germline
-				$script_path/check_qstat.sh $limit
-				mem=$( cat $memory_info | grep -w '^sample_report' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.sample_report.$sample.$run_num.$identify -hold_jid $type.$version.reports.$sample.$run_num.$identify -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/sample_report.sh $output_dir $TempReports $sample $run_info germline
-			fi
+		if [ $annot_flag == "YES" ]
+		then
+			$script_path/check_qstat.sh $limit
+			mem=$( cat $memory_info | grep -w '^reports' | cut -d '=' -f2)
+			qsub_args="-N $type.$version.reports.$sample.$run_num.$identify $hold -t 1-$numchrs:1 -l h_vmem=$mem"
+			qsub $args $qsub_args $script_path/reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir germline
+			$script_path/check_qstat.sh $limit
+			mem=$( cat $memory_info | grep -w '^sample_report' | cut -d '=' -f2)
+			qsub_args="-N $type.$version.sample_report.$sample.$run_num.$identify -hold_jid $type.$version.reports.$sample.$run_num.$identify -l h_vmem=$mem"
+			qsub $args $qsub_args $script_path/sample_report.sh $output_dir $TempReports $sample $run_info germline
+		fi
         if [[ $tool == "whole_genome"  && $analysis != "annotation" ]]
+		then
+			crest=$output_dir/struct/crest
+			break=$output_dir/struct/break
+			cnv=$output_dir/cnv/$sample
+			mkdir -p $break $crest $cnv
+			$script_path/check_qstat.sh $limit
+			mem=$( cat $memory_info | grep -w '^run_single_crest' | cut -d '=' -f2)
+			if [ $analysis == "variant" ]
 			then
-				crest=$output_dir/struct/crest
-				break=$output_dir/struct/break
-				cnv=$output_dir/cnv/$sample
-				mkdir -p $break $crest $cnv
-				$script_path/check_qstat.sh $limit
-				mem=$( cat $memory_info | grep -w '^run_single_crest' | cut -d '=' -f2)
-				if [ $analysis == "variant" ]
-				then
-					qsub_args="-N $type.$version.run_single_crest.$sample.$run_num.$identify -hold_jid $type.$version.reformat_BAM.$sample.$run_num.$identify -t 1-$numchrs:1 -pe threaded 2 -l h_vmem=$mem"
-					qsub $args $qsub_args $script_path/run_single_crest.sh $sample $realign_dir $bamfile $crest $run_info
-				else
-					qsub_args="-N $type.$version.run_single_crest.$sample.$run_num.$identify -hold_jid $type.$version.processBAM.$sample.$run_num.$identify -t 1-$numchrs:1 -pe threaded 2 -l h_vmem=$mem"
-					qsub $args $qsub_args $script_path/run_single_crest.sh $sample $align_dir $bamfile $crest $run_info
-				fi
-				$script_path/check_qstat.sh $limit
-				mem=$( cat $memory_info | grep -w '^run_cnvnator' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.run_cnvnator.$sample.$run_num.$identify -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/run_cnvnator.sh $sample $realign_dir $cnv $run_info single
-				let nump=$numchrs+1;
-				$script_path/check_qstat.sh $limit
-				mem=$( cat $memory_info | grep -w '^run_breakdancer' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.run_breakdancer.$sample.$run_num.$identify -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/run_breakdancer.sh $sample $output_realign $break $run_info single
-				$script_path/check_qstat.sh $limit
-				qsub_args="-N $type.$version.run_breakdancer_in.$sample.$run_num.$identify -hold_jid $type.$version.igv_bam.$sample.$run_num.$identify -t $nump-$nump:$nump -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/run_breakdancer.sh $sample $igv $break $run_info single
-				
-				### merge the structural variants
-				hold="-hold_jid $type.$version.run_single_crest.$sample.$run_num.$identify,$type.$version.run_cnvnator.$sample.$run_num.$identify,"
-				hold=$hold"$type.$version.run_breakdancer.$sample.$run_num.$identify,$type.$version.run_breakdancer_in.$sample.$run_num.$identify"
-				mkdir -p $sv
-				$script_path/check_qstat.sh $limit
-				mem=$( cat $memory_info | grep -w '^summaryze_struct_single' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.summaryze_struct_single.$sample.$run_num.$identify -l h_vmem=$mem $hold"
-				qsub $gatk_args $qsub_args $script_path/summaryze_struct_single.sh $sample $output_dir $run_info
-				$script_path/check_qstat.sh $limit
-				mem=$( cat $memory_info | grep -w '^plot_circos_cnv_sv' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.plot_circos_cnv_sv.$sample.$run_num.$identify -hold_jid $type.$version.summaryze_struct_single.$sample.$run_num.$identify -l h_vmem=$mem"
-				break_file=$break/$sample/$sample.break
-				crest_file=$crest/$sample/$sample.filter.crest
-				cnv_file=$cnv/$sample.cnv.filter.bed
-				qsub $args $qsub_args $script_path/plot_circos_cnv_sv.sh $break_file $crest_file $cnv_file $sample $circos $run_info	
+				qsub_args="-N $type.$version.run_single_crest.$sample.$run_num.$identify -hold_jid $type.$version.reformat_BAM.$sample.$run_num.$identify -t 1-$numchrs:1 -pe threaded 2 -l h_vmem=$mem"
+				qsub $args $qsub_args $script_path/run_single_crest.sh $sample $realign_dir $bamfile $crest $run_info
+			else
+				qsub_args="-N $type.$version.run_single_crest.$sample.$run_num.$identify -hold_jid $type.$version.processBAM.$sample.$run_num.$identify -t 1-$numchrs:1 -pe threaded 2 -l h_vmem=$mem"
+				qsub $args $qsub_args $script_path/run_single_crest.sh $sample $align_dir $bamfile $crest $run_info
 			fi
-			if [ $annot_flag == "YES" ]
-            then
-            	if [[ $tool == "whole_genome" && $analysis != "alignment" && $analysis != "annotation" && $analysis != "ontarget" ]]
-                then
-                	mkdir -p $output_dir/Reports_per_Sample/ANNOT
-					
-					### Concatenante CNV outputs, awk.
-					$script_path/check_qstat.sh $limit
-					mem=$( cat $memory_info | grep -w '^annotation_CNV' | cut -d '=' -f2)
-					qsub_args="-N $type.$version.annotation_CNV.$sample.$run_num.$identify -hold_jid $type.$version.plot_circos_cnv_sv.$sample.$run_num.$identify -l h_vmem=$mem"
-					qsub $args $qsub_args $script_path/annotation_CNV.sh $sv $run_info $annot $sample
-					
-					$script_path/check_qstat.sh $limit
-					mem=$( cat $memory_info | grep -w '^annotation_SV' | cut -d '=' -f2)
-					qsub_args="-N $type.$version.annotation_SV.sh.$sample.$run_num.$identify -hold_jid $type.$version.plot_circos_cnv_sv.$sample.$run_num.$identify -l h_vmem=$mem"
-					qsub $args $qsub_args $script_path/annotation_SV.sh $output_dir $run_info $annot $sample
-				fi
+			$script_path/check_qstat.sh $limit
+			mem=$( cat $memory_info | grep -w '^run_cnvnator' | cut -d '=' -f2)
+			qsub_args="-N $type.$version.run_cnvnator.$sample.$run_num.$identify -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=$mem"
+			qsub $args $qsub_args $script_path/run_cnvnator.sh $sample $realign_dir $cnv $run_info single
+			let nump=$numchrs+1;
+			$script_path/check_qstat.sh $limit
+			mem=$( cat $memory_info | grep -w '^run_breakdancer' | cut -d '=' -f2)
+			qsub_args="-N $type.$version.run_breakdancer.$sample.$run_num.$identify -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=$mem"
+			qsub $args $qsub_args $script_path/run_breakdancer.sh $sample $output_realign $break $run_info single
+			$script_path/check_qstat.sh $limit
+			qsub_args="-N $type.$version.run_breakdancer_in.$sample.$run_num.$identify -hold_jid $type.$version.igv_bam.$sample.$run_num.$identify -t $nump-$nump:$nump -l h_vmem=$mem"
+			qsub $args $qsub_args $script_path/run_breakdancer.sh $sample $igv $break $run_info single
+			
+			### merge the structural variants
+			hold="-hold_jid $type.$version.run_single_crest.$sample.$run_num.$identify,$type.$version.run_cnvnator.$sample.$run_num.$identify,"
+			hold=$hold"$type.$version.run_breakdancer.$sample.$run_num.$identify,$type.$version.run_breakdancer_in.$sample.$run_num.$identify"
+			mkdir -p $sv
+			$script_path/check_qstat.sh $limit
+			mem=$( cat $memory_info | grep -w '^summaryze_struct_single' | cut -d '=' -f2)
+			qsub_args="-N $type.$version.summaryze_struct_single.$sample.$run_num.$identify -l h_vmem=$mem $hold"
+			qsub $gatk_args $qsub_args $script_path/summaryze_struct_single.sh $sample $output_dir $run_info
+			$script_path/check_qstat.sh $limit
+			mem=$( cat $memory_info | grep -w '^plot_circos_cnv_sv' | cut -d '=' -f2)
+			qsub_args="-N $type.$version.plot_circos_cnv_sv.$sample.$run_num.$identify -hold_jid $type.$version.summaryze_struct_single.$sample.$run_num.$identify -l h_vmem=$mem"
+			break_file=$break/$sample/$sample.break
+			crest_file=$crest/$sample/$sample.filter.crest
+			cnv_file=$cnv/$sample.cnv.filter.bed
+			qsub $args $qsub_args $script_path/plot_circos_cnv_sv.sh $break_file $crest_file $cnv_file $sample $circos $run_info	
+		fi
+		if [ $annot_flag == "YES" ]
+		then
+			if [[ $tool == "whole_genome" && $analysis != "alignment" && $analysis != "annotation" && $analysis != "ontarget" ]]
+			then
+				mkdir -p $output_dir/Reports_per_Sample/ANNOT
+				
+				### Concatenante CNV outputs, awk.
+				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^annotation_CNV' | cut -d '=' -f2)
+				qsub_args="-N $type.$version.annotation_CNV.$sample.$run_num.$identify -hold_jid $type.$version.plot_circos_cnv_sv.$sample.$run_num.$identify -l h_vmem=$mem"
+				qsub $args $qsub_args $script_path/annotation_CNV.sh $sv $run_info $annot $sample
+				
+				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^annotation_SV' | cut -d '=' -f2)
+				qsub_args="-N $type.$version.annotation_SV.sh.$sample.$run_num.$identify -hold_jid $type.$version.plot_circos_cnv_sv.$sample.$run_num.$identify -l h_vmem=$mem"
+				qsub $args $qsub_args $script_path/annotation_SV.sh $output_dir $run_info $annot $sample
 			fi
 		fi
 		if [[ $analysis != "annotation" && $analysis != "alignment" ]]

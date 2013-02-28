@@ -99,15 +99,8 @@ else
 			mv $input/$sample.bam $input/$sample.sorted.bam
 			$samtools/samtools index $input/$sample.sorted.bam
 		else
-			if [ $usenovosort == "yes" ]
-			then
-				### NOVOSORT INJECTION
-				mkdir -p $input/temp
-				$novosort $novosortopt --index --tmpdir=$input/temp $input/$sample.bam -o $input/$sample.sorted.bam
-			else
-				### sort and index the bam file (index set true)
-				$script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate true $run_info
-			fi
+			### sort and index the bam file (index set true)
+			$script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate true $run_info
 		fi
 	else	
 	    $script_path/MergeBam.sh "$INPUTARGS" $input/$sample.sorted.bam $input true $run_info
