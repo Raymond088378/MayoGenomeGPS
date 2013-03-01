@@ -457,6 +457,7 @@ then
             then
             	continue;
             fi
+            
             ###############################
 			### VARIANT CALLING SECTION ###
 			###############################
@@ -466,9 +467,13 @@ then
 			qsub $gatk_args $qsub_args $script_path/variants.sh $realign_dir $sample $variant_dir 1 $run_info
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^merge_variant_single' | cut -d '=' -f2)
+			
+			### TODO: Remove merge and perform in separate step after backfill operation
 			qsub_args="-N $type.$version.merge_variant_single.$sample.$run_num.$identify -pe threaded $threads -hold_jid $type.$version.variants.$sample.$run_num.$identify -l h_vmem=$mem"
 			qsub $gatk_args $qsub_args $script_path/merge_variant_single.sh $output_variant $sample $RSample $run_info
 			$script_path/check_qstat.sh $limit
+			### ODOT 
+
 			mem=$( cat $memory_info | grep -w '^OnTarget_BAM' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.OnTarget_BAM.$sample.$run_num.$identify -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=$mem"
 			qsub $args $qsub_args  $script_path/OnTarget_BAM.sh $realign_dir $output_OnTarget $sample $run_info
@@ -482,6 +487,37 @@ then
 			qsub $args $qsub_args $script_path/getCoverage.sh $output_OnTarget $numbers $sample $run_info
         ### END mayo external realignment variant realign-mayo SECTION
 		fi
+
+		
+	### done ### FOR EACH SAMPLE 
+	### Closing the main loop, reopen after backfill
+
+	### best dependency at this point
+	### $type.$version.variants.$sample (*).$run_num.$identify
+	
+
+	#################################
+	### Single-Sample Backfilling ###
+	#################################
+	
+	### TODO Set up synchronized merge task dependent on variants
+ 
+	###	that we haven't broken the pipeline dependencies between variants and OnTarget				
+	
+		
+	### Reopening the job submission loop	
+	### Loop and submit merge variant single, set future dependencies on it
+	
+	### for sample in `echo $samples | tr ":" "\n"`
+	### do 
+	### 	if [[ $analysis == "mayo" || $analysis == "external" || $analysis == "realignment" || $analysis == "variant" || $analysis == "realign-mayo" ]]
+	### 	then
+	###			### Depend on backfill tasks
+	###			qsub_args="-N $type.$version.merge_variant_single.$sample.$run_num.$identify -pe threaded $threads -hold_jid $type.$version.variants.$sample.$run_num.$identify -l h_vmem=$mem"
+	###			qsub $gatk_args $qsub_args $script_path/merge_variant_single.sh $output_variant $sample $RSample $run_info
+	###			$script_path/check_qstat.sh $limit
+		
+				
 		#########################
 		### OnTarget Analysis ###
 		#########################
