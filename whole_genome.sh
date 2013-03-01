@@ -193,8 +193,8 @@ echo -e "TOOL_INFO=$config/tool_info.txt\nSAMPLE_INFO=$config/sample_info.txt\nM
 rm $run_info.tmp
 mv $run_info $config/run_info.txt
 run_info=$config/run_info.txt
-## tool info file
 
+## tool info file
 tool_info=$output_dir/tool_info.txt
 mv $tool_info $config/tool_info.txt
 tool_info=$config/tool_info.txt
@@ -247,7 +247,15 @@ TO=$USER
 email=`finger $USER | awk -F ';' '{print $2}'`
 
 args="-V -wd $output_dir/logs -q $queue -m a -M $email -l h_stack=10M"
-gatk_args="-V -wd $output_dir/logs -q $gatkqueue -m a -M $email -l h_stack=10M"
+
+### Test if gatkqueue is empty; if so, fail through to using standard args for queue
+if [[ "${gatkqueue+xxx}" = "xxx" ]]
+then
+	gatk_args=$args
+	echo "Failed to find GATK specific queue, using $queue"
+else 
+	gatk_args="-V -wd $output_dir/logs -q $gatkqueue -m a -M $email -l h_stack=10M"
+fi
 
 echo -e "\nRCF arguments used : $args\n" >> $output_dir/log.txt
 echo -e "Started the ${tool} analysis for ${run_num} for ${PI}\n\n${info}\n\nCourtesy: $workflow $version" | mailx -v -s "Analysis Started" "$email"
