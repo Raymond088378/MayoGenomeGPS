@@ -102,4 +102,4 @@ else
     fi  
 	echo `date`	
 fi  
-
+### at this point, we should have $sample.variants.filter.vcf in whatever output folder given
