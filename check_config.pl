@@ -13,13 +13,14 @@ if ($runinfomsg ne "") {
 
 my %runinfofmt = (
    READLENGTH => 'int',
+   PAIRED => 'boolean',
    PI => 'string',
    TOOL => 'string',
    VERSION => 'real',
    TYPE => 'string',
    MULTISAMPLE => 'boolean',
    INPUT_DIR => 'dir',
-   BASE_OUTPUT_DIR => 'string',
+   BASE_OUTPUT_DIR => 'dir',
    ANALYSIS => 'string',
    SAMPLENAMES => 'csep',
    GROUPNAMES => 'csep',
@@ -35,13 +36,13 @@ my %runinfofmt = (
    FOLDER_FASTQC => 'dir',
    VARIANT_TYPE => 'string',
    SNV_CALLER => 'string',
+   SOMATIC_CALLER => 'string',
    SAMPLEINFORMATION => 'string',
    DELIVERY_FOLDER => 'dir',
    TERTIARY_FOLDER => 'dir'
 );
 
 $runinfomsg = check_variables ($runinfovars, \%runinfofmt, $runinfo);
-
 if ($runinfomsg ne "") {
     print $runinfomsg."\n";
     exit 1;
@@ -101,74 +102,158 @@ if ($pairnamesmsg ne "") {
     exit 1;
 }
 my %toolinfofmt = (
-	REF_GENOME=>"file",
-	SPLIT_GENOME=>"dir",
-	GAP_GENOME=>"file",
-	BWA_REF=>"file",
-	BLAT_REF=>"file",
-	BIT_DIR=>"dir",
-	KG_INDELS_VCF=>"file",
-	DBSNP_VCF=>"file",
-	HAPMAP_VCF=>"file",
-	OMNI_VCF=>"file",
-	NOVO_REF=>"file",
-	dbSNP_REF=>"file",
-	KGENOME_REF=>"file",
-	dbSNP_SNV_rsIDs=>"file",
-	MASTER_GENE_FILE=>"file",
-	MASTER_ENTREZ_FILE=>"file",
-	CAPTUREKIT=>"file",
-	ONTARGET=>"file",
-	BLACKLISTED=>"file",
-	MAPABILITY=>"file",
-	REPEATREGIONS=>"file",
-	miRbase=>"file",
-	SNP_SR=>"file",
-	SNP_CS=>"file",
-	BLACKLIST_SV=>"file",
-	METACORE_PATHWAY=>"dir",
-	TISSUE_SPECIFIC=>"dir",
-	KGENOME=>"dir",
-	HAPMAP=>"dir",
-	CODON_REF=>"file",
-	WHOLEGENOME_PATH=>"dir",
-	NOVOALIGN=>"dir",
-	BWA=>"dir",
-	JAVA=>"dir",
-	SAMTOOLS=>"dir",
-	GATK=>"dir",
-	SOMATIC_SNIPER=>"dir",
-	BEDTOOLS=>"dir",
-	SIFT=>"dir",
-	VCFTOOLS=>"dir",
-	TABIX=>"dir",
-	CIRCOS=>"dir",
-	PICARD=>"dir",
-	FASTQC=>"dir",
-	CNVNATOR=>"dir",
-	ROOTLIB=>"dir",
-	CREST=>"dir",
-	CAP3=>"dir",
-	BLAT=>"dir",
-	BREAKDANCER=>"dir",
-	PERL_BREAKDANCER=>"dir",
-	PERLLIB_BREAKDANCER=>"dir",
-	EMIT_ALL_SITES=> 'boolean',
-	TARGETTED=> 'boolean',
-	MATLAB=>"dir",
-	SEGSEQ=>"dir",
-	SCRIPT_PATH=>"dir",
-	CNVNATOR_BINSIZE=>"int",
-	PCT_READS_SEGSEQ=>"real",
-	MINFOLD=>"real",
-	MAXFOLD=>"real",
-	DISTGAP=>"int",
-	BLAT_PORT=>"int",
-	BLAT_SERVER=>"string",
-	HTTP_SERVER=>"string",
-	PERLLIB=>"csep",
-	PERLLIB_VCF=>"csep",
-	PERL_CIRCOS=>"csep"
+	## references
+	REF_GENOME => 'file' ,
+	SPLIT_GENOME => 'dir' ,
+	KGENOME => 'dir' ,
+	HAPMAP => 'dir' ,
+	CODON_REF => 'file' ,
+	GAP_GENOME => 'file' ,
+	BWA_REF => 'file' ,
+	BLAT_REF => 'file' ,
+	KG_INDELS_VCF => 'file' ,
+	DBSNP_VCF => 'file' ,
+	HAPMAP_VCF => 'file' ,
+	OMNI_VCF => 'file' ,
+	NOVO_REF => 'file' ,
+	dbSNP_REF => 'file' ,
+	KGENOME_REF => 'file' ,
+	dbSNP_SNV_rsIDs => 'file' ,
+	COSMIC_INDEL_REF => 'file' ,
+	COSMIC_SNV_REF => 'file' ,
+	dbSNP_disease_rsIDs => 'file' ,
+	UCSC_TRACKS => 'dir' ,
+	ACC_TO_GENE => 'file' ,
+	GeneIdMap => 'file' ,
+	UCSC_REF_FLAT => 'file' ,
+	UCSC_REF_FLAT_BED => 'file' ,
+	METACORE_PATHWAY => 'dir' ,
+	TISSUE_SPECIFIC => 'dir' ,
+	dbSNP_INDEL_rsIDs => 'file' ,
+	BGI_REF => 'file' ,
+	SIFT_REF => 'dir' ,
+	MASTER_GENE_FILE => 'file' ,
+	MASTER_ENTREZ_FILE => 'file' ,
+	MATER_GENE_BODY => 'file' ,
+	CAPTUREKIT => 'file' ,
+	ONTARGET => 'file' ,
+	BLACKLISTED => 'file' ,
+	MAPABILITY => 'file' ,
+	REPEATREGIONS => 'file' ,
+	miRbase => 'file' ,
+	SNP_SR => 'file' ,
+	SNP_CS => 'file' ,
+	BLACKLIST_SV => 'file' ,
+	ESP => 'file' ,
+	MILLS_REF => 'file' ,
+	PEDIGREE => 'file' ,
+	SNP_SAO => 'file' ,
+	SNP_BUILD => 'file' ,
+	ANNOTATION_MODULE_DATA => 'dir' ,
+	### tools
+	WORKFLOW_PATH => 'dir' ,
+	NOVOALIGN => 'file' ,
+	NOVOSORT => 'file' ,
+	BWA => 'dir' ,
+	BOWTIE => 'dir' ,
+	JAVA => 'dir' ,
+	SAMTOOLS => 'dir' ,
+	GATK => 'dir' ,
+	SOMATIC_SNIPER => 'dir' ,
+	BEDTOOLS => 'dir' ,
+	PICARD => 'dir' ,
+	FASTQC => 'file' ,
+	SNVmix => 'dir' ,
+	JOINTSNVMIX => 'dir' ,
+	CNVNATOR => 'dir' ,
+	MUTECT => 'dir' ,
+	CREST => 'dir' ,
+	CAP3 => 'dir' ,
+	BLAT => 'dir' ,
+	BREAKDANCER => 'dir' ,
+	MATLAB => 'dir' ,
+	SEGSEQ => 'dir' ,
+	CIRCOS => 'dir' ,
+	SIFT => 'dir' ,
+	VCFTOOLS => 'dir' ,
+	TABIX => 'dir',
+	SNPEFF => 'dir' ,
+	POLYPHEN => 'dir' ,
+	##libraries
+	PERLLIB_CIRCOS => 'csep' ,
+	PERLLIB => 'csep' ,
+	PERLLIB_VCF => 'csep' ,
+	PERL_CIRCOS => 'file' ,
+	PERL_POLYPHEN_LIB => 'dir' ,
+	ROOTLIB => 'dir' ,
+	PERL_BREAKDANCER => 'file' ,
+	PERLLIB_BREAKDANCER => 'dir' ,
+	PYTHON => 'dir' ,
+	PYTHONLIB => 'csep' ,
+	R_SOFT => 'dir' ,
+	### paramters and flags
+	HTTP_SERVER => 'string' ,
+	THREADS => 'int' ,
+	T_DEPTH_FILTER => 'int' ,
+	PLATFORM => 'string',
+	CENTER => 'string',
+	QUEUE => 'string',
+	GATKQUEUE => 'string',
+	DEPTH_FILTER => 'int' ,
+	## flags
+	REORDERSAM => 'boolean',
+	EMIT_ALL_SITES => 'boolean',
+	VARIANT_FILTER => 'boolean',
+	SOMATIC_CALLING => 'boolean',
+	RECALIBRATION => 'boolean',
+	SOMATIC_VARIANT_FILTER => 'boolean',
+	TARGETTED => 'boolean',
+	MARKDUP => 'boolean',
+	REMOVE_DUP => 'boolean',
+	REMOVE_ALIGNED_BAM => 'boolean',
+	UPLOAD_TABLEBROWSER => 'boolean',
+	STOP_AFTER_REALIGNMENT => 'boolean',
+	ANNOTATION_FLAG => 'boolean',
+	USENOVOSORT => 'boolean',
+	SNVMIX2_params => 'string' ,
+	SNVMIX2_Filter => 'string' ,
+	UnifiedGenotyper_params => 'string' ,
+	SOMATIC_INDEL_params => 'string' ,
+	SOMATIC_SNIPER_params => 'string' ,
+	MUTECT_params => 'string' ,
+	BREAKDANCER_params => 'string' ,
+	CREST_params => 'string' ,
+	JSM_Filter => 'string' ,
+	JOINTSNVMIX_params => 'string' ,
+	NOVO_params => 'string' ,
+	BWA_params => 'string' ,
+	VQSR_params_SNV => 'string' ,
+	VQSR_params_INDEL => 'string' ,
+	PICARD_ReadGroup_params => 'string' ,
+	VCF_annotation_params => 'string' ,
+	REALIGN_params => 'string' ,
+	BLAT_params => 'string' ,
+	NOVOSORTPBOPT => 'string' ,
+	NOVOSORTALGNOPT => 'string' ,
+
+	### paramters
+	CNVNATOR_BINSIZE => 'int',
+	PCT_READS_SEGSEQ => 'real',
+	MINFOLD => 'real',
+	MAXFOLD => 'real',
+	DISTGAP => 'int',
+	BLAT_PORT => 'int' ,
+	BLAT_SERVER => 'string' ,
+	STRUCT_DIST_GENE => 'int' ,
+	STRUCT_MIN_SUPPORT => 'int',
+	STRUCT_MIN_IDENTITY => 'real',
+	STRUCT_PCT_BLACKLIST => 'real',
+	SNP_DISTANCE_INDEL => 'int' ,
+	MAX_FILE_HANDLES => 'int' ,
+	MAX_READS_MEM_SORT => 'int' ,
+	TB_PORT => 'int' ,
+	TB_HOST => 'string' ,
+	JOB_LIMIT => 'int' ,
 );
 
 $toolinfomsg = check_variables ($toolinfovars, \%toolinfofmt, $toolinfo);
@@ -254,17 +339,20 @@ sub check_variables {
 	else {
 	    my $value = $rvars->{$var};
 	    my $type = $rformat->{$var};
-
-	    if ( ($type eq 'file') && (!-e $rvars->{$var})) {
+		if ( ($type eq 'file') && (!-e $rvars->{$var})) {
+		if ( $rvars->{$var} ne 'NA')	{
 		$errmsg .= "$fname: $var, file $value does not exist\n";
 	    }
-
-	    if ( ($type eq 'dir') && (!-d $rvars->{$var})) {
+		}
+		if ( ($type eq 'dir') && (!-d $rvars->{$var})) {
+		if ( $rvars->{$var} ne 'NA')	{
 		$errmsg .= "$fname: $var, directory $value does not exist\n";
-	    }
-
-	    if ( ($type eq 'boolean') && ( ($value ne 'YES') && ($value ne 'NO'))) {
-		$errmsg .= "$fname: $var, $value should be YES or NO\n";
+		}
+		}
+		@bol_check=("YES","NO","0","1","TRUE","FALSE");
+		my %params = map { $_ => 1 } @bol_check;
+	    if ( ($type eq 'boolean') && ( ! exists($params{$rvars->{$var}}))) {
+		$errmsg .= "$fname: $var, $value should be boolean\n";
 	    }
 
 	    if ( $type eq 'csep') {
@@ -277,6 +365,7 @@ sub check_variables {
 	    }
 	}
     }
+	return $errmsg;
 }
 
 ## check for sample names (misspled)
@@ -350,6 +439,7 @@ sub read_files_var{
 	}
     }
     return (\%variables, $errmsg)
+	
 }
 
 sub read_file_var {
