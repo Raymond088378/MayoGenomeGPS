@@ -61,11 +61,13 @@ if [ ! -s $run_info ]
 then
 	echo -e "ERROR : run_info=$run_info does not exist.\n";
 	exit 1;
+else
+	dos2unix $run_info
+	## removing trailing and leading spaces from run info file
+	cat $run_info | sed 's/^[ \t]*//;s/[ \t]*$//' > $run_info.tmp
+	mv $run_info.tmp $run_info
 fi
 
-## removing trailing and leading spaces from run info file
-cat $run_info | sed 's/^[ \t]*//;s/[ \t]*$//' > $run_info.tmp
-mv $run_info.tmp $run_info
 
 ### check for tool info file
 tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
@@ -245,9 +247,7 @@ echo -e "MEMORY INFO  file used : $memory_info" >>  $output_dir/log.txt
 #### sge paramters
 TO=$USER
 email=`finger $USER | awk -F ';' '{print $2}'`
-
 args="-V -wd $output_dir/logs -q $queue -m a -M $email -l h_stack=10M"
-
 ### Test if gatkqueue is empty; if so, fail through to using standard args for queue
 if [[ "${gatkqueue+xxx}" = "xxx" ]]
 then
@@ -275,7 +275,6 @@ then
 			align_dir=$output_dir/alignment/$sample
 			bamfile=$sample.sorted.bam
 		fi
-		
 		if [[ $analysis == "mayo" || $analysis == "external" || $analysis == "alignment" ]]
 		then
 			mkdir -p $align_dir
@@ -298,7 +297,7 @@ then
 					$script_path/dashboard.sh $sample $run_info Beginning started $i
 				done
 			fi
-				
+			#### alignment	
 			if [ $aligner == "novoalign" ]
 			then
 				echo "novoalign is used as aligner"
@@ -330,7 +329,6 @@ then
 			else
 				echo "Workflow doesn't support the aligner: $aligner"
 			fi	
-			
 			if [ $aligner == "bwa" ]
 			then
 				hold="-hold_jid $type.$version.align_bwa.$sample.$run_num.$identify"
@@ -342,7 +340,6 @@ then
 			mem=$( cat $memory_info | grep -w '^processBAM' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.processBAM.$sample.$run_num.$identify $hold -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/processBAM.sh $align_dir $sample $run_info
-			
 			### mayo, external  	
 			### not just doing alignment so split the bam files and put unmapped reads in $bamfile.extra.bam 
 			if [ $analysis != "alignment" ]
@@ -368,7 +365,6 @@ then
 			then
 				$script_path/dashboard.sh $sample $run_info Beginning started 
 			fi
-			
 			### sort each bam file
 			for ((i=1; i <=$num_bams; i++));
 			do	
@@ -383,25 +379,21 @@ then
 				fi	
 				rm $align_dir/$sample.$i.sorted.header
 				ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
-			done
-			  
+			done  
 			### Sort, index, deduplicate the bam files 
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^processBAM' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.processBAM.$sample.$run_num.$identify -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/processBAM.sh $align_dir $sample $run_info
-			
 			### Split on chromsomes and store unmapped reads for igv
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^extract_reads_bam' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.extract_reads_bam.$sample.$run_num.$identify -hold_jid $type.$version.processBAM.$sample.$run_num.$identify -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $igv
-		fi
-		    
+		fi    
 		############################
 		### VARIANT  ENTRY POINT ###
 		############################
-
 		if [[ $analysis == "mayo" || $analysis == "external" || $analysis == "realignment" || $analysis == "variant" || $analysis == "realign-mayo" ]]
 		then
 			realign_dir=$output_realign/$sample
@@ -416,7 +408,6 @@ then
 					echo "sample info file is not properly configured"
 					exit 1;
 				fi
-				
 				### extract headers for each bam file and create symbolic link to the sorted bams (that will be?) present in the realign directory
 				for ((i=1; i <=$num_bams; i++));
 				do
@@ -432,20 +423,17 @@ then
 					rm $realign_dir/$sample.$i.sorted.bam.header
 					ln -s $input/$bam $realign_dir/$sample.$i.sorted.bam						
 				done
-				
 				### Merge bam files within sample group, and create sample.sorted.bam in the realign dir
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^reformat_BAM' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.reformat_BAM.$sample.$run_num.$identify -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/reformat_BAM.sh $realign_dir $sample $run_info	
 				$script_path/check_qstat.sh $limit
-				
 				### Extract Unmapped Reads for IGV
 				mem=$( cat $memory_info | grep -w '^extract_reads_bam' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.extract_reads_bam.$sample.$run_num.$identify -hold_jid $type.$version.reformat_BAM.$sample.$run_num.$identify -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/extract_reads_bam.sh $realign_dir $bamfile $run_info $igv
 				$script_path/check_qstat.sh $limit
-				
 				#### Split each sample.sorted.bam file by chromosome and store in the realign dir
 				mem=$( cat $memory_info | grep -w '^split_bam_chr' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.split_bam_chr.$sample.$run_num.$identify -hold_jid $type.$version.reformat_BAM.$sample.$run_num.$identify -t 1-$numchrs:1 -l h_vmem=$mem"
@@ -459,24 +447,19 @@ then
 				qsub $gatk_args $qsub_args $script_path/realign_recal.sh $align_dir $bamfile $sample $realign_dir $run_info 1	
 				variant_id="$type.$version.realign_recal.$sample.$run_num.$identify"
 			fi
-			
 			### IGV_BAM
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^igv_bam' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.igv_bam.$sample.$run_num.$identify -hold_jid $variant_id,$type.$version.extract_reads_bam.$sample.$run_num.$identify -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/igv_bam.sh $output_realign $igv $sample $output_align $run_info
-			
 			### If we're just doing realignment, then jump to the next sample without doing anything else
 			if [ $stop_after_realignment == "YES" ]
             then
             	continue;
             fi
-            
-            
             ###############################
 			### VARIANT CALLING SECTION ###
 			###############################
-
             $script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^variants' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.variants.$sample.$run_num.$identify -hold_jid $variant_id -pe threaded $threads -t 1-$numchrs:1 -l h_vmem=$mem"
@@ -484,7 +467,7 @@ then
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^merge_variant_single' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.merge_variant_single.$sample.$run_num.$identify -pe threaded $threads -hold_jid $type.$version.variants.$sample.$run_num.$identify -l h_vmem=$mem"
-			qsub $args $qsub_args $script_path/merge_variant_single.sh $output_variant $sample $RSample $run_info
+			qsub $gatk_args $qsub_args $script_path/merge_variant_single.sh $output_variant $sample $RSample $run_info
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^OnTarget_BAM' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.OnTarget_BAM.$sample.$run_num.$identify -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=$mem"
@@ -499,11 +482,9 @@ then
 			qsub $args $qsub_args $script_path/getCoverage.sh $output_OnTarget $numbers $sample $run_info
         ### END mayo external realignment variant realign-mayo SECTION
 		fi
-		
 		#########################
 		### OnTarget Analysis ###
 		#########################
-
 		if [ $analysis == "ontarget" ]
 		then
 			if [ $variant_type == "BOTH" ]
@@ -525,7 +506,6 @@ then
 		then
 			hold_args="-hold_jid $type.$version.merge_variant_single.$sample.$run_num.$identify"	
 		fi
-		
 		### MERGE THE ABOVE ELIF BLOCK INTO THIS BLOCK
 		if [[ $analysis != "alignment" && $analysis != "annotation" ]]
 		then
@@ -534,11 +514,9 @@ then
 			qsub_args="-N $type.$version.OnTarget_variant.$sample.$run_num.$identify -t 1-$numchrs:1 $hold_args -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/OnTarget_variant.sh $output_variant $output_OnTarget $sample $run_info
 		fi
-		
 		##############################
 		### ANNOTATION ENTRY POINT ###
 		##############################
-		
 		if [ $analysis == "annotation" ]
 		then
 			if [ $variant_type == "BOTH" ]
@@ -589,21 +567,7 @@ then
 			else
 				hold="-hold_jid $type.$version.snpeff.$sample.$run_num.$identify"
 			fi
-        fi
-		if [ $annot_flag == "YES" ]
-		then
-			$script_path/check_qstat.sh $limit
-			mem=$( cat $memory_info | grep -w '^snpeff' | cut -d '=' -f2)
-			qsub_args="-N $type.$version.snpeff.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
-			qsub $args $qsub_args $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info germline		
-		fi
-		if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
-		then
-			hold="-hold_jid $type.$version.sift.$sample.$run_num.$identify,$type.$version.polyphen.$sample.$run_num.$identify,$type.$version.snpeff.$sample.$run_num.$identify"
-		else
-			hold="-hold_jid $type.$version.snpeff.$sample.$run_num.$identify"
-		fi
-				
+        fi	
 		if [ $annot_flag == "YES" ]
 		then
 			$script_path/check_qstat.sh $limit
@@ -643,7 +607,6 @@ then
 			$script_path/check_qstat.sh $limit
 			qsub_args="-N $type.$version.run_breakdancer_in.$sample.$run_num.$identify -hold_jid $type.$version.igv_bam.$sample.$run_num.$identify -t $nump-$nump:$nump -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/run_breakdancer.sh $sample $igv $break $run_info single
-			
 			### merge the structural variants
 			hold="-hold_jid $type.$version.run_single_crest.$sample.$run_num.$identify,$type.$version.run_cnvnator.$sample.$run_num.$identify,"
 			hold=$hold"$type.$version.run_breakdancer.$sample.$run_num.$identify,$type.$version.run_breakdancer_in.$sample.$run_num.$identify"
@@ -665,7 +628,6 @@ then
 			if [[ $tool == "whole_genome" && $analysis != "alignment" && $analysis != "annotation" && $analysis != "ontarget" ]]
 			then
 				mkdir -p $output_dir/Reports_per_Sample/ANNOT
-				
 				### Concatenante CNV outputs, awk.
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^annotation_CNV' | cut -d '=' -f2)
@@ -701,7 +663,6 @@ then
 			mem=$( cat $memory_info | grep -w '^sample_numbers' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.sample_numbers.$sample.$run_num.$identify $hold_args -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/sample_numbers.sh $output_dir $sample $run_info $numbers
-		
 			### For all but alignment, run gene_summary
 			if [ $analysis != "alignment" ]
 			then
@@ -728,7 +689,6 @@ then
 			do
 				id=$id"$type.$version.variants.$s.$run_num.$identify,"
 			done
-			
 			### array on chromosomes, merge each chromosome across all samples
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^merge_raw_variants' | cut -d '=' -f2)
@@ -740,24 +700,24 @@ then
 			qsub $args $qsub_args $script_path/concat_raw_variants.sh $output_dir $run_info	    
 		fi	
     fi
-  if [ $stop_after_realignment == "NO" ]
-        then
-            if [ $analysis != "alignment" ]
+	if [ $stop_after_realignment == "NO" ]
 	then
-		id=""
-		for s in `echo $samples | tr ":" "\n"`
-		do
-			id=$id"$type.$version.sample_report.$s.$run_num.$identify,"
-		done 
-		if [ $annot_flag == "YES" ]
-                        then
-                        $script_path/check_qstat.sh $limit
-		mem=$( cat $memory_info | grep -w '^merge_sample' | cut -d '=' -f2)
-		qsub_args="-N $type.$version.merge_sample.$run_num.$identify -hold_jid $id -l h_vmem=$mem"
-		qsub $args $qsub_args $script_path/merge_sample.sh $output_dir $run_info    
+		if [ $analysis != "alignment" ]
+		then
+			id=""
+			for s in `echo $samples | tr ":" "\n"`
+			do
+				id=$id"$type.$version.sample_report.$s.$run_num.$identify,"
+			done 
+			if [ $annot_flag == "YES" ]
+			then
+				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^merge_sample' | cut -d '=' -f2)
+				qsub_args="-N $type.$version.merge_sample.$run_num.$identify -hold_jid $id -l h_vmem=$mem"
+				qsub $args $qsub_args $script_path/merge_sample.sh $output_dir $run_info    
+			fi
+		fi
 	fi
-    fi
-fi
 	id_igv=""
 	id_numbers=""
 	id_gene_summary=""
@@ -792,18 +752,18 @@ fi
 	fi
 	## generate html page for all the module
 	if [ $stop_after_realignment == "NO" ]
-        then
+	then
         if [ $annot_flag == "YES" ]
-                        then
-                        $script_path/check_qstat.sh $limit
-	mem=$( cat $memory_info | grep -w '^generate_html' | cut -d '=' -f2)
-	qsub_args="-N $type.$version.generate_html.$run_num.$identify $hold -l h_vmem=$mem"
+		then
+		$script_path/check_qstat.sh $limit
+		mem=$( cat $memory_info | grep -w '^generate_html' | cut -d '=' -f2)
+		qsub_args="-N $type.$version.generate_html.$run_num.$identify $hold -l h_vmem=$mem"
 		qsub $args $qsub_args $script_path/generate_html.sh $output_dir $run_info
-            fi
+	fi
+	fi
     #####################################
     ### End of Single Sample Workflow ###
 	#####################################
-fi 
 else
 	### Multiple Samples
 	echo "Multi-sample"
