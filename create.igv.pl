@@ -74,12 +74,25 @@ chomp $multi;
 my $groups = $line[$#line];
 chomp $groups;
 
+@line = split( /=/, `perl -ne "/^SOMATIC_CALLING/ && print" $tool_info` );
+my $somatic = $line[$#line];
+chomp $somatic;
+
+
 $tracks = $tracks . "/ucsc_tracks.bed";
 
+### <?xml version="1.0' encoding="UTF-8" standaling="no"?>
+### <Global genome="$genome" locus="All" version="4">
+### 	<Resources>
+###		<Resource name="" path="" />
+### 	</Resources>
+###	</Global>
+	
 open FH, ">$dest" or die "can not open $dest : $! \n";
 print FH "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>
 		<Global genome=\"$genome\" locus=\"All\" version=\"4\">
 	    	<Resources> ";
+	    	
 	    	
 my @sampleNames = split( /:/, $samples );
 my @trackNames  = split( /:/, $tracks );
@@ -113,9 +126,36 @@ if ( $multi eq 'YES' )
 				print FH
 "\n<Resource name=\"$sam1[$j].igv-sorted.bam\" path=\"http://$server/secondary/$PI/$folder/IGV_BAM/$groupNames[$i]/$sampleNames[$j].igv-sorted.bam\" />";
 			}
+			
 		}
-	}
-} ## Grouped Samples
+		
+		### Now insert the vcfs for each group
+		if ( $analysis eq "mayo" || $analysis eq "realign-mayo" ) 
+		{
+			## Since we're delivering, point to the delivery folder
+			$delivery_folder =~ s/\/data2/ftp:\/\/rcfisinl1-212/g;
+			print FH
+"\n<Resource name=\"$groupNames[$i].variants.filter.vcf\" path=\"$delivery_folder/Reports_per_sample/$groupNames[$i].variants.filter.vcf\" />";
+			if ($somatic eq "YES")
+			{
+				print FH
+"\n<Resource name=\"$groupNames[$i].somatic.variants.filter.vcf\" path=\"$delivery_folder/Reports_per_sample/$groupNames[$i].somatic.variants.filter.vcf\" />";
+			}
+
+		}
+		else 
+		{
+			print FH
+"\n<Resource name=\"$groupNames[$i].variants.filter.vcf\" path=\"http://$server/secondary/$PI/$folder/Reports_per_sample/$groupNames[$i].variants.filter.vcf\" />";
+		if ($somatic eq "YES")
+			{
+				print FH
+"\n<Resource name=\"$groupNames[$i].somatic.variants.filter.vcf\" path=\"http://$server/secondary/$PI/$folder/Reports_per_sample/$groupNames[$i].somatic.variants.filter.vcf\" />";
+			}
+		}
+		
+	} ## For each group
+} ## End Multisample Section
 else 
 {
 	for ( my $i = 0 ; $i <= $#sampleNames ; $i++ ) {
@@ -123,13 +163,17 @@ else
 			$delivery_folder =~ s/\/data2/ftp:\/\/rcfisinl1-212/g;
 			print FH
 "\n<Resource name=\"$sampleNames[$i].igv-sorted.bam\" path=\"$delivery_folder/IGV_BAM/$sampleNames[$i].igv-sorted.bam\" />";
+			print FH 
+"\n<Resource name=\"$sampleNames[$i].variants.filter.vcf\" path=\"$delivery_folder/Reports_per_sample/$sampleNames[$i].variants.filter.vcf\" />";
 		}
 		else {
 			print FH
 "\n<Resource name=\"$sampleNames[$i].igv-sorted.bam\" path=\"http://$server/secondary/$PI/$folder/IGV_BAM/$sampleNames[$i].igv-sorted.bam\" />";
+			print FH 
+"\n<Resource name=\"$sampleNames[$i].variants.filter.vcf\" path=\"http://$server/secondary/$PI/$folder/Reports_per_sample/$sampleNames[$i].variants.filter.vcf\" />";
 		}
 	}
-} ## Samples 
+} ## Single Samples 
 
 for ( my $i = 0 ; $i <= $#trackNames ; $i++ ) {
 	$tracks =~ s/\/data2\/bsi/http:\/\/$server/g;
