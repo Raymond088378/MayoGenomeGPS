@@ -20,6 +20,8 @@ else
 	GenomeBuild=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2)
 	cosmic=$( cat $tool_info | grep -w '^COSMIC_INDEL_REF' | cut -d '=' -f2)
 	kGenomeINDELS=$( cat $tool_info | grep -w '^KG_INDELS_VCF' | cut -d '=' -f2) 
+	snv_caller=$( cat $run_info | grep -w '^SNV_CALLER' | cut -d '=' -f2)
+    ### Beauty Specific
 	## add cosmic data
 	num=`cat $TempReports/$indel_file.rsIDs |wc -l `
 	cat $TempReports/$indel_file.rsIDs | awk 'NR>1' | cut -f 1-5 > $TempReports/$indel_file.rsIDs.forfrequencies.temp
@@ -61,11 +63,14 @@ else
 	done
 	$script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.INDEL.report $run_info INDEL > $TempReports/$sample.chr${which_chr}.INDEL.xls
 	
-	### Added 1/2/13 -> Exact Match between indel results and 1000GenomeReference
-	perl $script_path/indelExactMatching.pl -i $TempReports/$sample.chr${which_chr}.INDEL.xls -d $kGenomeINDELS -o $TempReports/$sample.chr${which_chr}.INDEL.tmp
-	rm $TempReports/$sample.chr${which_chr}.INDEL.xls
-	mv $TempReports/$sample.chr${which_chr}.INDEL.tmp $TempReports/$sample.chr${which_chr}.INDEL.xls
+	if [ $snv_caller == "BEAUTY_EXOME" ]
+	then
+		### Added 1/2/13 -> Exact Match between indel results and 1000GenomeReference
+		perl $script_path/indelExactMatching.pl -i $TempReports/$sample.chr${which_chr}.INDEL.xls -d $kGenomeINDELS -o $TempReports/$sample.chr${which_chr}.INDEL.tmp
+		rm $TempReports/$sample.chr${which_chr}.INDEL.xls
+		mv $TempReports/$sample.chr${which_chr}.INDEL.tmp $TempReports/$sample.chr${which_chr}.INDEL.xls
 
+	fi
 	$script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.filtered.INDEL.report $run_info INDEL > $TempReports/$sample.chr${which_chr}.filtered.INDEL.xls
 	rm $TempReports/$sample.chr${which_chr}.INDEL.report $TempReports/$sample.chr${which_chr}.filtered.INDEL.report $TempReports/$indel_file.rsIDs.frequencies
 	echo `date`

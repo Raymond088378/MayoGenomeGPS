@@ -475,6 +475,7 @@ then
 		done
 		$script_path/combinevcf.sh "$input_var" $output/MergeAllSamples.chr$chr.Indels.raw.vcf $run_info yes
 		### Perform Backfilling on somatic INDELs in Samples 2..N
+		read -p "press enter for indels"
 		$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" \
 		$output/MergeAllSamples.chr$chr.Indels.raw.vcf \
 		$output/MergeAllSamples.chr$chr.Indels.raw.vcf \
@@ -492,6 +493,7 @@ then
 		
 		$script_path/combinevcf.sh "$input_var" $output/MergeAllSamples.chr$chr.snvs.raw.vcf $run_info yes
 		### Perform Backfilling on somatic SNVs in Samples 2..N
+		read -p "press enter for snvs"
 		$script_path/unifiedgenotyper_backfill.sh "-I $input/chr${chr}.cleaned.bam" \
 		$output/MergeAllSamples.chr$chr.snvs.raw.vcf \
 		$output/MergeAllSamples.chr$chr.snvs.raw.vcf \
