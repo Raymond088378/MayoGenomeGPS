@@ -257,7 +257,7 @@ else
 	gatk_args="-V -wd $output_dir/logs -q $gatkqueue -m a -M $email -l h_stack=10M"
 fi
 
-echo -e "\nRCF arguments used : $args\n" >> $output_dir/log.txt
+echo -e "\nRCF arguments used : $args\n$gatk_args\n" >> $output_dir/log.txt
 echo -e "Started the ${tool} analysis for ${run_num} for ${PI}\n\n${info}\n\nCourtesy: $workflow $version" | mailx -v -s "Analysis Started" "$email"
 #############################################################
 
