@@ -56,7 +56,7 @@ while(my $l = <FH>){
 		}
 		elsif ( $. == 2){
 			my $last_col=$#a;
-			$STOP_INFO=$START_INFO+(6*$num_samples)-1;
+			$STOP_INFO=$START_INFO+(7*$num_samples)-1;
 			$num_col_samples=$STOP_INFO -$START_INFO +1;
 			$SIFT_START=$STOP_INFO+1;
 			$SIFT_STOP=$STOP_INFO+1+30;
@@ -65,9 +65,9 @@ while(my $l = <FH>){
 			@annot_snpeff=($SNPEFF_START .. $last_col);
 			$a3=$last_col-$SNPEFF_START;
 			for (my $k=$START_INFO;$k<$STOP_INFO;)	{
-				@sample=($k .. $k+5);
+				@sample=($k .. $k+6);
 				$head4=join("\t",@a[@sample]);
-				$k+=6;
+				$k+=7;
 			}	
 			$head1=join("\t",@a[@annot_ref]);
 			$head2=join("\t",@a[@annot_sift]);
@@ -89,16 +89,16 @@ while(my $l = <FH>){
 				my $sam;
 				if ($value == $prev_samples){
 					for (my $k=$START_INFO;$k<$STOP_INFO;)	{
-						@sample=($k .. $k+5);
+						@sample=($k .. $k+6);
 						$sample_value=join("\t",@a[@sample]);
 						push(@{$sample_info{$a[$CHR]}{$a[$POS]}{$a[$ALT]}},$sample_value);
-						$k+=6;
+						$k+=7;
 					}
 				}
 				else {
 					$value=$prev_samples-$value;
 					for(my $ll=0; $ll <$value;$ll++){
-						$sam="n/a\tn/a\tn/a\tn/a\tn/a\tn/a\t";  
+						$sam="n/a\tn/a\tn/a\tn/a\tn/a\tn/a\tn/a\t";  
 						$sam =~ s/\s*$//;
 						push(@{$sample_info{$a[$CHR]}{$a[$POS]}{$a[$ALT]}},$sam);	
 					}
@@ -106,7 +106,7 @@ while(my $l = <FH>){
 						@sample=($k .. $k+5);
 						$sample_value=join("\t",@a[@sample]);
 						push(@{$sample_info{$a[$CHR]}{$a[$POS]}{$a[$ALT]}},$sample_value);	
-						$k+=6;
+						$k+=7;
 					}	
 				}	
 				##refernce value
@@ -128,8 +128,8 @@ print "Merging all the sample files\n";
 print OUT "-". "\t" x 6 . "Allele Freuency";
 my $a1=$ALT-$dbSNP-2;
 print OUT "\t" x $a1;
-print OUT join ("\t\t\t\t\t\t",@samples);
-print OUT "\t\t\t\t\t\tSIFT Annotation";
+print OUT join ("\t\t\t\t\t\t\t",@samples);
+print OUT "\t\t\t\t\t\t\tSIFT Annotation";
 my $a2 = $SIFT_STOP - $SIFT_START +1;
 print OUT "\t" x $a2;
 print OUT "SNPEFF Annotation";
@@ -157,11 +157,11 @@ foreach my $c (sort {$chrvalue{$a}<=>$chrvalue{$b}} keys %ref)	{
 				my $val=join("\t",@{$sample_info{$c}{$p}{$a}});
 				my @val1=split('\s+',$val);
 				my $values=@val1;
-				$values=$values/6;
+				$values=$values/7;
 				print OUT join ("\t", @{$sample_info{$c}{$p}{$a}});
 				if ($values != $num_samples+1){
 					for(my $k=$values; $k<=$num_samples;$k++){
-						print OUT "\tn/a\tn/a\tn/a\tn/a\tn/a\tn/a";
+						print OUT "\tn/a\tn/a\tn/a\tn/a\tn/a\tn/a\tn/a";
 					}
 				}
 				print OUT "\t$sift{$c}{$p}{$a}\t$snpeff{$c}{$p}{$a}[$rows]";	

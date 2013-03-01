@@ -58,16 +58,16 @@ while(my $l = <FH>){
 		}
 		elsif ( $. == 2){
 			$last_col=$#a;
-			$STOP_INFO=$START_INFO+(2*$num_samples)-1;
+			$STOP_INFO=$START_INFO+(3*$num_samples)-1;
 			$SNPEFF_START=$STOP_INFO+1;
 			@annot_snpeff=($SNPEFF_START .. $last_col);
 			$a1=$last_col-$SNPEFF_START;
 			$head1=join("\t",@a[@annot_ref]);
 			$head3=join("\t",@a[@annot_snpeff]);
 			for (my $k=$START_INFO;$k<$STOP_INFO;)	{
-				@sample=($k .. $k+1);
+				@sample=($k .. $k+2);
 				$head4=join("\t",@a[@sample]);
-				$k+=2;
+				$k+=3;
 			}	
 			$prev_samples=$i-$num_samples;
 		}
@@ -91,24 +91,24 @@ while(my $l = <FH>){
 				my $sam;
 				if ($value == $prev_samples){
 					for (my $k=$START_INFO;$k<$STOP_INFO;)	{
-						@sample=($k .. $k+1);
+						@sample=($k .. $k+2);
 						$sample_value=join("\t",@a[@sample]);
 						push(@{$sample_info{$a[$CHR]}{$a[$START]}{$id_a}},$sample_value);
-						$k+=2;
+						$k+=3;
 					}
 				}
 				else {
 					$value=$prev_samples-$value;
 					for(my $ll=0; $ll <$value;$ll++){
-						$sam="n/a\tn/a\t";
+						$sam="n/a\tn/a\tn/a\t";
 						$sam =~ s/\s*$//;
 						push(@{$sample_info{$a[$CHR]}{$a[$START]}{$id_a}},$sam);	
 					}
 					for (my $k=$START_INFO;$k<$STOP_INFO;)	{
-						@sample=($k .. $k+1);
+						@sample=($k .. $k+2);
 						$sample_value=join("\t",@a[@sample]);
 						push(@{$sample_info{$a[$CHR]}{$a[$START]}{$id_a}},$sample_value);	
-						$k+=2;
+						$k+=3;
 					}	
 				}		
 				##refernce value
@@ -126,8 +126,8 @@ while(my $l = <FH>){
 close FH;
 print OUT "-\t";
 print OUT "\t" x $BASE;
-print OUT join ("\t\t",@samples);
-print OUT "\t\tSNPEFF Annotation";
+print OUT join ("\t\t\t",@samples);
+print OUT "\t\t\tSNPEFF Annotation";
 print OUT "\t" x $a1;
 print OUT "\n";
 print OUT "IGV Link\tChr\tStart\tStop\t$head1\tAlt\tBase-Length\t";
@@ -153,11 +153,11 @@ foreach my $c (sort {$chrvalue{$a}<=>$chrvalue{$b}} keys %ref)	{
 				my $val=join("\t",@{$sample_info{$c}{$p}{$a}});
 				my @val1=split('\s+',$val);
 				my $values=@val1;
-				$values=$values/2;
+				$values=$values/3;
 				print OUT join ("\t", @{$sample_info{$c}{$p}{$a}});
 				if ($values != $num_samples+1){
 					for(my $k=$values; $k<=$num_samples;$k++){
-						print OUT "\tn/a\tn/a";
+						print OUT "\tn/a\tn/a\tn/a";
 					}
 				}
 				print OUT "\t$snpeff{$c}{$p}{$a}[$rows]";	
