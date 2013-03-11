@@ -73,40 +73,40 @@ else
 				cat $input >> $basedir/cnv/$group/$sample.cnv.bed
 				rm $input
 			fi
-			inputfile=$basedir/cnv/$group/$sample.$chr.filter.del.vcf
-			input=$basedir/cnv/$group/$sample.$chr.filter.del.bed
+			inputfile=$basedir/cnv/$group/$sample.$chr.final.del.vcf
+			input=$basedir/cnv/$group/$sample.$chr.final.del.bed
 			if [ ! -f $inputfile ]
 			then	
 				touch $inputfile.fix.log
 				$script_path/email.sh $inputfile "not exist" run_segseq.sh $run_info
 				$script_path/wait.sh $inputfile.fix.log 
-				cat $input >> $basedir/cnv/$group/$sample.cnv.filter.bed
+				cat $input >> $basedir/cnv/$group/$sample.cnv.final.bed
 				rm $input
 				inputargs_filter="-V $inputfile "$inputargs_filter  
 			else
-				cat $input >> $basedir/cnv/$group/$sample.cnv.filter.bed
+				cat $input >> $basedir/cnv/$group/$sample.cnv.final.bed
 				rm $input
 				inputargs_filter="-V $inputfile "$inputargs_filter  
 			fi
-			inputfile=$basedir/cnv/$group/$sample.$chr.filter.dup.vcf
-			input=$basedir/cnv/$group/$sample.$chr.filter.dup.bed
+			inputfile=$basedir/cnv/$group/$sample.$chr.final.dup.vcf
+			input=$basedir/cnv/$group/$sample.$chr.final.dup.bed
 			if [ ! -f $inputfile ]
 			then
 				touch $inputfile.fix.log
 				$script_path/email.sh $inputfile "not exist" run_segseq.sh $run_info
 				$script_path/wait.sh $inputfile.fix.log 
-				cat $input >> $basedir/cnv/$group/$sample.cnv.filter.bed
+				cat $input >> $basedir/cnv/$group/$sample.cnv.final.bed
 				rm $input
 				inputargs_filter="-V $inputfile "$inputargs_filter 
 			else
-				cat $input >> $basedir/cnv/$group/$sample.cnv.filter.bed
+				cat $input >> $basedir/cnv/$group/$sample.cnv.final.bed
 				rm $input
 				inputargs_filter="-V $inputfile "$inputargs_filter 
 			fi
 		done
 		
 		$script_path/combinevcf.sh "$inputargs" $output/SV/$group.$sample.cnv.vcf $run_info yes
-		$script_path/combinevcf.sh "$inputargs_filter" $output/SV/$group.$sample.cnv.filter.vcf $run_info yes
+		$script_path/combinevcf.sh "$inputargs_filter" $output/SV/$group.$sample.cnv.final.vcf $run_info yes
 	done
 
 	#Summaryzing Breakdancer
@@ -179,34 +179,34 @@ else
 		for chr in $chrs
 		do
 			inputfile=$basedir/struct/crest/$group/$tumor.$chr.predSV.txt
-			inputvcf=$basedir/struct/crest/$group/$tumor.$chr.raw.vcf
+			inputvcf=$basedir/struct/crest/$group/$tumor.$chr.vcf
 			if [ ! -f $inputvcf ]
 			then
 				touch $inputvcf.fix.log
 				$script_path/email.sh $inputvcf "not exist" run_crest_multi.sh $run_info
 				$script_path/wait.sh $inputvcf.fix.log 
 			fi			
-			inputfile_filter=$basedir/struct/crest/$group/$tumor.$chr.filter.predSV.txt
-			inputvcf_filter=$basedir/struct/crest/$group/$tumor.$chr.filter.vcf
+			inputfile_filter=$basedir/struct/crest/$group/$tumor.$chr.final.predSV.txt
+			inputvcf_filter=$basedir/struct/crest/$group/$tumor.$chr.final.vcf
 			if [ ! -f $inputvcf_filter ]
 			then
-				touch $inputvcf_filter.fix.log
+				touch $inputvcf_final.fix.log
 				$script_path/email.sh $inputvcf_filter "not exist" run_crest_multi.sh $run_info
-				$script_path/wait.sh $inputvcf_filter.fix.log
+				$script_path/wait.sh $inputvcf_final.fix.log
 			fi	
-			cat $inputfile >> $basedir/struct/$group.$tumor.somatic.raw.crest
+			cat $inputfile >> $basedir/struct/$group.$tumor.somatic.crest
 			rm $inputfile
-			cat $inputfile_filter >> $basedir/struct/$group.$tumor.somatic.filter.crest
+			cat $inputfile_filter >> $basedir/struct/$group.$tumor.somatic.final.crest
 			rm $inputfile_filter
 			cat $inputvcf | awk '$0 ~ /^#/' > $basedir/struct/$group.$tumor.somatic.header
-			cat $inputvcf | awk '$0 !~ /^#/' >> $output/SV/$group.$tumor.somatic.raw.crest.vcf
-			cat $inputvcf_filter | awk '$0 !~ /^#/' >> $output/SV/$group.$tumor.somatic.filter.crest.vcf
+			cat $inputvcf | awk '$0 !~ /^#/' >> $output/SV/$group.$tumor.somatic.crest.vcf
+			cat $inputvcf_filter | awk '$0 !~ /^#/' >> $output/SV/$group.$tumor.somatic.final.crest.vcf
 			rm $inputvcf $inputvcf_filter
 		done
-		cat $basedir/struct/$group.$tumor.somatic.header $output/SV/$group.$tumor.somatic.raw.crest.vcf > $output/SV/$group.$tumor.somatic.raw.crest.vcf.temp
-		mv $output/SV/$group.$tumor.somatic.raw.crest.vcf.temp $output/SV/$group.$tumor.somatic.raw.crest.vcf
-		cat $basedir/struct/$group.$tumor.somatic.header $output/SV/$group.$tumor.somatic.filter.crest.vcf > $output/SV/$group.$tumor.somatic.filter.crest.vcf.temp
-		mv $output/SV/$group.$tumor.somatic.filter.crest.vcf.temp $output/SV/$group.$tumor.somatic.filter.crest.vcf
+		cat $basedir/struct/$group.$tumor.somatic.header $output/SV/$group.$tumor.somatic.crest.vcf > $output/SV/$group.$tumor.somatic.crest.vcf.temp
+		mv $output/SV/$group.$tumor.somatic.crest.vcf.temp $output/SV/$group.$tumor.somatic.crest.vcf
+		cat $basedir/struct/$group.$tumor.somatic.header $output/SV/$group.$tumor.somatic.final.crest.vcf > $output/SV/$group.$tumor.somatic.final.crest.vcf.temp
+		mv $output/SV/$group.$tumor.somatic.final.crest.vcf.temp $output/SV/$group.$tumor.somatic.final.crest.vcf
 		rm $basedir/struct/$group.$tumor.somatic.header
 	done	
 	echo `date`

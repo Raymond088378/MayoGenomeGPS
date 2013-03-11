@@ -12,19 +12,19 @@
 
 ### SOMATIC INPUTS
 ### inputs
-###	$input/MergeAllSamples.chr$chr.raw.vcf
+###	$input/MergeAllSamples.chr$chr.vcf
 ###
 ### outputs
-### $out/$group.somatic.variants.raw.vcf
-### $out/$group.somatic.variants.filter.vcf
+### $out/$group.somatic.variants.vcf
+### $out/$group.somatic.variants.final.vcf
 ###
 ### INDIVIDUAL SAMPLES
 ###
 ### inputs
-### $input/$group/variants.chr$chr.raw.vcf
+### $input/$group/variants.chr$chr.vcf
 ### outputs
-### $out/$group.variants.raw.vcf
-### $out/$group.variants.raw.filter.vcf
+### $out/$group.variants.vcf
+### $out/$group.variants.final.vcf
 
 if [ $# != 4 ];
 then
@@ -67,7 +67,7 @@ else
 		inputargs_multi=""
 		for i in $chrs
 		do
-			inputfile=$input/$group/MergeAllSamples.chr$i.raw.vcf 
+			inputfile=$input/$group/MergeAllSamples.chr$i.vcf 
 			if [ ! -s $inputfile ]
 			then		
 				touch $inputfile.fix.log
@@ -77,30 +77,30 @@ else
 			inputargs=$inputargs"$inputfile "
 		done
 		
-		$script_path/concatvcf.sh "$inputargs" $out/$group.somatic.variants.raw.vcf $run_info no
+		$script_path/concatvcf.sh "$inputargs" $out/$group.somatic.variants.vcf $run_info no
 		
 		if [ $somatic_filter_variants == "YES" ]
 		then
-			$script_path/filter_variant_vqsr.sh $out/$group.somatic.variants.raw.vcf $out/$group.somatic.variants.filter.vcf BOTH $run_info somatic
+			$script_path/filter_variant_vqsr.sh $out/$group.somatic.variants.vcf $out/$group.somatic.variants.final.vcf BOTH $run_info somatic
 		else
-			cp $out/$group.somatic.variants.raw.vcf $out/$group.somatic.variants.filter.vcf
+			cp $out/$group.somatic.variants.vcf $out/$group.somatic.variants.final.vcf
 		fi
-		if [ ! -s $out/$group.somatic.variants.filter.vcf ]
+		if [ ! -s $out/$group.somatic.variants.final.vcf ]
 		then
-			touch $out/$group.somatic.variants.filter.vcf.fix.log
-			$script_path/email.sh $out/$group.somatic.variants.filter.vcf "vqsr failed" filter_variant_vqsr.sh $run_info
-			$script_path/wait.sh $out/$group.somatic.variants.filter.vcf.fix.log
+			touch $out/$group.somatic.variants.final.vcf.fix.log
+			$script_path/email.sh $out/$group.somatic.variants.final.vcf "vqsr failed" filter_variant_vqsr.sh $run_info
+			$script_path/wait.sh $out/$group.somatic.variants.final.vcf.fix.log
 		fi	
-			cat $out/$group.somatic.variants.filter.vcf | sed -e 's/-1/\./g' > $out/$group.somatic.variants.filter.vcf.tmp.vcf
-			mv $out/$group.somatic.variants.filter.vcf.tmp.vcf $out/$group.somatic.variants.filter.vcf
-		if [ ! -s $out/$group.somatic.variants.filter.vcf ]
+			cat $out/$group.somatic.variants.final.vcf | sed -e 's/-1/\./g' > $out/$group.somatic.variants.final.vcf.tmp.vcf
+			mv $out/$group.somatic.variants.final.vcf.tmp.vcf $out/$group.somatic.variants.final.vcf
+		if [ ! -s $out/$group.somatic.variants.final.vcf ]
 		then
-			$script_path/errorlog.sh $out/$group.somatic.variants.filter.vcf merge_variant_greoup.sh ERROR "does not exist"
+			$script_path/errorlog.sh $out/$group.somatic.variants.final.vcf merge_variant_greoup.sh ERROR "does not exist"
 			exit 1;
 		else
 		for chr in $chrs
 		do
-			cat $out/$group.somatic.variants.filter.vcf | awk -v num=chr${chr} '$0 ~ /^#/ || $1 == num' > $input/$group/$group.somatic.variants.chr$chr.filter.vcf 
+			cat $out/$group.somatic.variants.final.vcf | awk -v num=chr${chr} '$0 ~ /^#/ || $1 == num' > $input/$group/$group.somatic.variants.chr$chr.final.vcf 
 		done
 		fi
 	fi
@@ -109,7 +109,7 @@ else
     inputargs=""
     for i in $chrs
     do
-        inputfile=$input/$group/variants.chr$i.raw.vcf 
+        inputfile=$input/$group/variants.chr$i.vcf 
         if [ ! -s $inputfile ]
         then		
             touch $inputfile.fix.log
@@ -119,20 +119,20 @@ else
         inputargs=$inputargs"$inputfile "
     done
 
-	$script_path/concatvcf.sh "$inputargs" $out/$group.variants.raw.vcf $run_info no
+	$script_path/concatvcf.sh "$inputargs" $out/$group.variants.vcf $run_info no
 	
     if [ $filter_variants == "YES" ]
     then
-        $script_path/filter_variant_vqsr.sh $out/$group.variants.raw.vcf $out/$group.variants.filter.vcf BOTH $run_info
+        $script_path/filter_variant_vqsr.sh $out/$group.variants.vcf $out/$group.variants.final.vcf BOTH $run_info
     else
-        cp $out/$group.variants.raw.vcf $out/$group.variants.filter.vcf
+        cp $out/$group.variants.vcf $out/$group.variants.final.vcf
     fi    
 	
-    if [ ! -s $out/$group.variants.filter.vcf ]
+    if [ ! -s $out/$group.variants.final.vcf ]
     then
-    	touch $out/$group.variants.filter.vcf.fix.log
-    	$script_path/email.sh $out/$group.variants.filter.vcf "vqsr failed" filter_variant_vqsr.sh $run_info
-		$script_path/wait.sh $out/$group.variants.filter.vcf.fix.log
+    	touch $out/$group.variants.final.vcf.fix.log
+    	$script_path/email.sh $out/$group.variants.final.vcf "vqsr failed" filter_variant_vqsr.sh $run_info
+		$script_path/wait.sh $out/$group.variants.final.vcf.fix.log
 	fi	
 		
 	### Filter the variants using total depth 
@@ -140,21 +140,21 @@ else
 	if [ $tool == "exome" ]
 	then
 		if [ $depth -gt 0 ]
-                then
-                    $script_path/filtervcf.sh $out/$group.variants.filter.vcf $run_info 
-                fi
+			then
+				$script_path/filtervcf.sh $out/$group.variants.final.vcf $run_info 
+			fi
         fi
-        cat $out/$group.variants.filter.vcf | sed -e 's/-1/\./g' > $out/$group.variants.filter.vcf.tmp.vcf
-        mv $out/$group.variants.filter.vcf.tmp.vcf $out/$group.variants.filter.vcf  
+        cat $out/$group.variants.final.vcf | sed -e 's/-1/\./g' > $out/$group.variants.final.vcf.tmp.vcf
+        mv $out/$group.variants.final.vcf.tmp.vcf $out/$group.variants.final.vcf  
 	
-    if [ ! -s $out/$group.variants.filter.vcf ]
+    if [ ! -s $out/$group.variants.final.vcf ]
     then
-        $script_path/errorlog.sh $out/$group.variants.filter.vcf merge_variant_group.sh ERROR "does not exist"
+        $script_path/errorlog.sh $out/$group.variants.final.vcf merge_variant_group.sh ERROR "does not exist"
         exit 1
     else
 		for chr in $chrs
 		do
-			cat $out/$group.variants.filter.vcf | awk -v num=chr${chr} '$0 ~ /^#/ || $1 == num' > $input/$group/$group.variants.chr$chr.filter.vcf 
+			cat $out/$group.variants.final.vcf | awk -v num=chr${chr} '$0 ~ /^#/ || $1 == num' > $input/$group/$group.variants.chr$chr.final.vcf 
 		done
     fi
 	echo `date`

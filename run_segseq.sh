@@ -107,12 +107,12 @@ else
 			rm $outdir/$sample_tumor.$chr.del.vcf.fail
 			$script_path/SegSeq2vcf.pl -i $outdir/$sample_tumor.$chr.dup.bed -s $sample_tumor -o $outdir/$sample_tumor.$chr.dup.vcf -r $ref_genome -t $samtools
 			rm $outdir/$sample_tumor.$chr.dup.vcf.fail
-			touch $outdir/$sample_tumor.$chr.filter.dup.bed
-			touch $outdir/$sample_tumor.$chr.filter.del.bed
-			$script_path/SegSeq2vcf.pl -i $outdir/$sample_tumor.$chr.filter.del.bed -s $sample_tumor -o $outdir/$sample_tumor.$chr.filter.del.vcf -r $ref_genome -t $samtools
-			rm $outdir/$sample_tumor.$chr.filter.del.vcf.fail
-			$script_path/SegSeq2vcf.pl -i $outdir/$sample_tumor.$chr.filter.dup.bed -s $sample_tumor -o $outdir/$sample_tumor.$chr.filter.dup.vcf -r $ref_genome -t $samtools
-			rm $outdir/$sample_tumor.$chr.filter.dup.vcf.fail
+			touch $outdir/$sample_tumor.$chr.final.dup.bed
+			touch $outdir/$sample_tumor.$chr.final.del.bed
+			$script_path/SegSeq2vcf.pl -i $outdir/$sample_tumor.$chr.final.del.bed -s $sample_tumor -o $outdir/$sample_tumor.$chr.final.del.vcf -r $ref_genome -t $samtools
+			rm $outdir/$sample_tumor.$chr.final.del.vcf.fail
+			$script_path/SegSeq2vcf.pl -i $outdir/$sample_tumor.$chr.final.dup.bed -s $sample_tumor -o $outdir/$sample_tumor.$chr.final.dup.vcf -r $ref_genome -t $samtools
+			rm $outdir/$sample_tumor.$chr.final.dup.vcf.fail
 		else	
 			outfile="$outdir/$sample_tumor.$chr.txt"
 			cat $outfile | $script_path/filter_fold_segseq.pl $sample_tumor $min_fold > $outdir/$sample_tumor.$chr.del.bed
@@ -139,33 +139,33 @@ else
 			if [ -s $outdir/$sample_tumor.$chr.del.bed ]
 			then
 				$bedtools/closestBed -a $outdir/$sample_tumor.$chr.del.bed -b $gap -d | awk "\$13>$distgap" | cut -f 1-6 |\
-				$bedtools/intersectBed -a stdin -b $blacklist_sv -v -f $pct_overlap -wa > $outdir/$sample_tumor.$chr.filter.del.bed
+				$bedtools/intersectBed -a stdin -b $blacklist_sv -v -f $pct_overlap -wa > $outdir/$sample_tumor.$chr.final.del.bed
 			else
-				touch $outdir/$sample_tumor.$chr.filter.del.bed
+				touch $outdir/$sample_tumor.$chr.final.del.bed
 			fi
 			
 			if [ -s $outdir/$sample_tumor.$chr.dup.bed ]
 			then
 				$bedtools/closestBed -a $outdir/$sample_tumor.$chr.dup.bed -b $gap -d | awk "\$13>$distgap" | cut -f 1-6 |\
-				$bedtools/intersectBed -a stdin -b $blacklist_sv -v -f $pct_overlap -wa > $outdir/$sample_tumor.$chr.filter.dup.bed
+				$bedtools/intersectBed -a stdin -b $blacklist_sv -v -f $pct_overlap -wa > $outdir/$sample_tumor.$chr.final.dup.bed
 			else
 				touch $outdir/$sample_tumor.$chr.dup.bed
 			fi	
 			### convert to vcf files
-			$script_path/SegSeq2vcf.pl -i $outdir/$sample_tumor.$chr.filter.del.bed -s $sample_tumor -o $outdir/$sample_tumor.$chr.filter.del.vcf -r $ref_genome -t $samtools
-			if [ ! -s $outdir/$sample_tumor.$chr.filter.del.vcf.fail ]
+			$script_path/SegSeq2vcf.pl -i $outdir/$sample_tumor.$chr.final.del.bed -s $sample_tumor -o $outdir/$sample_tumor.$chr.final.del.vcf -r $ref_genome -t $samtools
+			if [ ! -s $outdir/$sample_tumor.$chr.final.del.vcf.fail ]
 			then
-				rm $outdir/$sample_tumor.$chr.filter.del.vcf.fail
+				rm $outdir/$sample_tumor.$chr.final.del.vcf.fail
 			fi		
-			$script_path/vcfsort.pl $ref_genome.fai $outdir/$sample_tumor.$chr.filter.del.vcf > $outdir/$sample_tumor.$chr.filter.del.vcf.sort
-			mv $outdir/$sample_tumor.$chr.filter.del.vcf.sort $outdir/$sample_tumor.$chr.filter.del.vcf
-			$script_path/SegSeq2vcf.pl -i $outdir/$sample_tumor.$chr.filter.dup.bed -s $sample_tumor -o $outdir/$sample_tumor.$chr.filter.dup.vcf -r $ref_genome -t $samtools
-			if [ ! -s $outdir/$sample_tumor.$chr.filter.dup.vcf.fail ]
+			$script_path/vcfsort.pl $ref_genome.fai $outdir/$sample_tumor.$chr.final.del.vcf > $outdir/$sample_tumor.$chr.final.del.vcf.sort
+			mv $outdir/$sample_tumor.$chr.final.del.vcf.sort $outdir/$sample_tumor.$chr.final.del.vcf
+			$script_path/SegSeq2vcf.pl -i $outdir/$sample_tumor.$chr.final.dup.bed -s $sample_tumor -o $outdir/$sample_tumor.$chr.final.dup.vcf -r $ref_genome -t $samtools
+			if [ ! -s $outdir/$sample_tumor.$chr.final.dup.vcf.fail ]
 			then
-				rm $outdir/$sample_tumor.$chr.filter.dup.vcf.fail
+				rm $outdir/$sample_tumor.$chr.final.dup.vcf.fail
 			fi
-			$script_path/vcfsort.pl $ref_genome.fai $outdir/$sample_tumor.$chr.filter.dup.vcf > $outdir/$sample_tumor.$chr.filter.dup.vcf.sort
-			mv $outdir/$sample_tumor.$chr.filter.dup.vcf.sort $outdir/$sample_tumor.$chr.filter.dup.vcf
+			$script_path/vcfsort.pl $ref_genome.fai $outdir/$sample_tumor.$chr.final.dup.vcf > $outdir/$sample_tumor.$chr.final.dup.vcf.sort
+			mv $outdir/$sample_tumor.$chr.final.dup.vcf.sort $outdir/$sample_tumor.$chr.final.dup.vcf
 			rm $outfile
 			rm $outdir/$sample_tumor.$chr.mat
 			rm $outdir/$sample_tumor.${chr}_aligned_reads.mat

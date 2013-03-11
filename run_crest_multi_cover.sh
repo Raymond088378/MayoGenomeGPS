@@ -142,21 +142,21 @@ else
 			then
 				rm $file ${file}.bai
 			fi
-			$script_path/CREST2VCF.pl -i $output_dir/$group/${sample}.$chr.predSV.txt -f $ref_genome -o $output_dir/$group/${sample}.$chr.raw.vcf -s $sample -t $samtools
-			if [ ! -s $output_dir/$group/${sample}.$chr.raw.vcf.fail ]
+			$script_path/CREST2VCF.pl -i $output_dir/$group/${sample}.$chr.predSV.txt -f $ref_genome -o $output_dir/$group/${sample}.$chr.vcf -s $sample -t $samtools
+			if [ ! -s $output_dir/$group/${sample}.$chr.vcf.fail ]
 			then
-				rm $output_dir/$group/${sample}.$chr.raw.vcf.fail
+				rm $output_dir/$group/${sample}.$chr.vcf.fail
 			fi  
-			$script_path/vcfsort.pl ${ref_genome}.fai $output_dir/$group/${sample}.$chr.raw.vcf > $output_dir/$group/${sample}.$chr.raw.vcf.sort
-			mv $output_dir/$group/${sample}.$chr.raw.vcf.sort $output_dir/$group/${sample}.$chr.raw.vcf
-			awk "((\$10>=$min_read)&&(\$11>=$min_read)&&(\$14>=$min_id)&&(\$16>=$min_id))" $output_dir/$group/${sample}.$chr.predSV.txt | awk '{print $1"\t"$2"\t"$2+1"\t"$5"\t"$6"\t"$6+1}' | $bedtools/pairToBed -a stdin -b $blacklist_sv -type neither | $script_path/report_original.pl $output_dir/$group/${sample}.$chr.predSV.txt > $output_dir/$group/${sample}.$chr.filter.predSV.txt
-			$script_path/CREST2VCF.pl -i $output_dir/$group/${sample}.$chr.filter.predSV.txt -f $ref_genome -o $output_dir/$group/${sample}.$chr.filter.vcf -s $sample -t $samtools
-			if [ ! -s $output_dir/$group/${sample}.$chr.filter.vcf.fail ]
+			$script_path/vcfsort.pl ${ref_genome}.fai $output_dir/$group/${sample}.$chr.vcf > $output_dir/$group/${sample}.$chr.vcf.sort
+			mv $output_dir/$group/${sample}.$chr.vcf.sort $output_dir/$group/${sample}.$chr.vcf
+			awk "((\$10>=$min_read)&&(\$11>=$min_read)&&(\$14>=$min_id)&&(\$16>=$min_id))" $output_dir/$group/${sample}.$chr.predSV.txt | awk '{print $1"\t"$2"\t"$2+1"\t"$5"\t"$6"\t"$6+1}' | $bedtools/pairToBed -a stdin -b $blacklist_sv -type neither | $script_path/report_original.pl $output_dir/$group/${sample}.$chr.predSV.txt > $output_dir/$group/${sample}.$chr.final.predSV.txt
+			$script_path/CREST2VCF.pl -i $output_dir/$group/${sample}.$chr.final.predSV.txt -f $ref_genome -o $output_dir/$group/${sample}.$chr.final.vcf -s $sample -t $samtools
+			if [ ! -s $output_dir/$group/${sample}.$chr.final.vcf.fail ]
 			then
-				rm $output_dir/$group/${sample}.$chr.filter.vcf.fail
+				rm $output_dir/$group/${sample}.$chr.final.vcf.fail
 			fi  
-			$script_path/vcfsort.pl ${ref_genome}.fai $output_dir/$group/${sample}.$chr.filter.vcf > $output_dir/$group/${sample}.$chr.filter.vcf.sort
-			mv $output_dir/$group/${sample}.$chr.filter.vcf.sort $output_dir/$group/${sample}.$chr.filter.vcf
+			$script_path/vcfsort.pl ${ref_genome}.fai $output_dir/$group/${sample}.$chr.final.vcf > $output_dir/$group/${sample}.$chr.final.vcf.sort
+			mv $output_dir/$group/${sample}.$chr.final.vcf.sort $output_dir/$group/${sample}.$chr.final.vcf
 			if [ -f $output_dir/$group/${sample}.$chr.predSV.txt ]
 			then
 				rm $output_dir/$group/$sample.chr$chr.cover $output_dir/$group/$sample.chr$chr.sclip.txt 
@@ -167,11 +167,11 @@ else
 		else
 			$script_path/errorlog.sh $output_dir/$group/$sample.chr$chr.cover run_single_crest.sh ERROR "failed to create"
 			touch $output_dir/$group/${sample}.$chr.predSV.txt
-			$script_path/CREST2VCF.pl -i $output_dir/$group/${sample}.$chr.predSV.txt -f $ref_genome -o $output_dir/$group/${sample}.$chr.raw.vcf -s $sample -t $samtools
-			rm $output_dir/$group/${sample}.$chr.raw.vcf.fail
-			touch  $output_dir/$group/${sample}.$chr.filter.predSV.txt
-			$script_path/CREST2VCF.pl -i $output_dir/$group/${sample}.$chr.filter.predSV.txt -f $ref_genome -o $output_dir/$group/${sample}.$chr.filter.vcf -s $sample -t $samtools
-			rm $output_dir/$group/${sample}.$chr.filter.vcf.fail
+			$script_path/CREST2VCF.pl -i $output_dir/$group/${sample}.$chr.predSV.txt -f $ref_genome -o $output_dir/$group/${sample}.$chr.vcf -s $sample -t $samtools
+			rm $output_dir/$group/${sample}.$chr.vcf.fail
+			touch  $output_dir/$group/${sample}.$chr.final.predSV.txt
+			$script_path/CREST2VCF.pl -i $output_dir/$group/${sample}.$chr.final.predSV.txt -f $ref_genome -o $output_dir/$group/${sample}.$chr.final.vcf -s $sample -t $samtools
+			rm $output_dir/$group/${sample}.$chr.final.vcf.fail
 		fi
 		`kill -9 $pid`	
 	fi

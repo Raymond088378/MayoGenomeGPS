@@ -123,31 +123,31 @@ else
         then
             rm $output_dir/$group/${file}.chr$chr.bam $output_dir/$group/${file}.chr$chr.bam.bai
         fi
-        $script_path/CREST2VCF.pl -i $output_dir/$group/${file}.$chr.predSV.txt -f $ref_genome -o $output_dir/$group/$file.$chr.raw.vcf -s $file -t $samtools
-        $script_path/vcfsort.pl ${ref_genome}.fai $output_dir/$group/$file.$chr.raw.vcf > $output_dir/$group/$file.$chr.raw.vcf.sort
-        mv $output_dir/$group/$file.$chr.raw.vcf.sort $output_dir/$group/$file.$chr.raw.vcf
-		if [ ! -s $output_dir/$group/$file.$chr.raw.vcf.fail ]
+        $script_path/CREST2VCF.pl -i $output_dir/$group/${file}.$chr.predSV.txt -f $ref_genome -o $output_dir/$group/$file.$chr.vcf -s $file -t $samtools
+        $script_path/vcfsort.pl ${ref_genome}.fai $output_dir/$group/$file.$chr.vcf > $output_dir/$group/$file.$chr.vcf.sort
+        mv $output_dir/$group/$file.$chr.vcf.sort $output_dir/$group/$file.$chr.vcf
+		if [ ! -s $output_dir/$group/$file.$chr.vcf.fail ]
         then
-            rm $output_dir/$group/$file.$chr.raw.vcf.fail
+            rm $output_dir/$group/$file.$chr.vcf.fail
         fi  
 		
 		if [ -s $output_dir/$group/${file}.$chr.predSV.txt ]
         then
-            awk "((\$10>=$min_read)&&(\$11>=$min_read)&&(\$14>=$min_id)&&(\$16>=$min_id))" $output_dir/$group/${file}.$chr.predSV.txt | awk '{print $1"\t"$2"\t"$2+1"\t"$5"\t"$6"\t"$6+1}' | $bedtools/pairToBed -a stdin -b $blacklist_sv -type neither | $script_path/report_original.pl $output_dir/$sample/$sample.$chr.predSV.txt > $output_dir/$group/${file}.$chr.filter.predSV.txt
+            awk "((\$10>=$min_read)&&(\$11>=$min_read)&&(\$14>=$min_id)&&(\$16>=$min_id))" $output_dir/$group/${file}.$chr.predSV.txt | awk '{print $1"\t"$2"\t"$2+1"\t"$5"\t"$6"\t"$6+1}' | $bedtools/pairToBed -a stdin -b $blacklist_sv -type neither | $script_path/report_original.pl $output_dir/$sample/$sample.$chr.predSV.txt > $output_dir/$group/${file}.$chr.final.predSV.txt
 		else
-            touch $output_dir/$group/${file}.$chr.filter.predSV.txt
+            touch $output_dir/$group/${file}.$chr.final.predSV.txt
         fi
-		$script_path/CREST2VCF.pl -i $output_dir/$group/${file}.$chr.filter.predSV.txt -f $ref_genome -o $output_dir/$group/${file}.$chr.filter.vcf -s $file -t $samtools
-		if [ ! -s $output_dir/$group/${file}.$chr.filter.vcf.fail ]
+		$script_path/CREST2VCF.pl -i $output_dir/$group/${file}.$chr.final.predSV.txt -f $ref_genome -o $output_dir/$group/${file}.$chr.final.vcf -s $file -t $samtools
+		if [ ! -s $output_dir/$group/${file}.$chr.final.vcf.fail ]
         then
-            rm $output_dir/$group/${file}.$chr.filter.vcf.fail
+            rm $output_dir/$group/${file}.$chr.final.vcf.fail
         fi  
-		$script_path/vcfsort.pl ${ref_genome}.fai $output_dir/$group/${file}.$chr.filter.vcf > $output_dir/$group/${file}.$chr.filter.vcf.sort
-		mv $output_dir/$group/${file}.$chr.filter.vcf.sort $output_dir/$group/${file}.$chr.filter.vcf
+		$script_path/vcfsort.pl ${ref_genome}.fai $output_dir/$group/${file}.$chr.final.vcf > $output_dir/$group/${file}.$chr.final.vcf.sort
+		mv $output_dir/$group/${file}.$chr.final.vcf.sort $output_dir/$group/${file}.$chr.final.vcf
 		### vcf converter for CREST output to VCF
-		if [ ! -f $output_dir/$group/${file}.$chr.filter.predSV.txt ]
+		if [ ! -f $output_dir/$group/${file}.$chr.final.predSV.txt ]
 		then
-			$script_path/errorlog.sh $output_dir/$group/${file}.$chr.filter.predSV.txt run_crest_multi.sh ERROR "failed to create" 
+			$script_path/errorlog.sh $output_dir/$group/${file}.$chr.final.predSV.txt run_crest_multi.sh ERROR "failed to create" 
 			exit 1;
 		else
 			rm $output_dir/$group/$file.chr$chr.sclip.txt $output_dir/$group/$file.chr$chr.cover

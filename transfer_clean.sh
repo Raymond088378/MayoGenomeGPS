@@ -19,7 +19,7 @@ else
 	run_num=$( cat $run_info | grep -w '^OUTPUT_FOLDER' | cut -d '=' -f2)
     flowcell=`echo $run_num | awk -F'_' '{print $NF}' | sed 's/.\(.*\)/\1/'`
 	memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
-	
+	samples=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2)
 	if [ $type == "exome" ]
 	then
 		tool=Exome
@@ -188,7 +188,10 @@ else
 		fi
 	fi
 	mem=$( cat $memory_info | grep -w '^AddSecondaryAnalysis_JVM' | cut -d '=' -f2)
-	$java/java $mem -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -f $flowcell -r $run_num -s Delivered -a $tool
+	for sample in `echo $samples | tr ":" "\n"`
+	do
+		$script_path/dashboard.sh $sample $run_info Delivered complete
+	done
 	echo "data is transfered and intermediate files are deleted"
     echo "User needs to transfer the data to the windows share"
 	echo `date`

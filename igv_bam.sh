@@ -31,7 +31,8 @@ else
     multi=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 	analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]" )
 	remove_bam=$( cat $tool_info | grep -w '^REMOVE_ALIGNED_BAM' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
-    i=1
+    stop_after_realignment=$( cat $tool_info | grep -w '^STOP_AFTER_REALIGNMENT' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
+	i=1
     for chr in $chrIndexes
     do
         chrArray[$i]=$chr
@@ -120,6 +121,7 @@ else
             fi
         done
 		rm $output/$sample/$sample.header.sam
+		
     else
         cd $input/$sample/
         for j in $(seq 1 ${#chrArray[@]})
@@ -212,6 +214,18 @@ else
             $script_path/errorlog.sh $delivery_folder igv_bam.sh ERROR "folder not exist"
             exit 1
         fi
-    fi    
-    echo `date`
+    fi  
+	if [ $stop_after_realignment == "YES" ]
+    then
+		if [ $multi == "YES" ]
+		then
+			sam=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2)
+			do
+				$script_path/dashboard.sh $sam $run_info Complete complete
+			done
+		else
+			$script_path/dashboard.sh $sample $run_info Complete complete
+		fi
+    fi
+	echo `date`
 fi

@@ -72,41 +72,41 @@ else
 			rm $input
 		fi
 		
-		inputfile=$basedir/cnv/$sample/$sam.$chr.filter.del.vcf
-		input=$basedir/cnv/$sample/$sam.$chr.filter.del.bed
+		inputfile=$basedir/cnv/$sample/$sam.$chr.final.del.vcf
+		input=$basedir/cnv/$sample/$sam.$chr.final.del.bed
 		if [ ! -f $inputfile ]
 		then	
 			touch $inputfile.fix.log
 			$script_path/email.sh $inputfile "not exist" run_cnvnator.sh $run_info
 			$script_path/wait.sh $inputfile.fix.log 
-			cat $input >> $basedir/cnv/$sample/$sam.cnv.filter.bed
+			cat $input >> $basedir/cnv/$sample/$sam.cnv.final.bed
 			rm $input
 			inputargs_filter="-V $inputfile "$inputargs_filter  
 		else
-			cat $input >> $basedir/cnv/$sample/$sam.cnv.filter.bed
+			cat $input >> $basedir/cnv/$sample/$sam.cnv.final.bed
 			rm $input
 			inputargs_filter="-V $inputfile "$inputargs_filter  
 		fi
 		
-		inputfile=$basedir/cnv/$sample/$sam.$chr.filter.dup.vcf
-		input=$basedir/cnv/$sample/$sam.$chr.filter.dup.bed
+		inputfile=$basedir/cnv/$sample/$sam.$chr.final.dup.vcf
+		input=$basedir/cnv/$sample/$sam.$chr.final.dup.bed
 		if [ ! -f $inputfile ]
 		then
 			touch $inputfile.fix.log
 			$script_path/email.sh $inputfile "not exist" run_cnvnator.sh $run_info
 			$script_path/wait.sh $inputfile.fix.log 
-			cat $input >> $basedir/cnv/$sample/$sam.cnv.filter.bed
+			cat $input >> $basedir/cnv/$sample/$sam.cnv.final.bed
 			rm $input
 			inputargs_filter="-V $inputfile "$inputargs_filter 
 		else
-			cat $input >> $basedir/cnv/$sample/$sam.cnv.filter.bed
+			cat $input >> $basedir/cnv/$sample/$sam.cnv.final.bed
 			rm $input
 			inputargs_filter="-V $inputfile "$inputargs_filter 
 		fi
 	done
 
 	$script_path/combinevcf.sh "$inputargs" $output/SV/$sam.cnv.vcf $run_info yes
-	$script_path/combinevcf.sh "$inputargs_filter" $output/SV/$sam.cnv.filter.vcf $run_info yes
+	$script_path/combinevcf.sh "$inputargs_filter" $output/SV/$sam.cnv.final.vcf $run_info yes
 	
 	
    ## Summaryzing Breakdancer
@@ -156,46 +156,46 @@ else
     input_filter=""
     for chr in $chrs
     do
-        inputfile=$basedir/struct/crest/$sample/$sam.$chr.raw.vcf
-        inputfile_filter=$basedir/struct/crest/$sample/$sam.$chr.filter.vcf
+        inputfile=$basedir/struct/crest/$sample/$sam.$chr.vcf
+        inputfile_filter=$basedir/struct/crest/$sample/$sam.$chr.final.vcf
         input=$basedir/struct/crest/$sample/$sam.$chr.predSV.txt
-        input_filter=$basedir/struct/crest/$sample/$sam.$chr.filter.predSV.txt
+        input_filter=$basedir/struct/crest/$sample/$sam.$chr.final.predSV.txt
         if [ ! -s $inputfile ]
         then      
             touch $inputfile.fix.log
 			$script_path/email.sh $inputfile "not exist" run_single_crest.sh $run_info
 			$script_path/wait.sh $inputfile.fix.log 
 			cat $inputfile | awk '$0 ~/^#/' > $basedir/struct/crest/$sample/vcf.header.$sam.crest
-            cat $inputfile | awk '$0 !~ /^#/' >> $output/SV/$sam.raw.crest.vcf
-            cat $inputfile_filter | awk '$0 !~ /^#/' >> $output/SV/$sam.filter.crest.vcf
-            cat $input >> $basedir/struct/crest/$sample/$sam.raw.crest
-            cat $input_filter >> $basedir/struct/crest/$sample/$sam.filter.crest
+            cat $inputfile | awk '$0 !~ /^#/' >> $output/SV/$sam.crest.vcf
+            cat $inputfile_filter | awk '$0 !~ /^#/' >> $output/SV/$sam.final.crest.vcf
+            cat $input >> $basedir/struct/crest/$sample/$sam.crest
+            cat $input_filter >> $basedir/struct/crest/$sample/$sam.final.crest
             rm $input
             rm $input_filter    
             rm $inputfile_filter
             rm $inputfile
         else
 			cat $inputfile | awk '$0 ~/^#/' > $basedir/struct/crest/$sample/vcf.header.$sam.crest
-            cat $inputfile | awk '$0 !~ /^#/' >> $output/SV/$sam.raw.crest.vcf
-            cat $inputfile_filter | awk '$0 !~ /^#/' >> $output/SV/$sam.filter.crest.vcf
-            cat $input >> $basedir/struct/crest/$sample/$sam.raw.crest
-            cat $input_filter >> $basedir/struct/crest/$sample/$sam.filter.crest
+            cat $inputfile | awk '$0 !~ /^#/' >> $output/SV/$sam.crest.vcf
+            cat $inputfile_filter | awk '$0 !~ /^#/' >> $output/SV/$sam.final.crest.vcf
+            cat $input >> $basedir/struct/crest/$sample/$sam.crest
+            cat $input_filter >> $basedir/struct/crest/$sample/$sam.final.crest
             rm $input
             rm $input_filter    
             rm $inputfile_filter
             rm $inputfile
         fi
     done
-    cat $basedir/struct/crest/$sample/vcf.header.$sam.crest $output/SV/$sam.raw.crest.vcf > $output/SV/$sam.raw.crest.vcf.temp
-    mv $output/SV/$sam.raw.crest.vcf.temp $output/SV/$sam.raw.crest.vcf
+    cat $basedir/struct/crest/$sample/vcf.header.$sam.crest $output/SV/$sam.crest.vcf > $output/SV/$sam.crest.vcf.temp
+    mv $output/SV/$sam.crest.vcf.temp $output/SV/$sam.crest.vcf
     
-    cat $basedir/struct/crest/$sample/vcf.header.$sam.crest $output/SV/$sam.filter.crest.vcf > $output/SV/$sam.filter.crest.vcf.temp
-    mv $output/SV/$sam.filter.crest.vcf.temp $output/SV/$sam.filter.crest.vcf
+    cat $basedir/struct/crest/$sample/vcf.header.$sam.crest $output/SV/$sam.final.crest.vcf > $output/SV/$sam.final.crest.vcf.temp
+    mv $output/SV/$sam.final.crest.vcf.temp $output/SV/$sam.final.crest.vcf
 	rm $basedir/struct/crest/$sample/vcf.header.$sam.crest
 
-    if [ ! -s $output/SV/$sam.raw.crest.vcf ]
+    if [ ! -s $output/SV/$sam.crest.vcf ]
     then
-        $script_path/errorlog.sh $output/SV/$sam.raw.crest.vcf summaryze_struct_single.sh ERROR "not created"
+        $script_path/errorlog.sh $output/SV/$sam.crest.vcf summaryze_struct_single.sh ERROR "not created"
     	exit 1;
    	else
         file=`echo $inputargs | sed -e '/-V/s///g'`

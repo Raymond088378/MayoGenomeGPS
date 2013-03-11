@@ -54,7 +54,7 @@ else
 
     if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
     then
-        snv_file=$sam.variants.chr$chr.SNV.filter.i.c.vcf
+        snv_file=$sam.variants.chr$chr.SNV.final.i.c.vcf
         if [ ! -s $input/$snv_file ]
         then
             touch $input/$snv_file.snpeff.fix.log
@@ -101,7 +101,7 @@ else
 
     if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]	
     then
-		indel_file=$sam.variants.chr$chr.INDEL.filter.i.c.vcf
+		indel_file=$sam.variants.chr$chr.INDEL.final.i.c.vcf
         if [ ! -s $input/$indel_file ]
         then
             touch $input/$indel_file.snpeff.fix.log

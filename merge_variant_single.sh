@@ -12,11 +12,11 @@
 
 
 ### inputs
-###	$input/$sample.variants.chr$chr.raw.vcf
+###	$input/$sample.variants.chr$chr.vcf
 ###
 ### outputs
-### $out/$sample.variants.raw.vcf
-### $out/$sample.variants.filter.vcf
+### $out/$sample.variants.vcf
+### $out/$sample.variants.final.vcf
 
 
 if [ $# != 4 ];
@@ -54,7 +54,7 @@ else
     inputargs=""
     for i in $chrs
     do
-		inputfile=$input/$sample/$sample.variants.chr$i.raw.vcf 
+		inputfile=$input/$sample/$sample.variants.chr$i.vcf 
 		if [ ! -s $inputfile ]
 		then	
 			touch $inputfile.fix.log
@@ -65,41 +65,41 @@ else
     done
 	
 	### concatenate all vcf files in file list together
-    $script_path/concatvcf.sh "$inputargs" $out/$sample.variants.raw.vcf $run_info no
+    $script_path/concatvcf.sh "$inputargs" $out/$sample.variants.vcf $run_info no
 	
     ### filter the variant calls
     if [ $filter_variants == "YES" ]
     then
-        $script_path/filter_variant_vqsr.sh $out/$sample.variants.raw.vcf $out/$sample.variants.filter.vcf BOTH $run_info
+        $script_path/filter_variant_vqsr.sh $out/$sample.variants.vcf $out/$sample.variants.final.vcf BOTH $run_info
     else
-        cp $out/$sample.variants.raw.vcf $out/$sample.variants.filter.vcf
+        cp $out/$sample.variants.vcf $out/$sample.variants.final.vcf
     fi
     
     ### check whether vqsr produced output / file was copied correctly
-	if [ ! -s $out/$sample.variants.filter.vcf ]
+	if [ ! -s $out/$sample.variants.final.vcf ]
     then
-    	touch $out/$sample.variants.filter.vcf.fix.log
-    	$script_path/email.sh $out/$sample.variants.filter.vcf "vqsr failed" filter_variant_vqsr.sh $run_info
-		$script_path/wait.sh $out/$sample.variants.filter.vcf.fix.log
+    	touch $out/$sample.variants.final.vcf.fix.log
+    	$script_path/email.sh $out/$sample.variants.final.vcf "vqsr failed" filter_variant_vqsr.sh $run_info
+		$script_path/wait.sh $out/$sample.variants.final.vcf.fix.log
 	fi	
 	
 	### Filter the variants using total depth 
 	### use GATK variant filter to filter using DP
 	if [[ $tool == "exome" && $filter_variants == "YES" ]]
 	then
-		$script_path/filtervcf.sh $out/$sample.variants.filter.vcf $run_info 
+		$script_path/filtervcf.sh $out/$sample.variants.final.vcf $run_info 
 	fi
 	
-    if [ ! -s $out/$sample.variants.filter.vcf ]
+    if [ ! -s $out/$sample.variants.final.vcf ]
     then
-        $script_path/errorlog.sh $out/$sample.variants.filter.vcf merge_variant_single.sh ERROR "failed to create"
+        $script_path/errorlog.sh $out/$sample.variants.final.vcf merge_variant_single.sh ERROR "failed to create"
         exit 1;
     else
         for i in $chrs
         do
-            cat $out/$sample.variants.filter.vcf | awk -v num=chr${i} '$0 ~ /^#/ || $1 == num' > $input/$sample/$sample.variants.chr$i.filter.vcf 
+            cat $out/$sample.variants.final.vcf | awk -v num=chr${i} '$0 ~ /^#/ || $1 == num' > $input/$sample/$sample.variants.chr$i.final.vcf 
         done
     fi  
 	echo `date`	
 fi  
-### at this point, we should have $sample.variants.filter.vcf in whatever output folder given
+### at this point, we should have $sample.variants.final.vcf in whatever output folder given

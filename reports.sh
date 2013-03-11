@@ -33,38 +33,38 @@ else
 	### converting vcf files to text files
 	if [[ $9 == "somatic" ]]
 	then
-		if [ ! -s $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf  ]
+		if [ ! -s $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.final.i.c.vcf  ]
 		then
-			touch $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf.fix.log
-			$script_path/email.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf  "not found" OnTarget_variant.sh $run_info
-			$script_path/wait.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf.fix.log
+			touch $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.final.i.c.vcf.fix.log
+			$script_path/email.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.final.i.c.vcf  "not found" OnTarget_variant.sh $run_info
+			$script_path/wait.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.final.i.c.vcf.fix.log
 		fi			
-		$script_path/parse.vcf.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.filter.i.c.vcf $TempReports/$gr.$sample.chr${which_chr}.snv $run_info SNV
+		$script_path/parse.vcf.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.SNV.final.i.c.vcf $TempReports/$gr.$sample.chr${which_chr}.snv $run_info SNV
 		##INDEL
-		if [ ! -s $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf  ]
+		if [ ! -s $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.final.i.c.vcf  ]
 		then
-			touch $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf.fix.log
-			$script_path/email.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf  "not found" OnTarget_variant.sh $run_info
-			$script_path/wait.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf.fix.log
+			touch $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.final.i.c.vcf.fix.log
+			$script_path/email.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.final.i.c.vcf  "not found" OnTarget_variant.sh $run_info
+			$script_path/wait.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.final.i.c.vcf.fix.log
 		fi	
-		$script_path/parse.vcf.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf $TempReports/$gr.$sample.chr${which_chr}.indel $run_info INDEL
+		$script_path/parse.vcf.sh $output_OnTarget/$gr.$sample.variants.chr$which_chr.INDEL.final.i.c.vcf $TempReports/$gr.$sample.chr${which_chr}.indel $run_info INDEL
 		sam=$gr.$sample
 	else
-		if [ ! -s $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf  ]
+		if [ ! -s $output_OnTarget/$sample.variants.chr$which_chr.SNV.final.i.c.vcf  ]
 		then
-			touch $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf.fix.log
-			$script_path/email.sh $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf  "not found" OnTarget_variant.sh $run_info
-			$script_path/wait.sh $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf.fix.log
+			touch $output_OnTarget/$sample.variants.chr$which_chr.SNV.final.i.c.vcf.fix.log
+			$script_path/email.sh $output_OnTarget/$sample.variants.chr$which_chr.SNV.final.i.c.vcf  "not found" OnTarget_variant.sh $run_info
+			$script_path/wait.sh $output_OnTarget/$sample.variants.chr$which_chr.SNV.final.i.c.vcf.fix.log
 		fi		
-		$script_path/parse.vcf.sh $output_OnTarget/$sample.variants.chr$which_chr.SNV.filter.i.c.vcf $TempReports/$sample.chr${which_chr}.snv $run_info SNV
+		$script_path/parse.vcf.sh $output_OnTarget/$sample.variants.chr$which_chr.SNV.final.i.c.vcf $TempReports/$sample.chr${which_chr}.snv $run_info SNV
 		##INDEL
-		if [ ! -s $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf  ]
+		if [ ! -s $output_OnTarget/$sample.variants.chr$which_chr.INDEL.final.i.c.vcf  ]
 		then
-			touch $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf.fix.log
-			$script_path/email.sh $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf  "not found" OnTarget_variant.sh $run_info
-			$script_path/wait.sh $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf.fix.log
+			touch $output_OnTarget/$sample.variants.chr$which_chr.INDEL.final.i.c.vcf.fix.log
+			$script_path/email.sh $output_OnTarget/$sample.variants.chr$which_chr.INDEL.final.i.c.vcf  "not found" OnTarget_variant.sh $run_info
+			$script_path/wait.sh $output_OnTarget/$sample.variants.chr$which_chr.INDEL.final.i.c.vcf.fix.log
 		fi	
-		$script_path/parse.vcf.sh $output_OnTarget/$sample.variants.chr$which_chr.INDEL.filter.i.c.vcf $TempReports/$sample.chr${which_chr}.indel $run_info INDEL	
+		$script_path/parse.vcf.sh $output_OnTarget/$sample.variants.chr$which_chr.INDEL.final.i.c.vcf $TempReports/$sample.chr${which_chr}.indel $run_info INDEL	
 		sam=$sample
 	fi	
 	if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]

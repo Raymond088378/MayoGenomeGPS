@@ -39,7 +39,7 @@ else
 	threads=1   
     export PERL5LIB=$perl_lib:${PERL5LIB}
     
-    snv_file=$sam.variants.chr$chr.SNV.filter.i.c.vcf
+    snv_file=$sam.variants.chr$chr.SNV.final.i.c.vcf
     if [ ! -s $input/$snv_file ]
     then
         touch $input/$snv_file.poly.fix.log

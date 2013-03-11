@@ -115,26 +115,26 @@ else
             if [ -s $output_dir/$sample.$chr.del.bed ]
 			then
 				$bedtools/closestBed -a $output_dir/$sample.$chr.del.bed -b $gap -d | awk "\$13>$distgap" | cut -f 1-6 |\
-				$bedtools/intersectBed -a stdin -b $blacklist_sv -v -f $pct_overlap -wa  > $output_dir/$sample.$chr.filter.del.bed
+				$bedtools/intersectBed -a stdin -b $blacklist_sv -v -f $pct_overlap -wa  > $output_dir/$sample.$chr.final.del.bed
 			else
-				touch $output_dir/$sample.$chr.filter.del.bed
+				touch $output_dir/$sample.$chr.final.del.bed
 			fi
-			$script_path/CNVnator2VCF.pl -i $output_dir/$sample.$chr.filter.del.bed -f $ref -o $output_dir/$sample.$chr.filter.del.vcf -s $sample -t $samtools
-            if [ ! -s $output_dir/$sample.$chr.filter.del.vcf.fail ]
+			$script_path/CNVnator2VCF.pl -i $output_dir/$sample.$chr.final.del.bed -f $ref -o $output_dir/$sample.$chr.final.del.vcf -s $sample -t $samtools
+            if [ ! -s $output_dir/$sample.$chr.final.del.vcf.fail ]
             then
-                rm $output_dir/$sample.$chr.filter.del.vcf.fail
+                rm $output_dir/$sample.$chr.final.del.vcf.fail
             fi  
             if [ -s $output_dir/$sample.$chr.dup.bed ]
 			then
 				$bedtools/closestBed -a $output_dir/$sample.$chr.dup.bed -b $gap -d | awk "\$13>$distgap" | cut -f 1-6 |\
-				$bedtools/intersectBed -a stdin -b $blacklist_sv -v -f $pct_overlap -wa > $output_dir/$sample.$chr.filter.dup.bed
+				$bedtools/intersectBed -a stdin -b $blacklist_sv -v -f $pct_overlap -wa > $output_dir/$sample.$chr.final.dup.bed
 			else
-				touch $output_dir/$sample.$chr.filter.dup.bed
+				touch $output_dir/$sample.$chr.final.dup.bed
 			fi
-			$script_path/CNVnator2VCF.pl -i $output_dir/$sample.$chr.filter.dup.bed -f $ref -o $output_dir/$sample.$chr.filter.dup.vcf -s $sample -t $samtools
-            if [ ! -s $output_dir/$sample.$chr.filter.dup.vcf.fail ]
+			$script_path/CNVnator2VCF.pl -i $output_dir/$sample.$chr.final.dup.bed -f $ref -o $output_dir/$sample.$chr.final.dup.vcf -s $sample -t $samtools
+            if [ ! -s $output_dir/$sample.$chr.final.dup.vcf.fail ]
             then
-                rm $output_dir/$sample.$chr.filter.dup.vcf.fail
+                rm $output_dir/$sample.$chr.final.dup.vcf.fail
             fi
             rm $root_file $output_dir/chr$chr.fa $output_dir/$sample.$chr.cnv.txt
         else

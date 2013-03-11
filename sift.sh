@@ -60,7 +60,7 @@ else
 		$script_path/dashboard.sh $sample $run_info Annotation started
 	fi	
     ### hard coded
-    snv_file=$sam.variants.chr$chr.SNV.filter.i.c.vcf
+    snv_file=$sam.variants.chr$chr.SNV.final.i.c.vcf
     if [ ! -s $input/$snv_file ]
     then
 		touch $input/$snv_file.sift.fix.log
