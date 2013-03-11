@@ -31,9 +31,12 @@ if [ ! -d $out/temp ]
 then
 	mkdir -p $out/temp
 fi
-    
-export PATH=$java:$PATH
 
+dbsnp_param=""   
+if [ $dbSNP ]
+then
+	dbsnp_param="--dbsnp $dbSNP"
+fi	
 ### annotate SNVs or INDELs
 $java/java $mem -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
 -R $ref \
@@ -42,8 +45,7 @@ $java/java $mem -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
 -T VariantAnnotator \
 $input \
 -V $vcf \
---dbsnp $dbSNP \
--L $vcf --out $vcf.temp $params
+-L $vcf --out $vcf.temp $dbsnp_param $params 
     	
 if [ -s $vcf.temp.idx ]
 then    
