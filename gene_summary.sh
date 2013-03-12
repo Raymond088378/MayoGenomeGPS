@@ -63,7 +63,7 @@ else
 		then
 			echo "Exome Analysis"
 			### summarizing SNV files
-			file=$SNV_dir/$sample.SNV.filtered.xls
+			file=$SNV_dir/$sample.SNV.final.xls
 			if [ ! -f $file ]
 			then
 				$script_path/errorlog.sh $file gene_summary.sh ERROR "not found"
@@ -107,7 +107,7 @@ else
 			rm $SNV_dir/$sample.join*.txt 
 			#################################################################################################	
 			### summarizing INDEL files
-			file=$INDEL_dir/$sample.INDEL.filtered.xls
+			file=$INDEL_dir/$sample.INDEL.final.xls
 			if [ ! -f $file ]
 			then
 				$script_path/errorlog.sh $file gene_summary.sh ERROR "not found"
@@ -170,7 +170,7 @@ else
 		else
 			echo "Whole Genome Anlaysis"
 			### summarizing SNV files
-			file=$SNV_dir/$sample.SNV.filtered.xls
+			file=$SNV_dir/$sample.SNV.final.xls
 			if [ ! -f $file ]
 			then
 				$script_path/errorlog.sh $file gene_summary.sh ERROR "not found"
@@ -215,7 +215,7 @@ else
 
 			#################################################################################################	
 				### summarizing INDEL files
-			file=$INDEL_dir/$sample.INDEL.filtered.xls
+			file=$INDEL_dir/$sample.INDEL.final.xls
 			if [ ! -f $file ]
 			then
 				$script_path/errorlog.sh $file gene_summary.sh ERROR "not found"
@@ -259,7 +259,7 @@ else
 			rm $INDEL_dir/$sample.*.tmp $INDEL_dir/in.$sample.*.tmp $INDEL_dir/$sample.join*.txt 
 				#################################################################################################	
 				### summarizing CNV files
-			file=$INDEL_dir/$sample.INDEL.filtered.xls
+			file=$INDEL_dir/$sample.INDEL.final.xls
 			if [ ! -f $file ]
 			then
 				$script_path/errorlog.sh $file gene_summary.sh ERROR "not found"
@@ -380,9 +380,9 @@ else
 				cat $master_gene_file | cut -f4 > $report_dir/$sampe.gene.temp
 				if [ $somatic_calling == "YES" ]
 				then
-					file=$SNV_dir/TUMOR.$group.SNV.filtered.xls
+					file=$SNV_dir/TUMOR.$group.SNV.final.xls
 				else
-					file=$SNV_dir/$group.SNV.filtered.xls
+					file=$SNV_dir/$group.SNV.final.xls
 				fi
 				
 				if [ ! -f $file ]
@@ -433,9 +433,9 @@ else
 				### summarizing INDEL files           
 				if [ $somatic_calling == "YES" ]
 				then
-					file=$INDEL_dir/TUMOR.$group.INDEL.filtered.xls
+					file=$INDEL_dir/TUMOR.$group.INDEL.final.xls
 				else
-					file=$INDEL_dir/$group.INDEL.filtered.xls
+					file=$INDEL_dir/$group.INDEL.final.xls
 				fi
 				if [ ! -f $file ]
 				then
@@ -518,9 +518,9 @@ else
 				cat $master_gene_file | cut -f4 > $report_dir/$sampe.gene.temp
 				if [ $somatic_calling == "NO" ]
 				then
-					file=$SNV_dir/$group.SNV.filtered.xls
+					file=$SNV_dir/$group.SNV.final.xls
 				else
-					file=$SNV_dir/TUMOR.$group.SNV.filtered.xls
+					file=$SNV_dir/TUMOR.$group.SNV.final.xls
 				fi
 				
 				if [ ! -f $file ]
@@ -571,9 +571,9 @@ else
 				### summarizing INDEL files           
 				if [ $somatic_calling == "NO" ]
 				then
-					file=$INDEL_dir/$group.INDEL.filtered.xls
+					file=$INDEL_dir/$group.INDEL.final.xls
 				else
-					file=$INDEL_dir/TUMOR.$group.INDEL.filtered.xls
+					file=$INDEL_dir/TUMOR.$group.INDEL.final.xls
 				fi	
 				if [ ! -f $file ]
 				then

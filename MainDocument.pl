@@ -754,7 +754,7 @@ else    {
 					my $per_mapped = sprintf("%.1f",(${$sample_numbers{$key}}[$c] / ${$sample_numbers{0}}[$c]) * 100);
 					my $print=CommaFormatted(${$sample_numbers{$key}}[$c]);
 					print OUT "<td class=\"helpBod\">$print <br> <b>($per_mapped \%) <b></td>";
-					print OUT "\t$print ($per_mapped \%)";
+					print SOUT "\t$print ($per_mapped \%)";
 					$avg_mapped_reads=$avg_mapped_reads + ${$sample_numbers{$key}}[$c];
 					$per_mapped_reads = $per_mapped_reads + $per_mapped; 
 				}
