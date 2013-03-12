@@ -47,11 +47,11 @@ else
   	echo -e "-run_info.txt\n-sample_info.txt\n-tool_info.txt\n-memory_info.txt" >> $file
  	echo -e "\n#### Annotation Reports\n" >> $file
 	echo -e "Directory with merged SNV and INDEL reports: : Reports/" >> $file
-	echo -e "\n**ANNOTATION files (filtered - single annotation line per variant call(most impacting transcript))" >> $file
-	echo -e "\n-SNVs\nSNV.xls\nSNV.filtered.xls\n\n-INDELs\nINDEL.xls\nINDEL.filtered.xls" >> $file 
+	echo -e "\n**ANNOTATION files (final - single annotation line per variant call(most impacting transcript))" >> $file
+	echo -e "\n-SNVs\nSNV.xls\nSNV.final.xls\n\n-INDELs\nINDEL.xls\nINDEL.final.xls" >> $file 
 	if [[ $multi == "YES" && $somatic_calling == "YES" ]]
 	then
-		echo -e "\n-SNVs (somatic merged report)\nTUMOR.SNV.xls\nTUMOR.SNV.filtered.xls\n\n-INDELs (somatic merged report)\nTUMOR.INDEL.xls\nTUMOR.INDEL.filtered.xls" >> $file
+		echo -e "\n-SNVs (somatic merged report)\nTUMOR.SNV.xls\nTUMOR.SNV.final.xls\n\n-INDELs (somatic merged report)\nTUMOR.INDEL.xls\nTUMOR.INDEL.final.xls" >> $file
 	fi	
 	
 	echo -e "\nDirectory with per sample or per group SNV, INDEL reports: Reports_per_Sample/" >> $file
@@ -61,7 +61,7 @@ else
 		for sam in $samples
 		do
 			echo -e "\nsample : $sam" >> $file
-			echo -e "$sam.SNV.xls - There could be multiple annotation lines for each variant for $sam\n$sam.SNV.filtered.xls - just one annotation for each variant for $sam (most impacting one)" >> $file
+			echo -e "$sam.SNV.xls - There could be multiple annotation lines for each variant for $sam\n$sam.SNV.final.xls - just one annotation for each variant for $sam (most impacting one)" >> $file
 		done
 	else
 		if [ $soamtic_calling == "NO" ]
@@ -69,14 +69,14 @@ else
 			for pair in $groups
 			do
 				echo -e "\ngroup : $pair" >> $file
-				echo -e "$pair.SNV.xls - There could be multiple annotation lines for each variant for $pair\n$pair.SNV.filtered.xls - just one annotation for each variant for $pair (most impacting one)" >> $file
+				echo -e "$pair.SNV.xls - There could be multiple annotation lines for each variant for $pair\n$pair.SNV.final.xls - just one annotation for each variant for $pair (most impacting one)" >> $file
 			done
 		else
 			for pair in $groups
 			do
 				echo -e "\ngroup : $pair" >> $file
-				echo -e "$pair.SNV.xls - There could be multiple annotation lines for each variant for $pair\n$pair.SNV.filtered.xls - just one annotation for each variant for $pair (most impacting one)" >> $file
-				echo -e "TUMOR.$pair.SNV.xls - There could be multiple annotation lines for each somatic variant for $pair\nTUMOR.$pair.SNV.filtered.xls - just one annotation for each somatic variant for $pair (most impacting one)" >> $file
+				echo -e "$pair.SNV.xls - There could be multiple annotation lines for each variant for $pair\n$pair.SNV.final.xls - just one annotation for each variant for $pair (most impacting one)" >> $file
+				echo -e "TUMOR.$pair.SNV.xls - There could be multiple annotation lines for each somatic variant for $pair\nTUMOR.$pair.SNV.final.xls - just one annotation for each somatic variant for $pair (most impacting one)" >> $file
 			done
 		fi	
 	fi	
@@ -86,16 +86,16 @@ else
 		for sam in $samples
 		do
 			echo -e "\nsample : $sam" >> $file
-			echo -e "$sam.INDEL.xls - There could be multiple annotation lines for each variant for $sam\n$sam.INDEL.filtered.xls - just one annotation for each variant for $sam (most impacting one)" >> $file
+			echo -e "$sam.INDEL.xls - There could be multiple annotation lines for each variant for $sam\n$sam.INDEL.final.xls - just one annotation for each variant for $sam (most impacting one)" >> $file
 		done
 	else
 		for pair in $groups
 		do
 			echo -e "\ngroup : $pair" >> $file
-			echo -e "$pair.INDEL.xls - There could be multiple annotation lines for each variant for $pair\n$pair.INDEL.filtered.xls - just one annotation for each variant for $pair (most impacting one)" >> $file 
+			echo -e "$pair.INDEL.xls - There could be multiple annotation lines for each variant for $pair\n$pair.INDEL.final.xls - just one annotation for each variant for $pair (most impacting one)" >> $file 
 			if [ $somatic_calling == "YES" ]
 			then
-				echo -e " TUMOR.$pair.INDEL.xls - There could be multiple annotation lines for each somatic variant for $pair\nTUMOR.$pair.INDEL.filtered.xls - just one annotation for each somatic variant for $pair (most impacting one)" >> $file
+				echo -e " TUMOR.$pair.INDEL.xls - There could be multiple annotation lines for each somatic variant for $pair\nTUMOR.$pair.INDEL.final.xls - just one annotation for each somatic variant for $pair (most impacting one)" >> $file
 			fi	
 		done
 	fi	
@@ -108,15 +108,15 @@ else
 			echo -e "\ngroup : $pair" >> $file
 			if [ $somatic_calling == "YES" ]
 			then
-				echo -e "filtered somatic variant file for $pair : $pair.somatic.variants.filter.vcf" >> $file
+				echo -e "final somatic variant file for $pair : $pair.somatic.variants.filter.vcf" >> $file
 			fi
-			echo -e "filtered multi sample variant file for $pair : $pair.variants.filter.vcf" >> $file
+			echo -e "final multi sample variant file for $pair : $pair.variants.filter.vcf" >> $file
 		done
 	else
 		for sam in $samples
 		do			
 			echo -e "\nsample : $sam" >> $file
-			echo -e "filtered variant file for $sam :$sam.variants.filter.vcf" >> $file
+			echo -e "final variant file for $sam :$sam.variants.filter.vcf" >> $file
 		done
 	fi
 	if [ $multi == "NO" ]

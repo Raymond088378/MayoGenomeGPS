@@ -45,16 +45,16 @@ else
 		$script_path/wait.sh $snpeff/$sample.chr${which_chr}.indel.eff.fix.log
 	fi
 	$script_path/add_snpeff.pl -i $TempReports/$indel_file.rsIDs.frequencies -s $snpeff/$sample.chr${which_chr}.indel.eff -o $TempReports/$sample.chr${which_chr}.INDEL.report -t INDEL
-	if [ ! -f $snpeff/$sample.chr${which_chr}.indel.filtered.eff ]
+	if [ ! -f $snpeff/$sample.chr${which_chr}.indel.final.eff ]
 	then
-		$script_path/email.sh $snpeff/$sample.chr${which_chr}.indel.filtered.eff "not found" snpeff.sh $run_info
-		touch $snpeff/$sample.chr${which_chr}.indel.filtered.eff.fix.log
-		$script_path/wait.sh $snpeff/$sample.chr${which_chr}.indel.filtered.eff.fix.log
+		$script_path/email.sh $snpeff/$sample.chr${which_chr}.indel.final.eff "not found" snpeff.sh $run_info
+		touch $snpeff/$sample.chr${which_chr}.indel.final.eff.fix.log
+		$script_path/wait.sh $snpeff/$sample.chr${which_chr}.indel.final.eff.fix.log
 	fi
-	$script_path/add_snpeff.pl -i $TempReports/$indel_file.rsIDs.frequencies -s $snpeff/$sample.chr${which_chr}.indel.filtered.eff -o $TempReports/$sample.chr${which_chr}.filtered.INDEL.report -t INDEL 
+	$script_path/add_snpeff.pl -i $TempReports/$indel_file.rsIDs.frequencies -s $snpeff/$sample.chr${which_chr}.indel.final.eff -o $TempReports/$sample.chr${which_chr}.final.INDEL.report -t INDEL 
 	num=`cat $TempReports/$sample.chr${which_chr}.INDEL.report | awk '{print $1"_"$2"_"$3"_"$9"_"$10}' | sort | uniq | wc -l`
-	num_b=`cat $TempReports/$sample.chr${which_chr}.filtered.INDEL.report  | wc -l `
-	for report in $TempReports/$sample.chr${which_chr}.INDEL.report $TempReports/$sample.chr${which_chr}.filtered.INDEL.report
+	num_b=`cat $TempReports/$sample.chr${which_chr}.final.INDEL.report  | wc -l `
+	for report in $TempReports/$sample.chr${which_chr}.INDEL.report $TempReports/$sample.chr${which_chr}.final.INDEL.report
 	do
 		$script_path/add_entrezID.pl -i $report -m $GeneIdMap -o $report.entrezid
 		mv $report.entrezid $report
@@ -71,7 +71,7 @@ else
 		mv $TempReports/$sample.chr${which_chr}.INDEL.tmp $TempReports/$sample.chr${which_chr}.INDEL.xls
 
 	fi
-	$script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.filtered.INDEL.report $run_info INDEL > $TempReports/$sample.chr${which_chr}.filtered.INDEL.xls
-	rm $TempReports/$sample.chr${which_chr}.INDEL.report $TempReports/$sample.chr${which_chr}.filtered.INDEL.report $TempReports/$indel_file.rsIDs.frequencies
+	$script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.final.INDEL.report $run_info INDEL > $TempReports/$sample.chr${which_chr}.final.INDEL.xls
+	rm $TempReports/$sample.chr${which_chr}.INDEL.report $TempReports/$sample.chr${which_chr}.final.INDEL.report $TempReports/$indel_file.rsIDs.frequencies
 	echo `date`
 fi	

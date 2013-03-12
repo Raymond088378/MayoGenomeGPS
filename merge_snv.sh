@@ -219,13 +219,13 @@ else
 	fi
 	
 	### add polyphen
-	if [ ! -f $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly ]
+	if [ ! -f $poly/$sample.variants.chr${which_chr}.SNV.final.i.c.vcf.poly ]
 	then
-		$script_path/email.sh $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly "not found" polyphen.sh $run_info
-		touch $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly.fix.log
-		$script_path/wait.sh $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly.fix.log
+		$script_path/email.sh $poly/$sample.variants.chr${which_chr}.SNV.final.i.c.vcf.poly "not found" polyphen.sh $run_info
+		touch $poly/$sample.variants.chr${which_chr}.SNV.final.i.c.vcf.poly.fix.log
+		$script_path/wait.sh $poly/$sample.variants.chr${which_chr}.SNV.final.i.c.vcf.poly.fix.log
 	fi
-	$script_path/add_polphen.pl $file.sift.codons.map.repeat.base.snp.UCSCtracks $poly/$sample.variants.chr${which_chr}.SNV.filter.i.c.vcf.poly $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly
+	$script_path/add_polphen.pl $file.sift.codons.map.repeat.base.snp.UCSCtracks $poly/$sample.variants.chr${which_chr}.SNV.final.i.c.vcf.poly $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly
 	num=`cat $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly | wc -l `
 	if [ $num == $num_a ]
 	then
@@ -242,18 +242,18 @@ else
 		$script_path/wait.sh $snpeff/$sample.chr${which_chr}.snv.eff.fix.log
 	fi	
 	$script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $snpeff/$sample.chr${which_chr}.snv.eff -o $TempReports/$sample.chr${which_chr}.SNV.report -t SNV
-	if [ ! -f $snpeff/$sample.chr${which_chr}.snv.filtered.eff ]
+	if [ ! -f $snpeff/$sample.chr${which_chr}.snv.final.eff ]
 	then
-		$script_path/email.sh $snpeff/$sample.chr${which_chr}.snv.filtered.eff "not found" snpeff.sh $run_info
-		touch $snpeff/$sample.chr${which_chr}.snv.filtered.eff.fix.log
-		$script_path/wait.sh $snpeff/$sample.chr${which_chr}.snv.filtered.eff.fix.log
+		$script_path/email.sh $snpeff/$sample.chr${which_chr}.snv.final.eff "not found" snpeff.sh $run_info
+		touch $snpeff/$sample.chr${which_chr}.snv.final.eff.fix.log
+		$script_path/wait.sh $snpeff/$sample.chr${which_chr}.snv.final.eff.fix.log
 	fi
-	$script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $snpeff/$sample.chr${which_chr}.snv.filtered.eff -o $TempReports/$sample.chr${which_chr}.filtered.SNV.report -t SNV
+	$script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $snpeff/$sample.chr${which_chr}.snv.final.eff -o $TempReports/$sample.chr${which_chr}.final.SNV.report -t SNV
 	num_a=`cat $TempReports/$sample.chr${which_chr}.SNV.report | awk -F'\t' '{print $1"_"$2}' | sort | uniq | wc -l`
-	num_b=`cat $TempReports/$sample.chr${which_chr}.filtered.SNV.report | wc -l `
+	num_b=`cat $TempReports/$sample.chr${which_chr}.final.SNV.report | wc -l `
     rm $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly	
 	### add the entrez id to the report
-	for report in $TempReports/$sample.chr${which_chr}.SNV.report $TempReports/$sample.chr${which_chr}.filtered.SNV.report
+	for report in $TempReports/$sample.chr${which_chr}.SNV.report $TempReports/$sample.chr${which_chr}.final.SNV.report
 	do
 		$script_path/add_entrezID.pl -i $report -m $GeneIdMap -o $report.entrezid
 		mv $report.entrezid $report
@@ -264,8 +264,8 @@ else
         
 	### add igv, tissue, pathway, kaviar column to the reports
 	$script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.SNV.report $run_info SNV > $TempReports/$sample.chr${which_chr}.SNV.xls
-	$script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.filtered.SNV.report $run_info SNV > $TempReports/$sample.chr${which_chr}.filtered.SNV.xls
+	$script_path/add.cols.pl $TempReports/$sample.chr${which_chr}.final.SNV.report $run_info SNV > $TempReports/$sample.chr${which_chr}.final.SNV.xls
 	rm $TempReports/$sample.chr${which_chr}.SNV.report
-	rm $TempReports/$sample.chr${which_chr}.filtered.SNV.report
+	rm $TempReports/$sample.chr${which_chr}.final.SNV.report
 	echo `date`	
 fi

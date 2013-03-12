@@ -120,8 +120,6 @@ ANNOTATION_FLAG=YES
 #Tool Parameters
 SNVMIX2_params=-q 30 -Q 30
 SNVMIX2_Filter=-p 0.8
-UnifiedGenotyper_params=-rf MappingQuality -mmq 30 --min_base_quality_score 30 -dcov 2000 -maxAlleles 5
-SOMATIC_INDEL_params=--window_size 1000 -rf MappingQuality -mmq 30 --filter_expressions T_COV<6||N_COV<4||T_INDEL_CF<0.7||T_INDEL_F<0.1||T_CONS_CNT<2||N_CONS_CNT>0 -dcov 2000
 SOMATIC_SNIPER_params=-q 30 -Q 40
 MUTECT_params=-dcov 2000 --min_qscore 30
 BREAKDANCER_params=-c 5 -r 10
@@ -130,12 +128,19 @@ JSM_Filter=-prob 0.5
 JOINTSNVMIX_params=--min_map_qual 30 --min_base_qual 30
 BWA_params=-l 32 -t 4
 NOVO_params=-x 5 -i PE 425,80 -r Random --hdrhd off -v 120 -c 4
+BLAT_params=-w 50 -m 70 -t 90 
+
+### GATK params
+UnifiedGenotyper_params=-rf MappingQuality -mmq 30 --min_base_quality_score 30 -dcov 2000 -maxAlleles 5
 VQSR_params_SNV=-an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP -nt 2 --maxGaussians 4 --percentBadVariants 0.05
 VQSR_params_INDEL=-an QD -an FS -an HaplotypeScore -an ReadPosRankSum --maxGaussians 4 -nt 2 --percentBadVariants 0.12 -std 10.0
 PICARD_ReadGroup_params=PL=illumina CN=mayo LB=hg19 CREATE_INDEX=true
 VCF_annotation_params=-A QualByDepth -A MappingQualityRankSumTest -A ReadPosRankSumTest -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A DepthPerAlleleBySample -A RMSMappingQuality -A FisherStrand -A ForwardReverseAlleleCounts 
-REALIGN_params=--maxReadsForRealignment 20000 --maxReadsInMemory 150000
-BLAT_params=-w 50 -m 70 -t 90 
+RealignerTargetCreator_params=
+IndelRealigner_params=--maxReadsForRealignment 20000 --maxReadsInMemory 150000
+CountCovariates_params=
+TableRecalibration_params=
+SOMATIC_INDEL_params=--window_size 1000 -rf MappingQuality -mmq 30 --filter_expressions T_COV<6||N_COV<4||T_INDEL_CF<0.7||T_INDEL_F<0.1||T_CONS_CNT<2||N_CONS_CNT>0 -dcov 2000
 
 ### paramters
 CNVNATOR_BINSIZE=1000

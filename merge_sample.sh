@@ -7,6 +7,7 @@ else
 	set -x
     echo `date`
     output_dir=$1
+	
     run_info=$2
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
@@ -23,101 +24,182 @@ else
     BEAUTYDIR="$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )/beauty_annot_module"
     BEAUTYDB=$( cat $tool_info | grep -w '^ANNOTATION_MODULE_DATA' | cut -d '=' -f2 )
 	somatic_calling=$( cat $tool_info | grep -w '^SOMATIC_CALLING' | cut -d '=' -f2 )
+	chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2)
     ### merge per sample files to make merged report to be uploaded to TBB
     ##Merge the unfiltered file
-    cd $output_dir/Reports_per_Sample/
+    cd $output_dir/TempReports/
     mkdir -p $output_dir/Reports/
     ## SNV
     if [ $multi_sample == "NO" ]
 	then
-		for sample in $samples
+		for chr in `echo $chrs | tr ":" "\n"`
 		do
-			if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
-			then
-				if [ ! -s $sample.SNV.xls ]
+			for sample in $samples
+			do
+				if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
 				then
-					$script_path/email.sh $sample.SNV.xls "doesn't exist" "sample_report.sh" $run_info
-					touch $sample.SNV.xls.fix.log
-					$script_path/wait.sh $sample.SNV.xls.fix.log 
+					if [ ! -s $sample.chr$chr.SNV.xls ]
+					then
+						$script_path/email.sh $sample.chr$chr.SNV.xls "doesn't exist" "sample_report.sh" $run_info
+						touch $sample.chr$chr.SNV.xls.fix.log
+						$script_path/wait.sh $sample.chr$chr.SNV.xls.fix.log 
+					fi
+					ls $sample.chr$chr.SNV.xls >> list.chr$chr.snv
+					if [ ! -s $sample.chr$chr.final.SNV.xls ]
+					then
+						$script_path/email.sh $sample.chr$chr.final.SNV.xls "doesn't exist" "sample_report.sh" $run_info
+						touch $sample.chr$chr.final.SNV.xls.fix.log
+						$script_path/wait.sh $sample.chr$chr.final.SNV.xls.fix.log 
+					fi
+					ls $sample.chr$chr.final.SNV.xls >> list.chr$chr.final.snv
 				fi
-				ls $sample.SNV.xls >> list.snv
-				if [ ! -s $sample.SNV.filtered.xls ]
+				if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
 				then
-					$script_path/email.sh $sample.SNV.filtered.xls "doesn't exist" "sample_report.sh" $run_info
-					touch $sample.SNV.filtered.xls.fix.log
-					$script_path/wait.sh $sample.SNV.filtered.xls.fix.log 
+					if [ ! -s $sample.chr$chr.INDEL.xls ]
+					then
+						$script_path/email.sh $sample.chr$chr.INDEL.xls "doesn't exist" "sample_report.sh" $run_info
+						touch $sample.chr$chr.INDEL.xls.fix.log
+						$script_path/wait.sh $sample.chr$chr.INDEL.xls.fix.log 
+					fi
+					ls $sample.chr$chr.INDEL.xls >> list.chr$chr.indel
+					if [ ! -s $sample.chr$chr.final.INDEL.xls ]
+					then
+						$script_path/email.sh $sample.chr$chr.final.INDEL.xls "doesn't exist" "sample_report.sh" $run_info
+						touch $sample.chr$chr.final.INDEL.xls.fix.log
+						$script_path/wait.sh $sample.chr$chr.final.INDEL.xls.fix.log 
+					fi
+					ls $sample.chr$chr.final.INDEL.xls >> list.chr$chr.final.indel
 				fi
-				ls $sample.SNV.filtered.xls >> list.filter.snv
-			fi
-			if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
-			then
-				if [ ! -s $sample.INDEL.xls ]
-				then
-					$script_path/email.sh $sample.INDEL.xls "doesn't exist" "sample_report.sh" $run_info
-					touch $sample.INDEL.xls.fix.log
-					$script_path/wait.sh $sample.INDEL.xls.fix.log 
-				fi
-				ls $sample.INDEL.xls >> list.indel
-				if [ ! -s $sample.INDEL.filtered.xls ]
-				then
-					$script_path/email.sh $sample.INDEL.filtered.xls "doesn't exist" "sample_report.sh" $run_info
-					touch $sample.INDEL.filtered.xls.fix.log
-					$script_path/wait.sh $sample.INDEL.filtered.xls.fix.log 
-				fi
-				ls $sample.INDEL.filtered.xls >> list.filter.indel
-			fi
+			done
 		done	
 		if [ $variant_type == "BOTH" -o $variant_type == "SNV" ]
 		then
-			perl $script_path/union.snv.pl list.snv single $output_dir/Reports/SNV.xls
-			perl $script_path/union.snv.pl list.filter.snv single $output_dir/Reports/SNV.filtered.xls
-			rm list.snv list.filter.snv
+			for chr in `echo $chrs | tr ":" "\n" `
+			do
+				perl $script_path/union.snv.pl list.chr$chr.snv single $output_dir/Reports/SNV.chr$chr.xls
+				perl $script_path/union.snv.pl list.chr$chr.final.snv single $output_dir/Reports/SNV.chr$chr.final.xls
+				rm list.chr$chr.snv list.chr$chr.final.snv
+				###raw file
+				cat $output_dir/Reports/SNV.chr$chr.xls | head -2 > $output_dir/Reports/SNV.xls.header
+				cat $output_dir/Reports/SNV.chr$chr.xls  | awk 'NR>2' >> $output_dir/Reports/SNV.xls
+				rm $output_dir/Reports/SNV.chr$chr.xls
+				### final file
+				cat $output_dir/Reports/SNV.chr$chr.final.xls | head -2 > $output_dir/Reports/SNV.final.xls.header
+				cat $output_dir/Reports/SNV.chr$chr.final.xls  | awk 'NR>2' >> $output_dir/Reports/SNV.final.xls
+				rm $output_dir/Reports/SNV.chr$chr.final.xls
+			done
+			###raw file
+			cat $output_dir/Reports/SNV.xls.header $output_dir/Reports/SNV.xls > $output_dir/Reports/SNV.xls.tmp
+			mv $output_dir/Reports/SNV.xls.tmp $output_dir/Reports/SNV.xls
+			rm $output_dir/Reports/SNV.xls.header
+			### final file
+			cat $output_dir/Reports/SNV.final.xls.header $output_dir/Reports/SNV.final.xls > $output_dir/Reports/SNV.final.xls.tmp
+			mv $output_dir/Reports/SNV.final.xls.tmp $output_dir/Reports/SNV.final.xls
+			rm $output_dir/Reports/SNV.final.xls.header
 		fi
 		if [ $variant_type == "BOTH" -o $variant_type == "INDEL" ]
 		then
-			perl $script_path/union.indel.pl list.indel single $output_dir/Reports/INDEL.xls
-			perl $script_path/union.indel.pl list.filter.indel single $output_dir/Reports/INDEL.filtered.xls
-			rm list.indel list.filter.indel
+			for chr in `echo $chrs | tr ":" "\n" `
+			do
+				perl $script_path/union.indel.pl list.chr$chr.indel single $output_dir/Reports/INDEL.chr$chr.xls
+				perl $script_path/union.indel.pl list.final.chr$chr.indel single $output_dir/Reports/INDEL.chr$chr.final.xls
+				rm list.chr$chr.indel list.chr$chr.final.indel
+				###raw file
+				cat $output_dir/Reports/INDEL.chr$chr.xls | head -2 > $output_dir/Reports/INDEL.xls.header
+				cat $output_dir/Reports/INDEL.chr$chr.xls  | awk 'NR>2' >> $output_dir/Reports/INDEL.xls
+				rm $output_dir/Reports/INDEL.chr$chr.xls
+				### final file
+				cat $output_dir/Reports/INDEL.chr$chr.final.xls | head -2 > $output_dir/Reports/INDEL.final.xls.header
+				cat $output_dir/Reports/INDEL.chr$chr.final.xls  | awk 'NR>2' >> $output_dir/Reports/INDEL.final.xls
+				rm $output_dir/Reports/INDEL.chr$chr.final.xls
+			done
+			###raw file
+			cat $output_dir/Reports/INDEL.xls.header $output_dir/Reports/INDEL.xls > $output_dir/Reports/INDEL.xls.tmp
+			mv $output_dir/Reports/INDEL.xls.tmp $output_dir/Reports/INDEL.xls
+			rm $output_dir/Reports/INDEL.xls.header
+			### final file
+			cat $output_dir/Reports/INDEL.final.xls.header $output_dir/Reports/INDEL.final.xls > $output_dir/Reports/INDEL.final.xls.tmp
+			mv $output_dir/Reports/INDEL.final.xls.tmp $output_dir/Reports/INDEL.final.xls
+			rm $output_dir/Reports/INDEL.final.xls.header
 		fi
 	else
-		for group in $groups
+		for chr in `echo $chrs | tr ":" "\n" `
 		do
-			if [ ! -s $group.SNV.xls ]
-			then
-				$script_path/email.sh $group.SNV.xls "doesn't exist" "sample_report.sh" $run_info
-				touch $group.SNV.xls.fix.log
-				$script_path/wait.sh $group.SNV.xls.fix.log 
-			fi
-			ls $group.SNV.xls >> list.snv
-			if [ ! -s $group.SNV.filtered.xls ]
-			then
-				$script_path/email.sh $group.SNV.filtered.xls "doesn't exist" "sample_report.sh" $run_info
-				touch $group.SNV.filtered.xls.fix.log
-				$script_path/wait.sh $group.SNV.filtered.xls.fix.log 
-			fi
-			ls $group.SNV.filtered.xls >> list.filter.snv
-			if [ ! -s $group.INDEL.xls ]
-			then
-				$script_path/email.sh $group.INDEL.xls "doesn't exist" "sample_report.sh" $run_info
-				touch $group.INDEL.xls.fix.log
-				$script_path/wait.sh $group.INDEL.xls.fix.log 
-			fi
-			ls $group.INDEL.xls >> list.indel
-			if [ ! -s $group.SNV.filtered.xls ]
-			then
-				$script_path/email.sh $group.INDEL.filtered.xls "doesn't exist" "sample_report.sh" $run_info
-				touch $group.INDEL.filtered.xls.fix.log
-				$script_path/wait.sh $group.INDEL.filtered.xls.fix.log 
-			fi
-			ls $group.INDEL.filtered.xls >> list.filter.indel
+			for group in $groups
+			do
+				if [ ! -s $group.chr$chr.SNV.xls ]
+				then
+					$script_path/email.sh $group.chr$chr.SNV.xls "doesn't exist" "sample_report.sh" $run_info
+					touch $group.chr$chr.SNV.xls.fix.log
+					$script_path/wait.sh $group.chr$chr.SNV.xls.fix.log 
+				fi
+				ls $group.chr$chr.SNV.xls >> list.chr$chr.snv
+				if [ ! -s $group.chr$chr.final.SNV.xls ]
+				then
+					$script_path/email.sh $group.chr$chr.final.SNV.xls "doesn't exist" "sample_report.sh" $run_info
+					touch $group.chr$chr.final.SNV.xls.fix.log
+					$script_path/wait.sh $group.chr$chr.final.SNV.xls.fix.log 
+				fi
+				ls $group.chr$chr.final.SNV.xls >> list.chr$chr.final.snv
+				if [ ! -s $group.chr$chr.INDEL.xls ]
+				then
+					$script_path/email.sh $group.chr$chr.INDEL.xls "doesn't exist" "sample_report.sh" $run_info
+					touch $group.chr$chr.INDEL.xls.fix.log
+					$script_path/wait.sh $group.chr$chr.INDEL.xls.fix.log 
+				fi
+				ls $group.chr$chr.INDEL.xls >> list.chr$chr.indel
+				if [ ! -s $group.chr$chr.final.INDEL.xls ]
+				then
+					$script_path/email.sh $group.chr$chr.final.INDEL.xls "doesn't exist" "sample_report.sh" $run_info
+					touch $group.chr$chr.final.INDEL.xls.fix.log
+					$script_path/wait.sh $group.chr$chr.final.INDEL.xls.fix.log 
+				fi
+				ls $group.chr$chr.final.INDEL.xls >> list.chr$chr.final.indel
+			done
 		done
-		perl $script_path/union.snv.pl list.snv multi $output_dir/Reports/SNV.xls
-		perl $script_path/union.snv.pl list.filter.snv multi $output_dir/Reports/SNV.filtered.xls
-		perl $script_path/union.indel.pl list.indel multi $output_dir/Reports/INDEL.xls
-		perl $script_path/union.indel.pl list.filter.indel multi $output_dir/Reports/INDEL.filtered.xls	
-		rm list.snv list.filter.snv list.indel list.filter.indel	
-    	### Merge the TUMOR files
-    	if [ $somatic_calling == "YES" ]
+		for chr in `echo $chrs | tr ":" "\n"`
+		do
+			perl $script_path/union.snv.pl list.chr$chr.snv multi $output_dir/Reports/SNV.chr$chr.xls
+			perl $script_path/union.snv.pl list.chr$chr.final.snv multi $output_dir/Reports/SNV.chr$chr.final.xls
+			perl $script_path/union.indel.pl list.chr$chr.indel multi $output_dir/Reports/INDEL.chr$chr.xls
+			perl $script_path/union.indel.pl list.chr$chr.final.indel multi $output_dir/Reports/INDEL.chr$chr.final.xls	
+			rm list.chr$chr.snv list.chr$chr.final.snv list.chr$chr.indel list.chr$chr.final.indel	
+			###raw file
+			cat $output_dir/Reports/INDEL.chr$chr.xls | head -2 > $output_dir/Reports/INDEL.xls.header
+			cat $output_dir/Reports/INDEL.chr$chr.xls  | awk 'NR>2' >> $output_dir/Reports/INDEL.xls
+			rm $output_dir/Reports/INDEL.chr$chr.xls
+			### final file
+			cat $output_dir/Reports/INDEL.chr$chr.final.xls | head -2 > $output_dir/Reports/INDEL.final.xls.header
+			cat $output_dir/Reports/INDEL.chr$chr.final.xls  | awk 'NR>2' >> $output_dir/Reports/INDEL.final.xls
+			rm $output_dir/Reports/INDEL.chr$chr.final.xls
+			###raw file
+			cat $output_dir/Reports/SNV.chr$chr.xls | head -2 > $output_dir/Reports/SNV.xls.header
+			cat $output_dir/Reports/SNV.chr$chr.xls  | awk 'NR>2' >> $output_dir/Reports/SNV.xls
+			rm $output_dir/Reports/SNV.chr$chr.xls
+			### final file
+			cat $output_dir/Reports/SNV.chr$chr.final.xls | head -2 > $output_dir/Reports/SNV.final.xls.header
+			cat $output_dir/Reports/SNV.chr$chr.final.xls  | awk 'NR>2' >> $output_dir/Reports/SNV.final.xls
+			rm $output_dir/Reports/SNV.chr$chr.final.xls
+		done
+		###raw file
+		cat $output_dir/Reports/INDEL.xls.header $output_dir/Reports/INDEL.xls > $output_dir/Reports/INDEL.xls.tmp
+		mv $output_dir/Reports/INDEL.xls.tmp $output_dir/Reports/INDEL.xls
+		rm $output_dir/Reports/INDEL.xls.header
+		### final file
+		cat $output_dir/Reports/INDEL.final.xls.header $output_dir/Reports/INDEL.final.xls > $output_dir/Reports/INDEL.final.xls.tmp
+		mv $output_dir/Reports/INDEL.final.xls.tmp $output_dir/Reports/INDEL.final.xls
+		rm $output_dir/Reports/INDEL.final.xls.header
+		###raw file
+		cat $output_dir/Reports/SNV.xls.header $output_dir/Reports/SNV.xls > $output_dir/Reports/SNV.xls.tmp
+		mv $output_dir/Reports/SNV.xls.tmp $output_dir/Reports/SNV.xls
+		rm $output_dir/Reports/SNV.xls.header
+		### final file
+		cat $output_dir/Reports/SNV.final.xls.header $output_dir/Reports/SNV.final.xls > $output_dir/Reports/SNV.final.xls.tmp
+		mv $output_dir/Reports/SNV.final.xls.tmp $output_dir/Reports/SNV.final.xls
+		rm $output_dir/Reports/SNV.final.xls.header
+		### Merge the TUMOR files
+		cd $output_dir/Reports_per_Sample
+		if [ $somatic_calling == "YES" ]
 		then
 			for group in $groups
 			do
@@ -128,13 +210,13 @@ else
 					$script_path/wait.sh TUMOR.$group.SNV.xls.fix.log 
 				fi
 				ls TUMOR.$group.SNV.xls >> list.snv
-				if [ ! -s TUMOR.$group.SNV.filtered.xls ]
+				if [ ! -s TUMOR.$group.SNV.final.xls ]
 				then
-					$script_path/email.sh TUMOR.$group.SNV.filtered.xls "doesn't exist" "sample_report.sh" $run_info
-					touch TUMOR.$group.SNV.filtered.xls.fix.log
-					$script_path/wait.sh TUMOR.$group.SNV.filtered.xls.fix.log 
+					$script_path/email.sh TUMOR.$group.SNV.final.xls "doesn't exist" "sample_report.sh" $run_info
+					touch TUMOR.$group.SNV.final.xls.fix.log
+					$script_path/wait.sh TUMOR.$group.SNV.final.xls.fix.log 
 				fi
-				ls TUMOR.$group.SNV.filtered.xls >> list.filter.snv
+				ls TUMOR.$group.SNV.final.xls >> list.final.snv
 				if [ ! -s TUMOR.$group.INDEL.xls ]
 				then
 					$script_path/email.sh TUMOR.$group.INDEL.xls "doesn't exist" "sample_report.sh" $run_info
@@ -142,19 +224,19 @@ else
 					$script_path/wait.sh TUMOR.$group.INDEL.xls.fix.log 
 				fi
 				ls TUMOR.$group.INDEL.xls >> list.indel
-				if [ ! -s $group.SNV.filtered.xls ]
+				if [ ! -s $group.INDEL.final.xls ]
 				then
-					$script_path/email.sh TUMOR.$group.INDEL.filtered.xls "doesn't exist" "sample_report.sh" $run_info
-					touch TUMOR.$group.INDEL.filtered.xls.fix.log
-					$script_path/wait.sh TUMOR.$group.INDEL.filtered.xls.fix.log 
+					$script_path/email.sh TUMOR.$group.INDEL.final.xls "doesn't exist" "sample_report.sh" $run_info
+					touch TUMOR.$group.INDEL.final.xls.fix.log
+					$script_path/wait.sh TUMOR.$group.INDEL.final.xls.fix.log 
 				fi
-				ls TUMOR.$group.INDEL.filtered.xls >> list.filter.indel
+				ls TUMOR.$group.INDEL.final.xls >> list.final.indel
 			done
 			perl $script_path/union.snv.pl list.snv multi $output_dir/Reports/TUMOR.SNV.xls
-			perl $script_path/union.snv.pl list.filter.snv multi $output_dir/Reports/TUMOR.SNV.filtered.xls
+			perl $script_path/union.snv.pl list.final.snv multi $output_dir/Reports/TUMOR.SNV.final.xls
 			perl $script_path/union.indel.pl list.indel multi $output_dir/Reports/TUMOR.INDEL.xls
-			perl $script_path/union.indel.pl list.filter.indel multi $output_dir/Reports/TUMOR.INDEL.filtered.xls	
-			rm list.snv list.filter.snv list.indel list.filter.indel
+			perl $script_path/union.indel.pl list.final.indel multi $output_dir/Reports/TUMOR.INDEL.final.xls	
+			rm list.snv list.final.snv list.indel list.final.indel
 		fi	
 	fi
 	if [ $snv_caller == "BEAUTY_EXOME" ]
@@ -162,7 +244,7 @@ else
 	
 		###Intended to reduce repitious coding.
 		callJasonsScripts(){
-			INFILTER="$output_dir/Reports/$1.filtered.xls"
+			INFILTER="$output_dir/Reports/$1.final.xls"
 			CANCTMP="$output_dir/Reports/$1.cancerDrug.xls"
 			PANLTMP="$output_dir/Reports/$1.clinPanel.xls"
 			KINOMTPM="$output_dir/Reports/$1.kinome.xls"
@@ -182,14 +264,14 @@ else
 		callJasonsScripts "SNV"
 		callJasonsScripts "INDEL"
 		## Script to create additional annotation file, with pharmicogentic emphasis
-		$script_path/PharmacoAnnotModule.sh $output_dir/Reports/SNV.filtered.xls $run_info
-		$script_path/PharmacoAnnotModule.sh $output_dir/Reports/INDEL.filtered.xls $run_info
+		$script_path/PharmacoAnnotModule.sh $output_dir/Reports/SNV.final.xls $run_info
+		$script_path/PharmacoAnnotModule.sh $output_dir/Reports/INDEL.final.xls $run_info
 		
 		if [ $multi_sample != "NO" ] ; then
 			callJasonsScripts "TUMOR.SNV"
 			callJasonsScripts "TUMOR.INDEL"
-			$script_path/PharmacoAnnotModule.sh $output_dir/Reports/TUMOR.SNV.filtered.xls $run_info
-			$script_path/PharmacoAnnotModule.sh $output_dir/Reports/TUMOR.INDEL.filtered.xls $run_info
+			$script_path/PharmacoAnnotModule.sh $output_dir/Reports/TUMOR.SNV.final.xls $run_info
+			$script_path/PharmacoAnnotModule.sh $output_dir/Reports/TUMOR.final.INDEL.xls $run_info
 		fi
 	fi
 

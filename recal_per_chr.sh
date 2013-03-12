@@ -28,7 +28,9 @@ else
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
     TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
-    
+    CountCovariates_params=$( cat $tool_info | grep -w '^CountCovariates_params' | cut -d '=' -f2 )
+	TableRecalibration_params=$( cat $tool_info | grep -w '^TableRecalibration_params' | cut -d '=' -f2 )
+	
     if [ ${#dbSNP} -ne 0 ]
     then
         param="--knownSites $dbSNP" 
@@ -125,7 +127,7 @@ else
     -cov QualityScoreCovariate \
     -cov CycleCovariate \
     -cov DinucCovariate \
-    -recalFile $output/chr${chr}.recal_data.csv 
+    -recalFile $output/chr${chr}.recal_data.csv $CountCovariates_params
 
     if [ ! -s $output/chr${chr}.recal_data.csv ]
     then
@@ -151,7 +153,7 @@ else
         $input_bam \
         -T TableRecalibration \
         --out $output/chr${chr}.recalibrated.bam \
-        -recalFile $output/chr${chr}.recal_data.csv 
+        -recalFile $output/chr${chr}.recal_data.csv $TableRecalibration_params
         mv $output/chr${chr}.recalibrated.bai $output/chr${chr}.recalibrated.bam.bai
     fi
     

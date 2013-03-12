@@ -111,7 +111,6 @@ my %toolinfofmt = (
 	GAP_GENOME => 'file' ,
 	BWA_REF => 'file' ,
 	BLAT_REF => 'file' ,
-	KG_INDELS_VCF => 'file' ,
 	DBSNP_VCF => 'file' ,
 	HAPMAP_VCF => 'file' ,
 	OMNI_VCF => 'file' ,
@@ -256,7 +255,7 @@ my %toolinfofmt = (
 	JOB_LIMIT => 'int' ,
 );
 
-$toolinfomsg = check_variables ($toolinfovars, \%toolinfofmt, $toolinfo);
+# $toolinfomsg = check_variables ($toolinfovars, \%toolinfofmt, $toolinfo);
 
 $sampleinfomsg = check_files ($sampleinfovars, $sampleinfo, $input );
 

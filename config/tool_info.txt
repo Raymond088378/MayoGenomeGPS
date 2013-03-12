@@ -122,8 +122,6 @@ USENOVOSORT=YES
 #tool Parameters
 SNVMIX2_params=
 SNVMIX2_Filter=-p 0.8
-UnifiedGenotyper_params=-maxAlleles 5
-SOMATIC_INDEL_params=--window_size 1000
 SOMATIC_SNIPER_params=-q 20 -Q 20
 MUTECT_params=
 BREAKDANCER_params=-c 5 -r 10
@@ -132,14 +130,25 @@ JSM_Filter=-prob 0.1
 JOINTSNVMIX_params=
 NOVO_params=-x 5 -i PE 425,80 -r Random --hdrhd off -v 120 -c 4
 BWA_params=-l 32 -t 4
-VQSR_params_SNV=-an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP -nt 2 --maxGaussians 4 --percentBadVariants 0.05
-VQSR_params_INDEL=-an QD -an FS -an HaplotypeScore -an ReadPosRankSum --maxGaussians 4 -nt 2 --percentBadVariants 0.12 -std 10.0
 PICARD_ReadGroup_params=PL=illumina CN=mayo LB=hg19 CREATE_INDEX=true
-VCF_annotation_params=-A QualByDepth -A MappingQualityRankSumTest -A ReadPosRankSumTest -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A DepthPerAlleleBySample -A RMSMappingQuality -A FisherStrand -A ForwardReverseAlleleCounts 
-REALIGN_params=--maxReadsForRealignment 20000 --maxReadsInMemory 150000
 BLAT_params=-w 50 -m 70 -t 90 
 NOVOSORTPBOPT=--ram 12G --threads 4
 NOVOSORTALGNOPT=--ram 3G --threads 4
+
+#### GATK tools
+## VQSR 
+VQSR_params_SNV=-an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP -nt 2 --maxGaussians 4 --percentBadVariants 0.05
+VQSR_params_INDEL=-an QD -an FS -an HaplotypeScore -an ReadPosRankSum --maxGaussians 4 -nt 2 --percentBadVariants 0.12 -std 10.0
+##realign
+IndelRealigner_params=--maxReadsForRealignment 20000 --maxReadsInMemory 150000
+RealignerTargetCreator_params=
+## recalibration
+CountCovariates_params=
+TableRecalibration_params=
+### callers and vcf
+UnifiedGenotyper_params=-maxAlleles 5
+SOMATIC_INDEL_params=--window_size 1000
+VCF_annotation_params=-A QualByDepth -A MappingQualityRankSumTest -A ReadPosRankSumTest -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A DepthPerAlleleBySample -A RMSMappingQuality -A FisherStrand -A ForwardReverseAlleleCounts 
 
 ### paramters
 CNVNATOR_BINSIZE=1000

@@ -163,7 +163,7 @@ else
 					fi
 				fi
 				# KNOWN variants (look at the reports for each sample, filtered report from GATK and SNPEFF combinations
-				file=$variants/$sample.SNV.filtered.xls
+				file=$variants/$sample.SNV.final.xls
 				dbsnp=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /dbSNP/) {print i} } }'| head -1`
 				ref=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Ref") {print i} } }'`
 				alt=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Alt") {print i} } }'`
@@ -229,7 +229,7 @@ else
 					fi
 				fi
 				## Annotated INDELs
-				file=$variants/$sample.INDEL.filtered.xls
+				file=$variants/$sample.INDEL.final.xls
 				class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /Effect/) {print i} } }'`
 				for indel in EXON_DELETED FRAME_SHIFT CODON_CHANGE UTR_5_DELETED UTR_3_DELETED CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR UTR_5_PRIME UTR_3_PRIME		
 				do
@@ -421,7 +421,7 @@ else
 			fi
 				
             ### annotation 
-            file=$variants/$group.SNV.filtered.xls
+            file=$variants/$group.SNV.final.xls
 			dbsnp=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /dbSNP/) {print i} } }'| head -1`
 			ref=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Ref") {print i} } }'`
 			alt=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Alt") {print i} } }'`
@@ -477,7 +477,7 @@ else
 				echo $capture_indels >> $numbers/$group.$sample.out
 			fi
 			## Annotated INDELs
-			file=$variants/$group.INDEL.filtered.xls
+			file=$variants/$group.INDEL.final.xls
 			class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /Effect/) {print i} } }'`
 			col=`cat $file | awk 'NR==1' | awk -v num=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == num) {print i} } }'`
                         for indel in EXON_DELETED FRAME_SHIFT CODON_CHANGE UTR_5_DELETED UTR_3_DELETED CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR UTR_5_PRIME UTR_3_PRIME		
@@ -570,7 +570,7 @@ else
 				fi
 				
 				
-				file=$variants/TUMOR.$group.SNV.filtered.xls
+				file=$variants/TUMOR.$group.SNV.final.xls
 				dbsnp=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /dbSNP/) {print i} } }'| head -1`
 				ref=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Ref") {print i} } }'`
 				alt=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Alt") {print i} } }'`
@@ -626,7 +626,7 @@ else
 					echo $capture_indels >> $numbers/TUMOR.$group.$tumor.out
 				fi
 				## Annotated INDELs
-				file=$variants/TUMOR.$group.INDEL.filtered.xls
+				file=$variants/TUMOR.$group.INDEL.final.xls
 				col=`cat $file | awk 'NR==1' | awk -v num=$tumor -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == num) {print i} } }'`
 				class=`cat $file | awk 'NR==2' | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ /Effect/) {print i} } }'`
 				for indel in EXON_DELETED FRAME_SHIFT CODON_CHANGE UTR_5_DELETED UTR_3_DELETED CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR UTR_5_PRIME UTR_3_PRIME	

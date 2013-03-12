@@ -44,12 +44,6 @@ echo `date`
 run_info=`readlink -f $1`
 dos2unix $run_info
 
-if [ `perl -v 2>&1 | tr " " "\n" | grep '^v'` != "v5.10.0" ]
-then
-	echo -e "\nperl path is not correct in your enviornment"
-	echo "Perl path should point to /usr/local/biotools/perl/5.10.0/bin/perl if the user use the command which perl and user can change this using mayobiotools"
-	exit 1;
-fi
 dir_info=`dirname $run_info`
 if [ "$dir_info" = "." ]
 then

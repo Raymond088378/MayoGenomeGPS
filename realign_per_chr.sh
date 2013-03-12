@@ -28,7 +28,8 @@ else
     Kgenome=$( cat $tool_info | grep -w '^KGENOME_REF' | cut -d '=' -f2)
     java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
-    realign_param=$( cat $tool_info | grep -w '^REALIGN_params' | cut -d '=' -f2 )
+    Indelrealign_param=$( cat $tool_info | grep -w '^IndelRealigner_params' | cut -d '=' -f2 )
+	RealignerTargetCreator_params=$( cat $tool_info | grep -w '^RealignerTargetCreator_params' | cut -d '=' -f2 )
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
     TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
     if [ ${#dbSNP} -ne 0 ]
@@ -126,7 +127,7 @@ else
     -K $gatk/Hossain.Asif_mayo.edu.key \
     -T RealignerTargetCreator \
     $input_bam \
-    -o $output/chr${chr}.forRealigner.intervals $param $region 
+    -o $output/chr${chr}.forRealigner.intervals $param $region $RealignerTargetCreator_params 
     
     if [ ! -s $output/chr${chr}.forRealigner.intervals ]
     then
@@ -152,7 +153,7 @@ else
         -L chr${chr} \
         $input_bam \
         --out $output/chr${chr}.realigned.bam  \
-        -targetIntervals $output/chr${chr}.forRealigner.intervals $realign_param $param
+        -targetIntervals $output/chr${chr}.forRealigner.intervals $Indelrealign_param $param
         mv $output/chr${chr}.realigned.bai $output/chr${chr}.realigned.bam.bai
     fi
 	
