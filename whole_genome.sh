@@ -240,7 +240,7 @@ echo -e "MEMORY INFO  file used : $memory_info" >>  $output_dir/log.txt
 
 #### sge paramters
 TO=$USER
-email=`finger $USER | awk -F ';' '{print $2}'`
+email=`finger $USER | awk -F ';' '{print $2}' | head -1`
 args="-V -wd $output_dir/logs -q $queue -m a -M $email -l h_stack=10M"
 ### Test if gatkqueue is empty; if so, fail through to using standard args for queue
 if [[ "${gatkqueue+xxx}" = "xxx" ]]

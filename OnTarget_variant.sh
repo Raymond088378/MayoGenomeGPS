@@ -103,7 +103,7 @@ else
 			else	
 				$script_path/errorlog.sh $OnTarget/$sample.variants.chr$chr.INDEL.final.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
 			fi
-			cp $OnTarget/$sample.variants.chr$chr.SNV.final.i.c.vcf $OnTarget/$sample.variants.chr$chr.SNV.final.i.c.pos.vcf
+			cat $OnTarget/$sample.variants.chr$chr.SNV.final.i.c.vcf | awk '{if ($0 ~ /^#/){print} else {print $0"\t"0}}' > $OnTarget/$sample.variants.chr$chr.SNV.final.i.c.pos.vcf
 			cat $OnTarget/$sample.variants.chr$chr.SNV.final.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/$sample.variants.chr$chr.SNV.final.i.c.vcf
 		else
 			$script_path/markSnv_IndelnPos.pl -s $OnTarget/$sample.variants.chr$chr.SNV.final.i.c.vcf -i $OnTarget/$sample.variants.chr$chr.INDEL.final.i.c.vcf -n $distance -o $OnTarget/$sample.variants.chr$chr.SNV.final.i.c.pos.vcf
@@ -155,7 +155,7 @@ else
 			else	
 				$script_path/errorlog.sh $OnTarget/$group.variants.chr$chr.INDEL.final.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
 			fi
-			cp $OnTarget/$group.variants.chr$chr.SNV.final.i.c.vcf $OnTarget/$group.variants.chr$chr.SNV.final.i.c.pos.vcf 
+			cat $OnTarget/$group.variants.chr$chr.SNV.final.i.c.vcf | awk '{if ($0 ~ /^#/){print} else {print $0"\t"0}}' > $OnTarget/$group.variants.chr$chr.SNV.final.i.c.pos.vcf 
 			cat $OnTarget/$group.variants.chr$chr.SNV.final.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/$group.variants.chr$chr.SNV.final.i.c.vcf
 		else
 			$script_path/markSnv_IndelnPos.pl -s $OnTarget/$group.variants.chr$chr.SNV.final.i.c.vcf -i $OnTarget/$group.variants.chr$chr.INDEL.final.i.c.vcf -n $distance -o $OnTarget/$group.variants.chr$chr.SNV.final.i.c.pos.vcf
@@ -205,7 +205,7 @@ else
 				else	
 					$script_path/errorlog.sh $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.final.i.c.vcf OnTarget_variants.sh WARNING "no variant calls"
 				fi
-				cp $OnTarget/TUMOR.$group.variants.chr$chr.SNV.final.i.c.vcf $OnTarget/TUMOR.$group.variants.chr$chr.SNV.final.i.c.pos.vcf
+				cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.final.i.c.vcf | awk '{if ($0 ~ /^#/){print} else {print $0"\t"0}}' > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.final.i.c.pos.vcf
 				cat $OnTarget/TUMOR.$group.variants.chr$chr.SNV.final.i.c.pos.vcf | $script_path/add.info.close2indel.vcf.pl > $OnTarget/TUMOR.$group.variants.chr$chr.SNV.final.i.c.vcf
 			else   
 				$script_path/markSnv_IndelnPos.pl -s $OnTarget/TUMOR.$group.variants.chr$chr.SNV.final.i.c.vcf -i $OnTarget/TUMOR.$group.variants.chr$chr.INDEL.final.i.c.vcf -n $distance -o $OnTarget/TUMOR.$group.variants.chr$chr.SNV.final.i.c.pos.vcf
