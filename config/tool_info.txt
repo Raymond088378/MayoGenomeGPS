@@ -50,7 +50,7 @@ SNP_BUILD=/data2/bsi/reference/annotation/dbSNP/hg19/dbSNPbuild.bed
 ANNOTATION_MODULE_DATA=/data2/bsi/reference/annotation/stopGapBeauty/
 
 ## tools
-WORKFLOW_PATH=/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/trunk/
+WORKFLOW_PATH=/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/tags/1.2.1/
 NOVOALIGN=/projects/bsi/bictools/apps/alignment/novoalign/2.08.01/novoalign
 NOVOSORT=/projects/bsi/bictools/apps/alignment/novoalign/2.08.01/novosort
 BWA=/projects/bsi/bictools/apps/alignment/bwa/0.5.9/
