@@ -1369,7 +1369,7 @@ else    {
 				print OUT "</ul>";
 			
 		print OUT "<ul>
-		<li>Per sample SNV and INDEL files are available here comprising of filtered and unfiltered reports. The filtered reports comprises of a single line annotation for all the confident calls based on GATK recommendations.
+		<li>Per sample SNV and INDEL files are available here...
 		<br><u> <a href= \"Reports_per_Sample\"target=\"_blank\">Per Sample Reports</a></u></ul>";
 		if ($multi eq 'NO')	{
 			print OUT "<ul>
