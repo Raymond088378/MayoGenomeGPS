@@ -5,7 +5,7 @@
 
 =head1 SYNOPSIS
 
-    USAGE: getSampleInfo.pl -i=/input_dir/primary -e=fastq.gz -o=/path/to/output_dir
+    USAGE: getSampleInfo.pl -i=/input_dir/primary -e=fastq.gz -p=paired -t=exome -o=/path/to/output_dir
 
 =head1 OPTIONS
 
@@ -15,6 +15,12 @@ B<--input, -i>
 
 B<--ext, -e>
 	File extension eg: fastq.gz or bam
+	
+B<--Readflag, -p>
+	paired end or single end reads (paired/single)
+	
+B<--Seqtype, -t>
+	exome or whole_genome samples (exome/whole_genome)
 
 B<--output, -o>
 	Output directory where all configuration files should go	
@@ -26,20 +32,20 @@ B<--help,-h>
 	samples.
 
 =head1 INPUT
-	Input dir, file extension and output directory
+	Input dir, file extension, type of read, type of DNAseq data and output directory
 
 =head1 OUTPUT
 	Output run_info and sample_info files.
-
+	
 =head1 VERSION
 	0.1.0
 
 =head1  CONTACT
-  bjaysheel@gmail.com
+  baheti.saurabh@mayo.edu
 
 
 ==head1 EXAMPLE
-	./getSampleInfo.pl -i=/input/dir/primary -e=fastq.gz -o=/path/to/outputdir
+	./getSampleInfo.pl -i=/input/dir/primary -e=fastq.gz -p=paired/single -t=exome -o=/path/to/outputdir 
 
 =cut
 
@@ -54,6 +60,8 @@ my $results = GetOptions (\%options,
                           'input|i=s',
 						  'ext|e=s',
 						  'output|o=s',
+						  'Readflag|p=s',
+						  'Seqtype|t=s',
 						  'help|h') || pod2usage();
 
 ## display documentation
@@ -61,6 +69,8 @@ if( $options{'help'} ){
     pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} );
 }
 
+my $path=dirname($0);
+my $version=basename($path);
 #############################################################################
 ## make sure everything passed was peachy
 &check_parameters(\%options);
@@ -74,6 +84,12 @@ my $sample_hash;
 
 open S_INFO , ">$options{output}/sample_info.txt" or die "can not open $options{output}/sample_info.txt : $! \n";
 open R_INFO , ">$options{output}/run_info.txt" or die "can not open $options{output}/run_info.txt : $! \n";
+my $analysis;
+if ($options{ext} eq "bam")	{$analysis="realign-mayo";}
+elsif($options{ext} eq "fastq.gz" || $options{ext} eq "fastq") {$analysis="mayo";}
+	
+
+
 while (my $file = readdir(DIR)) {
 	next if ($file !~ /$options{ext}$/);
 	
@@ -124,26 +140,27 @@ $index =~ s/:$//;
 my @parameters=split(/\//,$options{input});
 my $input_dir= $options{input};
 my $delivery = $options{input} =~ s/primary/secondary/g;
-my $path  = dirname($0); 
 `cp $path/config/memory_info.txt $options{output}`;
 `cp $path/config/tool_info.txt $options{output}`;
-print R_INFO "TOOL=GENOME_GPS\n" . "VERSION=1.2\n" . "TYPE=\n" . "DISEASE=NA\n" . "READLENGTH=\n" . "PAIRED=\n" . "ANALYSIS=\n" . "PI=$parameters[3]\n"
+my $type;
+if (lc($options{Seqtype}) eq "exome")	{	$type=lc($options{Seqtype});	}
+else	{	$type="whole_genome";	}	
+print R_INFO "TOOL=GENOME_GPS\n" . "VERSION=$version\n" . "TYPE=$type\n" . "DISEASE=NA\n" . "READLENGTH=\n" . "PAIRED=$options{Readflag}\n" . "ANALYSIS=$analysis\n" . "PI=$parameters[3]\n"
 . "MULTISAMPLE=\n" . "INPUT_DIR=$input_dir\n" . "BASE_OUTPUT_DIR=/data2/bsi/secondary/\n" . "SAMPLENAMES=" .$sample. "\n" . "GROUPNAMES=\n" . "LANEINDEX=" .$lane. "\n".
 "LABINDEXES=" .$index. "\n" . "CHRINDEX=1:2:3:4:5:6:7:8:9:10:11:12:13:14:15:16:17:18:19:20:21:22:X:Y:M\n" . "TOOL_INFO=$options{output}/tool_info.txt\n" 
 . "SAMPLE_INFO=$options{output}/sample_info.txt\n"  . "MEMORY_INFO=$options{output}/memory_info.txt\n" . "OUTPUT_FOLDER=$parameters[4]\n" .
 "GENOMEBUILD=hg19\nALIGNER=NOVOALIGN\nFASTQC=NO\nFOLDER_FASTQC=/data2/bsi/reports/$parameters[4]/fastqc\nVARIANT_TYPE=BOTH\nSNV_CALLER=GATK\nSOMATIC_CALLER=SOMATICSNIPER\n"
-. "SAMPLEINFORMATION=\n" . "DELIVERY_FOLDER=$delivery\n"
-. "TERTIARY_FOLDER=/data2/bsi/tertiary/$parameters[3]/<analsyis type>/$parameters[4]";
+. "SAMPLEINFORMATION=\n" . "DELIVERY_FOLDER=$delivery\n" . "TERTIARY_FOLDER=/data2/bsi/tertiary/$parameters[3]/$options{Seqtype}/$parameters[4]";
 
-print "\nPlease fill these columns in run info file: TYPE,READLENGTH,PAIRED,ANALYSIS,MULTISAMPLE,TOOL_INFO,MEMORY_INFO,SAMPLEINFORMATION \nNOTE:\nFor Standard run user should copy the tool information and memory information file from the /path/to/config folder of the scripts\nValidate the configuration files again before running the workflow\n\n";
+print "\nConfiguration files are ready in $options{output} for the job submission\nPlease fill these columns in run info file:";
+print "\nREADLENGTH : read length\nMULTISAMPLE : YES/NO\nSAMPLEINFORMATION : Meta data about the samples\n";
+print "NOTE:\nValidate the configuration files again before running the workflow\n\n";
 exit(0);
 
 #############################################################################
 sub check_parameters {
     my $options = shift;
-
-	my @required = qw(input ext output);
-
+	my @required = qw(input ext Readflag Seqtype output);
 	foreach my $key (@required) {
 		unless ($options{$key}) {
 			print STDERR "ARG: $key is required\n";
@@ -156,7 +173,6 @@ sub check_parameters {
 #############################################################################
 sub sampleArray {
 	my $file = shift;
-
 	my $obj = ();
 	my $tag=$options{ext};
 	my @bits = split(/\./, $file);

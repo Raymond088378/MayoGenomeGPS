@@ -9,7 +9,7 @@ CODON_REF=/data2/bsi/reference/misc/percent_codon_syn_usage.txt
 GAP_GENOME=/data2/bsi/reference/db/gaps.hg19.bed
 BWA_REF=/data2/bsi/reference/sequence/human/ncbi/37.1/indexed/allchr.fa
 BLAT_REF=/data2/bsi/reference/db/hg19.2bit
-KG_INDELS_VCF==/data2/bsi/reference/genetics/1kGenome/hg19/INDEL_ONLY.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf
+KG_INDELS_VCF=/data2/bsi/reference/genetics/1kGenome/hg19/INDEL_ONLY.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf
 DBSNP_VCF=/data2/bsi/reference/annotation/dbSNP/hg19/dbsnp_135.hg19.vcf.gz
 HAPMAP_VCF=/data2/bsi/reference/genetics/hapmap/hg19/hapmap_3.3.hg19.sites.vcf
 OMNI_VCF=/data2/bsi/reference/genetics/omni/hg19/1000G_omni2.5.hg19.sites.vcf

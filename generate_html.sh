@@ -68,7 +68,7 @@ else
 		text1="with warnings"
 	fi		
 	
-	email=`finger $USER | awk -F ';' '{print $2}'`
+	email=`finger $USER | awk -F ';' '{print $2}' | head -n1`
 	SUB="$tool workflow completion for RunID ${run_num} "
 	MESG=" ${text} ${text1} $tool workflow completed for ${run_num} on ${END} and ready for tertiary analysis in ${output_dir} "
 	## send the completion email
@@ -86,8 +86,10 @@ else
     fi
 	if [[ $analysis == "mayo" || $analysis == "realign-mayo" ]]
 	then
-		mem=$( cat $memory_info | grep -w '^AddSecondaryAnalysis_JVM' | cut -d '=' -f2)
-		$java/java $mem -jar $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties -c -f $flowcell -r $run_num -s Complete -a $tool
+		for sample in $samples
+		do
+			$script_path/dashboard.sh $sample $run_info Complete complete
+		done	
 	fi
 	echo `date`
 fi

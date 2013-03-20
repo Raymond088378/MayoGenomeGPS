@@ -115,6 +115,7 @@ my %toolinfofmt = (
 	HAPMAP_VCF => 'file' ,
 	OMNI_VCF => 'file' ,
 	NOVO_REF => 'file' ,
+	KG_INDELS_VCF => 'file',
 	dbSNP_REF => 'file' ,
 	KGENOME_REF => 'file' ,
 	dbSNP_SNV_rsIDs => 'file' ,
