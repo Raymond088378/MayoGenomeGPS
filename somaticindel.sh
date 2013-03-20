@@ -63,7 +63,7 @@ do
 	-et NO_ET \
 	-K $gatk/Hossain.Asif_mayo.edu.key \
 	-T SomaticIndelDetector \
-	$range \
+	$param \
 	-o $output/$output_file \
 	-verbose $output/$indel_v \
 	-I:normal $normal_bam \
