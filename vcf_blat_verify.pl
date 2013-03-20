@@ -141,7 +141,7 @@ exit();
 sub check_parameters {
     my $options = shift;
 
-	my @required = ("input", "output", "reference", "window");
+	my @required = ("input", "output", "reference", "window" , "blat_path" , "samtools_path" , "blat_ref");
 
 	foreach my $key (@required) {
 		unless ($options{$key}) {
@@ -154,13 +154,6 @@ sub check_parameters {
 
 	$options{minScore} = 70 unless($options{minScore});
 	$options{minIdentity} = 90 unless($options{minIdentity});
-
-	$options{blat_ref} = "/data2/bsi/reference/db/hg19.2bit" unless ($options{blat_ref});
-
-	## be sure that blat executable is 64-bit and not 32-bit
-	## 32-bit could cause memory error.
-	$options{blat_path} = "/projects/bsi/bictools/scripts/dev/jbhavsar/apps" unless ($options{blat_path});
-	$options{samtools_path} = "/projects/bsi/bictools/apps/alignment/samtools/samtools-0.1.18" unless ($options{samtools_path});
 }
 
 #############################################################################
@@ -213,7 +206,7 @@ sub create_blat_hash {
 		my ($chr, $qStart, $qEnd) = split(/\t/, $data[9]);
 
 		## create blat hash,  eliminating self hits
-		if ((abs($qStart - $data[15]) > 1) || (abs($qEnd - $data[16]) > 1)){
+		if ((abs($qStart - $data[15]) >= 1) || (abs($qEnd - $data[16]) >= 1)){
 			if (exists $hash->{$key}) {
 				$hash->{$key} += 1;
 			} else {

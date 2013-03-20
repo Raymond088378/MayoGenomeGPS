@@ -63,14 +63,7 @@ else
     then
         ln -s $input/$input_bam $input/$sample.sorted.bam
     else
-    	if [ $usenovosort == "yes" ]
-		then
-			### NOVOSORT INJECTION
-			mkdir -p $input/temp
-			$novosort $novosortopt --index --tmpdir=$input/temp $input/$sample.bam -o $input/$sample.sorted.bam
-		else
-        	$script_path/sortbam.sh $input/$input_bam $input/$sample.sorted.bam $input coordinate true $run_info
-		fi 
+    	$script_path/sortbam.sh $input/$input_bam $input/$sample.sorted.bam $input coordinate true $run_info 
     fi
 
 #############################################################	
