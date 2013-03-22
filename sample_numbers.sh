@@ -25,6 +25,7 @@ else
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
     analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
 	somatic_calling=$( cat $tool_info | grep -w '^SOMATIC_CALLING' | cut -d '=' -f2 )
+	genome=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2)
 ##############################################################		
 ##############################################################		
     if [ $multi_sample != "YES" ]
@@ -58,7 +59,7 @@ else
 			if [ $markdup == "yes" ]
 			then
 				## assuming the remove duplicate is done using PICARD
-				percent_dup=`cat $sample.dup.metrics | awk '$0 !~ /#/' | cut -f8 | awk '$1 ~ /[^0-9]/' | tail -1`
+				percent_dup=`cat $sample.dup.metrics | awk '$0 !~ /#/' | grep -w "$genome" | cut -f8 | tail -1`
 				echo $percent_dup >> $numbers/$sample.out
 			else
 				echo $percent_dup >> $numbers/$sample.out		
@@ -344,7 +345,7 @@ else
                 file=`find . -name '*.dup.metrics' | sed -e '/\.\//s///g' `
                 for i in $file
                 do
-                    cat $i | awk '$0 !~ /#/' | cut -f8 | awk '$1 ~ /[^0-9]/' | tail -1 >> $numbers/$group.$sample.dup.out
+                    cat $i | awk '$0 !~ /#/' | grep -w "$genome" | cut -f8 | tail -1 >> $numbers/$group.$sample.dup.out
                 done
                 percent_dup=`cat $numbers/$group.$sample.dup.out | awk '{sum+=$1; print sum}' | tail -1` 
                 rm $numbers/$group.$sample.dup.out 
