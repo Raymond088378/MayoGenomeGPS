@@ -90,7 +90,7 @@ else
 	fi	
 	
 	## ADD BLAT column
-	n=`cat $output/$ff |  awk '$0 ~ /^#/' | awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
+	n=`cat $output/$ff |  head -5000 | awk '$0 ~ /^#/' | awk '$0 ~ /^##INFO=<ID=ED/' | wc -l`
 	if [ $n == 0 ]
 	then
 		echo " Adding Blat column to the vcf file"
@@ -101,7 +101,7 @@ else
 	fi
 	$script_path/vcfsort.pl $ref.fai $output/$ff > $output/$ff.sort
 	mv $output/$ff.sort $output/$ff
-	n=`cat $output/$ff | awk '$0 ~ /^#/' | awk '$0 ~ /^##INFO=<ID=CAPTURE/' | wc -l`
+	n=`cat $output/$ff | head -5000 | awk '$0 ~ /^#/' | awk '$0 ~ /^##INFO=<ID=CAPTURE/' | wc -l`
 	echo " Splitting the vcf file into SNVs and INDELs "
 	$script_path/vcf_to_variant_vcf.pl -i $output/$ff -v $output/$ff.SNV.vcf -l $output/$ff.INDEL.vcf -t both
 	rm $output/$ff
@@ -115,15 +115,17 @@ else
 	fi
 	## RUN SIFT
 	echo " Running SIFT "
-	$script_path/sift.sh $output $ff $sift $sift_ref $script_path $sample $thread > $output/sift.log 2>&1 &
-
+	$script_path/sift.sh $output $ff $sift $sift_ref $script_path $sample $thread > $output/sift.log 2>&1  &
+	siftid=$!
 	### RUN SNPEFF
 	echo " Running SNPEFF "
-	$script_path/snpeff.sh $java $snpeff $GenomeBuild $output $ff $gatk $ref $vcftools $script_path $sample > $output/snpeff.log 2>&1&
+	$script_path/snpeff.sh $java $snpeff $GenomeBuild $output $ff $gatk $ref $vcftools $script_path $sample > $output/snpeff.log 2>&1 &
+	snpeffid=$!
 	### POLYPHEN
 	echo " Running Polyphen "
-	$script_path/polyphen.sh $output $ff $pph $script_path $GenomeBuild $sample $thread > $output/polyphen.log 2>&1&
-
+	$script_path/polyphen.sh $output $ff $pph $script_path $GenomeBuild $sample $thread > $output/polyphen.log 2>&1 &
+	polyphenid=$!
+        
 	#### now add annotations
 	bed=$( cat $tool_info | grep -w '^BEDTOOLS' | cut -d '=' -f2 )
 	codon_ref=$( cat $tool_info | grep -w '^CODON_REF' | cut -d '=' -f2)
@@ -150,7 +152,7 @@ else
 	typeset -i SNP_Type
 	#convert to text file
 	echo " Converting VCF files to TEXT files"
-    $script_path/parse.vcf.sh $output/$ff.SNV.vcf $output/$sample.snv $tool_info SNV $script_path $sample
+	$script_path/parse.vcf.sh $output/$ff.SNV.vcf $output/$sample.snv $tool_info SNV $script_path $sample
 	$script_path/parse.vcf.sh $output/$ff.INDEL.vcf $output/$sample.indel $tool_info INDEL $script_path $sample
 
 	file=$output/$sample.snv
@@ -186,11 +188,7 @@ else
 	ref=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Ref") {print i} } }' $file`
 	alt=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Alt") {print i} } }' $file`
 
-	while [[ ! -s $output/$sample.predictions.tsv ]]
-	do
-		echo "waiting for sift to finish"
-		sleep 2m
-	done
+	wait $siftid
 
 	## sift
 	$script_path/parse_siftPredictions.pl -i $file -s $output/$sample.predictions.tsv -c $chr -p $pos -r $ref -a $alt -o $file.sift
@@ -275,11 +273,9 @@ else
 	    rm $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i}.txt
 	    rm $file.sift.codons.map.repeat.base.snp.ChrPos.bed.${i}
 	done
-	while [[ ! -f $output/$sample.polyphen.txt ||  ! -s $output/$sample.INDEL.filtered.eff || ! -s $output/$sample.SNV.filtered.eff ]]
-	do
-		echo " waiting for snpeff, polyphen annotation to complete "
-		sleep 2m
-	done
+	
+        wait $snpeffid $polyphenid
+        
 	rm $output/$ff.SNV.vcf $output/$ff.INDEL.vcf
 	#rm $output/log
 	## polyphen
@@ -289,7 +285,7 @@ else
 	$script_path/add_snpeff.pl -i $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly -s $output/$sample.SNV.filtered.eff -o $output/$sample.filtered.SNV.report -t SNV
 	rm $output/$sample.SNV.eff $output/$sample.SNV.filtered.eff $file.sift.codons.map.repeat.base.snp.UCSCtracks.poly
 	echo " polyphen and snpeff are added to the report "
-    for report in $output/$sample.SNV.report $output/$sample.filtered.SNV.report
+        for report in $output/$sample.SNV.report $output/$sample.filtered.SNV.report
 	do
 		$script_path/add_entrezID.pl -i $report -m $GeneIdMap -o $report.entrezid
 		mv $report.entrezid $report
