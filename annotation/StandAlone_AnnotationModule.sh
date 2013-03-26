@@ -183,10 +183,10 @@ else
 	echo " Allele frequencies added to the report "
 
 	file=$file.rsIDs.allele_frequencies
-	chr=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Chr") {print i} } }' $file`
-	pos=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Position") {print i} } }' $file`
-	ref=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Ref") {print i} } }' $file`
-	alt=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Alt") {print i} } }' $file`
+	chr=`cat $file | head -2 | tail -1 | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Chr") {print i} } }'`
+	pos=`cat $file | head -2 | tail -1 | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Position") {print i} } }'`
+	ref=`cat $file | head -2 | tail -1 | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Ref") {print i} } }'`
+	alt=`cat $file | head -2 | tail -1 | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == "Alt") {print i} } }'`
 
 	wait $siftid
 
@@ -197,8 +197,8 @@ else
 	mv $file.sift.sort $file.sift
 	echo " sorted report is ready to add more annotation "
 	##  add codon preference
-	codon=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ "Codons") {print i} } }' $file.sift`
-	SNP_Type=`awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ "SNP Type") {print i} } }' $file.sift`
+	codon=`cat $file.sift | head -2 | tail -1 | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ "Codons") {print i} } }'`
+	SNP_Type=`cat $file.sift | head -2 | tail -1 | awk -F '\t' '{ for(i=1;i<=NF;i++){ if ($i ~ "SNP Type") {print i} } }'`
 	cat $file.sift | cut -f ${codon},${SNP_Type} > $file.sift.forCodons.2columns
 	$script_path/codon_pref.pl $codon_ref $file.sift.forCodons.2columns $file.sift.forCodons.2columns.added
 	paste $file.sift $file.sift.forCodons.2columns.added > $file.sift.codons
