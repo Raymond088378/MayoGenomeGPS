@@ -219,9 +219,10 @@ else
     then
 		if [ $multi == "YES" ]
 		then
-			sam=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2)
+			sam=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2 | tr "\t" " ")
+			for samp in $sam
 			do
-				$script_path/dashboard.sh $sam $run_info Complete complete
+				$script_path/dashboard.sh $samp $run_info Complete complete
 			done
 		else
 			$script_path/dashboard.sh $sample $run_info Complete complete
