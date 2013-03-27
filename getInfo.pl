@@ -139,13 +139,18 @@ $index =~ s/:$//;
 #print "\n";
 my @parameters=split(/\//,$options{input});
 my $input_dir= $options{input};
-my $delivery = $options{input} =~ s/primary/secondary/g;
+my $delivery = $options{input}; 
+$delivery =~ s/primary/secondary/g;
 `cp $path/config/memory_info.txt $options{output}`;
 `cp $path/config/tool_info.txt $options{output}`;
-my $type;
+my ($type,$pair);
+if ($options{Readflag} eq "paired")	{
+	$pair=1;}
+else	{$pair=0;}	
+	
 if (lc($options{Seqtype}) eq "exome")	{	$type=lc($options{Seqtype});	}
 else	{	$type="whole_genome";	}	
-print R_INFO "TOOL=GENOME_GPS\n" . "VERSION=$version\n" . "TYPE=$type\n" . "DISEASE=NA\n" . "READLENGTH=\n" . "PAIRED=$options{Readflag}\n" . "ANALYSIS=$analysis\n" . "PI=$parameters[3]\n"
+print R_INFO "TOOL=GENOME_GPS\n" . "VERSION=$version\n" . "TYPE=$type\n" . "DISEASE=NA\n" . "READLENGTH=\n" . "PAIRED=$pair\n" . "ANALYSIS=$analysis\n" . "PI=$parameters[3]\n"
 . "MULTISAMPLE=\n" . "INPUT_DIR=$input_dir\n" . "BASE_OUTPUT_DIR=/data2/bsi/secondary/\n" . "SAMPLENAMES=" .$sample. "\n" . "GROUPNAMES=\n" . "LANEINDEX=" .$lane. "\n".
 "LABINDEXES=" .$index. "\n" . "CHRINDEX=1:2:3:4:5:6:7:8:9:10:11:12:13:14:15:16:17:18:19:20:21:22:X:Y:M\n" . "TOOL_INFO=$options{output}/tool_info.txt\n" 
 . "SAMPLE_INFO=$options{output}/sample_info.txt\n"  . "MEMORY_INFO=$options{output}/memory_info.txt\n" . "OUTPUT_FOLDER=$parameters[4]\n" .
