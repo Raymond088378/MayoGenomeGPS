@@ -112,8 +112,7 @@ else
    
     mv $secondary/Reports_per_Sample/*.xls $delivery/Reports_per_Sample/
     mv $secondary/Reports_per_Sample/ANNOT/*.txt $delivery/Reports_per_Sample/ANNOT/
-    mv $secondary/Reports_per_Sample/*.filter.vcf $delivery/Reports_per_Sample/
-    mv $secondary/Reports_per_Sample/*.multi.vcf $delivery/Reports_per_Sample/
+    mv $secondary/Reports_per_Sample/*.final.vcf $delivery/Reports_per_Sample/
 
 
     rm -Rf $secondary/Reports_per_Sample/
