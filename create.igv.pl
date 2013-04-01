@@ -135,22 +135,22 @@ if ( $multi eq 'YES' )
 			## Since we're delivering, point to the delivery folder
 			$delivery_folder =~ s/\/data2/ftp:\/\/rcfisinl1-212/g;
 			print FH
-"\n<Resource name=\"$groupNames[$i].variants.filter.vcf\" path=\"$delivery_folder/Reports_per_sample/$groupNames[$i].variants.filter.vcf\" />";
+"\n<Resource name=\"$groupNames[$i].variants.filter.vcf\" path=\"$delivery_folder/Reports_per_sample/$groupNames[$i].variants.filter.final.vcf\" />";
 			if ($somatic eq "YES")
 			{
 				print FH
-"\n<Resource name=\"$groupNames[$i].somatic.variants.filter.vcf\" path=\"$delivery_folder/Reports_per_sample/$groupNames[$i].somatic.variants.filter.vcf\" />";
+"\n<Resource name=\"$groupNames[$i].somatic.variants.filter.vcf\" path=\"$delivery_folder/Reports_per_sample/$groupNames[$i].somatic.variants.filter.final.vcf\" />";
 			}
 
 		}
 		else 
 		{
 			print FH
-"\n<Resource name=\"$groupNames[$i].variants.filter.vcf\" path=\"http://$server/secondary/$PI/$folder/Reports_per_sample/$groupNames[$i].variants.filter.vcf\" />";
+"\n<Resource name=\"$groupNames[$i].variants.filter.vcf\" path=\"http://$server/secondary/$PI/$folder/Reports_per_sample/$groupNames[$i].variants.filter.final.vcf\" />";
 		if ($somatic eq "YES")
 			{
 				print FH
-"\n<Resource name=\"$groupNames[$i].somatic.variants.filter.vcf\" path=\"http://$server/secondary/$PI/$folder/Reports_per_sample/$groupNames[$i].somatic.variants.filter.vcf\" />";
+"\n<Resource name=\"$groupNames[$i].somatic.variants.filter.vcf\" path=\"http://$server/secondary/$PI/$folder/Reports_per_sample/$groupNames[$i].somatic.variants.filter.final.vcf\" />";
 			}
 		}
 		
@@ -164,13 +164,13 @@ else
 			print FH
 "\n<Resource name=\"$sampleNames[$i].igv-sorted.bam\" path=\"$delivery_folder/IGV_BAM/$sampleNames[$i].igv-sorted.bam\" />";
 			print FH 
-"\n<Resource name=\"$sampleNames[$i].variants.filter.vcf\" path=\"$delivery_folder/Reports_per_sample/$sampleNames[$i].variants.filter.vcf\" />";
+"\n<Resource name=\"$sampleNames[$i].variants.filter.vcf\" path=\"$delivery_folder/Reports_per_sample/$sampleNames[$i].variants.filter.final.vcf\" />";
 		}
 		else {
 			print FH
 "\n<Resource name=\"$sampleNames[$i].igv-sorted.bam\" path=\"http://$server/secondary/$PI/$folder/IGV_BAM/$sampleNames[$i].igv-sorted.bam\" />";
 			print FH 
-"\n<Resource name=\"$sampleNames[$i].variants.filter.vcf\" path=\"http://$server/secondary/$PI/$folder/Reports_per_sample/$sampleNames[$i].variants.filter.vcf\" />";
+"\n<Resource name=\"$sampleNames[$i].variants.filter.vcf\" path=\"http://$server/secondary/$PI/$folder/Reports_per_sample/$sampleNames[$i].variants.filter.final.vcf\" />";
 		}
 	}
 } ## Single Samples 
