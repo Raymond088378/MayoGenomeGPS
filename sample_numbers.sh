@@ -382,8 +382,8 @@ else
             filtered_snvs=0
             filtered_indels=0
             col=`cat $variants/$group.variants.final.vcf | awk '$0 ~ /^#/' | tail -1 | awk -v s=$sample -F '\t' '{ for(i=1;i<=NF;i++){ if ($i == s) {print i} } }'`
-            a=`cat $variants/$group.variants.final.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\.\/\./ && $num !~ /^0\/0/' && $num !~ /^\./ | awk 'length($4) == 1 && length($5) == 1' | grep -c PASS`
-            b=`cat $variants/$group.variants.final.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\.\/\./ && $num !~ /^0\/0/' && $num !~ /^\./ | awk 'length($4) > 1 || length($5) > 1' | grep -c PASS`
+            a=`cat $variants/$group.variants.final.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\.\/\./ && $num !~ /^0\/0/' && $num !~ /^\./' | awk 'length($4) == 1 && length($5) == 1' | grep -c PASS`
+            b=`cat $variants/$group.variants.final.vcf | awk '$0 !~ /^#/' | awk -v num=$col '$num !~ /^\.\/\./ && $num !~ /^0\/0/' && $num !~ /^\./' | awk 'length($4) > 1 || length($5) > 1' | grep -c PASS`
             filtered_indels=`expr $filtered_indels "+" $b`
             filtered_snvs=`expr $filtered_snvs "+" $a`
 
