@@ -1253,7 +1253,7 @@ else
 			id=""
 			for group in `echo $groups | tr ":" "\n"`
 			do
-				id=$id"$type.$version.sample_report.$group.$run_num.$identify,"	
+				id=$id"$type.$version.sample_report.$group.$run_num.$identify,$type.$version.OnTarget_PILEUP.$group.$run_num.$identify,$type.$version.OnTarget_BAM.$group.$run_num.$identify,"	
 			done
 			
 			if [ $tool == "whole_genome" ]
