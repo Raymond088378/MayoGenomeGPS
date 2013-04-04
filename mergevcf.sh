@@ -2,7 +2,7 @@
 
 if [ $# != 4 ]
 then
-    echo -e "script to mrege the vcf files using vcftools\nUsage: ./mergevcf.sh <input files><output vcf ><run info><to delete input files(yes/no)"
+    echo -e "script to merge the vcf files using vcftools\nUsage: ./mergevcf.sh <input files><output vcf ><run info><to delete input files(yes/no)"
 else
     set -x
     echo `date`
@@ -18,6 +18,8 @@ else
 	perllib=$( cat $tool_info | grep -w '^PERLLIB_VCF' | cut -d '=' -f2)
 	tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
+	htslib=$( cat $tool_info | grep -w '^HTSLIB' | cut -d '=' -f2)
+	usehtslib=$( cat $tool_info | grep -w '^USEHTSLIB' | cut -d '=' -f2)
 
 	export PERL5LIB=$PERL5LIB:$perllib
 	export PATH=$tabix/:$PATH
@@ -33,7 +35,14 @@ else
 		args=$args" $file.gz"
 	done	
 	
-	$vcftools/bin/vcf-merge -s $args > $output
+	# /projects/bsi/bictools/apps/variant_detection/htslib-vcftools/
+
+	if [ $usehtslib == "YES" ]
+	then
+		$htslib/htscmd vcfmerge $args > $output
+	else
+		$vcftools/bin/vcf-merge -s $args > $output
+	fi
     
     if [ ! -s $output ]
     then

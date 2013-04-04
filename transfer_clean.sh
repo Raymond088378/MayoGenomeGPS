@@ -2,7 +2,7 @@
 
 if [ $# != 2 ]
 then
-    echo -e "wrapper to clean intermediate files and tansfer the data to tertiary, delivery folder\nUsage: ./transfer_clean.sh </path/to/secondary folder> <path/to/run_info>"
+    echo -e "Script to transfer the data to tertiary delivery folder and clean intermediate files. \nUsage: ./transfer_clean.sh </path/to/secondary folder> <path/to/run_info>"
 else
     echo `date`
 	echo "Started transferring the file"
@@ -56,13 +56,28 @@ else
 		echo " $delivery delivery folder doesn't exist"
 		exit 1;
     fi
+    
+    
+    
 
     if [ ! -d $tertiary ]
     then
 		mkdir -p $tertiary
 		chmod -Rf 777 $tertiary
 		echo "$tertiary tertiary folder created"
-    fi
+	else
+		echo "$tertiary folder already exists"
+	fi
+	
+	## Check that tertiary folder is empty before continuing
+	if [ "$(ls -A $tertiary)" ]; 
+	then
+		echo "$tertiary is not empty; aborting"
+    	exit 1;
+	else
+    	echo "$tertiary is Empty"
+	fi
+
 
     ### transfer the data to delivery folder
     chmod -Rf 777 $delivery/

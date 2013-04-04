@@ -49,35 +49,39 @@ SNP_SAO=/data2/bsi/reference/annotation/dbSNP/hg19/sao.bed
 SNP_BUILD=/data2/bsi/reference/annotation/dbSNP/hg19/dbSNPbuild.bed
 ANNOTATION_MODULE_DATA=/data2/bsi/reference/annotation/stopGapBeauty/
 
-## tools
+## Path to Scripts
 WORKFLOW_PATH=/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/tags/1.2.1/
-NOVOALIGN=/projects/bsi/bictools/apps/alignment/novoalign/2.08.01/novoalign
-NOVOSORT=/projects/bsi/bictools/apps/alignment/novoalign/2.08.01/novosort
-BWA=/projects/bsi/bictools/apps/alignment/bwa/0.5.9/
-BOWTIE=/projects/bsi/bictools/apps/alignment/bowtie/2.0.0-beta5/
-JAVA=/usr/java/latest/bin
-SAMTOOLS=/projects/bsi/bictools/apps/alignment/samtools/samtools-0.1.18/
-GATK=/projects/bsi/bictools/apps/alignment/GenomeAnalysisTK/1.7/
-SOMATIC_SNIPER=/projects/bsi/bictools/apps/variant_detection/somatic_sniper/1.0.0.1-19/bin/
+
+
+## tools
 BEDTOOLS=/projects/bsi/bictools/apps/misc/BEDTools/2.16.2/bin/
-PICARD=/projects/bsi/bictools/apps/alignment/picard/1.77/
-FASTQC=/projects/bsi/bictools/apps/qc/FastQC/0.10/FastQC
-SNVmix=/projects/bsi/bictools/apps/variant_detection/SNVMix/0.11.8-r3/
-JOINTSNVMIX=/projects/bsi/bictools/apps/variant_detection/jointsnvmix/0.8-b2/
-CNVNATOR=/projects/bsi/bictools/apps/cnv/cnvnator/0.2.2/src/
-MUTECT=/projects/bsi/bictools/apps/variant_detection/muTect/1.0.27783/
-CREST=/projects/bsi/bictools/apps/sv/crest/1.0.1/bin/
-CAP3=/projects/bsi/bictools/apps/sv/crest/1.0.1/bin/
 BLAT=/projects/bsi/bictools/apps/alignment/blat/34
 BREAKDANCER=/projects/bsi/bictools/apps/sv/breakdancer/breakdancer-1.1_2011_02_21/
-MATLAB=/usr/local/biotools/matlab/r2011a/bin
-SEGSEQ=/projects/bsi/bictools/apps/sv/SegSeq/1.0.0/bin/
+BOWTIE=/projects/bsi/bictools/apps/alignment/bowtie/2.0.0-beta5/
+BWA=/projects/bsi/bictools/apps/alignment/bwa/0.5.9/
+CAP3=/projects/bsi/bictools/apps/sv/crest/1.0.1/bin/
+CNVNATOR=/projects/bsi/bictools/apps/cnv/cnvnator/0.2.2/src/
+CREST=/projects/bsi/bictools/apps/sv/crest/1.0.1/bin/
 CIRCOS=/projects/bsi/bictools/apps/visualizers/circos/circos-0.54/
-SIFT=/projects/bsi/bictools/apps/variant_detection/sift/4.0.3/bin/
-VCFTOOLS=/projects/bsi/bictools/apps/variant_detection/vcftools/0.1.8a/
-TABIX=/projects/bsi/bictools/apps/misc/tabix/0.2.5/
-SNPEFF=/projects/bsi/bictools/apps/annotation/snpeff/3.0/
+FASTQC=/projects/bsi/bictools/apps/qc/FastQC/0.10/FastQC
+GATK=/projects/bsi/bictools/apps/alignment/GenomeAnalysisTK/1.7/
+HTSLIB=/projects/bsi/bictools/apps/variant_detection/htslib-vcftools/
+JAVA=/usr/java/latest/bin
+JOINTSNVMIX=/projects/bsi/bictools/apps/variant_detection/jointsnvmix/0.8-b2/
+MATLAB=/usr/local/biotools/matlab/r2011a/bin
+MUTECT=/projects/bsi/bictools/apps/variant_detection/muTect/1.0.27783/
+NOVOALIGN=/projects/bsi/bictools/apps/alignment/novoalign/2.08.01/novoalign
+NOVOSORT=/projects/bsi/bictools/apps/alignment/novoalign/2.08.01/novosort
+PICARD=/projects/bsi/bictools/apps/alignment/picard/1.77/
 POLYPHEN=/projects/bsi/bictools/apps/annotation/polyphen/2.2.2/
+SAMTOOLS=/projects/bsi/bictools/apps/alignment/samtools/samtools-0.1.18/
+SEGSEQ=/projects/bsi/bictools/apps/sv/SegSeq/1.0.0/bin/
+SIFT=/projects/bsi/bictools/apps/variant_detection/sift/4.0.3/bin/
+SNPEFF=/projects/bsi/bictools/apps/annotation/snpeff/3.0/
+SNVmix=/projects/bsi/bictools/apps/variant_detection/SNVMix/0.11.8-r3/
+SOMATIC_SNIPER=/projects/bsi/bictools/apps/variant_detection/somatic_sniper/1.0.0.1-19/bin/
+TABIX=/projects/bsi/bictools/apps/misc/tabix/0.2.5/
+VCFTOOLS=/projects/bsi/bictools/apps/variant_detection/vcftools/0.1.8a/
 
 ### libraries
 PERLLIB_CIRCOS=/usr/local/biotools/perl/5.10.0/lib/site_perl/5.10.0:/projects/bsi/bictools/lib/perl/5.10.0:/projects/bsi/bictools/lib/perl/GD-2.46/:/projects/bsi/bictools/apps/sv/breakdancer/breakdancer-1.1_2011_02_21/perl/
@@ -116,7 +120,10 @@ REMOVE_ALIGNED_BAM=NO
 UPLOAD_TABLEBROWSER=YES
 STOP_AFTER_REALIGNMENT=NO
 ANNOTATION_FLAG=YES
+# Use high-speed bam file sorting and indexing when possible
 USENOVOSORT=YES
+# Use high-speed vcftools when possible
+USEHTSLIB=YES
 
 
 #tool Parameters
