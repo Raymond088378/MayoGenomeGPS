@@ -23,6 +23,10 @@ else
 	tabix=$( cat $tool_info | grep -w '^TABIX' | cut -d '=' -f2)
 	chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
+	
+	htslib=$( cat $tool_info | grep -w '^HTSLIB' | cut -d '=' -f2)
+	usehtslib=$( cat $tool_info | grep -w '^USEHTSLIB' | cut -d '=' -f2)
+	
 	export PERL5LIB=$perllib
 	PATH=$tabix/:$PATH
 	var_dir=$output_dir/variants
@@ -54,7 +58,13 @@ else
 		fi			
 	done
 	
-	$vcftools/bin/vcf-merge -s $inputargs > $var_dir/raw.chr$chr.vcf
+	if [ $usehtslib == "YES" ]
+	then
+		$htslib/htscmd vcfmerge $inputargs > $var_dir/raw.chr$chr.vcf
+	else
+		$vcftools/bin/vcf-merge -s $inputargs > $var_dir/raw.chr$chr.vcf
+	fi
+	
 	
 	### raw SNV
 	$script_path/vcf_to_variant_vcf.pl -i $var_dir/raw.chr$chr.vcf -v $var_dir/raw.chr$chr.SNV.vcf -l $var_dir/raw.chr$chr.INDEL.vcf -t both 
