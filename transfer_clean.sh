@@ -75,7 +75,7 @@ else
 		echo "$tertiary is not empty; aborting"
     	exit 1;
 	else
-    	echo "$tertiary is Empty"
+    	echo "$tertiary is empty of files. Continuing."
 	fi
 
 
