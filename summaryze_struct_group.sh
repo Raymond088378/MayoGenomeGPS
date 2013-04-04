@@ -174,41 +174,47 @@ else
 	done	
 	
 	#Summaryzing Crest
-	for tumor in $tumor_list
-	do
-		for chr in $chrs
+	summaryze_crest()
+	{
+		for tumor in $tumor_list
 		do
-			inputfile=$basedir/struct/crest/$group/$tumor.$chr.predSV.txt
-			inputvcf=$basedir/struct/crest/$group/$tumor.$chr.vcf
-			if [ ! -f $inputvcf ]
-			then
-				touch $inputvcf.fix.log
-				$script_path/email.sh $inputvcf "not exist" run_crest_multi.sh $run_info
-				$script_path/wait.sh $inputvcf.fix.log 
-			fi			
-			inputfile_filter=$basedir/struct/crest/$group/$tumor.$chr.final.predSV.txt
-			inputvcf_filter=$basedir/struct/crest/$group/$tumor.$chr.final.vcf
-			if [ ! -f $inputvcf_filter ]
-			then
-				touch $inputvcf_final.fix.log
-				$script_path/email.sh $inputvcf_filter "not exist" run_crest_multi.sh $run_info
-				$script_path/wait.sh $inputvcf_final.fix.log
-			fi	
-			cat $inputfile >> $basedir/struct/$group.$tumor.somatic.crest
-			rm $inputfile
-			cat $inputfile_filter >> $basedir/struct/$group.$tumor.somatic.final.crest
-			rm $inputfile_filter
-			cat $inputvcf | awk '$0 ~ /^#/' > $basedir/struct/$group.$tumor.somatic.header
-			cat $inputvcf | awk '$0 !~ /^#/' >> $output/SV/$group.$tumor.somatic.crest.vcf
-			cat $inputvcf_filter | awk '$0 !~ /^#/' >> $output/SV/$group.$tumor.somatic.final.crest.vcf
-			rm $inputvcf $inputvcf_filter
-		done
+			for chr in $chrs
+			do
+				inputfile=$basedir/struct/crest/$group/$tumor.$chr.predSV.txt
+				inputvcf=$basedir/struct/crest/$group/$tumor.$chr.vcf
+				if [ ! -f $inputvcf ]
+				then
+					touch $inputvcf.fix.log
+					$script_path/email.sh $inputvcf "not exist" run_crest_multi.sh $run_info
+					$script_path/wait.sh $inputvcf.fix.log 
+				fi			
+				inputfile_filter=$basedir/struct/crest/$group/$tumor.$chr.final.predSV.txt
+				inputvcf_filter=$basedir/struct/crest/$group/$tumor.$chr.final.vcf
+				if [ ! -f $inputvcf_filter ]
+				then
+					touch $inputvcf_final.fix.log
+					$script_path/email.sh $inputvcf_filter "not exist" run_crest_multi.sh $run_info
+					$script_path/wait.sh $inputvcf_final.fix.log
+				fi	
+				cat $inputfile >> $basedir/struct/$group.$tumor.somatic.crest
+				rm $inputfile
+				cat $inputfile_filter >> $basedir/struct/$group.$tumor.somatic.final.crest
+				rm $inputfile_filter
+				cat $inputvcf | awk '$0 ~ /^#/' > $basedir/struct/$group.$tumor.somatic.header
+				cat $inputvcf | awk '$0 !~ /^#/' >> $output/SV/$group.$tumor.somatic.crest.vcf
+				cat $inputvcf_filter | awk '$0 !~ /^#/' >> $output/SV/$group.$tumor.somatic.final.crest.vcf
+				rm $inputvcf $inputvcf_filter
+			done
 		cat $basedir/struct/$group.$tumor.somatic.header $output/SV/$group.$tumor.somatic.crest.vcf > $output/SV/$group.$tumor.somatic.crest.vcf.temp
 		mv $output/SV/$group.$tumor.somatic.crest.vcf.temp $output/SV/$group.$tumor.somatic.crest.vcf
 		cat $basedir/struct/$group.$tumor.somatic.header $output/SV/$group.$tumor.somatic.final.crest.vcf > $output/SV/$group.$tumor.somatic.final.crest.vcf.temp
 		mv $output/SV/$group.$tumor.somatic.final.crest.vcf.temp $output/SV/$group.$tumor.somatic.final.crest.vcf
 		rm $basedir/struct/$group.$tumor.somatic.header
-	done	
+		done	
+	}
+	
+# 	summaryze_crest
+
 	echo `date`
 fi	
 

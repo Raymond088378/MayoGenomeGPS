@@ -2,16 +2,16 @@
 
 if [ $# != 6 ]
 then
-    echo -e "script to make cirocs plot for structural variant and copy number variantion per sample\nUsage: <sv file break> <sv file crest><cnv file> <sample> <output dir> <run info>"
+    echo -e "script to make cirocs plot for structural variant and copy number variantion per sample\nUsage: <sv file crest><cnv file> <sample> <output dir> <run info>"
 else
     set -x
     echo `date`
-    sv_file_break=$1
-    sv_file_crest=$2
-    cnv_file=$3
-    sample=$4
-    out=$5
-    run_info=$6
+    # sv_file_break=$1
+    sv_file_crest=$1
+    cnv_file=$2
+    sample=$3
+    out=$4
+    run_info=$5
     
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
@@ -41,10 +41,15 @@ else
     
     cat $cnv_file | awk '$0 !~ /#/' | awk '{print $1"\t"$2"\t"$3"\t"$5}' | sort > $out/$sample.cnv.ForCircos.bed
     export PERL5LIB=$PERL5LIB:$perllib
-    cat $sv_file_crest | awk '{print $1"\t"$2"\t"$3"\t"$5"\t"$6}' > $out/$sample.crest.bed
-    cat $out/$sample.crest.bed $sv_file_break > $out/$sample_sv.bed
-    rm $out/$sample.crest.bed
-    $script_path/generate.sv_file.circos.pl $out/$sample_sv.bed > $out/$sample.sv.ForCircos.bed
+    
+	### Breakdancer removal for 2.0
+    # cat $sv_file_crest | awk '{print $1"\t"$2"\t"$3"\t"$5"\t"$6}' > $out/$sample.crest.bed
+    # cat $out/$sample.crest.bed $sv_file_break > $out/$sample_sv.bed
+	# rm $out/$sample.crest.bed
+    
+	cat $sv_file_crest | awk '{print $1"\t"$2"\t"$3"\t"$5"\t"$6}' > $out/$sample_sv.bed
+    
+	$script_path/generate.sv_file.circos.pl $out/$sample_sv.bed > $out/$sample.sv.ForCircos.bed
     rm $out/$sample_sv.bed
     		
     ##script to create config files

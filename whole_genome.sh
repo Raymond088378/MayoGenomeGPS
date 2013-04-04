@@ -630,16 +630,22 @@ then
 			qsub_args="-N $type.$version.run_cnvnator.$sample.$run_num.$identify -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/run_cnvnator.sh $sample $realign_dir $cnv $run_info single
 			let nump=$numchrs+1;
-			$script_path/check_qstat.sh $limit
-			mem=$( cat $memory_info | grep -w '^run_breakdancer' | cut -d '=' -f2)
-			qsub_args="-N $type.$version.run_breakdancer.$sample.$run_num.$identify -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=$mem"
-			qsub $args $qsub_args $script_path/run_breakdancer.sh $sample $output_realign $break $run_info single
-			$script_path/check_qstat.sh $limit
-			qsub_args="-N $type.$version.run_breakdancer_in.$sample.$run_num.$identify -hold_jid $type.$version.igv_bam.$sample.$run_num.$identify -t $nump-$nump:$nump -l h_vmem=$mem"
-			qsub $args $qsub_args $script_path/run_breakdancer.sh $sample $igv $break $run_info single
+			
+			## Breakdancer Removed for 2.0 
+				
+			# $script_path/check_qstat.sh $limit
+			# mem=$( cat $memory_info | grep -w '^run_breakdancer' | cut -d '=' -f2)
+			# qsub_args="-N $type.$version.run_breakdancer.$sample.$run_num.$identify -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=$mem"
+			# qsub $args $qsub_args $script_path/run_breakdancer.sh $sample $output_realign $break $run_info single
+			
+			# $script_path/check_qstat.sh $limit
+			# qsub_args="-N $type.$version.run_breakdancer_in.$sample.$run_num.$identify -hold_jid $type.$version.igv_bam.$sample.$run_num.$identify -t $nump-$nump:$nump -l h_vmem=$mem"
+			# qsub $args $qsub_args $script_path/run_breakdancer.sh $sample $igv $break $run_info single
+			
 			### merge the structural variants
 			hold="-hold_jid $type.$version.run_single_crest.$sample.$run_num.$identify,$type.$version.run_cnvnator.$sample.$run_num.$identify,"
-			hold=$hold"$type.$version.run_breakdancer.$sample.$run_num.$identify,$type.$version.run_breakdancer_in.$sample.$run_num.$identify"
+	
+			# hold=$hold"$type.$version.run_breakdancer.$sample.$run_num.$identify,$type.$version.run_breakdancer_in.$sample.$run_num.$identify"
 			mkdir -p $sv
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^summaryze_struct_single' | cut -d '=' -f2)
@@ -648,6 +654,7 @@ then
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^plot_circos_cnv_sv' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.plot_circos_cnv_sv.$sample.$run_num.$identify -hold_jid $type.$version.summaryze_struct_single.$sample.$run_num.$identify -l h_vmem=$mem"
+			
 			break_file=$break/$sample/$sample.break
 			crest_file=$crest/$sample/$sample.filter.crest
 			cnv_file=$cnv/$sample.cnv.filter.bed
@@ -1140,20 +1147,24 @@ else
 				fi
 				
 				let nump=$numchrs+1;    
-				mkdir -p $break/$group
-				for sam in `cat $sample_info| grep -w "^$group" | cut -d '=' -f2`
-				do
-					$script_path/check_qstat.sh $limit
-					mem=$( cat $memory_info | grep -w '^run_breakdancer' | cut -d '=' -f2)
-					qsub_args="-N $type.$version.run_breakdancer.$group.$run_num.$identify -hold_jid $type.$version.split_sample_pair.$group.$run_num.$identify -t 1-$numchrs:1 -l h_vmem=$mem"
-					qsub $args $qsub_args $script_path/run_breakdancer.sh $sam $igv $break/$group $run_info $group
-					$script_path/check_qstat.sh $limit
-					qsub_args="-N $type.$version.run_breakdancer.$group.$run_num.$identify -hold_jid $type.$version.igv_bam.$group.$run_num.$identify -t $nump-$nump:$nump -l h_vmem=$mem"
-					qsub $args $qsub_args $script_path/run_breakdancer.sh $sam $igv $break/$group $run_info $group
-				done
+				
+				# Breakdancer removed for 2.0
+				# mkdir -p $break/$group
+				# for sam in `cat $sample_info| grep -w "^$group" | cut -d '=' -f2`
+				# do
+				#	$script_path/check_qstat.sh $limit
+				#	mem=$( cat $memory_info | grep -w '^run_breakdancer' | cut -d '=' -f2)
+				# 	qsub_args="-N $type.$version.run_breakdancer.$group.$run_num.$identify -hold_jid $type.$version.split_sample_pair.$group.$run_num.$identify -t 1-$numchrs:1 -l h_vmem=$mem"
+				#	qsub $args $qsub_args $script_path/run_breakdancer.sh $sam $igv $break/$group $run_info $group
+				#	$script_path/check_qstat.sh $limit
+				#	qsub_args="-N $type.$version.run_breakdancer.$group.$run_num.$identify -hold_jid $type.$version.igv_bam.$group.$run_num.$identify -t $nump-$nump:$nump -l h_vmem=$mem"
+				#	qsub $args $qsub_args $script_path/run_breakdancer.sh $sam $igv $break/$group $run_info $group
+				#done
+
 				if [ $somatic_calling == "YES" ]
 				then
-					hhold="$type.$version.run_segseq.$group.$run_num.$identify,$type.$version.run_crest_multi.$group.$run_num.$identify,$type.$version.run_breakdancer.$group.$run_num.$identify,"
+					hhold="$type.$version.run_segseq.$group.$run_num.$identify,$type.$version.run_crest_multi.$group.$run_num.$identify,"
+					# hhold=$hhold"$type.$version.run_breakdancer.$group.$run_num.$identify,"
 					$script_path/check_qstat.sh $limit
 					mem=$( cat $memory_info | grep -w '^summaryze_struct_group' | cut -d '=' -f2)
 					qsub_args="-N $type.$version.summaryze_struct_group.$group.$run_num.$identify -hold_jid $hhold -l h_vmem=$mem"
@@ -1186,10 +1197,12 @@ else
 						$script_path/check_qstat.sh $limit
 						mem=$( cat $memory_info | grep -w '^plot_circos_cnv_sv' | cut -d '=' -f2)
 						qsub_args="-N $type.$version.plot_circos_cnv_sv.$group.$run_num.$identify -hold_jid $type.$version.summaryze_struct_group.$group.$run_num.$identify -l h_vmem=$mem"
-						break_file=$struct/$group.$tumor.somatic.break
 						crest_file=$struct/$group.$tumor.somatic.filter.crest
 						cnv_file=$cnv/$group/$tumor.cnv.filter.bed
-						qsub $args $qsub_args $script_path/plot_circos_cnv_sv.sh $break_file $crest_file $cnv_file $group.$tumor $circos $run_info
+						# Breakdancer removed 2.0
+						# break_file=$struct/$group.$tumor.somatic.break
+						# qsub $args $qsub_args $script_path/plot_circos_cnv_sv.sh $break_file $crest_file $cnv_file $group.$tumor $circos $run_info
+						qsub $args $qsub_args $script_path/plot_circos_cnv_sv.sh $crest_file $cnv_file $group.$tumor $circos $run_info
 					done
 				else
 					for sample in `cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" " "`
@@ -1197,10 +1210,13 @@ else
 						$script_path/check_qstat.sh $limit
 						mem=$( cat $memory_info | grep -w '^plot_circos_cnv_sv' | cut -d '=' -f2)
 						qsub_args="-N $type.$version.plot_circos_cnv_sv.$group.$run_num.$identify -hold_jid $type.$version.summaryze_struct_single.$group.$run_num.$identify -l h_vmem=$mem"
-						break_file=$struct/break/$group/$sample.break
+						
 						crest_file=$struct/crest/$group/$sample.filter.crest
 						cnv_file=$cnv/$group/$sample.cnv.filter.bed
-						qsub $args $qsub_args $script_path/plot_circos_cnv_sv.sh $break_file $crest_file $cnv_file $sample $circos $run_info
+						## Breakdancer removed 2.0
+						# break_file=$struct/break/$group/$sample.break
+						# qsub $args $qsub_args $script_path/plot_circos_cnv_sv.sh $break_file $crest_file $cnv_file $sample $circos $run_info
+						qsub $args $qsub_args $script_path/plot_circos_cnv_sv.sh $crest_file $cnv_file $sample $circos $run_info
 					done
 				fi	
 			fi

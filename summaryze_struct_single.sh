@@ -108,46 +108,51 @@ else
 	$script_path/combinevcf.sh "$inputargs" $output/SV/$sam.cnv.vcf $run_info yes
 	$script_path/combinevcf.sh "$inputargs_filter" $output/SV/$sam.cnv.final.vcf $run_info yes
 	
+   	## Summarize Breakdancer
+	summaryze_break()
+	{
+		inputargs=""
+		input=""
+		for chr in $chrs
+		do
+			inputfile=$basedir/struct/break/$sample/$sam.$chr.break.vcf 
+			input=$basedir/struct/break/$sample/$sam.$chr.break
+			if [ ! -s $inputfile ]
+			then      
+				touch $inputfile.fix.log
+				$script_path/email.sh $inputfile "not exist" run_breakdancer.sh $run_info
+				$script_path/wait.sh $inputfile.fix.log 
+				cat $inputfile | awk '$0 ~/^#/' > $basedir/struct/break/$sample/$sam.header.break
+				cat $inputfile | awk '$0 !~ /^#/' >> $output/SV/$sam.break.vcf
+				cat $input | awk '$0 !~ /^#/' >> $basedir/struct/break/$sample/$sam.break
+				rm $input
+				rm $inputfile
+			else
+				inputargs="-V $inputfile "$inputargs
+				cat $inputfile | awk '$0 ~/^#/' > $basedir/struct/break/$sample/$sam.header.break
+				cat $inputfile | awk '$0 !~ /^#/' >> $output/SV/$sam.break.vcf
+				cat $input | awk '$0 !~ /^#/' >> $basedir/struct/break/$sample/$sam.break
+				rm $input
+				rm $inputfile
+			fi
+		done
+	    cat $basedir/struct/break/$sample/$sam.inter.break | awk '$0 !~ /^#/' >> $basedir/struct/break/$sample/$sam.break
+	    cat $basedir/struct/break/$sample/$sam.inter.break.vcf |  awk '$0 !~ /^#/' >> $output/SV/$sam.break.vcf
+		rm 	$basedir/struct/break/$sample/$sam.inter.break.vcf
+		rm $basedir/struct/break/$sample/$sam.inter.break 
+	    cat $basedir/struct/break/$sample/$sam.header.break $output/SV/$sam.break.vcf > $output/SV/$sam.break.vcf.temp
+		mv $output/SV/$sam.break.vcf.temp $output/SV/$sam.break.vcf
+		rm $basedir/struct/break/$sample/$sam.header.break
 	
-   ## Summaryzing Breakdancer
-	inputargs=""
-	input=""
-	for chr in $chrs
-	do
-		inputfile=$basedir/struct/break/$sample/$sam.$chr.break.vcf 
-		input=$basedir/struct/break/$sample/$sam.$chr.break
-		if [ ! -s $inputfile ]
-		then      
-			touch $inputfile.fix.log
-			$script_path/email.sh $inputfile "not exist" run_breakdancer.sh $run_info
-			$script_path/wait.sh $inputfile.fix.log 
-			cat $inputfile | awk '$0 ~/^#/' > $basedir/struct/break/$sample/$sam.header.break
-			cat $inputfile | awk '$0 !~ /^#/' >> $output/SV/$sam.break.vcf
-			cat $input | awk '$0 !~ /^#/' >> $basedir/struct/break/$sample/$sam.break
-			rm $input
-			rm $inputfile
-		else
-			inputargs="-V $inputfile "$inputargs
-			cat $inputfile | awk '$0 ~/^#/' > $basedir/struct/break/$sample/$sam.header.break
-			cat $inputfile | awk '$0 !~ /^#/' >> $output/SV/$sam.break.vcf
-			cat $input | awk '$0 !~ /^#/' >> $basedir/struct/break/$sample/$sam.break
-			rm $input
-			rm $inputfile
+		if [ ! -s $output/SV/$sam.break.vcf ]
+		then
+			$script_path/errorlog.sh $output/$sam.break.vcf summaryze_struct_single.sh ERROR "not created"
+			exit 1;
 		fi
-	done
-    cat $basedir/struct/break/$sample/$sam.inter.break | awk '$0 !~ /^#/' >> $basedir/struct/break/$sample/$sam.break
-    cat $basedir/struct/break/$sample/$sam.inter.break.vcf |  awk '$0 !~ /^#/' >> $output/SV/$sam.break.vcf
-	rm 	$basedir/struct/break/$sample/$sam.inter.break.vcf
-	rm $basedir/struct/break/$sample/$sam.inter.break 
-    cat $basedir/struct/break/$sample/$sam.header.break $output/SV/$sam.break.vcf > $output/SV/$sam.break.vcf.temp
-	mv $output/SV/$sam.break.vcf.temp $output/SV/$sam.break.vcf
-	rm $basedir/struct/break/$sample/$sam.header.break
+	
+	}
 
-	if [ ! -s $output/SV/$sam.break.vcf ]
-	then
-		$script_path/errorlog.sh $output/$sam.break.vcf summaryze_struct_single.sh ERROR "not created"
-		exit 1;
-	fi
+	# summaryze_break
 	
 	#Summaryzing Crest
 	inputargs=""
