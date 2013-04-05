@@ -57,7 +57,14 @@ else
 		exit 1;
     fi
     
-    
+    ## Check that delivery folder is empty before continuing
+	if [ "$(ls -A $delivery)" ]; 
+	then
+		echo "$deliver is not empty; aborting"
+    	exit 1;
+	else
+    	echo "$delivery is empty of files. Continuing."
+	fi
     
 
     if [ ! -d $tertiary ]
@@ -69,13 +76,13 @@ else
 		echo "$tertiary folder already exists"
 	fi
 	
-	## Check that tertiary folder is empty before continuing
-	if [ "$(ls -A $tertiary)" ]; 
+	## Check that tertiary folder/variants is empty before continuing
+	if [ "$(ls -A $tertiary/variants)" ]; 
 	then
-		echo "$tertiary is not empty; aborting"
+		echo "$tertiary/variants is not empty; aborting"
     	exit 1;
 	else
-    	echo "$tertiary is empty of files. Continuing."
+    	echo "$tertiary/variants is empty of files. Continuing."
 	fi
 
 
