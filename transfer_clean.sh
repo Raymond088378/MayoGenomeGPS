@@ -63,10 +63,10 @@ else
 		echo "$delivery is not empty; aborting"
     	exit 1;
 	else
-    	echo "$delivery is empty of files. Continuing."
+    	echo "$delivery is empty of files; continuing."
 	fi
     
-
+	
     if [ ! -d $tertiary ]
     then
 		mkdir -p $tertiary
@@ -82,7 +82,7 @@ else
 				echo "$tertiary/variants is not empty; aborting"
     			exit 1;
 			else
-    			echo "$tertiary/variants is empty of files. Continuing."
+    			echo "$tertiary/variants is empty of files; continuing."
     		fi
     	fi
 	fi
