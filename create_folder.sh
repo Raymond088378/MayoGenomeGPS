@@ -2,8 +2,9 @@
 
 if [ $# != 1 ]
 then
-	echo "Usage: wrapper to create folder structure\n <run info file>"
-else
+	echo -e "Usage: wrapper to create folder structure\nUsage: ./create_folder.sh <run info file>"
+	exit 1;
+fi
 	echo `date`
 	run_info=$1
 	tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
@@ -39,48 +40,32 @@ else
 	
 	mkdir -p $output_dir/logs
 	mkdir -p $output_dir/size
-        mkdir -p $output_dir/config
+    mkdir -p $output_dir/config
 
-	if [[ $analysis != "annotation"  && $analysis != "ontarget" ]]
+	if [ $analysis == "external" -o $analysis == "mayo" -o $analysis == "alignment" ]
 	then
-		if [ $analysis == "external" -o $analysis == "mayo" -o $analysis == "alignment" ]
-		then
-			mkdir -p $output_dir/fastq
-			mkdir -p $output_dir/fastqc
-		fi
-		if [[ $analysis != "variant" ]]
-		then
-			mkdir -p $output_dir/alignment
-		fi
-		mkdir -p $output_dir/IGV_BAM
-		if [ $analysis != "alignment" ]
-        then
-            if [[ $analysis != "annotation" && $analysis != "ontarget"  ]]
-            then
-                mkdir -p $output_dir/realign      
-            fi
-            if [ $analysis != "annotation" ]
-            then
-                mkdir -p $output_dir/variants
-            fi
-            if [ $tool == "whole_genome" ]
-            then
-                mkdir -p $output_dir/cnv
-                mkdir -p $output_dir/struct
-                mkdir -p $output_dir/circos
-            fi
-        fi
-    fi
+		mkdir -p $output_dir/qc
+		mkdir -p $output_dir/qc/fastqc
+	fi
+	if [[ $analysis != "variant" ]]
+	then
+		mkdir -p $output_dir/alignment
+	fi
+	mkdir -p $output_dir/IGV_BAM
+	if [ $analysis != "alignment" ]
+	then
+    	mkdir -p $output_dir/realign      
+    	mkdir -p $output_dir/variants
+    	if [ $tool == "whole_genome" ]
+    	then
+        	mkdir -p $output_dir/variants/cnv
+        	mkdir -p $output_dir/variants/struct
+        	mkdir -p $output_dir/variants/circos
+    	fi
+	fi
 	
 	if [ $analysis != "alignment" ]
     then
-        mkdir -p $output_dir/OnTarget
-        mkdir -p $output_dir/annotation
-        output_annot=$output_dir/annotation
-		mkdir -p $output_annot/SIFT
-        mkdir -p $output_annot/SNPEFF
-        mkdir -p $output_annot/POLYPHEN
-        mkdir -p $output_dir/TempReports
         mkdir -p $output_dir/Reports_per_Sample
         mkdir -p $output_dir/Reports
     fi

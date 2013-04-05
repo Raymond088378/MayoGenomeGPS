@@ -114,7 +114,6 @@ multi_sample=$( cat $run_info | grep -w '^MULTISAMPLE' | cut -d '=' -f2| tr "[a-
 analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
 all_sites=$( cat $tool_info | grep -w '^EMIT_ALL_SITES' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 aligner=$( cat $run_info | grep -w '^ALIGNER' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
-upload_tb=$( cat $tool_info | grep -w '^UPLOAD_TABLEBROWSER' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 numchrs=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | wc -l)
 paired=$( cat $run_info | grep -w '^PAIRED' | cut -d '=' -f2)
 threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2)
@@ -127,7 +126,6 @@ info=$(cat $run_info | grep -w '^SAMPLEINFORMATION' | cut -d '=' -f2 )
 workflow=$( cat $run_info | grep '^TOOL=' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
 somatic_calling=$( cat $tool_info | grep -w '^SOMATIC_CALLING' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
-annot_flag=$( cat $tool_info | grep -w '^ANNOTATION_FLAG' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 stop_after_realignment=$( cat $tool_info | grep -w '^STOP_AFTER_REALIGNMENT' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
     
 ### Check for python version 2.7 if we are running a BEAUTY caller or JointSNVMix        
