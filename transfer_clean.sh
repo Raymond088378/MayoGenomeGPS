@@ -60,7 +60,7 @@ else
     ## Check that delivery folder is empty before continuing
 	if [ "$(ls -A $delivery)" ]; 
 	then
-		echo "$deliver is not empty; aborting"
+		echo "$delivery is not empty; aborting"
     	exit 1;
 	else
     	echo "$delivery is empty of files. Continuing."
@@ -74,17 +74,23 @@ else
 		echo "$tertiary tertiary folder created"
 	else
 		echo "$tertiary folder already exists"
+		if [ -d $tertiary/variants -a $sites == "yes" ] 
+		then 
+			## Check that tertiary folder/variants is empty before continuing
+			if [ "$(ls -A $tertiary/variants)" ]; 
+			then
+				echo "$tertiary/variants is not empty; aborting"
+    			exit 1;
+			else
+    			echo "$tertiary/variants is empty of files. Continuing."
+    		fi
+    	fi
 	fi
+		
 	
-	## Check that tertiary folder/variants is empty before continuing
-	if [ "$(ls -A $tertiary/variants)" ]; 
-	then
-		echo "$tertiary/variants is not empty; aborting"
-    	exit 1;
-	else
-    	echo "$tertiary/variants is empty of files. Continuing."
-	fi
-
+	
+	
+	
 
     ### transfer the data to delivery folder
     chmod -Rf 777 $delivery/
