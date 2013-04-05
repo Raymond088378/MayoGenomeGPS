@@ -4,7 +4,8 @@ if [ $# != 6 ]
 then
     echo -e "script to run unified genotyper\nUsage: ./unifiedgenotyper.sh <bamfile> <vcf output> \
 <type of variant> <range of positions> <output mode> <run info file>"
-else
+	exit 1;
+fi
     set -x
     echo `date`
     bam=$1
@@ -26,7 +27,7 @@ else
 	mem=$( cat $memory_info | grep -w '^UnifiedGenotyper_JVM' | cut -d '=' -f2)
 	 
 	export PATH=$java:$PATH
-    if [ ${#ped} -eq 0 ]
+	if [[ ${#ped} -eq 0 && $ped == "NA" ]]
     then
         ped="NA"
     fi
@@ -37,36 +38,23 @@ else
     if [ ! -d $out/temp ]
 	then
 		mkdir -p $out/temp
+		sleep 10s
 	fi
 	let count=0
+	gatk_param="-R $ref -et NO_ET -K $gatk/Hossain.Asif_mayo.edu.key "
 	while [[ $check -eq 0 && $count -le 10 ]]
     do
 		if [ $ped != "NA" ]
 		then
 			$java/java $mem -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
-			-R $ref \
-			-et NO_ET \
-			-K $gatk/Hossain.Asif_mayo.edu.key \
-			-T UnifiedGenotyper \
-			--output_mode $mode \
-			-nt $threads \
-			-glm $type \
-			$range \
-			$bam \
-			--ped $ped \
-			--out $vcf $command_line_params
+			-T UnifiedGenotyper --output_mode $mode -nt $threads \
+			-glm $type $range $bam \
+			--ped $ped --out $vcf $command_line_params $gatk_param
 		else
 			$java/java $mem -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
-			-R $ref \
-			-et NO_ET \
-			-K $gatk/Hossain.Asif_mayo.edu.key \
-			-T UnifiedGenotyper \
-			--output_mode $mode \
-			-nt $threads \
-			-glm $type \
-			$range \
-			$bam \
-			--out $vcf $command_line_params
+			-T UnifiedGenotyper --output_mode $mode -nt $threads \
+			-glm $type $range $bam \
+			--out $vcf $command_line_params $gatk_param
 		fi
 		sleep 5
         check=`[ -s $vcf.idx ] && echo "1" || echo "0"`
@@ -95,4 +83,4 @@ else
 		rm $vcf.idx	
 	fi
     echo `date`
-fi
+

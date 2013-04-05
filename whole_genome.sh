@@ -31,8 +31,6 @@
 ###		check_qstat.sh
 ###
 ### [[ $analysis == "alignment" || $analysis == "annotation" || $analysis == "external" || $analysis == "mayo" || $analysis == "ontarget" || $analysis == "realignment" || $analysis == "realign-mayo" || $analysis == "variant" ]]
-
-
 if [ $# != 1 ]
 then	
 	echo -e "Wrapper script to submit all the jobs for dna-seq workflow\nUsage: ./whole_genome.sh <Please specify full /path/to/run_info file>";
@@ -512,103 +510,11 @@ then
 	###			$script_path/check_qstat.sh $limit
 		
 				
-		#########################
-		### OnTarget Analysis ###
-		#########################
-		if [ $analysis == "ontarget" ]
-		then
-			if [ $variant_type == "BOTH" ]
-			then
-				$script_path/check_qstat.sh $limit
-				mem=$( cat $memory_info | grep -w '^reformat_VARIANTs_OnTarget' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.reformat_VARIANTs_OnTarget.$sample.$run_num.$identify -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/reformat_VARIANTs_OnTarget.sh $output_variant $RSample $sample $run_info 2
-			elif [ $variant_type == "SNV" -o $variant_type == "INDEL" ]
-			then
-				$script_path/check_qstat.sh $limit
-				mem=$( cat $memory_info | grep -w '^reformat_VARIANTs_OnTarget' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.reformat_VARIANTs_OnTarget.$sample.$run_num.$identify -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/reformat_VARIANTs_OnTarget.sh $output_variant $RSample $sample $run_info 1
-			fi
-			hold_args="-hold_jid $type.$version.reformat_VARIANTs_OnTarget.$sample.$run_num.$identify"				
-		### mayo external realignment variant realign-mayo
-		elif [[ $analysis != "alignment" && $analysis != "annotation" ]]
-		then
-			hold_args="-hold_jid $type.$version.merge_variant_single.$sample.$run_num.$identify"	
-		fi
-		### MERGE THE ABOVE ELIF BLOCK INTO THIS BLOCK
-		if [[ $analysis != "alignment" && $analysis != "annotation" ]]
-		then
-			$script_path/check_qstat.sh $limit
-			mem=$( cat $memory_info | grep -w '^OnTarget_variant' | cut -d '=' -f2)
-			qsub_args="-N $type.$version.OnTarget_variant.$sample.$run_num.$identify -t 1-$numchrs:1 $hold_args -l h_vmem=$mem"
-			qsub $args $qsub_args $script_path/OnTarget_variant.sh $output_variant $output_OnTarget $sample $run_info
-		fi
-		##############################
-		### ANNOTATION ENTRY POINT ###
-		##############################
-		if [ $analysis == "annotation" ]
-		then
-			if [ $variant_type == "BOTH" ]
-			then
-				$script_path/check_qstat.sh $limit
-				mem=$( cat $memory_info | grep -w '^reformat_VARIANTs' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.reformat_VARIANTs.$sample.$run_num.$identify -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 2
-			elif [ $variant_type == "SNV" -o $variant_type == "INDEL" ]
-			then
-				$script_path/check_qstat.sh $limit
-				mem=$( cat $memory_info | grep -w '^reformat_VARIANTs' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.reformat_VARIANTs.$sample.$run_num.$identify -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/reformat_VARIANTs.sh $output_OnTarget $sample $run_info 1
-			fi
-			hold_args="-hold_jid $type.$version.reformat_VARIANTs.$sample.$run_num.$identify"
-		elif [ $analysis != "alignment" ]
-		then
-			hold_args="-hold_jid $type.$version.OnTarget_variant.$sample.$run_num.$identify"
-		fi
-		
-		if [ $analysis != "alignment" ]
-		then
-			if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
-			then
-				if [ $annot_flag == "YES" ]
-				then
-					$script_path/check_qstat.sh $limit
-					mem=$( cat $memory_info | grep -w '^sift' | cut -d '=' -f2)
-					qsub_args="-N $type.$version.sift.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
-					qsub $args $qsub_args $script_path/sift.sh $sift $output_OnTarget $sample $run_info germline
-					$script_path/check_qstat.sh $limit
-					mem=$( cat $memory_info | grep -w '^polyphen' | cut -d '=' -f2)
-					qsub_args="-N $type.$version.polyphen.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
-					qsub $args $qsub_args $script_path/polyphen.sh $polyphen $output_OnTarget $sample $run_info germline	    	
-				fi
-            fi
-			if [ $annot_flag == "YES" ]
-			then
+
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^snpeff' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.snpeff.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
 				qsub $gatk_args $qsub_args $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info germline		
-			fi
-			if [ $variant_type == "SNV" -o $variant_type == "BOTH" ]
-			then
-				hold="-hold_jid $type.$version.sift.$sample.$run_num.$identify,$type.$version.polyphen.$sample.$run_num.$identify,$type.$version.snpeff.$sample.$run_num.$identify"
-			else
-				hold="-hold_jid $type.$version.snpeff.$sample.$run_num.$identify"
-			fi
-        fi	
-		if [ $annot_flag == "YES" ]
-		then
-			$script_path/check_qstat.sh $limit
-			mem=$( cat $memory_info | grep -w '^reports' | cut -d '=' -f2)
-			qsub_args="-N $type.$version.reports.$sample.$run_num.$identify $hold -t 1-$numchrs:1 -l h_vmem=$mem"
-			qsub $args $qsub_args $script_path/reports.sh $run_info $sample $TempReports $output_OnTarget $sift $snpeff $polyphen $output_dir germline
-			$script_path/check_qstat.sh $limit
-			mem=$( cat $memory_info | grep -w '^sample_report' | cut -d '=' -f2)
-			qsub_args="-N $type.$version.sample_report.$sample.$run_num.$identify -hold_jid $type.$version.reports.$sample.$run_num.$identify -l h_vmem=$mem"
-			qsub $args $qsub_args $script_path/sample_report.sh $output_dir $TempReports $sample $run_info germline
-		fi
         if [[ $tool == "whole_genome"  && $analysis != "annotation" ]]
 		then
 			crest=$output_dir/struct/crest

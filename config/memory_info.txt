@@ -56,8 +56,8 @@ MuTecT_JVM=-XX:MaxPermSize=128M -Xmx4g -Xms512m
 SomaticIndelDetector_JVM=-Xmx4g -Xms512m
 RealignerTargetCreator_JVM=-Xmx5g -Xms512m
 IndelRealigner_JVM=-XX:+UseConcMarkSweepGC -Xmx5g -Xms512m
-CountCovariates_JVM=-Xmx5g -Xms512m
-TableRecalibration_JVM=-Xmx5g -Xms512m
+BaseRecalibrator_JVM=-Xmx5g -Xms512m
+PrintReads_JVM=-Xmx5g -Xms512m
 VariantAnnotator_JVM=-Xmx4g -Xms512m
 VariantFiltration_JVM=-Xmx1g -Xms512m
 VariantRecalibrator_JVM=-Xmx4g -Xms512m

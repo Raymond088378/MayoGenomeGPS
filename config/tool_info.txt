@@ -150,8 +150,8 @@ VQSR_params_INDEL=-an QD -an FS -an HaplotypeScore -an ReadPosRankSum --maxGauss
 IndelRealigner_params=--maxReadsForRealignment 20000 --maxReadsInMemory 150000
 RealignerTargetCreator_params=
 ## recalibration
-CountCovariates_params=
-TableRecalibration_params=
+BaseRecalibrator_params=
+PrintReads_params=
 ### callers and vcf
 UnifiedGenotyper_params=-maxAlleles 5
 SOMATIC_INDEL_params=--window_size 1000
