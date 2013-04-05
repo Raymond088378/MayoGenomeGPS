@@ -3,7 +3,7 @@
 ### Called by processBAM.sh
 if [ $# != 5 ]
 then
-    echo -e "script to add read group and paltform information to a BAM file\nUsage: ./addReadGroup.sh <input bam> <outputbam></path/to/temp dir></path/to/run info><sample name>"
+    echo -e "script to add read group and platform information to a BAM file\nUsage: ./addReadGroup.sh </fullpath/to/input bam> <fullpath/to/outputbam></path/to/temp dir></path/to/run info><sample name>"
 else
     set -x
     echo `date`

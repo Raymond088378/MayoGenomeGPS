@@ -25,7 +25,9 @@
 if [ $# != 3 ];
 then
     echo -e "wrapper to merge bam files and validate the bam for downstream analysis\nUsage: ./processBAM.sh </path/to/input directory><sample name> </path/to/run_info.txt>";
-else
+	exit 1;
+fi
+
     set -x
     echo `date`
     input=$1
@@ -43,8 +45,6 @@ else
 	dup=$( cat $tool_info | grep -w '^MARKDUP' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
 	aligner=$( cat $run_info | grep -w '^ALIGNER' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
 	usenovosort=$( cat $tool_info | grep -w '^USENOVOSORT' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
-	novosort=$( cat $tool_info | grep -w '^NOVOSORT' | cut -d '=' -f2)
-	novosortopt=$( cat $tool_info | grep -w '^NOVOSORTPBOPT' | cut -d '=' -f2)
 	
 	if [ $aligner == "bwa" ]
 	then
@@ -155,4 +155,3 @@ else
 	## size of the bam file
 	$script_path/filesize.sh Alignment.out $sample $input $sample.sorted.bam $run_info
     echo `date`
-fi
