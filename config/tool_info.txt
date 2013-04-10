@@ -26,11 +26,20 @@ WORKFLOW_PATH=/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/trunk/
 
 
 ## tools
+### aligners
+BOWTIE=/projects/bsi/bictools/apps/alignment/bowtie/2.0.0-beta5/
+BWA=/projects/bsi/bictools/apps/alignment/bwa/0.5.9/
+NOVOALIGN=/projects/bsi/bictools/apps/alignment/novoalign/2.08.01/novoalign
+
+
+### callers
+SNVmix=/projects/bsi/bictools/apps/variant_detection/SNVMix/0.11.8-r3/
+SOMATIC_SNIPER=/projects/bsi/bictools/apps/variant_detection/somatic_sniper/1.0.0.1-19/bin/
+
+
 BEDTOOLS=/projects/bsi/bictools/apps/misc/BEDTools/2.16.2/bin/
 BLAT=/projects/bsi/bictools/apps/alignment/blat/34
 BREAKDANCER=/projects/bsi/bictools/apps/sv/breakdancer/breakdancer-1.1_2011_02_21/
-BOWTIE=/projects/bsi/bictools/apps/alignment/bowtie/2.0.0-beta5/
-BWA=/projects/bsi/bictools/apps/alignment/bwa/0.5.9/
 CAP3=/projects/bsi/bictools/apps/sv/crest/1.0.1/bin/
 CNVNATOR=/projects/bsi/bictools/apps/cnv/cnvnator/0.2.2/src/
 CREST=/projects/bsi/bictools/apps/sv/crest/1.0.1/bin/
@@ -41,15 +50,12 @@ HTSLIB=/projects/bsi/bictools/apps/variant_detection/htslib-vcftools/
 JAVA=/usr/java/latest/bin
 JOINTSNVMIX=/projects/bsi/bictools/apps/variant_detection/jointsnvmix/0.8-b2/
 MATLAB=/usr/local/biotools/matlab/r2011a/bin
-MUTECT=/projects/bsi/bictools/apps/variant_detection/muTect/1.0.27783/
-NOVOALIGN=/projects/bsi/bictools/apps/alignment/novoalign/2.08.01/novoalign
+MUTECT=/projects/bsi/bictools/apps/variant_detection/muTect/1.1.14/muTect-1.1.4.jar
 NOVOSORT=/projects/bsi/bictools/apps/alignment/novoalign/2.08.01/novosort
 PICARD=/projects/bsi/bictools/apps/alignment/picard/1.77/
 SAMTOOLS=/projects/bsi/bictools/apps/alignment/samtools/samtools-0.1.18/
 SEGSEQ=/projects/bsi/bictools/apps/sv/SegSeq/1.0.0/bin/
 SNPEFF=/projects/bsi/bictools/apps/annotation/snpeff/3.0/
-SNVmix=/projects/bsi/bictools/apps/variant_detection/SNVMix/0.11.8-r3/
-SOMATIC_SNIPER=/projects/bsi/bictools/apps/variant_detection/somatic_sniper/1.0.0.1-19/bin/
 TABIX=/projects/bsi/bictools/apps/misc/tabix/0.2.5/
 VCFTOOLS=/projects/bsi/bictools/apps/variant_detection/vcftools/0.1.8a/
 

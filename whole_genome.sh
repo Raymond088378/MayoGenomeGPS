@@ -36,8 +36,6 @@ then
 	echo -e "Wrapper script to submit all the jobs for dna-seq workflow\nUsage: ./whole_genome.sh <Please specify full /path/to/run_info file>";
 	exit 1;
 fi
-	
-set -x
 echo `date`
 run_info=`readlink -f $1`
 dos2unix $run_info
@@ -49,55 +47,9 @@ then
 	exit 1;
 fi
 
-if [ ! -s $run_info ]
-then
-	echo -e "ERROR : run_info=$run_info does not exist.\n";
-	exit 1;
-else
-	dos2unix $run_info
-	## removing trailing and leading spaces from run info file
-	cat $run_info | sed 's/^[ \t]*//;s/[ \t]*$//' > $run_info.tmp
-	mv $run_info.tmp $run_info
-fi
 
 
-### check for tool info file
-tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-if [ ! -s $tool_info ]
-then
-	echo "ERROR : tool_info=$tool_info does not exist \n";
-	exit 1;
-else
-	dos2unix $tool_info
-	cat $tool_info | sed 's/^[ \t]*//;s/[ \t]*$//' > $tool_info.tmp
-	mv $tool_info.tmp $tool_info
-fi
-
-### check for sample info file
-sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
-if [ ! -s $sample_info ]
-then
-	echo "ERROR : sample_info=$sample_info does not exist \n";
-	exit 1;
-else
-	dos2unix $sample_info
-	cat $sample_info | sed 's/^[ \t]*//;s/[ \t]*$//' > $sample_info.tmp
-	mv $sample_info.tmp $sample_info
-fi
-
-### check for memory info file
-memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
-if [ ! -s $memory_info ]
-then
-	echo "ERROR : memory_info=$memory_info does not exist \n";
-	exit 1;
-else
-	dos2unix $memory_info
-	cat $memory_info | sed 's/^[ \t]*//;s/[ \t]*$//' > $memory_info.tmp
-	mv $memory_info.tmp $memory_info
-fi
-
-#### extract paths
+#### extract paths and set local variables
 input=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
 output=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
 PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
@@ -127,19 +79,21 @@ workflow=$( cat $run_info | grep '^TOOL=' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" 
 version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
 somatic_calling=$( cat $tool_info | grep -w '^SOMATIC_CALLING' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 stop_after_realignment=$( cat $tool_info | grep -w '^STOP_AFTER_REALIGNMENT' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
-    
-### Check for python version 2.7 if we are running a BEAUTY caller or JointSNVMix        
-if [[ $somatic_caller == "JOINTSNVMIX" || $somatic_caller == "BEAUTY_EXOME" ]]
-then
-	python_path=`which python`
-	if [ `python -V  2>&1 | tr " " "\n" | grep -v Python` !=  "2.7" ]
-	then
-		echo -e "\n python path is not correct in your environment."
-		echo " Python path should point to /usr/local/biotools/python/2.7/bin/python if the user use the command which python, user can change this using mayobiotools"
-		exit 1;
-	fi    
-fi
 
+if [ ${#script_path} eq 0 ]
+then
+	echo -e "WORKFLOW_PATH variable is not set right in tool info file"
+	exit 1;
+else
+	$script_path/config.present.sh $run_info
+	if [ `cat  $dir_info/config.log | wc -l` -gt 0 ]
+	then
+		echo -e " configuration files are not proper take a look at $dir_info/config.log file"
+		exit 1;
+	fi				
+	rm $dir_info/config.log	
+fi    	    	     
+        
 ### validate the config file
 $script_path/check_config.pl $run_info > $run_info.configuration_errors.log
 if [ `cat $run_info.configuration_errors.log | wc -l` -gt 0 ]
@@ -160,7 +114,6 @@ then
 	echo -e "HURRAY !!! you are good to run the workflow"
 else
 	echo -e "ERROR : unique identification for the workflow was not generated, please check the unique_id.sh script."
-	### exit 1; don't exit on error, just run the workflow
 fi
 
 ### create folders
@@ -355,6 +308,7 @@ then
 			then
 				$script_path/dashboard.sh $sample $run_info Beginning started 
 			fi
+			
 			### sort each bam file
 			for ((i=1; i <=$num_bams; i++));
 			do	
@@ -369,11 +323,16 @@ then
 				fi	
 				rm $align_dir/$sample.$i.sorted.header
 				ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
+				#### run fastc on bam files
+				$script_path/check_qstat.sh $limit
+				mem=$( cat $memory_info | grep -w '^fastqc' | cut -d '=' -f2)
+				qsub_args="-N $type.$version.fastqc.$sample.$run_num.$identify -l h_vmem=$mem"
+				qsub $args $qsub_args $script_path/fastqc.sh $fastqc $align_dir/$sample.$i.sorted.bam $tool_info
 			done  
 			### Sort, index, deduplicate the bam files 
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^processBAM' | cut -d '=' -f2)
-			qsub_args="-N $type.$version.processBAM.$sample.$run_num.$identify -l h_vmem=$mem"
+			qsub_args="-N $type.$version.processBAM.$sample.$run_num.$identify -hold_jid $type.$version.fastqc.$sample.$run_num.$identify -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/processBAM.sh $align_dir $sample $run_info
 			### Split on chromsomes and store unmapped reads for igv
 			$script_path/check_qstat.sh $limit

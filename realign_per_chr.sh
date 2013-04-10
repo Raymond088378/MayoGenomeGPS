@@ -1,5 +1,5 @@
 #!/bin/bash
-## this scripts work per chr and accepts an array job paramter to extract the chr information
+## this scripts work per chr and accepts an array job parameter to extract the chr information
 ## this scripts checks for sorted and rad group information for a abam and do as per found
 ## GATK version using GenomeAnalysisTK-1.2-4-gd9ea764
 ## here we consider if chopped is 1 means all the sample BAM are chopped and same with 0 
@@ -19,6 +19,7 @@ fi
     realign=$6
     samples=$7
     chr=$8
+    
     ### creating the local variables
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
@@ -33,6 +34,7 @@ fi
 	RealignerTargetCreator_params=$( cat $tool_info | grep -w '^RealignerTargetCreator_params' | cut -d '=' -f2 )
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
     TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
+	### checking for reference files
 	if [[ ${#dbSNP} -ne 0 && $dbSNP != "NA" ]]
 	then
 		param="-known $dbSNP" 
@@ -122,7 +124,8 @@ fi
 	## GATK Target Creator
     gatk_params="-R $ref -et NO_ET -K $gatk/Hossain.Asif_mayo.edu.key "
 	mem=$( cat $memory_info | grep -w '^RealignerTargetCreator_JVM' | cut -d '=' -f2)
-	$java/java $mem -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
+	$java/java $mem -Djava.io.tmpdir=$output/temp/  \
+	-jar $gatk/GenomeAnalysisTK.jar \
     -T RealignerTargetCreator \
     -o $output/chr${chr}.forRealigner.intervals $input_bam $param $region $RealignerTargetCreator_params $gatk_params
     
@@ -142,8 +145,11 @@ fi
     else
         ## Realignment
         mem=$( cat $memory_info | grep -w '^IndelRealigner_JVM' | cut -d '=' -f2)
-		$java/java $mem -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
-        -T IndelRealigner -L chr${chr} --out $output/chr${chr}.realigned.bam  \
+		$java/java $mem -Djava.io.tmpdir=$output/temp/ \
+		-jar $gatk/GenomeAnalysisTK.jar \
+        -T IndelRealigner \
+    	-L chr${chr} \
+    	--out $output/chr${chr}.realigned.bam  \
         -targetIntervals $output/chr${chr}.forRealigner.intervals $Indelrealign_param $param $gatk_params $input_bam
         mv $output/chr${chr}.realigned.bai $output/chr${chr}.realigned.bam.bai
     fi
@@ -161,7 +167,7 @@ fi
         exit 1;
     fi
 
-    ## deleting the internediate files
+    ## deleting the intermediate files
     if [ $realign == 1 ]
     then
         for i in $(seq 1 ${#sampleArray[@]})

@@ -1,7 +1,8 @@
 #!/bin/bash
-## this scripts work per chr and accepts an array job paramter to extract the chr information
-## creat a folder name temp in the output folder befor euisng this script
-## GATK version using GenomeAnalysisTK-1.2-4-gd9ea764
+## this scripts work per chromosome and accepts an array job parameter to extract the chr information
+## creat a folder name temp in the output folder before using this script
+## GATK version using 2.4.9
+
 if [ $# != 8 ]
 then
     echo -e "script to run recalibration on a bam file uisng tool info paramters\nUsage:\nIf user wants to do recalibration fist \n<input dir ':' sep><input bam ':' sep><outputdir><run_info><1 or 0 if bam is per chr><1 for recalibrate first ><sample ':' sep>\nelse\n<input dir><input bam><output dir><run_info> <1 or 0 if bam is per chr> < 0 for recal second><sample (a dummy sampel name i would say just type multi as sample>  ";
@@ -33,7 +34,8 @@ fi
     BaseRecalibrator_params=$( cat $tool_info | grep -w '^BaseRecalibrator_params' | cut -d '=' -f2 )
 	PrintReads_params=$( cat $tool_info | grep -w '^PrintReads_params' | cut -d '=' -f2 )
 	
-    if [[ ${#dbSNP} -ne 0 && $dbSNP != "NA" ]]
+    ### checkig for the reference files
+	if [[ ${#dbSNP} -ne 0 && $dbSNP != "NA" ]]
     then
         param="--knownSites $dbSNP" 
     fi
@@ -120,13 +122,14 @@ fi
     ## Recal metrics file creation
     gatk_params="-R $ref -et NO_ET -K $gatk/Hossain.Asif_mayo.edu.key "
 	mem=$( cat $memory_info | grep -w '^BaseRecalibrator_JVM' | cut -d '=' -f2)
-	$java/java $mem -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
+	$java/java $mem -Djava.io.tmpdir=$output/temp/ \
+	-jar $gatk/GenomeAnalysisTK.jar \
     -T BaseRecalibrator \
     -recalFile $output/chr${chr}.recal_data.grp $BaseRecalibrator_params $param $input_bam $region $gatk_params
 
     if [ ! -s $output/chr${chr}.recal_data.grp ]
     then
-        echo "WARNING : recal_per_chr. File $output/chr${chr}.recal_data.csv not created"
+        echo "WARNING : recal_per_chr. File $output/chr${chr}.recal_data.grp not created"
         bams=`echo $input_bam | sed -e '/-I/s///g'`
         num_bams=`echo $bams | tr " " "\n" | wc -l`
         if [ $num_bams -eq 1 ]
@@ -140,8 +143,11 @@ fi
     else	
     	## recailbartion
         mem=$( cat $memory_info | grep -w '^PrintReads_JVM' | cut -d '=' -f2)
-		$java/java $mem -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
-        -L chr${chr} -T PrintReads --out $output/chr${chr}.recalibrated.bam \
+		$java/java $mem -Djava.io.tmpdir=$output/temp/ \
+		-jar $gatk/GenomeAnalysisTK.jar \
+    	-L chr${chr} \
+    	-T PrintReads \
+    	--out $output/chr${chr}.recalibrated.bam \
         -BQSR $output/chr${chr}.recal_data.grp $PrintReads_params $input_bam $gatk_params
         mv $output/chr${chr}.recalibrated.bai $output/chr${chr}.recalibrated.bam.bai
     fi
@@ -160,7 +166,7 @@ fi
         exit 1;
     fi
     
-    ## deleting internediate files
+    ## deleting intermediate files
     if [ $recal == 1 ]
     then
         for i in $(seq 1 ${#sampleArray[@]})
@@ -180,7 +186,7 @@ fi
         rm $output/$samples.chr${chr}-sorted.bam
         rm $output/$samples.chr${chr}-sorted.bam.bai
     fi
-    rm $output/chr${chr}.recal_data.csv 
+    rm $output/chr${chr}.recal_data.grp 
 	if [ -f $output/chr$chr.bed	]
 	then
 		rm $output/chr$chr.bed	

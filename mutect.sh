@@ -2,7 +2,8 @@
 if [ $# != 8 ]
 then
 	echo -e "script to run somatic caller called mutect\nUsage: ./mutect.sh <normal bam> <tumor bam > <output dir> <chromosome> <tumor sample name> <normal sample name> <output vcf file name> <run info>"
-else
+	exit 1;
+fi	
 	set -x
 	echo `date`
 	normal_bam=$1
@@ -26,7 +27,7 @@ else
 	command_line_params=$( cat $tool_info | grep -w '^MUTECT_params' | cut -d '=' -f2 )
 	memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
 	mem=$( cat $memory_info | grep -w '^MuTecT_JVM=' | sed -e '/MuTecT_JVM=/s///g')
-	 
+	gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2) 
 	export PATH=$java:$PATH  
     if [ $only_ontarget == "YES" ]
     then
@@ -46,18 +47,20 @@ else
 	then
 		mkdir -p $output/temp
 	fi
-	
+	gatk_params="-R $ref -et NO_ET-k $gatk/Hossain.Asif_mayo.edu.key "
 	while [[ $check -eq 0 ]]
     do
-		$java/java $mem -jar $mutect/muTect-1.0.27783.jar \
+		$java/java $mem -jar $mutect \
         -T MuTect \
-        --reference_sequence $ref \
-        $param -nt $threads \
-        --input_file:tumor $tumor_bam \
-        --input_file:normal $normal_bam \
+        -R $ref \
+        -nt $threads \
+        -I:tumor $tumor_bam --tumor_sample_name $tumor_sample \
+        -I:normal $normal_bam --normal_sample_name $normal_sample \
         -B:dbsnp,VCF $dbSNP \
         -et NO_ET \
-        --out $output/$output_file $command_line_params
+        --out $output/$output_file.txt -vcf $output/$output_file $gatk_params $param $command_line_params
+        rm $output/$output_file.txt
+        
         if [[  `find . -name '*.log'` ]]
 		then
 			len=`cat *.log | grep $output/$output_file | wc -l`
@@ -74,14 +77,12 @@ else
             let check=1    
         fi
     done    
-    
-	$script_path/mutect2vcf.pl -i $output/$output_file -o $output/$output_file.temp -ns $normal_sample -ts $tumor_sample
-	mv $output/$output_file.temp  $output/$output_file
-	
+    cat $output/$output_file | sed -e 's/SS:/MUTX_SS:/g' | sed -e 's/SS=/MUTX_SS=/g' > $output/$output_file.tmp
+    mv $output/$output_file.tmp $output/$output_file
 	if [ ! -s  $output/$output_file ]
 	then
 		$script_path/errorlog.sh $output/$output_file mutect.sh ERROR "failed to create"
 		exit 1;
 	fi
 	echo `date`
-fi    
+    

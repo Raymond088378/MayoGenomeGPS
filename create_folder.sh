@@ -39,7 +39,6 @@ fi
 	fi
 	
 	mkdir -p $output_dir/logs
-	mkdir -p $output_dir/size
     mkdir -p $output_dir/config
 
 	if [ $analysis == "external" -o $analysis == "mayo" -o $analysis == "alignment" ]
