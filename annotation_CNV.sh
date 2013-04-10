@@ -48,7 +48,7 @@ else
 	echo "Single sample"
         ### preparing cnvnator files
         cnvnator=$CNV_dir
-        touch $cnvnator/$sample.cnv.raw.del.vcf $cnvnator/$sample.cnv.raw.dup.vcf $cnvnator/$sample.cnv.filter.del.vcf $cnvnator/$sample.cnv.filter.dup.vcf $cnvnator/$sample.del.bed $cnvnator/$sample.dup.bed 
+        touch $cnvnator/$sample.cnv.raw.del.vcf $cnvnator/$sample.cnv.raw.dup.vcf $cnvnator/$sample.cnv.final.del.vcf $cnvnator/$sample.cnv.final.dup.vcf $cnvnator/$sample.del.bed $cnvnator/$sample.dup.bed 
         
         if [ ! -s $cnvnator/$sample.cnv.vcf ]
         then
@@ -57,20 +57,20 @@ else
 			$script_path/wait.sh $cnvnator/$sample.cnv.vcf.fix.log 
         fi
         
-        if [ ! -s $cnvnator/$sample.cnv.filter.vcf ]
+        if [ ! -s $cnvnator/$sample.cnv.final.vcf ]
         then
-            $script_path/email.sh $cnvnator/$sample.cnv.filter.vcf "not exist" summaryze_struct_single.sh $run_info
-			touch $cnvnator/$sample.cnv.filter.vcf.fix.log
-			$script_path/wait.sh $cnvnator/$sample.cnv.filter.vcf.fix.log
+            $script_path/email.sh $cnvnator/$sample.cnv.final.vcf "not exist" summaryze_struct_single.sh $run_info
+			touch $cnvnator/$sample.cnv.final.vcf.fix.log
+			$script_path/wait.sh $cnvnator/$sample.cnv.final.vcf.fix.log
         fi
         cat $cnvnator/$sample.cnv.vcf | awk '$0 !~ /#/' | grep DEL >> $cnvnator/$sample.cnv.raw.del.vcf
         cat $cnvnator/$sample.cnv.vcf | awk '$0 !~ /#/' | grep DUP >> $cnvnator/$sample.cnv.raw.dup.vcf
-        cat $cnvnator/$sample.cnv.filter.vcf | awk '$0 !~ /#/' | grep DEL >> $cnvnator/$sample.cnv.filter.del.vcf
-        cat $cnvnator/$sample.cnv.filter.vcf | awk '$0 !~ /#/' | grep DUP >> $cnvnator/$sample.cnv.filter.dup.vcf
+        cat $cnvnator/$sample.cnv.final.vcf | awk '$0 !~ /#/' | grep DEL >> $cnvnator/$sample.cnv.final.del.vcf
+        cat $cnvnator/$sample.cnv.final.vcf | awk '$0 !~ /#/' | grep DUP >> $cnvnator/$sample.cnv.final.dup.vcf
         ### merging per chromosome file for del and dup
 
-        cat $cnvnator/$sample.cnv.filter.del.vcf | tr ";" "\t" | tr "=" "\t" | tr ":" "\t" | awk '{print $1"\t"$2"\t"$15"\t""cnvnator_DEL""\t"$26}' > $cnvnator/$sample.del.bed
-        cat $cnvnator/$sample.cnv.filter.dup.vcf | tr ";" "\t" | tr "=" "\t" | tr ":" "\t" | awk '{print $1"\t"$2"\t"$15"\t""cnvnator_DUP""\t"$26}' > $cnvnator/$sample.dup.bed
+        cat $cnvnator/$sample.cnv.final.del.vcf | tr ";" "\t" | tr "=" "\t" | tr ":" "\t" | awk '{print $1"\t"$2"\t"$15"\t""cnvnator_DEL""\t"$26}' > $cnvnator/$sample.del.bed
+        cat $cnvnator/$sample.cnv.final.dup.vcf | tr ";" "\t" | tr "=" "\t" | tr ":" "\t" | awk '{print $1"\t"$2"\t"$15"\t""cnvnator_DUP""\t"$26}' > $cnvnator/$sample.dup.bed
         
         touch $cnvnator/$sample.cnvnator.bed
         cat $cnvnator/$sample.del.bed $cnvnator/$sample.dup.bed >> $cnvnator/$sample.cnvnator.bed
@@ -92,7 +92,7 @@ else
             ### removing intermediate files
             rm $cnvnator/$sample.del.bed $cnvnator/$sample.dup.bed 
             rm $cnvnator/$sample.cnvnator.bed $cnvnator/$sample.cnvnator.intersect.bed $cnvnator/$sample.cnvnator.intersect.annotated.bed $cnvnator/$sample.cnvnator.intersect.annotated.sorted.bed 
-			rm $cnvnator/$sample.cnv.raw.del.vcf $cnvnator/$sample.cnv.raw.dup.vcf $cnvnator/$sample.cnv.filter.del.vcf $cnvnator/$sample.cnv.filter.dup.vcf
+			rm $cnvnator/$sample.cnv.raw.del.vcf $cnvnator/$sample.cnv.raw.dup.vcf $cnvnator/$sample.cnv.final.del.vcf $cnvnator/$sample.cnv.final.dup.vcf
         else
             $script_path/errorlog.sh $report_dir/$sample.CNV.annotated.txt annotation_CNV.sh ERROR "failed to create"
         fi    
@@ -104,7 +104,7 @@ else
         cnvnator=$CNV_dir
         for tumor in $tumor_list
         do
-            touch $cnvnator/$group.$tumor.cnv.raw.del.vcf $cnvnator/$group.$tumor.cnv.raw.dup.vcf $cnvnator/$group.$tumor.cnv.filter.del.vcf $cnvnator/$group.$tumor.cnv.filter.dup.vcf $cnvnator/$group.$tumor.del.bed $cnvnator/$group.$tumor.dup.bed 
+            touch $cnvnator/$group.$tumor.cnv.raw.del.vcf $cnvnator/$group.$tumor.cnv.raw.dup.vcf $cnvnator/$group.$tumor.cnv.final.del.vcf $cnvnator/$group.$tumor.cnv.final.dup.vcf $cnvnator/$group.$tumor.del.bed $cnvnator/$group.$tumor.dup.bed 
 
 			if [ ! -s $cnvnator/$group.$tumor.cnv.vcf ]
 			then
@@ -113,21 +113,21 @@ else
 				$script_path/wait.sh $cnvnator/$group.$tumor.cnv.vcf.fix.log
 			fi
 
-			if [ ! -s $cnvnator/$group.$tumor.cnv.filter.vcf ]
+			if [ ! -s $cnvnator/$group.$tumor.cnv.final.vcf ]
 			then
-				$script_path/email.sh $cnvnator/$group.$tumor.cnv.filter.vcf "not exist" summaryze_struct_group.sh $run_info
-				touch $cnvnator/$group.$tumor.cnv.filter.vcf.fix.log
-				$script_path/wait.sh $cnvnator/$group.$tumor.cnv.filter.vcf.fix.log
+				$script_path/email.sh $cnvnator/$group.$tumor.cnv.final.vcf "not exist" summaryze_struct_group.sh $run_info
+				touch $cnvnator/$group.$tumor.cnv.final.vcf.fix.log
+				$script_path/wait.sh $cnvnator/$group.$tumor.cnv.final.vcf.fix.log
 			fi
 
 			cat $cnvnator/$group.$tumor.cnv.vcf | awk '$0 !~ /#/' | grep DEL >> $cnvnator/$group.$tumor.cnv.raw.del.vcf
 			cat $cnvnator/$group.$tumor.cnv.vcf | awk '$0 !~ /#/' | grep DUP >> $cnvnator/$group.$tumor.cnv.raw.dup.vcf
-			cat $cnvnator/$group.$tumor.cnv.filter.vcf | awk '$0 !~ /#/' | grep DEL >> $cnvnator/$group.$tumor.cnv.filter.del.vcf
-			cat $cnvnator/$group.$tumor.cnv.filter.vcf | awk '$0 !~ /#/' | grep DUP >> $cnvnator/$group.$tumor.cnv.filter.dup.vcf
+			cat $cnvnator/$group.$tumor.cnv.final.vcf | awk '$0 !~ /#/' | grep DEL >> $cnvnator/$group.$tumor.cnv.final.del.vcf
+			cat $cnvnator/$group.$tumor.cnv.final.vcf | awk '$0 !~ /#/' | grep DUP >> $cnvnator/$group.$tumor.cnv.final.dup.vcf
 			### merging per chromosome file for del and dup
 
-			cat $cnvnator/$group.$tumor.cnv.filter.del.vcf | tr ";" "\t" | tr "=" "\t" | tr ":" "\t" | awk '{print $1"\t"$2"\t"$15"\t""segseq_DEL""\t"$26}' > $cnvnator/$group.$tumor.del.bed
-			cat $cnvnator/$group.$tumor.cnv.filter.dup.vcf | tr ";" "\t" | tr "=" "\t" | tr ":" "\t" | awk '{print $1"\t"$2"\t"$15"\t""segseq_DUP""\t"$26}' > $cnvnator/$group.$tumor.dup.bed
+			cat $cnvnator/$group.$tumor.cnv.final.del.vcf | tr ";" "\t" | tr "=" "\t" | tr ":" "\t" | awk '{print $1"\t"$2"\t"$15"\t""segseq_DEL""\t"$26}' > $cnvnator/$group.$tumor.del.bed
+			cat $cnvnator/$group.$tumor.cnv.final.dup.vcf | tr ";" "\t" | tr "=" "\t" | tr ":" "\t" | awk '{print $1"\t"$2"\t"$15"\t""segseq_DUP""\t"$26}' > $cnvnator/$group.$tumor.dup.bed
 
 			touch $cnvnator/$group.$tumor.cnvnator.bed
 			cat $cnvnator/$group.$tumor.del.bed $cnvnator/$group.$tumor.dup.bed >> $cnvnator/$group.$tumor.cnvnator.bed
@@ -149,7 +149,7 @@ else
 				### removing intermediate files
 				rm $cnvnator/$group.$tumor.del.bed $cnvnator/$group.$tumor.dup.bed 
 				rm $cnvnator/$group.$tumor.cnvnator.bed $cnvnator/$group.$tumor.cnvnator.intersect.bed $cnvnator/$group.$tumor.cnvnator.intersect.annotated.bed $cnvnator/$group.$tumor.cnvnator.intersect.annotated.sorted.bed 
-				rm $cnvnator/$group.$tumor.cnv.raw.del.vcf $cnvnator/$group.$tumor.cnv.raw.dup.vcf $cnvnator/$group.$tumor.cnv.filter.del.vcf $cnvnator/$group.$tumor.cnv.filter.dup.vcf $cnvnator/$group.$tumor.del.bed $cnvnator/$group.$tumor.dup.bed 
+				rm $cnvnator/$group.$tumor.cnv.raw.del.vcf $cnvnator/$group.$tumor.cnv.raw.dup.vcf $cnvnator/$group.$tumor.cnv.final.del.vcf $cnvnator/$group.$tumor.cnv.final.dup.vcf $cnvnator/$group.$tumor.del.bed $cnvnator/$group.$tumor.dup.bed 
 			else
 				$script_path/errorlog.sh $report_dir/$group.$tumor.CNV.annotated.txt annotation_CNV.sh ERROR "failed to create"
 				exit 1;

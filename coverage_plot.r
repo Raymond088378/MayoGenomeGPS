@@ -22,7 +22,7 @@ if(length(stdin) > 1){
 		linecolor <- i
 		sym <- i
 		if(i == 1){
-			plot(percent,xlim=c(1,nrow(samplematrix)),ylim=c(0,115),main="Coverage across target regions at different depths of coverage",xlab="Depth of coverage",ylab="Percent coverage", pch=sym,col=linecolor,type="o",cex=0.6,lwd=2)
+			plot(percent,xlim=c(1,nrow(samplematrix)),ylim=c(0,quantile(percent,0.95)),main="Coverage across target regions at different depths of coverage",xlab="Depth of coverage",ylab="Percent coverage", pch=sym,col=linecolor,type="o",cex=0.6,lwd=2)
 		}else{
 			lines(percent,col=linecolor,pch=sym,type="o",cex=0.6,lwd=2)
 		}

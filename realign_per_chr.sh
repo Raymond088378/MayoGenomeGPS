@@ -34,15 +34,31 @@ fi
 	RealignerTargetCreator_params=$( cat $tool_info | grep -w '^RealignerTargetCreator_params' | cut -d '=' -f2 )
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
     TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
+<<<<<<< .mine
+<<<<<<< .mine
+    
+	### to make sure if these files are not available then also user can run the tool
+	if [[ ${#dbSNP} -ne 0  && $dbSNP != "NA" ]]
+    then
+        param="--known $dbSNP" 
+=======
+=======
 	### checking for reference files
+>>>>>>> .r8684
 	if [[ ${#dbSNP} -ne 0 && $dbSNP != "NA" ]]
 	then
 		param="-known $dbSNP" 
+>>>>>>> .r8513
     fi
+<<<<<<< .mine
+    
+    if [[ ${#Kgenome} -ne 0 $Kgenome != "NA" ]]
+=======
     	
 	if [[ ${#Kgenome} -ne 0 && $Kgenome != "NA" ]]
+>>>>>>> .r8513
     then
-        param=$param" -known $Kgenome" 
+        param=$param" --known $Kgenome" 
     fi
     
     
@@ -145,12 +161,25 @@ fi
     else
         ## Realignment
         mem=$( cat $memory_info | grep -w '^IndelRealigner_JVM' | cut -d '=' -f2)
+<<<<<<< .mine
+		$java/java $mem -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
+<<<<<<< .mine
+        -T IndelRealigner \
+        -L chr${chr} \
+        $input_bam \
+        --out $output/chr${chr}.realigned.bam  \
+        -targetIntervals $output/chr${chr}.forRealigner.intervals $Indelrealign_param $param $gatk_params
+=======
+        -T IndelRealigner -L chr${chr} --out $output/chr${chr}.realigned.bam  \
+=======
 		$java/java $mem -Djava.io.tmpdir=$output/temp/ \
 		-jar $gatk/GenomeAnalysisTK.jar \
         -T IndelRealigner \
     	-L chr${chr} \
     	--out $output/chr${chr}.realigned.bam  \
+>>>>>>> .r8684
         -targetIntervals $output/chr${chr}.forRealigner.intervals $Indelrealign_param $param $gatk_params $input_bam
+>>>>>>> .r8513
         mv $output/chr${chr}.realigned.bai $output/chr${chr}.realigned.bam.bai
     fi
 	
