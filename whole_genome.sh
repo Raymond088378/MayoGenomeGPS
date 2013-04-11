@@ -50,6 +50,8 @@ fi
 
 
 #### extract paths and set local variables
+tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
+sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
 input=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
 output=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
 PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
@@ -67,7 +69,7 @@ analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2 | tr "[A-Z]" "[
 all_sites=$( cat $tool_info | grep -w '^EMIT_ALL_SITES' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 aligner=$( cat $run_info | grep -w '^ALIGNER' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
 numchrs=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | wc -l)
-paired=$( cat $run_info | grep -w '^PAIRED' | cut -d '=' -f2)
+paired=$( cat $run_info | grep -w '^PAIRED' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
 threads=$( cat $tool_info | grep -w '^THREADS' | cut -d '=' -f2)
 variant_type=$(cat $run_info | grep -w '^VARIANT_TYPE' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")   
 somatic_caller=$(cat $run_info | grep -w '^SOMATIC_CALLER' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]") 
@@ -80,6 +82,7 @@ version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
 somatic_calling=$( cat $tool_info | grep -w '^SOMATIC_CALLING' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 stop_after_realignment=$( cat $tool_info | grep -w '^STOP_AFTER_REALIGNMENT' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 
+### check for the config files presence
 if [ ${#script_path} eq 0 ]
 then
 	echo -e "WORKFLOW_PATH variable is not set right in tool info file"
@@ -98,7 +101,7 @@ fi
 $script_path/check_config.pl $run_info > $run_info.configuration_errors.log
 if [ `cat $run_info.configuration_errors.log | wc -l` -gt 0 ]
 then
-	echo "Configuration files are malformed: look at the erros in $run_info.configuration_errors.log "
+	echo "Configuration files are malformed: look at the errors in $run_info.configuration_errors.log "
 	exit 1;
 else
 	rm $run_info.configuration_errors.log
@@ -560,14 +563,6 @@ then
 			mem=$( cat $memory_info | grep -w '^sample_numbers' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.sample_numbers.$sample.$run_num.$identify $hold_args -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/sample_numbers.sh $output_dir $sample $run_info $numbers
-			### For all but alignment, run gene_summary
-			if [ $analysis != "alignment" ]
-			then
-				$script_path/check_qstat.sh $limit
-				mem=$( cat $memory_info | grep -w '^gene_summary' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.gene_summary.$sample.$run_num.$identify $hold_args -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/gene_summary.sh $output_dir $sample $run_info $RSample		
-			fi
 		fi
 	done ### FOR EACH SAMPLE 
 	
