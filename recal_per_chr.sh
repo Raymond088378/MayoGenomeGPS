@@ -31,13 +31,8 @@ fi
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
     TargetKit=$( cat $tool_info | grep -w '^ONTARGET' | cut -d '=' -f2 )
-<<<<<<< .mine
-    BaseRecalibrator_params=$( cat $tool_info | grep -w '^BaseRecalibrator_params' | cut -d '=' -f2 )
-	TableRecalibration_params=$( cat $tool_info | grep -w '^TableRecalibration_params' | cut -d '=' -f2 )
-=======
     BaseRecalibrator_params=$( cat $tool_info | grep -w '^BaseRecalibrator_params' | cut -d '=' -f2 )
 	PrintReads_params=$( cat $tool_info | grep -w '^PrintReads_params' | cut -d '=' -f2 )
->>>>>>> .r8513
 	
     ### checkig for the reference files
 	if [[ ${#dbSNP} -ne 0 && $dbSNP != "NA" ]]
@@ -125,26 +120,14 @@ fi
 	fi	
     
     ## Recal metrics file creation
-<<<<<<< .mine
-    gatk_params="-R $ref -et NO_ET -K $gatk/Hossain.Asif_mayo.edu.key "
-	mem=$( cat $memory_info | grep -w '^CountCovariates_JVM' | cut -d '=' -f2)
-=======
+
     gatk_params="-R $ref -et NO_ET -K $gatk/Hossain.Asif_mayo.edu.key "
 	mem=$( cat $memory_info | grep -w '^BaseRecalibrator_JVM' | cut -d '=' -f2)
-<<<<<<< .mine
->>>>>>> .r8513
-	$java/java $mem -Djava.io.tmpdir=$output/temp/ -jar $gatk/GenomeAnalysisTK.jar \
-=======
 	$java/java $mem -Djava.io.tmpdir=$output/temp/ \
 	-jar $gatk/GenomeAnalysisTK.jar \
->>>>>>> .r8684
-<<<<<<< .mine
-    -T BaseRecalibrator \
-    -recalFile $output/chr${chr}.recal_data.grp $param $input_bam $region $gatk_params $BaseRecalibrator_params
-=======
     -T BaseRecalibrator \
     -recalFile $output/chr${chr}.recal_data.grp $BaseRecalibrator_params $param $input_bam $region $gatk_params
->>>>>>> .r8513
+
 
     if [ ! -s $output/chr${chr}.recal_data.grp ]
     then
