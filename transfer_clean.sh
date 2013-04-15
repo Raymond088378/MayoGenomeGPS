@@ -66,7 +66,10 @@ else
     	echo "$delivery is empty of files; continuing."
 	fi
     
-	
+	## Create tertiary folder if it doesn't exist
+	## If present, check that $tertiary/variants is empty in the event
+	## we are going to mv data into it
+
     if [ ! -d $tertiary ]
     then
 		mkdir -p $tertiary
@@ -76,7 +79,6 @@ else
 		echo "$tertiary folder already exists"
 		if [ -d $tertiary/variants -a $sites == "yes" ] 
 		then 
-			## Check that tertiary folder/variants is empty before continuing
 			if [ "$(ls -A $tertiary/variants)" ]; 
 			then
 				echo "$tertiary/variants is not empty; aborting"
