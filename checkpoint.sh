@@ -6,10 +6,10 @@
 # 4/23/2013
 # usage:
 #	
-#	checkpoint.sh set /path/to/checkpoint/directory <ProcessName>
+#	checkpoint.sh set /path/to/run_info <ProcessName>
 #		creates ProcessName.chkpt file in the checkpoint directory
 #
-# 	checkpoint.sh finish <groupID> <Stage> /path/to/checkpoint/directory <ProcessName>:<ProcessName>...
+# 	checkpoint.sh finish /path/to/run_info <groupID> <Stage> <ProcessName>:<ProcessName>...
 #		checks for presence of all ProcessName.chkpt files in the checkpoint directory and
 #		calls AddSecondaryAnalysis <GroupID> <Stage> complete
 #	
@@ -17,12 +17,11 @@
 
 function print_usage()
 {
-	echo -e "checkpoint.sh -set /path/to/checkpoint/directory <ProcessName>"
-	echo -e "\tcreates ProcessName.check file in the checkpoint directory\n"
-	echo -e "checkpoint.sh -finish <groupID> <Stage> /path/to/checkpoint/directory <ProcessName>:<ProcessName>..."
+	echo -e "checkpoint.sh -set /path/to/run_info <ProcessName>"
+	echo -e "\tcreates ProcessName.check file in the checkpoint directory. \n"
+	echo -e "checkpoint.sh -finish /path/to/run_info <groupID> <Stage> <ProcessName>:<ProcessName>..."
 	echo -e "\tchecks for presence of all ProcessName.check files in the checkpoint directory and"
-	echo -e "\tcalls AddSecondaryAnalysis <GroupID> <Stage> complete."
-	echo -e "\n"
+	echo -e "\tcalls AddSecondaryAnalysis <GroupID> <Stage> complete. \n"
 }
 
 function check_vars()
@@ -51,6 +50,46 @@ function makedir_or_fail ()
 	fi
 }
 
+function exist_or_fail()
+{
+	message = $1;
+	shift
+	
+	while (( "$#" )); do
+		if [[ ! $1 ]] 
+		then 
+			echo $message
+			exit 1
+		fi
+		shift
+	done
+}
+
+function load_run_info_or_fail ()
+{
+	local run_info=$1
+	
+	if [[ ! -f $run_info ]]
+	then
+		echo "Failed to find run_info. Exiting."
+		exit 1
+	fi
+	
+	## Load directory names from the run_info and associated configuration files
+	local tool_info=$( grep -w '^TOOL_INFO' $run_info | cut -d '=' -f2 )
+	local script_path=$( grep -w '^WORKFLOW_PATH' $tool_info | cut -d '=' -f2)
+	local memory_info=$( grep -w '^MEMORY_INFO' $run_info | cut -d '=' -f2)
+    local base_output=$( grep -w '^BASE_OUTPUT_DIR' $run_info | cut -d '=' -f2)
+	local run_num=$( grep -w '^OUTPUT_FOLDER' $run_info | cut -d '=' -f2)
+	local javapath=$( grep -w '^JAVA' $tool_info | cut -d '=' -f2)
+    local javamem=$( grep -w '^AddSecondaryAnalysis_JVM' $memory_info | cut -d '=' -f2)
+    
+    exist_or_fail "Configuration files must contain TOOL_INFO, WORKFLOW_PATH, MEMORY_INFO, BASE_OUTPUT_DIR, OUTPUT_FOLDER, JAVA, AddSecondaryAnalysis_JVM" $tool_info $script_path $memory_info $base_output $run_num $javapath $javamem
+     
+    addsecondary=$javapath/java $javamem $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties    
+	chkpt_path=$base_output/$run_num/.runstatus/
+}
+
 option=$1
 
 if [[ $option == "-set" ]]
@@ -59,9 +98,10 @@ then
 	# set a checkpoint 
     ####
 	check_vars $# 3
-	chkpt_path=$2
+	
+	load_run_info_or_fail $2
 	raw_name=$3
-	makedir_or_fail $output_path
+	makedir_or_fail $chkpt_path
 	if [ ! -f $chkpt_path/$raw_name.chkpt ]
 	then
 		touch $chkpt_path/$raw_name.chkpt
@@ -73,9 +113,9 @@ then
 elif [[ $option == "-finish" ]]
 then
 	check_vars $# 5
-	group=$2
-	stage=$3
-	chkpt_path=$4
+	load_run_info_or_fail $2
+	group=$3
+	stage=$4
 	joblist=$5
 	
 	missing=""
@@ -85,13 +125,17 @@ then
 	    files=$(ls $chkpt_path/$job.chkpt 2> /dev/null | wc -l)
 	    if [[ $files == 0 ]]
 	    then 
+	   		## missing a checkpoint
 	   		if [[ $missing == "" ]] 
 	    	then
 				missing=$job
 			else
 				missing=$missing:$job
 			fi
-		fi	
+		else
+			## found this checkpoint, so remove the file
+			rm -f $chkpt_path/$job.chkpt
+		fi
 	done
 	
 	if [[ $missing != "" ]]
