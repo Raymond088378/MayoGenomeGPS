@@ -18,9 +18,9 @@
 function print_usage()
 {
 	echo -e "checkpoint.sh -set /path/to/run_info <ProcessName>"
-	echo -e "\tcreates ProcessName.check file in the checkpoint directory. \n"
+	echo -e "\tcreates ProcessName.chkpt file in the checkpoint directory. \n"
 	echo -e "checkpoint.sh -finish /path/to/run_info <groupID> <Stage> <ProcessName>:<ProcessName>..."
-	echo -e "\tchecks for presence of all ProcessName.check files in the checkpoint directory and"
+	echo -e "\tchecks for presence of all ProcessName.chkpt files in the checkpoint directory and"
 	echo -e "\tcalls AddSecondaryAnalysis <GroupID> <Stage> complete. \n"
 }
 
