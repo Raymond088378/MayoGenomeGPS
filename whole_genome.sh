@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 ########################################################
 ###### 	MASTER SCRIPT FOR WHOLE GENOME ANALYSIS PIPELINE
