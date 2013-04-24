@@ -52,7 +52,7 @@ function makedir_or_fail ()
 
 ## exist_or_fail "error message" variable1 variable2 ... variableN
 ## 		check if variables1..N are set; if not, exit script with error message
-function exist_or_fail()
+function exist_or_fail ()
 {
 	local message=$1;
 	local found="";
@@ -60,7 +60,7 @@ function exist_or_fail()
 	while (( "$#" )); do
 		if [[ "$1" == "" ]] 
 		then 
-			echo $message
+			echo "$message not present in configuration"
 			exit 1
 		fi
 		shift
@@ -86,8 +86,13 @@ function load_run_info_or_fail ()
 	local javapath=$( grep -w '^JAVA' $tool_info | cut -d '=' -f2)
     local javamem=$( grep -w '^AddSecondaryAnalysis_JVM' $memory_info | cut -d '=' -f2)
     
-    local err="Configuration files missing required entries." 
-    exist_or_fail "$err" $tool_info $script_path $memory_info $base_output $run_num $javapath $javamem
+    exist_or_fail "$run_info:TOOL_INFO" "$tool_info" 
+    exist_or_fail "$tool_info:WORKFLOW_PATH" "$script_path" 
+    exist_or_fail "$run_info:MEMORY_INFO" "$memory_info"
+    exist_or_fail "$run_info:BASE_OUTPUT_DIR" "$base_output"
+    exist_or_fail "$tool_info:OUTPUT_FOLDER" "$run_num" 
+    exist_or_fail "$tool_info:JAVA" "$javapath"
+	exist_or_fail "$memory_info:AddSecondaryAnalysis_JVM" "$javamem"
      
     addsecondary="$javapath/java $javamem $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties"    
 	chkpt_path=$base_output/$run_num/.runstatus/
