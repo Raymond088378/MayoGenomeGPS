@@ -51,6 +51,8 @@ function makedir_or_fail ()
 	fi
 }
 
+option=$1
+
 if [[ $option == "-set" ]]
 then
     ####
@@ -76,18 +78,30 @@ then
 	chkpt_path=$4
 	joblist=$5
 	
+	missing=""
+	
 	for job in `echo $joblist | tr ":" "\n"`
 	do
 	    files=$(ls $chkpt_path/$job.chkpt 2> /dev/null | wc -l)
-	    echo $files found
-	    if [[ $files != 0 ]]
-	    then
-			echo Found $job
-	    else
-			echo Missing $job 
-	    fi
+	    if [[ $files == 0 ]]
+	    then 
+	   		if [[ $missing == "" ]] 
+	    	then
+				missing=$job
+			else
+				missing=$missing:$job
+			fi
+		fi	
 	done
-    exit 0
+	
+	if [[ $missing != "" ]]
+	then
+		echo Missing $missing
+		exit 1
+	else
+    	exit 0
+	fi
+	
 else
 	echo -e "Command not recognized.\n"
     print_usage
