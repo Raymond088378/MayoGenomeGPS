@@ -50,16 +50,26 @@ function makedir_or_fail ()
 	fi
 }
 
+## exist_or_fail "error message" variable1 variable2 ... variableN
+## 		check if variables1..N are set; if not, exit script with error message
 function exist_or_fail()
 {
-	message = $1;
+	local message=$1;
+	local found="";
 	shift
-	
 	while (( "$#" )); do
-		if [[ ! $1 ]] 
+		if [[ ! $1 && $1=="" ]] 
 		then 
 			echo $message
+			echo Found: $found 
 			exit 1
+		else
+			if [[ $found == "" ]] 
+	    	then
+				found=$1
+			else
+				found=$found,$1
+			fi
 		fi
 		shift
 	done
@@ -84,9 +94,10 @@ function load_run_info_or_fail ()
 	local javapath=$( grep -w '^JAVA' $tool_info | cut -d '=' -f2)
     local javamem=$( grep -w '^AddSecondaryAnalysis_JVM' $memory_info | cut -d '=' -f2)
     
-    exist_or_fail "Configuration files must contain TOOL_INFO, WORKFLOW_PATH, MEMORY_INFO, BASE_OUTPUT_DIR, OUTPUT_FOLDER, JAVA, AddSecondaryAnalysis_JVM" $tool_info $script_path $memory_info $base_output $run_num $javapath $javamem
+    local err="Configuration files must contain TOOL_INFO, WORKFLOW_PATH, MEMORY_INFO, BASE_OUTPUT_DIR, OUTPUT_FOLDER, JAVA, AddSecondaryAnalysis_JVM." 
+    exist_or_fail "$err" $tool_info $script_path $memory_info $base_output $run_num $javapath $javamem
      
-    addsecondary=$javapath/java $javamem $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties    
+    addsecondary="$javapath/java $javamem $script_path/AddSecondaryAnalysis.jar -p $script_path/AddSecondaryAnalysis.properties"    
 	chkpt_path=$base_output/$run_num/.runstatus/
 }
 
