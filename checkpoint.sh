@@ -142,9 +142,6 @@ then
 			else
 				missing=$missing:$job
 			fi
-		else
-			## found this checkpoint, so remove the file
-			rm -f $chkpt_path/$job.chkpt
 		fi
 	done
 	
@@ -154,6 +151,12 @@ then
 		exit 1
 	else
 		## Call AddSecondaryAnalysis and set Stage Complete
+    	
+    	## Clean up checkpoint files
+		for job in `echo $joblist | tr ":" "\n"`
+		do
+			rm -f $chkpt_path/$job.chkpt
+		done		
     	exit 0
 	fi
 	
