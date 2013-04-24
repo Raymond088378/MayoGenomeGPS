@@ -148,7 +148,7 @@ then
 		fi
 	done
 	
-	if [[ count != 0 ]]
+	if [[ $count != 0 ]]
 	then
 		echo Missing $missing
 		exit 1
