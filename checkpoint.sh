@@ -127,6 +127,7 @@ then
 	joblist=$5
 	
 	missing=""
+	count=0
 	
 	for job in `echo $joblist | tr ":" "\n"`
 	do
@@ -134,7 +135,8 @@ then
 	    if [[ $files == 0 ]]
 	    then 
 	   		## missing a checkpoint
-	   		if [[ $missing == "" ]] 
+			(( count++ ))
+	   		if [[ "$missing" == "" ]] 
 	    	then
 				missing=$job
 			else
@@ -146,11 +148,12 @@ then
 		fi
 	done
 	
-	if [[ $missing != "" ]]
+	if [[ count != 0 ]]
 	then
 		echo Missing $missing
 		exit 1
 	else
+		## Call AddSecondaryAnalysis and set Stage Complete
     	exit 0
 	fi
 	
