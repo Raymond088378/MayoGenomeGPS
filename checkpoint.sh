@@ -60,7 +60,7 @@ function exist_or_fail ()
 	while (( "$#" )); do
 		if [[ "$1" == "" ]] 
 		then 
-			echo "$message not present in configuration"
+			echo "$message is not set."
 			exit 1
 		fi
 		shift
