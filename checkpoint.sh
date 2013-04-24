@@ -7,21 +7,19 @@
 # usage:
 #	
 #	checkpoint.sh set /path/to/checkpoint/directory <ProcessName>
-#		creates ProcessName.check file in the checkpoint directory
+#		creates ProcessName.chkpt file in the checkpoint directory
 #
 # 	checkpoint.sh finish <groupID> <Stage> /path/to/checkpoint/directory <ProcessName>:<ProcessName>...
-#		checks for presence of all ProcessName.check files in the checkpoint directory and
+#		checks for presence of all ProcessName.chkpt files in the checkpoint directory and
 #		calls AddSecondaryAnalysis <GroupID> <Stage> complete
 #	
 ####
 
 function print_usage()
 {
-	echo -e "\n"
-	echo -e "checkpoint.sh set /path/to/checkpoint/directory <ProcessName>"
-	echo -e "\tcreates ProcessName.check file in the checkpoint directory"
-	echo -e "\n"
-	echo -e "checkpoint.sh finish <groupID> <Stage> /path/to/checkpoint/directory <ProcessName>:<ProcessName>..."
+	echo -e "checkpoint.sh -set /path/to/checkpoint/directory <ProcessName>"
+	echo -e "\tcreates ProcessName.check file in the checkpoint directory\n"
+	echo -e "checkpoint.sh -finish <groupID> <Stage> /path/to/checkpoint/directory <ProcessName>:<ProcessName>..."
 	echo -e "\tchecks for presence of all ProcessName.check files in the checkpoint directory and"
 	echo -e "\tcalls AddSecondaryAnalysis <GroupID> <Stage> complete."
 	echo -e "\n"
@@ -53,29 +51,7 @@ function makedir_or_fail ()
 	fi
 }
 
-function build_unique_name() 
-{
-	local name=$1
-	
-	if [[ $JOB_ID ]]
-	then
-		name=$name.$JOB_ID
-	fi
-	
-	if [[ $SGE_TASK_ID ]]
-	then
-		name=$name.$SGE_TASK_ID
-	fi
-	
-	_uniquename_=$name
-}
-
-
-
-typeset -u option=$1
-echo $option
-
-if [[ $option == "SET" ]]
+if [[ $option == "-set" ]]
 then
     ####
 	# set a checkpoint 
@@ -84,11 +60,15 @@ then
 	chkpt_path=$2
 	raw_name=$3
 	makedir_or_fail $output_path
-	build_unique_name $raw_name
-	name=$_uniquename_
-	touch $chkpt_path/$name.chkpt
-    exit 0
-elif [[ $option == "FINISH" ]]
+	if [ ! -f $chkpt_path/$raw_name.chkpt ]
+	then
+		touch $chkpt_path/$raw_name.chkpt
+		exit 0
+	else
+		echo "Warning - Checkpoint File for $raw_name already present."
+		exit 2
+	fi
+elif [[ $option == "-finish" ]]
 then
 	check_vars $# 5
 	group=$2
@@ -98,13 +78,13 @@ then
 	
 	for job in `echo $joblist | tr ":" "\n"`
 	do
-	    files=$(ls $chkpt_path/$job.*.chkpt 2> /dev/null | wc -l)
+	    files=$(ls $chkpt_path/$job.chkpt 2> /dev/null | wc -l)
 	    echo $files found
 	    if [[ $files != 0 ]]
 	    then
-		echo Found $job
+			echo Found $job
 	    else
-		echo Missing $job 
+			echo Missing $job 
 	    fi
 	done
     exit 0
