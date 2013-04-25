@@ -148,6 +148,7 @@ then
 	if [[ $count != 0 ]]
 	then
 		echo Missing $missing
+		### Take logging action here to warn the user that checkpoint was not cleared
 		exit 1
 	else
 		## Call AddSecondaryAnalysis and set Stage Complete
