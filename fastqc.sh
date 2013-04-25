@@ -12,7 +12,7 @@ function check_variable()	{
 	message=$1
 	if [[ "$2" == "" ]] 
 	then 
-		echo "$message is not set."
+		echo "$message is not set correctly."
 		exit 1
 	fi		
 }	
