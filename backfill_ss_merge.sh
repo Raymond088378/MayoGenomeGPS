@@ -55,7 +55,7 @@ function exist_or_fail ()
 function load_configuration_or_fail ()
 {
 	local run_info=$1
-	
+		
 	if [[ ! -f $run_info ]]
 	then
 		echo "Failed to find run_info. Exiting."
@@ -69,6 +69,7 @@ function load_configuration_or_fail ()
     local base_output=$( grep -w '^BASE_OUTPUT_DIR' $run_info | cut -d '=' -f2)
 	local run_num=$( grep -w '^OUTPUT_FOLDER' $run_info | cut -d '=' -f2)
 	local javapath=$( grep -w '^JAVA' $tool_info | cut -d '=' -f2)
+    local samples=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2)
     
     exist_or_fail "$run_info:TOOL_INFO" "$tool_info" 
     exist_or_fail "$tool_info:WORKFLOW_PATH" "$script_path" 
@@ -76,9 +77,15 @@ function load_configuration_or_fail ()
     exist_or_fail "$run_info:BASE_OUTPUT_DIR" "$base_output"
     exist_or_fail "$tool_info:OUTPUT_FOLDER" "$run_num" 
     exist_or_fail "$tool_info:JAVA" "$javapath"
+	exist_or_fail "$run_info:SAMPLENAMES" "$samples";
 	
+	local numsamples=$(grep -w '^SAMPLENAMES' $run_info | cut -d '=' -f2 | tr ":" "\n" | wc -l)
 	
-         
+	for sample in `echo $samples | tr ":" "\n"`
+	do
+	
+			
+	done      
 }
 
 load_configuration_or_fail
