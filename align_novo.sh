@@ -36,14 +36,11 @@ else
     center=$( cat $tool_info | grep -w '^CENTER' | cut -d '=' -f2 )
     platform=$( cat $tool_info | grep -w '^PLATFORM' | cut -d '=' -f2 )
     GenomeBuild=$( cat $run_info | grep -w '^GENOMEBUILD' | cut -d '=' -f2 )
-    fastqc=$( cat $tool_info | grep -w '^FASTQC' | cut -d '=' -f2)
-    genome_novo=$( cat $tool_info | grep -w '^NOVO_REF' | cut -d '=' -f2)    
-    novoalign=$( cat $tool_info | grep -w '^NOVOALIGN' | cut -d '=' -f2)
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     paired=$( cat $run_info | grep -w '^PAIRED' | cut -d '=' -f2)
-	paramaters=$( cat $tool_info | grep -w '^NOVO_params' | cut -d '=' -f2)
+	FOLDER_FASTQC=$( cat $run_info | grep -w '^FOLDER_FASTQC' | cut -d '=' -f2 )
 ########################################################	
 ######		Check FASTQ for Illumina or Sanger quality scrore
     
@@ -53,7 +50,7 @@ else
     
 	$script_path/dashboard.sh $sample $run_info Alignment started $SGE_TASK_ID
    
-    if [ $paired == 1 ]
+    if [[ $paired == 1 || $paired == "YES" ]]
     then
         let fidx=($SGE_TASK_ID*2)-1 
         let sidx=$SGE_TASK_ID*2
@@ -66,10 +63,11 @@ else
 				$script_path/errorlog.sh align_novo.sh $seq_file/$i ERROR "not found"
 				exit 1;
 			fi	
-			$script_path/fastq.sh $i $seq_file $fastq $run_info $fastqc
-	    	$script_path/filesize.sh alignment $sample $fastq $i $run_info
+			ln -s $seq_file/$i $fastq/$i
+			$script_path/fastqc.sh $fastqc $fastq/$i $tool_info $FOLDER_FASTQC
         done
-    elif [ $paired == 0 ]
+        sequences="$R1:$R2"
+    elif [[ $paired == 0 || $paired == "NO" ]]
     then
         let fidx=$SGE_TASK_ID
         R1=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
@@ -78,43 +76,14 @@ else
 			$script_path/errorlog.sh align_novo.sh $seq_file/$R1 ERROR "not found"
 			exit 1;
 		fi	
-		$script_path/fastq.sh $R1 $seq_file $fastq $run_info $fastqc
-		$script_path/filesize.sh alignment $sample $fastq $R1 $run_info
+		ln -s $seq_file/$R1 $fastq/$R1
+		$script_path/fastqc.sh $fastqc $fastq/$R1 $tool_info $FOLDER_FASTQC
+		sequences="$R1"
     fi  
-    ILL2SANGER1=`perl $script_path/checkFastqQualityScores.pl $fastq/$R1 10000`
 
 ########################################################	
 ######		Run novoalign for PE or SR	
-	if [ $ILL2SANGER1 -gt 65 ] 
-	then
-		qual="-F ILMFQ"
-    else
-        qual="-F STDFQ"
-    fi
-    if [ $paired == 1 ]
-    then
-        $novoalign $paramaters -d $genome_novo $qual -f $fastq/$R1 $fastq/$R2 \
-            -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$sample\tPL:$platform\tCN:$center" |  $samtools/samtools view -bS - > $output_dir_sample/$sample.$SGE_TASK_ID.bam
-    else
-        $novoalign $paramaters -d $genome_novo $qual -f $fastq/$R1 \
-            -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center"  | $samtools/samtools view -bS - > $output_dir_sample/$sample.$SGE_TASK_ID.bam      
-    fi    
-    $script_path/filesize.sh alignment.out $sample $output_dir_sample $sample.$SGE_TASK_ID.bam $run_info
-    $samtools/samtools view -H $output_dir_sample/$sample.$SGE_TASK_ID.bam 1>$output_dir_sample/$sample.$SGE_TASK_ID.bam.header 2> $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log
-    if [[ `cat $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log | wc -l` -gt 0 || `cat $output_dir_sample/$sample.$SGE_TASK_ID.bam.header | wc -l` -le 0 ]]	
-    then
-            $script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.bam align_novo.sh ERROR "truncated or corrupt"
-            exit 1;
-    else
-            rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.fix.log
-            if [ $paired == 0 ]
-            then
-                rm $fastq/$R1
-            else
-                rm $fastq/$R1 $fastq/$R2
-            fi    
-    fi	
-    rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.header
+	$script_path/novoalign.sh $fastq $sequences $sample $output_dir_sample/$sample.$SGE_TASK_ID.bam $tool_info 
     
     
 	#############################################	

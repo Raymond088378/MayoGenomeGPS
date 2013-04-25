@@ -18,7 +18,9 @@ function check_variable()	{
 }	
 if [ $# -le 2 ]
 then
-	echo -e "\nscript to run fastqc on a input file(bam or fastq)\nUsage: ./fastqc.sh </path/to/output folder> <fullpath/to/input file(bam or fastq)> <tool info file> </path/to/folder with previously computed results(optional)>"
+	echo -e "\nscript to run fastqc on a input file(bam or fastq) \
+		\nUsage: ./fastqc.sh </path/to/output folder> <fullpath/to/input file(bam or fastq)> \
+			<tool info file> </path/to/folder with previously computed results(optional)>"
 	exit 1;
 fi
 START=$(date +%s)
