@@ -7,13 +7,14 @@
 ### that is placed in the igv directory
 ### dependencies
 ###		samtools
-###		MergeBam.sh
+###		sortbam.sh and indexbam.sh
 
 
 
 if [ $# -le 3 ]
 then
-	echo -e "script to extract reads not used for downstream processing\nUsage: ./extract_read_bam.sh </path/to/input diretcory><bam file></path/to/run info></path/to/igv folder><single/pair>"
+	echo -e "script to extract reads not used for downstream processing \
+		\nUsage: ./extract_read_bam.sh </path/to/input diretcory><bam file></path/to/run info></path/to/igv folder><single/pair>"
 else
 	set -x
 	echo `date`	
@@ -24,7 +25,9 @@ else
 	if [ $5 ]
 	then
 		group=$5
+		sample=$6
 	fi
+	
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 	ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
@@ -58,7 +61,7 @@ else
 	## if missing index file for 
 	if [ ! -s $output/$bam.bai ]
 	then
-		$samtools/samtools index $output/$bam
+		$script_path/indexbam.sh $output/$bam $tool_info
 	fi	
 	
 	input=""
@@ -67,15 +70,15 @@ else
 	do
 		chr=${chrArray[$i]}
 		$samtools/samtools view -b $output/$bam $chr > $output/$bam.$chr.bam
-		$samtools/samtools index $output/$bam.$chr.bam
-		input=$input" INPUT=$output/$bam.$chr.bam"
+		$script_path/indexbam.sh $output/$bam.$chr.bam $tool_info
+		input=$input"$output/$bam.$chr.bam "
 	done
 
 	### extract unmapped reads
 	$samtools/samtools view -b -f 12 $output/$bam > $output/$bam.unmapped.bam
 	$samtools/samtools index $output/$bam.unmapped.bam
-	input=$input" INPUT=$output/$bam.unmapped.bam"
-	$script_path/MergeBam.sh "$input" $output/$bam.extra.bam $output true $run_info
+	input=$input"$output/$bam.unmapped.bam "
+	$script_path/sortbam.sh "input" $output/$bam.extra.bam $output coordinate true $run_info
 	
 	## $group = $5, so why use $5 here?
 	## this handles multiple bams as a single sample 
@@ -83,23 +86,20 @@ else
 	then
 		sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
 		samples=$(cat $sample_info | grep -w "^$group" | cut -d '=' -f2 | tr "\t" " ")	
-		for sample in $samples
-		do	
-			sam=`echo $samples | tr " " "\n"| grep -w -v "$sample" | tr "\n" " "`
-			gr=""
-			for s in $sam
-			do
-				a="ID:$s|";
-				gr="$gr$a"
-			done
-			gr=`echo $gr |  sed "s/|$//"`
-			$samtools/samtools view -b -r $sample $output/$bam.extra.bam > $output/$sample.extra.bam
-			$samtools/samtools view -H $output/$sample.extra.bam | grep -w -E -v "$gr" | $samtools/samtools reheader - $output/$sample.extra.bam > $output/$sample.extra.re.bam
-			mv $output/$sample.extra.re.bam $output/$sample.extra.bam
-			$samtools/samtools index $output/$sample.extra.bam
-			mv $output/$sample.extra.bam $igv/
-			mv $output/$sample.extra.bam.bai $igv/		
+		sam=`echo $samples | tr " " "\n"| grep -w -v "$sample" | tr "\n" " "`
+		gr=""
+		for s in $sam
+		do
+			a="ID:$s|";
+			gr="$gr$a"
 		done
+		gr=`echo $gr |  sed "s/|$//"`
+		$samtools/samtools view -b -r $sample $output/$bam.extra.bam > $output/$sample.extra.bam
+		$samtools/samtools view -H $output/$sample.extra.bam | grep -w -E -v "$gr" | $samtools/samtools reheader - $output/$sample.extra.bam > $output/$sample.extra.re.bam
+		mv $output/$sample.extra.re.bam $output/$sample.extra.bam
+		$script_path/indexbam.sh $output/$sample.extra.bam $tool_info
+		mv $output/$sample.extra.bam $igv/
+		mv $output/$sample.extra.bam.bai $igv/		
 		rm $output/$bam.extra.bam $output/$bam.extra.bam.bai
 	else
 		### no group information

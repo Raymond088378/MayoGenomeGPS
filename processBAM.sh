@@ -24,7 +24,8 @@
 
 if [ $# != 3 ];
 then
-    echo -e "wrapper to merge bam files and validate the bam for downstream analysis\nUsage: ./processBAM.sh </path/to/input directory><sample name> </path/to/run_info.txt>";
+    echo -e "wrapper to merge bam files and validate the bam for downstream analysis\
+		\nUsage: ./processBAM.sh </path/to/input directory><sample name> </path/to/run_info.txt>";
 	exit 1;
 fi
 
@@ -100,10 +101,10 @@ fi
 			$script_path/indexbam.sh $input/$sample.sorted.bam $tool_info
 		else
 			### sort and index the bam file (index set true)
-			$script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate true $run_info
+			$script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate true $run_info yes
 		fi
 	else	
-	    $script_path/sortbam.sh "INPUTARGS" $input/$sample.sorted.bam $input coordinate true $run_info
+	    $script_path/sortbam.sh "INPUTARGS" $input/$sample.sorted.bam $input coordinate true $run_info yes
 		for i in $indexes
 		do
 			if [ -s $i ]
@@ -142,7 +143,6 @@ fi
     	$script_path/flagstat.sh $input/$sample.sorted.bam $input/$sample.flagstat $tool_info samtools
     fi
     
-    ### NECESSARY??
     ### index the bam again to maintain the time stamp for bam and index generation for down stream tools
     if [ $input/$sample.sorted.bam -nt $input/$sample.sorted.bam.bai ]
     then

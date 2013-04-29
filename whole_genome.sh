@@ -302,7 +302,7 @@ then
 			done
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^processBAM' | cut -d '=' -f2)
-			qsub_args="-N $type.$version.processBAM.$sample.$run_num.$identify $type.$version.convert_sam_bam.$sample.$run_num.$identify -l h_vmem=$mem"
+			qsub_args="-N $type.$version.processBAM.$sample.$run_num.$identify $type.$version.convert_sam_bam.$sample.$run_num.$identify -pe threaded $threads -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/processBAM.sh $align_dir $sample $run_info
 			### mayo, external  	
 			### not just doing alignment so split the bam files and put unmapped reads in $bamfile.extra.bam 
@@ -321,7 +321,7 @@ then
 			num_bams=`echo $infile | tr " " "\n" | wc -l`
 			if [ $num_bams -eq 0 ]
 			then
-				echo "sample info file is not properly configured"
+				echo "sample info : $sample_info file is not properly configured"
 				exit 1;
 			fi
 			### Mayo internal, call the dashboard
@@ -353,7 +353,7 @@ then
 			### Sort, index, deduplicate the bam files 
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^processBAM' | cut -d '=' -f2)
-			qsub_args="-N $type.$version.processBAM.$sample.$run_num.$identify -hold_jid $type.$version.fastqc.$sample.$run_num.$identify -l h_vmem=$mem"
+			qsub_args="-N $type.$version.processBAM.$sample.$run_num.$identify -hold_jid $type.$version.fastqc.$sample.$run_num.$identify -l h_vmem=$mem pe threaded $threads"
 			qsub $args $qsub_args $script_path/processBAM.sh $align_dir $sample $run_info
 			### Split on chromsomes and store unmapped reads for igv
 			$script_path/check_qstat.sh $limit
@@ -375,7 +375,7 @@ then
 				num_bams=`echo $infile | tr " " "\n" | wc -l`
 				if [ $num_bams -eq 0 ]
 				then
-					echo "sample info file is not properly configured"
+					echo "sample info :$sample_info file is not properly configured"
 					exit 1;
 				fi
 				### extract headers for each bam file and create symbolic link to the sorted bams (that will be?) present in the realign directory
@@ -391,12 +391,17 @@ then
 						rm $realign_dir/$sample.$i.sorted.bam.fix.log
 					fi
 					rm $realign_dir/$sample.$i.sorted.bam.header
-					ln -s $input/$bam $realign_dir/$sample.$i.sorted.bam						
+					ln -s $input/$bam $realign_dir/$sample.$i.sorted.bam		
+					#### run fastc on bam files
+					$script_path/check_qstat.sh $limit
+					mem=$( cat $memory_info | grep -w '^fastqc' | cut -d '=' -f2)
+					qsub_args="-N $type.$version.fastqc.$sample.$run_num.$identify -l h_vmem=$mem"
+					qsub $args $qsub_args $script_path/fastqc.sh $fastqc $realign_dir/$sample.$i.sorted.bam $tool_info				
 				done
 				### Merge bam files within sample group, and create sample.sorted.bam in the realign dir
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^reformat_BAM' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.reformat_BAM.$sample.$run_num.$identify -l h_vmem=$mem"
+				qsub_args="-N $type.$version.reformat_BAM.$sample.$run_num.$identify -hold_jid $type.$version.fastqc.$sample.$run_num.$identify -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/reformat_BAM.sh $realign_dir $sample $run_info	
 				$script_path/check_qstat.sh $limit
 				### Extract Unmapped Reads for IGV
@@ -847,8 +852,11 @@ else
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^extract_reads_bam' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.extract_reads_bam.$group.$run_num.$identify -hold_jid $type.$version.reformat_pairBAM.$group.$run_num.$identify -l h_vmem=$mem"
-				qsub $args $qsub_args $script_path/extract_reads_bam.sh $realign_dir $group.sorted.bam $run_info $igv $group
-				
+				samples=$( cat $sample_info| grep -w "^$group" | cut -d '=' -f2 | tr "\t" " ")
+				for ss in $sample
+				do
+					qsub $args $qsub_args $script_path/extract_reads_bam.sh $realign_dir $group.sorted.bam $run_info $igv $group $ss
+				done
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^split_bam_chr' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.split_bam_chr.$group.$run_num.$identify -hold_jid $type.$version.reformat_pairBAM.$group.$run_num.$identify -t 1-$numchrs:1 -l h_vmem=$mem"

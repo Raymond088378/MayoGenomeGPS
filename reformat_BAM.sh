@@ -2,7 +2,8 @@
 
 if [ $# != 3 ]
 then
-    echo -e "wrapper to merge bam files and validate the bam for downstream analysis\nUsage: ./reformat_BAM.sh </path/to/input directory> <sample name> </path/to/run_info.txt>";
+    echo -e "wrapper to merge bam files and validate the bam for downstream analysis \
+		\nUsage: ./reformat_BAM.sh </path/to/input directory> <sample name> </path/to/run_info.txt>";
 else
     set -x
     echo `date`
@@ -32,11 +33,11 @@ else
 			rm $file.rf.fix.log 
 		fi
 		rm $file.rf.header	
-		INPUTARGS="INPUT="$file" "$INPUTARGS;
+		INPUTARGS=$INPUTARGS"$file "
 		files=$file" $files";
     done
     
-    num_times=`echo $INPUTARGS | tr " " "\n" | grep -c -w 'INPUT'`
+    num_times=`echo $INPUTARGS | tr " " "\n" | wc -l `
     if [ $num_times == 1 ]
     then
 		bam=`echo $INPUTARGS | cut -d '=' -f2`
@@ -50,7 +51,7 @@ else
             $script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate $run_info
         fi
     else	
-        $script_path/MergeBam.sh "$INPUTARGS" $input/$sample.sorted.bam $input true $run_info
+        $script_path/sortbam.sh "$INPUTARGS" $input/$sample.sorted.bam $input coordinate true $run_info
     fi
 
     ### add read grouup information

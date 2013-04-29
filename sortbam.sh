@@ -1,9 +1,10 @@
 #!/bin/bash
 
 ### Called by ProcessBAM.sh, 
-if [ $# != 6 ]
+if [ $# != 7 ]
 then
-    echo -e "Script to sort the bam file using picard samtools\nUsage: ./sortbam.sh <input bam> <outputbam></path/to/temp dir><sorting order><flag for indexing(true/false)></path/to/run info>"
+    echo -e "Script to sort the bam file using picard samtools \
+		\nUsage: ./sortbam.sh <input bam> <outputbam></path/to/temp dir><sorting order><flag for indexing(true/false)></path/to/run info>(flag to remove inputbam(yes/no)>"
 else
     set -x
     echo `date`
@@ -13,6 +14,7 @@ else
     order=$4
     index=`echo $5 | tr "[A-Z]" "[a-z]"`
     run_info=$6
+    removeflag=`echo $7 | tr "[A-Z]" "[a-z]"`
     
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
@@ -56,7 +58,11 @@ else
 		else
 			rm $outbam.sort.log
 		fi	
-		rm $inbam $outbam.sort.header
+		if [ $removeflag == "yes" ]
+		then
+			rm $inbam 
+		fi
+		rm $outbam.sort.header
         if [ $index == "true" ]
         then
             echo "index already created"

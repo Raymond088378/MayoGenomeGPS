@@ -9,9 +9,11 @@
 #		$5		=	run info file
 #########################################
 
-if [ $# != 5 ];
+if [ $# -le 4 ];
 then
-    echo -e "SCRIPT to create IGV BAM\nUsage: ./igv_bam.sh </path/to/realign dir> </path/to/output folder> <sample> </path/to/alignment folder></path/to/run ifno>";
+    echo -e "SCRIPT to create IGV BAM \
+		\nUsage: ./igv_bam.sh </path/to/realign dir> </path/to/output folder>  \
+			<sample> </path/to/alignment folder></path/to/run info> <group name (optional)";
 else	
     set -x
     echo `date`
@@ -21,6 +23,11 @@ else
     alignment=$4
     run_info=$5
     
+    if [ $6 ]
+    then
+    	group=$6
+	fi
+	
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
     chrs=$( cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2)
@@ -46,7 +53,7 @@ else
 		previous="realign_recal.sh"
 	fi
 	
-    if [ $multi == "YES" ]
+    if [ $6 ]
     then
         cd $input/$sample
 		mkdir -p $output/$sample
@@ -64,7 +71,6 @@ else
 				rm $i.igv.fix.log
 			fi	
 			rm $i.igv.header
-			$samtools/samtools view -H $i > $output/$sample/$sample.header.sam
         done
 
         for i in $pair
@@ -137,7 +143,6 @@ else
 				rm $i.fix.igv.log
 			fi
 			rm $i.igv.header	
-			$samtools/samtools view -H $i > $output/$sample.header.sam
         done
         # only merge if there is more than 1 chr
         ### hard coding to find extension *.cleaned.bam
@@ -153,20 +158,16 @@ else
 					index="$index $input/$sample/chr${chrArray[$i]}.cleaned.bam.bai"
 				fi
 			done
-            $samtools/samtools merge -h $output/$sample.header.sam $output/$sample.igv-sorted.bam $input_bam $output/$sample.sorted.bam.extra.bam 
+			$script_path/sortbam.sh "$input_bam $output/$sample.sorted.bam.extra.bam" $output/$sample.igv-sorted.bam $output coordinate true $run_info no
         else
-			$samtools/samtools view -H $input/$sample/chr${chrArray[1]}.cleaned.bam > $output/$sample.header.sam
-            $samtools/samtools merge -h $output/$sample.header.sam $output/$sample.igv-sorted.bam $input/$sample/chr${chrArray[1]}.cleaned.bam $output/$sample.sorted.bam.extra.bam 
+			$script_path/sortbam.sh "$input/$sample/chr${chrArray[1]}.cleaned.bam $output/$sample.sorted.bam.extra.bam" $output/$sample.igv-sorted.bam $output coordinate true $run_info no
         fi
         
         if [ -s $output/$sample.igv-sorted.bam ]
         then
-            $samtools/samtools index $output/$sample.igv-sorted.bam
-            if [ -s $output/$sample.header.sam ]
-			then
-				rm $output/$sample.header.sam
-			fi
-			if [ -s $output/$sample.sorted.bam.extra.bam ]
+            $script_path/indexbam.sh $output/$sample.igv-sorted.bam $tool_info
+            
+            if [ -s $output/$sample.sorted.bam.extra.bam ]
 			then
 				rm $output/$sample.sorted.bam.extra.bam $output/$sample.sorted.bam.extra.bam.bai
 			fi	
