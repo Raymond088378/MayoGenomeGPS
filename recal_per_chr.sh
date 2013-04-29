@@ -19,7 +19,7 @@ fi
     samples=$7
     chr=$8
 
-    ##local paramters
+    ##local parameters
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)	
@@ -126,7 +126,7 @@ fi
 	$java/java $mem -Djava.io.tmpdir=$output/temp/ \
 	-jar $gatk/GenomeAnalysisTK.jar \
     -T BaseRecalibrator \
-    -recalFile $output/chr${chr}.recal_data.grp $BaseRecalibrator_params $param $input_bam $region $gatk_params
+    --out $output/chr${chr}.recal_data.grp $BaseRecalibrator_params $param $input_bam $region $gatk_params
 
 
     if [ ! -s $output/chr${chr}.recal_data.grp ]

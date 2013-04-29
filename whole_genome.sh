@@ -16,14 +16,11 @@
 ### TODO Refactor all workflow steps to imperative logic (started 1/29/2013 - Christian Ross)
 ### TODO Valid Analysis Types
 ### 	alignment
-###		annotation
 ###		external
 ###		mayo
-###		ontarget
 ###		realignment
 ###		realign-mayo
 ###		variant
-### 
 ### Script Dependencies (not complete - CR 2/3/2013)
 ###		create_folder.sh
 ###		copy_config.sh
@@ -31,27 +28,98 @@
 ###		check_qstat.sh
 ###
 ### [[ $analysis == "alignment" || $analysis == "annotation" || $analysis == "external" || $analysis == "mayo" || $analysis == "ontarget" || $analysis == "realignment" || $analysis == "realign-mayo" || $analysis == "variant" ]]
+
+### functions
+####
+# to validate the local variables
+function check_variable()	{
+	message=$1
+	if [[ "$2" == "" ]] 
+	then 
+		echo "$message is not set correctly."
+		exit 1
+	fi		
+}
+#
+####
+
+###  
+# check for full path
+function check_dir()	{
+	if [ $2 == "." ]
+	then
+		echo -e "$message : should be specified as complete path"
+		exit 1;
+	fi	
+}
+#
+###				
+
+### 
+# to check and validate the config file presence
+function check_config()	{
+	message=$1
+	if [ ! -s $2 ]
+	then
+		echo -e "$message : doesn't exist"
+		exit 1;
+	fi	
+	dir_info=`dirname $2`
+	if [ $dir_info == "." ]
+	then
+		echo -e "$message : should be specified as complete path"
+		exit 1;
+	fi	
+	dos2unix $2
+	cat $2 | sed 's/^[ \t]*//;s/[ \t]*$//' > $2.tmp
+	mv $2.tmp $2														
+}	
+#
+###
+
 if [ $# != 1 ]
 then	
-	echo -e "Wrapper script to submit all the jobs for dna-seq workflow\nUsage: ./whole_genome.sh <Please specify full /path/to/run_info file>";
+	echo -e "Wrapper script to submit all the jobs for dna-seq workflow \
+			\nUsage: ./whole_genome.sh <specify full /path/to/run_info file>";
 	exit 1;
 fi
-echo `date`
+
+#### start of the main wrapper
+
 run_info=`readlink -f $1`
-dos2unix $run_info
+check_config "RunInfo:$run_info" $run_info
 
-dir_info=`dirname $run_info`
-if [ "$dir_info" = "." ]
+### get the path for all the scripts
+if [ $JOB_ID ]
 then
-	echo -e "ERROR : run_info=$run_info should be specified as a complete path\n";
-	exit 1;
+	script=`qstat -j $JOB_ID | grep -w script_file| awk '{print $NF}'`
+	script_path=`dirname $script`
+else
+	script_path=`dirname $0`
 fi
+check_dir "WORKFLOW_PATH:$script_path" $script_path 			
 
 
 
-#### extract paths and set local variables
+## extract paths and set local variables
 tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
+check_config "RunInfo:$tool_info" $tool_info
+check_config "RunInfo:$sample_info" $sample_info
+
+### validate the config file
+#
+$script_path/check_config.pl $run_info > $run_info.configuration_errors.log
+if [ `cat $run_info.configuration_errors.log | wc -l` -gt 0 ]
+then
+	echo "Configuration files are mis-configured: look at the errors in $run_info.configuration_errors.log "
+	exit 1;
+else
+	rm $run_info.configuration_errors.log
+fi	
+#
+###
+
 input=$( cat $run_info | grep -w '^INPUT_DIR' | cut -d '=' -f2)
 output=$( cat $run_info | grep -w '^BASE_OUTPUT_DIR' | cut -d '=' -f2)
 PI=$( cat $run_info | grep -w '^PI' | cut -d '=' -f2)
@@ -81,52 +149,14 @@ workflow=$( cat $run_info | grep '^TOOL=' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" 
 version=$( cat $run_info | grep -w '^VERSION' | cut -d '=' -f2)
 somatic_calling=$( cat $tool_info | grep -w '^SOMATIC_CALLING' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
 stop_after_realignment=$( cat $tool_info | grep -w '^STOP_AFTER_REALIGNMENT' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]" )
-
-### check for the config files presence
-if [ ${#script_path} eq 0 ]
-then
-	echo -e "WORKFLOW_PATH variable is not set right in tool info file"
-	exit 1;
-else
-	$script_path/config.present.sh $run_info
-	if [ `cat  $dir_info/config.log | wc -l` -gt 0 ]
-	then
-		echo -e " configuration files are not proper take a look at $dir_info/config.log file"
-		exit 1;
-	fi				
-	rm $dir_info/config.log	
-fi    	    	     
-        
-### validate the config file
-$script_path/check_config.pl $run_info > $run_info.configuration_errors.log
-if [ `cat $run_info.configuration_errors.log | wc -l` -gt 0 ]
-then
-	echo "Configuration files are malformed: look at the errors in $run_info.configuration_errors.log "
-	exit 1;
-else
-	rm $run_info.configuration_errors.log
-fi	
-
-### Automatically generate unique_id
-$script_path/unique_id.sh $run_info
-
-#### check for unique identification number
-identify=$( cat $run_info | grep -w '^IDENTIFICATION_NUMBER' | cut -d '=' -f2)
-if echo $identify | egrep -q '^[0-9]+$'
-then
-	echo -e "HURRAY !!! you are good to run the workflow"
-else
-	echo -e "ERROR : unique identification for the workflow was not generated, please check the unique_id.sh script."
-fi
-
+ 	    	     
 ### create folders
 $script_path/create_folder.sh $run_info
 output_dir=$output/$PI/$tool/$run_num
 config=$output_dir/config
-
 if [ -f $output_dir/folder_exist.log ]
 then
-	echo "ERROR: folder already exist"
+	echo "ERROR: folder : $output_dir already exist"
 	exit 1;
 fi	
 
@@ -134,26 +164,14 @@ fi
 $script_path/copy_config.sh $output_dir $run_info
 run_info=$output_dir/run_info.txt
 
-### modify the run info file to use configurations in the output folder
+### modify the run info file to use configurations in the output folder and assigning local variable for all the configuration files
 add=`date +%D`
 cat $run_info | grep -w -v -E '^TOOL_INFO|^SAMPLE_INFO|^MEMORY_INFO' > $run_info.tmp
-echo -e "TOOL_INFO=$config/tool_info.txt\nSAMPLE_INFO=$config/sample_info.txt\nMEMORY_INFO=$config/memory_info.txt\nDATE=$add" | cat $run_info.tmp - > $run_info
+echo -e "\nTOOL_INFO=$config/tool_info.txt\nSAMPLE_INFO=$config/sample_info.txt\nMEMORY_INFO=$config/memory_info.txt\nDATE=$add" | cat $run_info.tmp - >$config/run_info.txt
 rm $run_info.tmp
-mv $run_info $config/run_info.txt
 run_info=$config/run_info.txt
-
-## tool info file
-tool_info=$output_dir/tool_info.txt
-mv $tool_info $config/tool_info.txt
 tool_info=$config/tool_info.txt
-
-## sample info file
-sample_info=$output_dir/sample_info.txt
-mv $sample_info $config/sample_info.txt
 sample_info=$config/sample_info.txt
-### memory info 
-memory_info=$output_dir/memory_info.txt
-mv $memory_info $config/memory_info.txt
 memory_info=$config/memory_info.txt
 
 ### creating local variables
@@ -162,17 +180,16 @@ if [ $analysis != "alignment" ]
 then
 	output_realign=$output_dir/realign/
 	output_variant=$output_dir/variants
-	output_OnTarget=$output_dir/OnTarget
-	output_annot=$output_dir/annotation
-	snpeff=$output_annot/SNPEFF
 	igv=$output_dir/IGV_BAM
 	RSample=$output_dir/Reports_per_Sample/
-	annot=$output_dir/Reports_per_Sample/ANNOT
-	sv=$output_dir/Reports_per_Sample/SV
+	if [ $tool == "whole_genome" ]
+	then
+		sv=$output_dir/Reports_per_Sample/SV
+		struct=$output_dir/struct/
+		cnv=$output_dir/cnv/
+		circos=$output_dir/circos/
+	fi
 	numbers=$output_dir/numbers
-	struct=$output_dir/struct/
-	cnv=$output_dir/cnv/
-	circos=$output_dir/circos/
 fi
 
 ##########################################################

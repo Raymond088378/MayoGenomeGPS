@@ -1,8 +1,12 @@
 #!/bin/bash
 
+###
+# script to create the folder structure depending on the data type and analysis
+###
+
 if [ $# != 1 ]
 then
-	echo -e "Usage: wrapper to create folder structure\nUsage: ./create_folder.sh <run info file>"
+	echo -e "Usage: wrapper to create folder structure\nUsage: ./create_folder.sh </PATH/TO/run info file>"
 	exit 1;
 fi
 	echo `date`
