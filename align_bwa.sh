@@ -2,7 +2,8 @@
 
 if [ $# -le 2 ];
 then
-    echo -e "wrapper script to run the alignment using BWA\nUsage ./align_bwa.sh <sample name> </path/to/output_dir> </path/to/run_info.txt> <SGE TASK ID (optional)";
+    echo -e "wrapper script to run the alignment using BWA \
+		\nUsage ./align_bwa.sh <sample name> </path/to/output_dir> </path/to/run_info.txt> <SGE TASK ID (optional)";
 else	
     set -x 
     echo `date`
@@ -42,24 +43,6 @@ else
 		$script_path/samse.sh $sample $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai $fastq/$R1\
 			$output_dir_sample/$sample.$SGE_TASK_ID.bam $tool_info	
 	fi
-		$script_path/filesize.sh alignment.out $sample $output_dir_sample $sample.$SGE_TASK_ID.bam $run_info
- 
-	$samtools/samtools view -H $output_dir_sample/$sample.$SGE_TASK_ID.bam 1>$output_dir_sample/$sample.$SGE_TASK_ID.bam.header 2> $output_dir_sample/$sample.$SGE_TASK_ID.bam.log
-	if [[ `cat $output_dir_sample/$sample.$SGE_TASK_ID.bam.log | wc -l` -gt 0 || `cat $output_dir_sample/$sample.$SGE_TASK_ID.bam.header | wc -l` -le 0 ]]	
-	then
-		$script_path/errorlog.sh $output_dir_sample/$sample.$SGE_TASK_ID.bam align_bwa.sh ERROR "truncated or corrupt"
-		exit 1;
-	else
-		rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.log
-                if [ $paired == 0 ]
-        then
-            rm $fastq/$R1
-            rm $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai
-        else
-            rm $fastq/$R1 $fastq/$R2
-            rm $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai $output_dir_sample/$sample.$SGE_TASK_ID.R2.sai
-        fi    
-	fi	
-	rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.header
+	$script_path/filesize.sh alignment.out $sample $output_dir_sample $sample.$SGE_TASK_ID.bam $run_info
     echo `date`
 fi	

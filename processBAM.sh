@@ -97,7 +97,7 @@ fi
 		then
 			### Already sorted, just index
 			mv $input/$sample.bam $input/$sample.sorted.bam
-			$samtools/samtools index $input/$sample.sorted.bam
+			$script_path/indexbam.sh $input/$sample.sorted.bam $tool_info
 		else
 			### sort and index the bam file (index set true)
 			$script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate true $run_info
@@ -139,14 +139,14 @@ fi
     fi
     if [ $analysis == "realignment" -o $analysis == "realign-mayo" ]
     then
-        $samtools/samtools flagstat $input/$sample.sorted.bam > $input/$sample.flagstat
+    	$script_path/flagstat.sh $input/$sample.sorted.bam $input/$sample.flagstat $tool_info samtools
     fi
     
     ### NECESSARY??
     ### index the bam again to maintain the time stamp for bam and index generation for down stream tools
     if [ $input/$sample.sorted.bam -nt $input/$sample.sorted.bam.bai ]
     then
-        $samtools/samtools index $input/$sample.sorted.bam
+        $script_path/indexbam.sh $input/$sample.sorted.bam $tool_info
     fi
     
     ## dashboard

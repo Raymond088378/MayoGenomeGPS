@@ -24,7 +24,11 @@ else
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
 	mem=$( cat $memory_info | grep -w '^MERGE_JVM' | cut -d '=' -f2)
 	
-    $java/java $mem -jar $picard/MergeSamFiles.jar \
+    ###use novo sort in place of picard merging
+	
+	$script_path/sortbam.sh "$inbam" $input/$sample.sorted.bam $input coordinate true $run_info
+	
+	$java/java $mem -jar $picard/MergeSamFiles.jar \
     $inbam MAX_RECORDS_IN_RAM=$reads \
     OUTPUT=$outbam \
     TMP_DIR=$tmp_dir \
