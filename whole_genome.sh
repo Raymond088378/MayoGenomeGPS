@@ -228,17 +228,13 @@ then
 	numsamples=$(cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2 | tr ":" "\n" | wc -l)
 	for sample in `echo $samples | tr ":" "\n"`
 	do     
-		### 	alignment external mayo ontarget realignment realign-mayo variant
-		if [ $analysis != "annotation" ]
-		then
-			## Don't set align_dir or bamfile if doing annotation
-			align_dir=$output_dir/alignment/$sample
-			bamfile=$sample.sorted.bam
-		fi
+		### 	alignment external mayo realignment realign-mayo variant
+		align_dir=$output_dir/alignment/$sample
+		bamfile=$sample.sorted.bam
 		if [[ $analysis == "mayo" || $analysis == "external" || $analysis == "alignment" ]]
 		then
 			mkdir -p $align_dir
-			if [ $paired == 1 ]
+			if [[ $paired == 1  || $paired == "YES" ]]
 			then
 				let numfiles=(`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" |wc -l`)/2
 			else
@@ -246,7 +242,7 @@ then
 			fi	
 			if [ $numfiles -eq 0 ]
 			then
-				echo "Sample info file is not properly configured, number of files in sample_info is zero."
+				echo "Sample info :$sample_info file is not properly configured, number of files in sample_info is not defined for $sample"
 				exit 1;
 			fi	
 			### Invoke dashboard for mayo internal job tracking only
@@ -265,6 +261,7 @@ then
 				mem=$( cat $memory_info | grep -w '^align_novo' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.align_novo.$sample.$run_num.$identify -pe threaded $threads -t 1-$numfiles:1 -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/align_novo.sh $sample $output_dir $run_info
+				
 			elif [ $aligner == "bwa" ]
 			then
 				echo "bwa is used as aligner"
@@ -297,8 +294,15 @@ then
 				hold="-hold_jid $type.$version.align_novo.$sample.$run_num.$identify"
 			fi    
 			$script_path/check_qstat.sh $limit
+			mem=$( cat $memory_info | grep -w '^convert_sam_bam' | cut -d '=' -f2)
+			for i in $(seq 1 $numfiles)
+			do 
+				qsub_args="-N $type.$version.convert_sam_bam.$sample.$run_num.$identify $hold -l h_vmem=$mem"
+				qsub $args $qsub_args $script_path/convert_sam_bam.sh $output_dir/$sample $sample.$i.bam $sample.$i $run_info $i
+			done
+			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^processBAM' | cut -d '=' -f2)
-			qsub_args="-N $type.$version.processBAM.$sample.$run_num.$identify $hold -l h_vmem=$mem"
+			qsub_args="-N $type.$version.processBAM.$sample.$run_num.$identify $type.$version.convert_sam_bam.$sample.$run_num.$identify -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/processBAM.sh $align_dir $sample $run_info
 			### mayo, external  	
 			### not just doing alignment so split the bam files and put unmapped reads in $bamfile.extra.bam 

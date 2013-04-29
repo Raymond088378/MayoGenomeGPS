@@ -16,8 +16,11 @@
 
 if [ $# -le 2 ]
 then
-    echo -e "wrapper script to run the alignment using NOVO ALIGN\nUsage: ./align_novo.sh <sample name> </path/to/output_dir> </path/to/run_info.txt> <SGE TASK ID (optional)>";
-else	
+    echo -e "wrapper script to run the alignment using NOVO ALIGN \
+		\nUsage: ./align_novo.sh <sample name> </path/to/output_dir> </path/to/run_info.txt> <SGE TASK ID (optional)>";
+	exit 1;	
+fi
+	
     set -x 
     echo `date`
     sample=$1
@@ -85,19 +88,4 @@ else
 ######		Run novoalign for PE or SR	
 	$script_path/novoalign.sh $fastq $sequences $sample $output_dir_sample/$sample.$SGE_TASK_ID.bam $tool_info 
     
-    
-	#############################################	
-	### Sort BAM, adds RG & remove duplicates ###
-	#############################################
-
-	### TODO: Break Out Convert_Bam.SH and run as a separate task to avail different memory settings
-	### than the novoalign or bwa process (for sorting)
-
-    $script_path/convert_bam.sh $output_dir_sample $sample.$SGE_TASK_ID.bam $sample.$SGE_TASK_ID $SGE_TASK_ID $run_info
-	if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.flagstat ]
-    then
-        $script_path/errorlog.sh align_novo.sh $output_dir_sample/$sample.$SGE_TASK_ID.flagstat ERROR "empty"
-		exit 1;
-	fi
-	echo `date`	
-fi
+    echo `date`	

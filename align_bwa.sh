@@ -34,11 +34,13 @@ else
 		let sidx=($SGE_TASK_ID*2)
 		R1=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
         R2=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" | head -n $sidx | tail -n 1`
-		$bwa/bwa sampe -r "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" $genome_bwa $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai $output_dir_sample/$sample.$SGE_TASK_ID.R2.sai $fastq/$R1 $fastq/$R2 | $samtools/samtools view -bS - > $output_dir_sample/$sample.$SGE_TASK_ID.bam
+		$script_path/sampe.sh $sample $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai $output_dir_sample/$sample.$SGE_TASK_ID.R2.sai \
+			$fastq/$R1 $fastq/$R2 $output_dir_sample/$sample.$SGE_TASK_ID.bam $tool_info
 	else
 		let fidx=($SGE_TASK_ID*2)-1 
 		R1=`cat $sample_info | grep -w ^FASTQ:$sample | cut -d '=' -f2| tr "\t" "\n" | head -n $fidx | tail -n 1`
-		$bwa/bwa samse -r "@RG\tID:$sample\tSM:$sample\tLB:$GenomeBuild\tPL:$platform\tCN:$center" $genome_bwa $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai $fastq/$R1 | $samtools/samtools view -bS - > $output_dir_sample/$sample.$SGE_TASK_ID.bam	
+		$script_path/samse.sh $sample $output_dir_sample/$sample.$SGE_TASK_ID.R1.sai $fastq/$R1\
+			$output_dir_sample/$sample.$SGE_TASK_ID.bam $tool_info	
 	fi
 		$script_path/filesize.sh alignment.out $sample $output_dir_sample $sample.$SGE_TASK_ID.bam $run_info
  
@@ -59,13 +61,5 @@ else
         fi    
 	fi	
 	rm $output_dir_sample/$sample.$SGE_TASK_ID.bam.header
-	########################################################	
-######		Sort BAM, adds RG 
-	$script_path/convert_bam.sh $output_dir_sample $sample.$SGE_TASK_ID.bam $sample.$SGE_TASK_ID $SGE_TASK_ID $run_info
-	if [ ! -s $output_dir_sample/$sample.$SGE_TASK_ID.flagstat ]
-    then
-        $script_path/errorlog.sh align_bwa.sh $output_dir_sample/$sample.$SGE_TASK_ID.flagstat ERROR "is empty"
-		exit 1;
-	fi
     echo `date`
 fi	

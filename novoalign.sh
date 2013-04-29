@@ -72,7 +72,7 @@ fi
 $novoalign $paramaters -d $indexedgenome $qual $fastq \
             -o SAM "@RG\tID:$sample\tSM:$sample\tLB:$sample\tPL:$platform\tCN:$center" \
             	|  $samtools/samtools view -bS - > $outputbam
-
+            	
 ### error checking
 $samtools/samtools view -H $outputbam 1>$outputbam.header 2> $outputbam.novoalign.fix.log
 if [[ `cat $outputbam.novoalign.fix.log | wc -l` -gt 0 || `cat $outputbam.header | wc -l` -le 0 ]]	

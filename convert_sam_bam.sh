@@ -13,17 +13,22 @@
 ######		TWIKI:				http://bioinformatics.mayo.edu/BMI/bin/view/Main/BioinformaticsCore/Analytics/WholeGenomeWo
 ########################################################
 
-if [ $# != 5 ];
+if [ $# -le 3 ];
 then
-    echo -e "wrapper to add read group and sort and reorder the bam\nUsage: convert_bam.sh </path/to/input directory> <name of BAM > <sample name> <sge task id> </path/to/run_info.txt>";
-else
+    echo -e "wrapper to add read group and sort and reorder the bam \
+		\nUsage: ./convert_sam_bam.sh </path/to/input directory> <input name of BAM > <sample name> </path/to/run_info.txt> <sge task id>";
+	exit 1;
+fi
     set -x
     echo `date`
     input=$1
     input_bam=$2
     sample=$3
-	id=$4
-    run_info=$5
+	run_info=$4
+	if [ $5 ]
+	then
+		id=$5
+	fi
 	
 ########################################################	
 ######		Reading run_info.txt and assigning to variables
