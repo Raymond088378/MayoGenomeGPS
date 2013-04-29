@@ -78,12 +78,12 @@ fi
 			rm $file.fix.log 
 		fi	
 		rm $file.header
-		INPUTARGS="INPUT="$file" "$INPUTARGS;
+		INPUTARGS=$INPUTARGS"$file ";
         files=$file" $files";
         indexes=${file}.bai" $indexes"
     done
     
-	num_times=`echo $INPUTARGS | tr " " "\n" | grep -c -w 'INPUT'`
+	num_times=`echo $INPUTARGS | tr " " "\n" | wc -l`
 	if [ $num_times == 1 ]
 	then
 		bam=`echo $INPUTARGS | cut -d '=' -f2`
@@ -103,7 +103,7 @@ fi
 			$script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate true $run_info
 		fi
 	else	
-	    $script_path/MergeBam.sh "$INPUTARGS" $input/$sample.sorted.bam $input true $run_info
+	    $script_path/sortbam.sh "INPUTARGS" $input/$sample.sorted.bam $input coordinate true $run_info
 		for i in $indexes
 		do
 			if [ -s $i ]
