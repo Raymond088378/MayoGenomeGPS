@@ -18,13 +18,14 @@ else
 	then
 		SGE_TASK_ID=$7
 	fi	
+	
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     chr=$(cat $run_info | grep -w '^CHRINDEX' | cut -d '=' -f2 | tr ":" "\n" | head -n $SGE_TASK_ID | tail -n 1)
     tool=$( cat $run_info | grep -w '^TYPE' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]" )
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
 	recalibration=$( cat $tool_info | grep -w '^RECALIBRATION' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
-	export PATH=$java:$PATH
+	
 
 	
     ### update dash board    

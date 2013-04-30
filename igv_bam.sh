@@ -55,9 +55,9 @@ else
 	
     if [ $6 ]
     then
-        cd $input/$sample
-		mkdir -p $output/$sample
-        pair=$( cat $sample_info | grep -w "^$sample" | cut -d '=' -f2)
+        cd $input/$group
+		mkdir -p $output/$group
+        samples=$( cat $sample_info | grep -w "^$group" | cut -d '=' -f2)
         for j in $(seq 1 ${#chrArray[@]})
 		do
 			chr=${chrArray[$j]}
@@ -73,17 +73,16 @@ else
 			rm $i.igv.header
         done
 
-        for i in $pair
-        do
-            sam=`echo $pair | tr " " "\n" | grep -w -v $i | tr "\n" " "`
-            gr=""
-            for s in $sam
-            do
-                a="ID:$s|";
-                gr="$gr$a"
-            done
-            gr=`echo $gr |  sed "s/|$//"`
-            cat $output/$sample/$sample.header.sam |grep -w -E -v "$gr" > $output/$sample/$sample.$i.header.sam
+    	sam=`echo $samples | tr " " "\n" | grep -w -v $sample | tr "\n" " "`
+        gr=""
+    	for s in $sam
+    	do
+        	a="ID:$s|";
+        	gr="$gr$a"
+    	done
+    	gr=`echo $gr |  sed "s/|$//"`
+    	cat $output/$group.$sample.chr$chr.bam
+    	cat $output/$group/$sample.header.sam |grep -w -E -v "$gr" > $output/$sample/$sample.$i.header.sam
             
             if [ ${#chrArray[@]} -gt 1 ]
             then
@@ -158,9 +157,10 @@ else
 					index="$index $input/$sample/chr${chrArray[$i]}.cleaned.bam.bai"
 				fi
 			done
-			$script_path/sortbam.sh "$input_bam $output/$sample.sorted.bam.extra.bam" $output/$sample.igv-sorted.bam $output coordinate true $run_info no
+			$script_path/sortbam.sh "$input_bam $output/$sample.sorted.bam.extra.bam" $output/$sample.igv-sorted.bam $output coordinate true $run_info no yes
         else
-			$script_path/sortbam.sh "$input/$sample/chr${chrArray[1]}.cleaned.bam $output/$sample.sorted.bam.extra.bam" $output/$sample.igv-sorted.bam $output coordinate true $run_info no
+			$script_path/sortbam.sh "$input/$sample/chr${chrArray[1]}.cleaned.bam $output/$sample.sorted.bam.extra.bam" \
+				$output/$sample.igv-sorted.bam $output coordinate true $run_info no yes
         fi
         
         if [ -s $output/$sample.igv-sorted.bam ]

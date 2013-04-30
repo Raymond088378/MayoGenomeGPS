@@ -1,10 +1,11 @@
 #!/bin/bash
 
 ### Called by ProcessBAM.sh, 
-if [ $# != 7 ]
+if [ $# != 8 ]
 then
     echo -e "Script to sort the bam file using picard samtools \
-		\nUsage: ./sortbam.sh <input bam> <outputbam></path/to/temp dir><sorting order><flag for indexing(true/false)></path/to/run info>(flag to remove inputbam(yes/no)>"
+		\nUsage: ./sortbam.sh <input bam> <outputbam></path/to/temp dir><sorting order> \
+			<flag for indexing(true/false)></path/to/run info><flag to remove inputbam(yes/no)><flag to mention if BAM is already sorted(yes/no)>"
 else
     set -x
     echo `date`
@@ -15,6 +16,7 @@ else
     index=`echo $5 | tr "[A-Z]" "[a-z]"`
     run_info=$6
     removeflag=`echo $7 | tr "[A-Z]" "[a-z]"`
+    assume_sorted=`echo $8 | tr "[A-Z]" "[a-z]"`
     
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
     memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
@@ -32,7 +34,22 @@ else
 	if [ $usenovosort == "yes" ]
 	then
 		### NOVOSORT INJECTION
-		$novosort $novosortopt --index --tmpdir=$tmp_dir $inbam -o $outbam
+		if [ $assume_sorted == "yes" ]
+		then
+			if [ $order == "coordinate" ]
+			then
+				$novosort $novosortopt --assumesorted --index --tmpdir=$tmp_dir $inbam -o $outbam
+			else
+				$novosort $novosortopt --namesort --assumesorted --index --tmpdir=$tmp_dir $inbam -o $outbam
+			fi	
+		else
+			if [ $order == "coordinate" ]
+			then
+				$novosort $novosortopt --index --tmpdir=$tmp_dir $inbam -o $outbam
+			else
+				$novosort $novosortopt --namesort --index --tmpdir=$tmp_dir $inbam -o $outbam
+			fi		
+		fi
 	else	
 		$java/java $mem -jar $picard/SortSam.jar \
 		INPUT=$inbam \
