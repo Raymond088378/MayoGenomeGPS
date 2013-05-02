@@ -77,6 +77,32 @@ function check_config()	{
 #
 ###
 
+### 
+# to check and validate the input bam file
+function validate_bam()	{
+	samtools=$1
+	bam=$2
+	dir=$3
+	
+	if [ ! -s $2 ]
+	then
+		echo -e "$bam : doesn't exist"
+		exit 1;
+	fi	
+	bam_name=`basename $bam`
+	$samtools/samtools view -H $bam 1>$dir/$bam_name.header 2> $dir/$bam_name.log
+	if [[ `cat $dir/$bam_name.log | wc -l` -gt 0 || `cat $dir/$bam_name.header | wc -l` -le 0 ]]
+	then
+		echo -e "ERROR : $bam file is truncated or corrupted [`date`]"
+		exit 1;
+	else
+		rm $dir/$bam_name.log
+	fi	
+	rm $dir/$bam_name.header														
+}	
+#
+###
+
 if [ $# != 1 ]
 then	
 	echo -e "Wrapper script to submit all the jobs for dna-seq workflow \
@@ -340,15 +366,7 @@ then
 			for ((i=1; i <=$num_bams; i++));
 			do	
 				bam=`echo $infile | awk -v num=$i '{print $num}'`
-				$samtools/samtools view -H $input/$bam 1>$align_dir/$sample.$i.sorted.header 2> $align_dir/$sample.$i.sorted.bam.log
-				if [[ `cat $align_dir/$sample.$i.sorted.bam.log | wc -l` -gt 0 || `cat $align_dir/$sample.$i.sorted.header | wc -l` -le 0 ]]
-				then
-					$script_path/errorlog.sh $input/$bam whole_genome.sh ERROR "truncated or corrupted"
-					exit 1;
-				else
-					rm $align_dir/$sample.$i.sorted.bam.log
-				fi	
-				rm $align_dir/$sample.$i.sorted.header
+				validate_bam $samtools $input/$bam $align_dir
 				ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
 				#### run fastc on bam files
 				$script_path/check_qstat.sh $limit
@@ -390,15 +408,7 @@ then
 				for ((i=1; i <=$num_bams; i++));
 				do
 					bam=`echo $infile | awk -v num=$i '{print $num}'`
-					$samtools/samtools view -H $input/$bam 1>$realign_dir/$sample.$i.sorted.bam.header 2> $realign_dir/$sample.$i.sorted.bam.fix.log
-					if [[ `cat $realign_dir/$sample.$i.sorted.bam.fix.log | wc -l` -gt 0 || `cat $realign_dir/$sample.$i.sorted.bam.header | wc -l` -le 0 ]]
-					then
-						$script_path/errorlog.sh $input/$bam whole_genome.sh ERROR "truncated or corrupted"
-						exit 1;
-					else
-						rm $realign_dir/$sample.$i.sorted.bam.fix.log
-					fi
-					rm $realign_dir/$sample.$i.sorted.bam.header
+					validate_bam $samtools $input/$bam $realign_dir
 					ln -s $input/$bam $realign_dir/$sample.$i.sorted.bam		
 					#### run fastc on bam files
 					$script_path/check_qstat.sh $limit
@@ -464,10 +474,6 @@ then
 			mem=$( cat $memory_info | grep -w '^OnTarget_BAM' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.OnTarget_BAM.$sample.$run_num.$identify -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=$mem"
 			qsub $args $qsub_args  $script_path/OnTarget_BAM.sh $realign_dir $output_OnTarget $sample $run_info
-			$script_path/check_qstat.sh $limit
-			mem=$( cat $memory_info | grep -w '^OnTarget_PILEUP' | cut -d '=' -f2)
-			qsub_args="-N $type.$version.OnTarget_PILEUP.$sample.$run_num.$identify -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=$mem"
-			qsub $gatk_args $qsub_args $script_path/OnTarget_PILEUP.sh $realign_dir $output_OnTarget $sample $run_info
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^getCoverage' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.getCoverage.$sample.$run_num.$identify -hold_jid $type.$version.OnTarget_PILEUP.$sample.$run_num.$identify -l h_vmem=$mem"
