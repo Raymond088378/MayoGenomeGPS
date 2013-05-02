@@ -26,7 +26,6 @@ fi
 	memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
 	mem=$( cat $memory_info | grep -w '^UnifiedGenotyper_JVM' | cut -d '=' -f2)
 	 
-	export PATH=$java:$PATH
 	if [[ ${#ped} -eq 0 && $ped == "NA" ]]
     then
         ped="NA"
@@ -50,16 +49,19 @@ fi
 			-T UnifiedGenotyper --output_mode $mode -nt $threads \
 			-glm $type $range $bam \
 			--ped $ped --out $vcf $command_line_params $gatk_param
+			unifiedid=$!
 		else
 			$java/java $mem -Djava.io.tmpdir=$out/temp/ -jar $gatk/GenomeAnalysisTK.jar \
 			-T UnifiedGenotyper --output_mode $mode -nt $threads \
 			-glm $type $range $bam \
 			--out $vcf $command_line_params $gatk_param
+			unifiedid=$!
 		fi
 		sleep 5
         check=`[ -s $vcf.idx ] && echo "1" || echo "0"`
         if [ $check -eq 0 ]
         then
+        	`kill -9 $unifiedid`
 			if [[  `find . -name '*.log'` ]]
 			then
 				if [ `grep -l $vcf *.log` ]

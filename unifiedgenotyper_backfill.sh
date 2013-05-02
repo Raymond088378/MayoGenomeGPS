@@ -50,10 +50,12 @@ else
 		-L $vcf_in \
 		$bam \
 		--out $vcf_out.tmp.vcf $command_line_params
+		unifiedid=$!
 		sleep 5
         check=`[ -s $vcf_out.tmp.vcf.idx ] && echo "1" || echo "0"`
         if [ $check -eq 0 ]
         then
+			`kill -9 $unifiedid`
 			if [[  `find . -name '*.log'` ]]
 			then
 				if [ `grep -l $vcf_out.tmp.vcf *.log` ]
