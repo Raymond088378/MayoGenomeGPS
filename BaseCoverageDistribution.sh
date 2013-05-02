@@ -56,7 +56,7 @@ check_variable "$tool_info:GATK" $gatk
 ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
 check_variable "$tool_info:REF_GENOME" $ref
 
-gatk_param="-R $ref -et NO_ET -K $gatk/Hossain.Asif_mayo.edu.key "
+gatk_param="-R $ref -et NO_ET -K $gatk/Hossain.Asif_mayo.edu.key"
 
 $java/java $mem -Djava.io.tmpdir=$temp -jar $gatk/GenomeAnalysisTK.jar \
 -T BaseCoverageDistribution \
