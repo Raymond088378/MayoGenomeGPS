@@ -14,8 +14,9 @@
 if [ $# -le 3 ]
 then
 	echo -e "script to extract reads not used for downstream processing \
-		\nUsage: ./extract_read_bam.sh </path/to/input diretcory><bam file></path/to/run info></path/to/igv folder><single/pair>"
-else
+		\nUsage: ./extract_read_bam.sh </path/to/input diretcory><bam file></path/to/run info></path/to/igv folder><group name (optional)> <samplename(optional)>"
+	exit 1;
+fi
 	set -x
 	echo `date`	
 	output=$1
@@ -29,6 +30,7 @@ else
 	fi
 	
 	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
+	memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
 	ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
@@ -76,9 +78,9 @@ else
 
 	### extract unmapped reads
 	$samtools/samtools view -b -f 12 $output/$bam > $output/$bam.unmapped.bam
-	$samtools/samtools index $output/$bam.unmapped.bam
+	$script_path/indexbam.sh $output/$bam.unmapped.bam $tool_info
 	input=$input"$output/$bam.unmapped.bam "
-	$script_path/sortbam.sh "input" $output/$bam.extra.bam $output coordinate true $run_info
+	$script_path/sortbam.sh "input" $output/$bam.extra.bam $output coordinate true $tool_info $memory_info yes yes
 	
 	## $group = $5, so why use $5 here?
 	## this handles multiple bams as a single sample 

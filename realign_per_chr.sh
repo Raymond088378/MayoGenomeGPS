@@ -4,9 +4,13 @@
 ## GATK version using GenomeAnalysisTK-1.2-4-gd9ea764
 ## here we consider if chopped is 1 means all the sample BAM are chopped and same with 0 
  
-if [ $# != 8 ]
+if [ $# -le 8 ]
 then
-    echo -e "script to realign the bam file uisng paramters from tool info file\nUsage:\nIf user wants to do realignment fist \n<input dir ':' sep><input bam ':' sep><outputdir><run_info><1 or 0 if bam is per chr><1 for realign first><sample ':' sep>\nelse\n<input dir><input bam><output dir><run_info> <1 or 0 if bam is per chr> < 0 for realign second><sample(add a dummy sample name as we dont care about the sample name (example:multi))>  ";
+    echo -e "script to realign the BAM file using parameters from tool info file\
+		\nUsage:\nIf user wants to do realignment fist \n<input dir ':' sep><input bam ':' sep><outputdir>\
+		<tool_info><memory_info><1 or 0 if bam is per chr><1 for realign first><sample ':' sep>\
+		\nelse\n<input dir><input bam><output dir><tool_info><memory_info> <1 or 0 if bam is per chr> \
+		< 0 for realign second><sample(add a dummy sample name as we dont care about the sample name (example:multi))>  ";
 	exit 1;
 fi
     set -x
@@ -14,16 +18,21 @@ fi
     input=$1    
     bam=$2
     output=$3
-    run_info=$4
-    chopped=$5
-    realign=$6
-    samples=$7
-    chr=$8
+    tool_info=$4
+    memory_info=$5
+    chopped=$6
+    realign=$7
+    samples=$8
+    tool=$9
+    if [ $SGE_TASK_ID ]
+    then
+    	chr=$SGE_TASK_ID
+    else
+    	chr=$10
+    fi
     
     ### creating the local variables
-    tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
-	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)	
+    samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)	
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
     dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)

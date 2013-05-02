@@ -1,11 +1,11 @@
 #!/bin/bash
 
 ### Called by ProcessBAM.sh, 
-if [ $# != 8 ]
+if [ $# != 9 ]
 then
     echo -e "Script to sort the bam file using picard samtools \
 		\nUsage: ./sortbam.sh <input bam> <outputbam></path/to/temp dir><sorting order> \
-			<flag for indexing(true/false)></path/to/run info><flag to remove inputbam(yes/no)><flag to mention if BAM is already sorted(yes/no)>"
+			<flag for indexing(true/false)></path/to/tool info></path/to/memory info><flag to remove inputbam(yes/no)><flag to mention if BAM is already sorted(yes/no)>"
 else
     set -x
     echo `date`
@@ -14,12 +14,11 @@ else
     tmp_dir=$3
     order=$4
     index=`echo $5 | tr "[A-Z]" "[a-z]"`
-    run_info=$6
-    removeflag=`echo $7 | tr "[A-Z]" "[a-z]"`
-    assume_sorted=`echo $8 | tr "[A-Z]" "[a-z]"`
+    tool_info=$6
+    memory_info=$7
+    removeflag=`echo $8 | tr "[A-Z]" "[a-z]"`
+    assume_sorted=`echo $9 | tr "[A-Z]" "[a-z]"`
     
-    tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
 	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)

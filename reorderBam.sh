@@ -2,18 +2,17 @@
 
 if [ $# != 4 ]
 then
-    echo -e "script to reorder the bam file\nUsage: <input bam> <outputbam><temp dir><run info>"
+    echo -e "script to reorder the bam file\nUsage: <input bam> <outputbam><temp dir><tool info><memory_info>"
 else
     set -x
     echo `date`
     inbam=$1
     outbam=$2
     tmp_dir=$3
-    run_info=$4
+    tool_info=$4
+    memory_info=$5
     
-    tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
-	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
+    java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )

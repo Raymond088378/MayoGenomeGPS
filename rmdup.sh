@@ -2,9 +2,11 @@
 
 
 ### Called by processBAM.sh
-if [ $# != 8 ]
+if [ $# != 9 ]
 then
-    echo -e "script to remove or flag the duplicates from a BAM file dending on the flag passed\nUsage: ./rmdup.sh <input bam> <outputbam><temp dir><max files to split><remove of flag dupluicate(true/false)><assume file is aorted or not(true/false)><do indexing or not(true/false)<run info>"
+    echo -e "script to remove or flag the duplicates from a BAM file dending on the flag passed\
+		\nUsage: ./rmdup.sh <input bam> <outputbam><temp dir><max files to split><remove of flag dupluicate(true/false)>\
+			<assume file is aorted or not(true/false)><do indexing or not(true/false)<tool info><memory_info>"
 else
     set -x
     echo `date`
@@ -15,11 +17,10 @@ else
     remove=$5
     sorted=$6
     index=`echo $7 | tr "[A-Z]" "[a-z]"`
-    run_info=$8
+    tool_info=$8
+    memory_info=$9
     
-    tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
-	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
+    java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)

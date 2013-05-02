@@ -29,7 +29,7 @@ else
 	output_dir_sample=$output_dir/alignment/$sample
     fastq=$output_dir/fastq
 	
-	if [ $paired == 1 ]
+	if [[ $paired == 1 || $paired == "YES" ]]
 	then
 		let fidx=($SGE_TASK_ID*2)-1 
 		let sidx=($SGE_TASK_ID*2)

@@ -2,7 +2,8 @@
 
 if [ $# -le 2 ]
 then
-    echo -e "script to split the bam file per chromosome (assuimg the file name as <sample>.sorted.bam)\nUsage: ./split_bam_chr.sh </path/to/input directory> <sample name> </path/to/run_info.txt><SGE_TASK_ID(optional)>";
+    echo -e "script to split the bam file per chromosome (assuimg the file name as <sample>.sorted.bam)\
+		\nUsage: ./split_bam_chr.sh </path/to/input directory> <sample name> </path/to/run_info.txt><SGE_TASK_ID(optional)>";
 else
     set -x
     echo `date`
@@ -35,8 +36,8 @@ else
 	fi	
 	rm $bam.$chr.header	
 	$samtools/samtools view -b $bam chr${chr} > $input/chr${chr}.cleaned.bam
-    $samtools/samtools index $input/chr${chr}.cleaned.bam
-    $samtools/samtools flagstat $input/chr${chr}.cleaned.bam > $input/chr${chr}.flagstat
+    $script_path/indexbam.sh $input/chr${chr}.cleaned.bam $tool_info
+    $script_path/flagstat.sh $input/chr${chr}.cleaned.bam $input/chr${chr}.flagstat $tool_info samtools
     if [ ! -s $input/chr${chr}.cleaned.bam.bai ]
 	then
 		$script_path/errorlog.sh $input/chr${chr}.cleaned.bam split_bam_chr.sh ERROR "not created"  

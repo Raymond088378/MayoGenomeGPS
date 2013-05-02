@@ -5,8 +5,10 @@
 ######################################
 #		$1		=	input folder (realignment sample folder)
 #		$3		=	sample
-#		$4		=	output folder
+#		$2		=	output folder
+#		$4		=	path to the alignemnt folder
 #		$5		=	run info file
+#		$6		=	group name (optional)
 #########################################
 
 if [ $# -le 4 ];
@@ -81,14 +83,14 @@ else
         	gr="$gr$a"
     	done
     	gr=`echo $gr |  sed "s/|$//"`
-    	cat $output/$group.$sample.chr$chr.bam
-    	cat $output/$group/$sample.header.sam |grep -w -E -v "$gr" > $output/$sample/$sample.$i.header.sam
+    	chr=${chrArray[1]}
+    	$samtools/samtools view -H $output/$group.$sample.chr$chr.bam | grep -w -E -v "$gr" > $output/$group/$sample.header.sam
             
-            if [ ${#chrArray[@]} -gt 1 ]
-            then
-                input_bam=""
-                for j in $(seq 1 ${#chrArray[@]})
-                do
+        if [ ${#chrArray[@]} -gt 1 ]
+    	then
+        	input_bam=""
+        	for j in $(seq 1 ${#chrArray[@]})
+        	do
                     chr=${chrArray[$j]}
                     if [ -f $output/$sample.$i.chr$chr.bam ]
 					then

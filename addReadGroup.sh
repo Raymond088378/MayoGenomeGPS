@@ -1,27 +1,27 @@
 #!/bin/bash
 
 ### Called by processBAM.sh
-if [ $# != 5 ]
+if [ $# != 6 ]
 then
-    echo -e "script to add read group and platform information to a BAM file\nUsage: ./addReadGroup.sh </fullpath/to/input bam> <fullpath/to/outputbam></path/to/temp dir></path/to/run info><sample name>"
+    echo -e "script to add read group and platform information to a BAM file\
+		\nUsage: ./addReadGroup.sh </fullpath/to/input bam> <fullpath/to/outputbam></path/to/temp dir></path/to/tool info></path/to/memory info><sample name>"
 else
     set -x
     echo `date`
     inbam=$1
     outbam=$2
     tmp_dir=$3
-    run_info=$4
-    sample=$5
+    tool_info=$4
+    memory_info=$5
+    sample=$6
     
-    tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
-	java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
+    java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
     picard=$( cat $tool_info | grep -w '^PICARD' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
 	script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2)
 	params=$( cat $tool_info | grep -w '^PICARD_ReadGroup_params' |sed -e '/PICARD_ReadGroup_params=/s///g')
 	mem=$( cat $memory_info | grep -w '^READGROUP_JVM' | cut -d '=' -f2)
-	export PATH=$java:$PATH
+	
 	
     $java/java $mem -jar $picard/AddOrReplaceReadGroups.jar \
     INPUT=$inbam \

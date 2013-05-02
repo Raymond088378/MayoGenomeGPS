@@ -3,9 +3,13 @@
 ## creat a folder name temp in the output folder before using this script
 ## GATK version using 2.4.9
 
-if [ $# != 8 ]
+if [ $# -le 7 ]
 then
-    echo -e "script to run recalibration on a bam file uisng tool info paramters\nUsage:\nIf user wants to do recalibration fist \n<input dir ':' sep><input bam ':' sep><outputdir><run_info><1 or 0 if bam is per chr><1 for recalibrate first ><sample ':' sep>\nelse\n<input dir><input bam><output dir><run_info> <1 or 0 if bam is per chr> < 0 for recal second><sample (a dummy sampel name i would say just type multi as sample>  ";
+    echo -e "script to run recalibration on a bam file using tool info paramters\
+		\nUsage:\nIf user wants to do recalibration fist \n<input dir ':' sep><input bam ':' sep>\
+		<outputdir><run_info><1 or 0 if bam is per chr><1 for recalibrate first ><sample ':' sep>\
+		\nelse\n<input dir><input bam><output dir><run_info> <1 or 0 if bam is per chr> < 0 for recal second>\
+		<sample (a dummy sampel name i would say just type multi as sample>  ";
 	exit 1;
 fi	
     set -x
@@ -13,15 +17,19 @@ fi
     input=$1    
     bam=$2
     output=$3
-    run_info=$4
-    chopped=$5
-    recal=$6
-    samples=$7
-    chr=$8
-
+    tool_info=$4
+    memory_info=$5
+    chopped=$6
+    recal=$7
+    samples=$8
+    if [ $SGE_TASK_ID ]
+    then
+    	chr=$SGE_TASK_ID
+	else
+		chr=$9
+	fi
     ##local parameters
-	tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
-    memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
+
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)	
     ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
     gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)

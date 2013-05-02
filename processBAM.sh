@@ -38,6 +38,7 @@ fi
 ########################################################	
 ######		Reading run_info.txt and assigning to variables
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
+    memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
     analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2)
     reorder=$( cat $tool_info | grep -w '^REORDERSAM' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
@@ -69,7 +70,7 @@ fi
     do
 		base=`basename $file`
 		dir=`dirname $file`
-        $script_path/filesize.sh processBAM $sample $dir $base $run_info
+        # $script_path/filesize.sh processBAM $sample $dir $base $run_info
 		$samtools/samtools view -H $file 1>$file.header 2> $file.fix.log
 		if [[ `cat $file.fix.log | wc -l` -gt 0 || `cat $file.header | wc -l` -le 0 ]]
 		then
@@ -101,10 +102,11 @@ fi
 			$script_path/indexbam.sh $input/$sample.sorted.bam $tool_info
 		else
 			### sort and index the bam file (index set true)
-			$script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate true $run_info yes
+			$script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate true $tool_info $memory_info yes no
 		fi
 	else	
-	    $script_path/sortbam.sh "INPUTARGS" $input/$sample.sorted.bam $input coordinate true $run_info yes
+		### merging the bam files using novosort: faster
+	    $script_path/sortbam.sh "INPUTARGS" $input/$sample.sorted.bam $input coordinate true $tool_info $memory_info yes no
 		for i in $indexes
 		do
 			if [ -s $i ]
@@ -121,7 +123,7 @@ fi
     then
 		echo " [`date`] no need to convert same read group"
     else	
-        $script_path/addReadGroup.sh $input/$sample.sorted.bam $input/$sample.sorted.rg.bam $input $run_info $sample
+        $script_path/addReadGroup.sh $input/$sample.sorted.bam $input/$sample.sorted.rg.bam $input $tool_info $memory_info $sample
     fi
     
     if [ $dup == "YES" ]
@@ -129,14 +131,14 @@ fi
 		DUP_STATUS=`$samtools/samtools view -H $input/$sample.sorted.bam | grep "^@CO" | grep "MarkDuplicates" | wc -l`
 		if [ "$DUP_STATUS" -eq 0 ] 
 		then
-		    $script_path/rmdup.sh $input/$sample.sorted.bam $input/$sample.sorted.rmdup.bam $input/$sample.dup.metrics $input $dup_flag true true $run_info   
+		    $script_path/rmdup.sh $input/$sample.sorted.bam $input/$sample.sorted.rmdup.bam $input/$sample.dup.metrics $input $dup_flag true true $tool_info $memory_info   
 		fi
     fi
     
     ## reorder if required
     if [ $reorder == "YES" ]
     then
-        $script_path/reorderBam.sh $input/$sample.sorted.bam $input/$sample.sorted.tmp.bam $input $run_info
+        $script_path/reorderBam.sh $input/$sample.sorted.bam $input/$sample.sorted.tmp.bam $input $tool_info $memory_info
     fi
     if [ $analysis == "realignment" -o $analysis == "realign-mayo" ]
     then
@@ -151,7 +153,4 @@ fi
     
     ## dashboard
     $script_path/dashboard.sh $sample $run_info Alignment complete
-    
-	## size of the bam file
-	$script_path/filesize.sh Alignment.out $sample $input $sample.sorted.bam $run_info
     echo `date`

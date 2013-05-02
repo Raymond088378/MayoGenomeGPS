@@ -16,7 +16,8 @@
 if [ $# -le 3 ];
 then
     echo -e "wrapper to add read group and sort and reorder the bam \
-		\nUsage: ./convert_sam_bam.sh </path/to/input directory> <input name of BAM > <sample name> </path/to/run_info.txt> <sge task id>";
+		\nUsage: ./convert_sam_bam.sh </path/to/input directory> <input name of BAM >\
+			 <sample name> </path/to/run_info.txt> <sge task id>";
 	exit 1;
 fi
     set -x
@@ -33,6 +34,7 @@ fi
 ########################################################	
 ######		Reading run_info.txt and assigning to variables
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
+    memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
     analysis=$( cat $run_info | grep -w '^ANALYSIS' | cut -d '=' -f2| tr "[A-Z]" "[a-z]")
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
@@ -41,7 +43,6 @@ fi
 	aligner=$( cat $run_info | grep -w '^ALIGNER' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
 	usenovosort=$( cat $tool_info | grep -w '^USENOVOSORT' | cut -d '=' -f2 | tr "[A-Z]" "[a-z]")
 	novosort=$( cat $tool_info | grep -w '^NOVOSORT' | cut -d '=' -f2)
-	novosortopt=$( cat $tool_info | grep -w '^NOVOSORTALGNOPT' | cut -d '=' -f2)
 	
 	if [ $aligner == "bwa" ]
 	then
@@ -51,7 +52,7 @@ fi
 	fi	
     
 ########################################################	
-######		PICARD to sort raw BAM file
+######		PICARD/novosort to sort raw BAM file
 
     ## check if BAM is sorted
     $samtools/samtools view -H $input/$input_bam 1> $input/$input_bam.header 2> $input/$input_bam.fix.log
@@ -68,7 +69,7 @@ fi
     then
         ln -s $input/$input_bam $input/$sample.sorted.bam
     else
-    	$script_path/sortbam.sh $input/$input_bam $input/$sample.sorted.bam $input coordinate true $run_info 
+    	$script_path/sortbam.sh $input/$input_bam $input/$sample.sorted.bam $input coordinate true $tool_info $memory_info yes no 
     fi
 
 #############################################################	
@@ -78,11 +79,11 @@ fi
     sam=`echo $sample | awk -F'.' '{print $1}'`
     if [ "$RG_ID" != "$sam" ]
     then
-        $script_path/addReadGroup.sh $input/$sample.sorted.bam $input/$sample.sorted.rg.bam $input $run_info $sample
+        $script_path/addReadGroup.sh $input/$sample.sorted.bam $input/$sample.sorted.rg.bam $input $tool_info $memory_info $sample
     fi
     ### flagstat on each bam file
-    $samtools/samtools index $input/$sample.sorted.bam
-	$samtools/samtools flagstat $input/$sample.sorted.bam > $input/$sample.flagstat
+    $script_path/indexbam.sh $input/$sample.sorted.bam $tool_info
+	$script_path/flagstat.sh $input/$sample.sorted.bam $input/$sample.flagstat $tool_info samtools
     if [ ! -s $input/$sample.flagstat ]
     then
         $script_path/errorlog.sh convert_bam.sh $input/$sample.flagstat ERROR "empty"

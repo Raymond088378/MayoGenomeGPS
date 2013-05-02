@@ -315,7 +315,9 @@ then
 				qsub_args="-N $type.$version.extract_reads_bam.$sample.$run_num.$identify -hold_jid $type.$version.processBAM.$sample.$run_num.$identify -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $igv
 			fi
-		### 	Realignment Entry Point
+		#########################################
+		### 	Realignment Entry Point		#####
+		#########################################
 		elif [[ $analysis == "realignment" || $analysis == "realign-mayo" ]]
 		then
 			mkdir -p $align_dir
@@ -706,7 +708,7 @@ else
 			
 			if [ $numfiles -eq 0 ]
 			then
-				echo "sample info file is not properly configured, please correct it and start the workflow again"
+				echo "sample info : $sample_info file is not properly configured, please correct it and start the workflow again"
 				exit 1;
 			fi
 				
@@ -747,8 +749,16 @@ else
 			fi	    
 			
 			$script_path/check_qstat.sh $limit
+			mem=$( cat $memory_info | grep -w '^convert_sam_bam' | cut -d '=' -f2)
+			for i in $(seq 1 $numfiles)
+			do 
+				qsub_args="-N $type.$version.convert_sam_bam.$sample.$run_num.$identify $hold -l h_vmem=$mem"
+				qsub $args $qsub_args $script_path/convert_sam_bam.sh $output_dir/$sample $sample.$i.bam $sample.$i $run_info $i
+			done
+			
+			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^processBAM' | cut -d '=' -f2)
-			qsub_args="-N $type.$version.processBAM.$sample.$run_num.$identify -hold_jid $hold -l h_vmem=$mem"
+			qsub_args="-N $type.$version.processBAM.$sample.$run_num.$identify -hold_jid $type.$version.convert_sam_bam.$sample.$run_num.$identify -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/processBAM.sh $align_dir $sample $run_info 
 			
 			$script_path/check_qstat.sh $limit
@@ -762,7 +772,7 @@ else
 			num_bams=`echo $infile | tr " " "\n" | wc -l`
 			if [ $num_bams -eq 0 ]
 			then
-				echo "sample info file is not properly configured, no bam files found for realignment"
+				echo "sample info : $sample_info file is not properly configured, no bam files found for realignment"
 				exit 1;
 			fi	
 			for ((i=1; i <=$num_bams; i++));
@@ -778,6 +788,7 @@ else
 				fi
 				rm $align_dir/$sample.$i.sorted.header
 				ln -s $input/$bam $align_dir/$sample.$i.sorted.bam
+				
 			done
 			
 			$script_path/check_qstat.sh $limit

@@ -14,11 +14,11 @@ else
     chopped=$6
     chr=$7
     
-    if [ -d $output/temp ]
+    if [ ! -d $output/temp ]
     then
-        echo "already there"
-    else
         mkdir -p $output/temp
+        temp=$output/temp
+        sleep 10s
     fi
     
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
@@ -40,7 +40,7 @@ else
     if [ $check -eq 0 ]
     then
 		ln -s $input/$bam $output/$bam.$chr.bam
-        $samtools/samtools index $output/$bam.$chr.bam
+        $script_path/indexbam.sh $output/$bam.$chr.bam $tool_info
     else
         ln -s $input/$bam $output/$bam.$chr.bam
         ln -s $input/$bam.bai $output/$bam.$chr.bam.bai	
@@ -50,10 +50,10 @@ else
     if [ $chopped == 0 ]
     then
         $samtools/samtools view -b $output/$bam.$chr.bam chr${chr} > $output/$sample.chr${chr}.bam
-        $samtools/samtools index $output/$sample.chr${chr}.bam
+        $script_path/indexbam.sh $output/$sample.chr${chr}.bam $tool_info
     else
         ln -s  $output/$bam.$chr.bam $output/$sample.chr${chr}.bam
-        $samtools/samtools index $output/$sample.chr${chr}.bam
+        $script_path/indexbam.sh $output/$sample.chr${chr}.bam $tool_info
     fi
     
     ## check if BAM is sorted
@@ -62,17 +62,17 @@ else
     then
         ln -s $output/$sample.chr${chr}.bam $output/$sample.chr${chr}-sorted.bam
     else
-        $script_path/sortbam.sh $output/$sample.chr${chr}.bam $output/$sample.chr${chr}-sorted.bam $output/temp/ coordinate true $run_info
+        $script_path/sortbam.sh $output/$sample.chr${chr}.bam $output/$sample.chr${chr}-sorted.bam $temp coordinate true $tool_info $memory_info yes no
     fi
     
     ## check if read group and platform is availbale in BAM
     RG_FLAG=`$script_path/checkBAMreadGroup.pl -i $output/$sample.chr${chr}-sorted.bam -s $samtools`
     if [ $RG_FLAG == 0 ]
     then
-        $script_path/addReadGroup.sh $output/$sample.chr${chr}-sorted.bam $output/$sample.chr${chr}-sorted.bam.rg.bam $output/temp/ $run_info $sample   
+        $script_path/addReadGroup.sh $output/$sample.chr${chr}-sorted.bam $output/$sample.chr${chr}-sorted.bam.rg.bam $output/temp/ $tool_info $memory_info $sample   
     else
         ### after this point BAM is good to go with the GATk tool (any module)
-		$samtools/samtools index $output/$sample.chr${chr}-sorted.bam    
+		$script_path/indexbam.sh $output/$sample.chr${chr}-sorted.bam $tool_info    
     fi
     echo `date`
 fi	

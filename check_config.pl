@@ -49,8 +49,8 @@ if ($runinfomsg ne "") {
 }
 my $analysis=$runinfovars->{ANALYSIS};
 
-if ( ($analysis ne 'mayo') && ($analysis ne 'external') && ($analysis ne 'variant') && ($analysis ne 'alignment') && ($analysis ne 'realignment') && ($analysis ne 'realign-mayo') && ($analysis ne 'ontarget') && ($analysis ne 'annotation') ) {
-    print "$runinfo: TYPE=$analysis should be mayo, external, variant , realignment , realign-mayo, ontarget, annotation or alignment\n";
+if ( ($analysis ne 'mayo') && ($analysis ne 'external') && ($analysis ne 'variant') && ($analysis ne 'alignment') && ($analysis ne 'realignment') && ($analysis ne 'realign-mayo') ) {
+    print "$runinfo: TYPE=$analysis should be mayo, external, variant , realignment , realign-mayo or alignment\n";
     exit 1;
 }
 

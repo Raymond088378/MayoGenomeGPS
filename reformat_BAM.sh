@@ -14,6 +14,7 @@ else
 ########################################################	
 ######		Reading run_info.txt and assigning to variables
     tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
+    memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
     reorder=$( cat $tool_info | grep -w '^REORDERSAM' | cut -d '=' -f2| tr "[a-z]" "[A-Z]")
     script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
     samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
@@ -48,10 +49,10 @@ else
             mv $input/$sample.bam $input/$sample.sorted.bam
             $samtools/samtools index $input/$sample.sorted.bam
         else
-            $script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate $run_info
+            $script_path/sortbam.sh $input/$sample.bam $input/$sample.sorted.bam $input coordinate $tool_info $memory_info yes no
         fi
     else	
-        $script_path/sortbam.sh "$INPUTARGS" $input/$sample.sorted.bam $input coordinate true $run_info
+        $script_path/sortbam.sh "$INPUTARGS" $input/$sample.sorted.bam $input coordinate true $tool_info $memory_info yes no
     fi
 
     ### add read grouup information
@@ -61,13 +62,14 @@ else
     then
 		echo " [`date`] no need to convert same read group"
     else	
-        $script_path/addReadGroup.sh $input/$sample.sorted.bam $input/$sample.sorted.rg.bam $input $run_info $sample
+        $script_path/addReadGroup.sh $input/$sample.sorted.bam $input/$sample.sorted.rg.bam $input $tool_info $memory_info $sample
     fi
 	
     if [ $reorder == "YES" ]
     then
-        $script_path/reoderBam.sh $input/$sample.sorted.bam $input/$sample.sorted.tmp.bam $input $run_info  
+        $script_path/reoderBam.sh $input/$sample.sorted.bam $input/$sample.sorted.tmp.bam $input $tool_info $memory_info  
     fi
+    
 	if [ -s $input/$sample.sorted.bam ]
 	then
 		$script_path/filesize.sh Realignment $sample $input $sample.sorted.bam $run_info

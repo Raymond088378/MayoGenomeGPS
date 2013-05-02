@@ -26,8 +26,6 @@ else
 	samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2)
 	recalibration=$( cat $tool_info | grep -w '^RECALIBRATION' | cut -d '=' -f2 | tr "[a-z]" "[A-Z]")
 	
-
-	
     ### update dash board    
     if [ $SGE_TASK_ID == 1 ]
     then
@@ -60,22 +58,22 @@ else
 	
     if [ $flag == 1 ]
     then
-        $script_path/realign_per_chr.sh $input $bam $output_bam $run_info 1 1 $samples $chr
+        $script_path/realign_per_chr.sh $input $bam $output_bam $tool_info $memory_info 1 1 $samples $tool $chr
         if [ $recalibration == "YES" ]
 		then
-			$script_path/recal_per_chr.sh $output_bam chr${chr}.realigned.bam $output_bam $run_info 1 0 multi $chr
+			$script_path/recal_per_chr.sh $output_bam chr${chr}.realigned.bam $output_bam $tool_info $memory_info 1 0 multi $chr
 		else
 			mv $output_bam/chr${chr}.realigned.bam $output_bam/chr${chr}.cleaned.bam
 			mv $output_bam/chr${chr}.realigned.bam.bai $output_bam/chr${chr}.cleaned.bam.bai
-			$samtools/samtools flagstat $output_bam/chr${chr}.cleaned.bam > $output_bam/chr${chr}.flagstat
+			$script_path/flagstat.sh $output_bam/chr${chr}.cleaned.bam $output_bam/chr${chr}.flagstat $tool_info samtools
 		fi        
 	else
         if [ $recalibration == "YES" ]
 		then
-			$script_path/recal_per_chr.sh $input $bam $output_bam $run_info 1 1 $samples $chr
-			$script_path/realign_per_chr.sh $output_bam chr${chr}.recalibrated.bam $output_bam $run_info 1 0 multi $chr
+			$script_path/recal_per_chr.sh $input $bam $output_bam $tool_info $memory_info 1 1 $samples $chr
+			$script_path/realign_per_chr.sh $output_bam chr${chr}.recalibrated.bam $output_bam $tool_info $memory_info 1 0 multi $tool $chr
         else
-			$script_path/realign_per_chr.sh $input $bam $output_bam $run_info 1 0 multi $chr
+			$script_path/realign_per_chr.sh $input $bam $output_bam $tool_info $memory_info 1 0 multi $tool $chr
 		fi
 	fi
 	
