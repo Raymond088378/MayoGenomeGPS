@@ -2,13 +2,13 @@
 
 if [ $# != 8 ]
 then
-    echo -e "script to run somtic indel caller\nUsage: ./somaticindel.sh <tumor sample bam ><normla sample bam><chromosome><paramter to be specified to traverse in the genome for gatk><tumor sample name><output folder><output file name><run_info file>"
+    echo -e "script to run somtic indel caller\nUsage: ./somaticindel.sh \
+		<tumor sample bam ><normla sample bam><chromosome><-L paramter to be specified to traverse in the genome for gatk>\
+			<tumor sample name></fullpath/to/output folder><output file name><run_info file>"
 	exit 1;
 fi	
 set -x
 echo `date`
-
-#### XXX TOFIX TODO THESE ARE AT ODDS WITH THE ORDER IN THE HELP MESSAGE!!!!!
 tumor_bam=$1
 normal_bam=$2
 chr=$3
@@ -20,7 +20,7 @@ run_info=$8
 
 tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 java=$( cat $tool_info | grep -w '^JAVA' | cut -d '=' -f2)
-gatk=$( cat $tool_info | grep -w '^GATK' | cut -d '=' -f2)
+gatk=$( cat $tool_info | grep -w '^GATK_OLD' | cut -d '=' -f2)
 ref=$( cat $tool_info | grep -w '^REF_GENOME' | cut -d '=' -f2)
 dbSNP=$( cat $tool_info | grep -w '^dbSNP_REF' | cut -d '=' -f2)
 script_path=$( cat $tool_info | grep -w '^WORKFLOW_PATH' | cut -d '=' -f2 )
@@ -29,13 +29,14 @@ samtools=$( cat $tool_info | grep -w '^SAMTOOLS' | cut -d '=' -f2 )
 memory_info=$( cat $run_info | grep -w '^MEMORY_INFO' | cut -d '=' -f2)
 mem=$( cat $memory_info | grep -w '^SomaticIndelDetector_JVM' | cut -d '=' -f2)
 
-export PATH=$java:$PATH
+
 indel_v=$tumor_sample.chr$chr.indel.txt
 let check=0
 let count=0
 if [ ! -d $output/temp ]
 then
 	mkdir -p $output/temp
+	sleep 10s
 fi
 
 $samtools/samtools view -H $tumor_bam 1>$tumor_bam.si.header 2> $tumor_bam.fix.si.log
@@ -68,10 +69,12 @@ do
 	-verbose $output/$indel_v \
 	-I:normal $normal_bam \
 	-I:tumor $tumor_bam $command_line_params
+	somaticindelid=$!
 	sleep 5
 	check=`[ -s $output/$output_file.idx ] && echo "1" || echo "0"`
 	if [ $check -eq 0 ]
 	then
+		`kill -9 $somaticindelid`
 		if [[  `find . -name '*.log'` ]]
 		then
 			if [ `grep -l $output/$output_file *.log` ]

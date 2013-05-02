@@ -2,8 +2,8 @@
 
 if [ $# != 6 ]
 then
-    echo -e "script to run unified genotyper\nUsage: ./unifiedgenotyper.sh <bamfile> <vcf output> \
-<type of variant> <range of positions> <output mode> <run info file>"
+    echo -e "script to run unified genotyper\nUsage: ./unifiedgenotyper.sh <-I bamfile> <vcf output> \
+<type of variant(BOTH/SNV/INDEL)> <-L range of positions/bed file> <output mode(EMIT_ALL_SITES/VARIANT_ONLY)> <run info file>"
 	exit 1;
 fi
     set -x

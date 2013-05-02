@@ -86,6 +86,6 @@ fi
 
 ########################################################	
 ######		Run novoalign for PE or SR	
-	$script_path/novoalign.sh $fastq $sequences $sample $output_dir_sample/$sample.$SGE_TASK_ID.bam $tool_info 
+	$script_path/novoalign.sh $fastq "$sequences" $sample $output_dir_sample/$sample.$SGE_TASK_ID.bam $tool_info 
     
     echo `date`	

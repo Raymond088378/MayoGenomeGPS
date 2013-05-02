@@ -46,6 +46,7 @@ CREST=/projects/bsi/bictools/apps/sv/crest/1.0.1/bin/
 CIRCOS=/projects/bsi/bictools/apps/visualizers/circos/circos-0.54/
 FASTQC=/projects/bsi/bictools/apps/qc/FastQC/0.10/FastQC
 GATK=/projects/bsi/bictools/apps/alignment/GenomeAnalysisTK/1.7/
+GATK_OLD=/projects/bsi/bictools/apps/alignment/GenomeAnalysisTK/1.7/
 HTSLIB=/projects/bsi/bictools/apps/variant_detection/htslib-vcftools/
 JAVA=/usr/java/latest/bin
 JOINTSNVMIX=/projects/bsi/bictools/apps/variant_detection/jointsnvmix/0.8-b2/

@@ -56,7 +56,7 @@ function check_dir()	{
 ###				
 
 ### 
-# to check and validate the config file presence
+# to check and validate the configuration file presence
 function check_config()	{
 	message=$1
 	if [ ! -s $2 ]
@@ -101,7 +101,7 @@ check_dir "WORKFLOW_PATH:$script_path" $script_path
 
 
 
-## extract paths and set local variables
+## extract paths and set local variables for configuration files
 tool_info=$( cat $run_info | grep -w '^TOOL_INFO' | cut -d '=' -f2)
 sample_info=$( cat $run_info | grep -w '^SAMPLE_INFO' | cut -d '=' -f2)
 check_config "RunInfo:$tool_info" $tool_info
@@ -112,7 +112,8 @@ check_config "RunInfo:$sample_info" $sample_info
 $script_path/check_config.pl $run_info > $run_info.configuration_errors.log
 if [ `cat $run_info.configuration_errors.log | wc -l` -gt 0 ]
 then
-	echo "Configuration files are mis-configured: look at the errors in $run_info.configuration_errors.log "
+	echo "Configuration files are not configured properly: look at the errors \
+			in $run_info.configuration_errors.log "
 	exit 1;
 else
 	rm $run_info.configuration_errors.log
@@ -163,31 +164,32 @@ fi
 ## copy config files
 $script_path/copy_config.sh $output_dir $run_info
 run_info=$output_dir/run_info.txt
-
 ### modify the run info file to use configurations in the output folder and assigning local variable for all the configuration files
 add=`date +%D`
 cat $run_info | grep -w -v -E '^TOOL_INFO|^SAMPLE_INFO|^MEMORY_INFO' > $run_info.tmp
-echo -e "\nTOOL_INFO=$config/tool_info.txt\nSAMPLE_INFO=$config/sample_info.txt\nMEMORY_INFO=$config/memory_info.txt\nDATE=$add" | cat $run_info.tmp - >$config/run_info.txt
+echo -e "\nTOOL_INFO=$config/tool_info.txt\nSAMPLE_INFO=$config/sample_info.txt\nMEMORY_INFO=$config/memory_info.txt\nDATE=$add" \
+	| cat $run_info.tmp - > $config/run_info.txt
 rm $run_info.tmp
 run_info=$config/run_info.txt
 tool_info=$config/tool_info.txt
 sample_info=$config/sample_info.txt
 memory_info=$config/memory_info.txt
+###
 
 ### creating local variables
 output_align=$output_dir/alignment
 if [ $analysis != "alignment" ]
 then
-	output_realign=$output_dir/realign/
+	output_realign=$output_dir/realign
 	output_variant=$output_dir/variants
 	igv=$output_dir/IGV_BAM
-	RSample=$output_dir/Reports_per_Sample/
+	RSample=$output_dir/Reports_per_Sample
 	if [ $tool == "whole_genome" ]
 	then
 		sv=$output_dir/Reports_per_Sample/SV
-		struct=$output_dir/struct/
-		cnv=$output_dir/cnv/
-		circos=$output_dir/circos/
+		struct=$output_dir/struct
+		cnv=$output_dir/cnv
+		circos=$output_dir/circos
 	fi
 	numbers=$output_dir/numbers
 fi
