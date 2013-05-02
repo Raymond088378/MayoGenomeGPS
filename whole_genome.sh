@@ -468,18 +468,15 @@ then
 			qsub_args="-N $type.$version.merge_variant_single.$sample.$run_num.$identify -pe threaded $threads \
 					-hold_jid $type.$version.variants.$sample.$run_num.$identify -l h_vmem=$mem"
 			qsub $gatk_args $qsub_args $script_path/merge_variant_single.sh $output_variant $sample $RSample $run_info
+			
 			$script_path/check_qstat.sh $limit
-			### ODOT 
-
 			mem=$( cat $memory_info | grep -w '^OnTarget_BAM' | cut -d '=' -f2)
 			qsub_args="-N $type.$version.OnTarget_BAM.$sample.$run_num.$identify -hold_jid $variant_id -t 1-$numchrs:1 -l h_vmem=$mem"
 			qsub $args $qsub_args  $script_path/OnTarget_BAM.sh $realign_dir $output_OnTarget $sample $run_info
-			$script_path/check_qstat.sh $limit
-			mem=$( cat $memory_info | grep -w '^getCoverage' | cut -d '=' -f2)
-			qsub_args="-N $type.$version.getCoverage.$sample.$run_num.$identify -hold_jid $type.$version.OnTarget_PILEUP.$sample.$run_num.$identify -l h_vmem=$mem"
-			qsub $args $qsub_args $script_path/getCoverage.sh $output_OnTarget $numbers $sample $run_info
         ### END mayo external realignment variant realign-mayo SECTION
 		fi
+	done
+
 
 		
 	### done ### FOR EACH SAMPLE 
@@ -516,20 +513,21 @@ then
 				mem=$( cat $memory_info | grep -w '^snpeff' | cut -d '=' -f2)
 				qsub_args="-N $type.$version.snpeff.$sample.$run_num.$identify $hold_args -t 1-$numchrs:1 -l h_vmem=$mem"
 				qsub $gatk_args $qsub_args $script_path/snpeff.sh $snpeff $output_OnTarget $sample $run_info germline		
-        if [[ $tool == "whole_genome"  && $analysis != "annotation" ]]
+        if [[ $tool == "whole_genome" ]]
 		then
 			crest=$output_dir/struct/crest
-			break=$output_dir/struct/break
 			cnv=$output_dir/cnv/$sample
 			mkdir -p $break $crest $cnv
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^run_single_crest' | cut -d '=' -f2)
 			if [ $analysis == "variant" ]
 			then
-				qsub_args="-N $type.$version.run_single_crest.$sample.$run_num.$identify -hold_jid $type.$version.reformat_BAM.$sample.$run_num.$identify -t 1-$numchrs:1 -pe threaded 2 -l h_vmem=$mem"
+				qsub_args="-N $type.$version.run_single_crest.$sample.$run_num.$identify -hold_jid $type.$version.reformat_BAM.$sample.$run_num.$identify \
+							-t 1-$numchrs:1 -pe threaded 2 -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/run_single_crest.sh $sample $realign_dir $bamfile $crest $run_info
 			else
-				qsub_args="-N $type.$version.run_single_crest.$sample.$run_num.$identify -hold_jid $type.$version.processBAM.$sample.$run_num.$identify -t 1-$numchrs:1 -pe threaded 2 -l h_vmem=$mem"
+				qsub_args="-N $type.$version.run_single_crest.$sample.$run_num.$identify -hold_jid $type.$version.processBAM.$sample.$run_num.$identify \
+							-t 1-$numchrs:1 -pe threaded 2 -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/run_single_crest.sh $sample $align_dir $bamfile $crest $run_info
 			fi
 			$script_path/check_qstat.sh $limit
