@@ -149,8 +149,7 @@ fi
             cp $bams $output/chr${chr}.realigned.bam
             cp $bams.bai $output/chr${chr}.realigned.bam.bai
         else
-            INPUTARGS=`echo $bams | tr " " "\n" | awk '{print "INPUT="$1}'` 
-            $script_path/MergeBam.sh "$INPUTARGS" $output/chr${chr}.realigned.bam $output true $run_info 
+            $script_path/sortbam.sh "$bams" $output/chr${chr}.realigned.bam $output coordinate true $tool_info $memory_info yes yes
 		fi
     else
         ## Realignment
@@ -171,7 +170,7 @@ fi
 		then
             cp $output/chr${chr}.realigned.bam	$output/chr${chr}.cleaned.bam
             cp $output/chr${chr}.realigned.bam.bai $output/chr${chr}.cleaned.bam.bai
-            $samtools/samtools flagstat $output/chr${chr}.cleaned.bam > $output/chr${chr}.flagstat
+            $script_path/flagstat.sh $output/chr${chr}.cleaned.bam $output/chr${chr}.flagstat $tool_info samtools
 		fi	
     else
         $script_path/errorlog.sh $output/chr${chr}.realigned.bam realign_per_chr.sh ERROR "does not exist"

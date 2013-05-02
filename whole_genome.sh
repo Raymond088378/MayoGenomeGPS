@@ -304,7 +304,8 @@ then
 			done
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^processBAM' | cut -d '=' -f2)
-			qsub_args="-N $type.$version.processBAM.$sample.$run_num.$identify $type.$version.convert_sam_bam.$sample.$run_num.$identify -pe threaded $threads -l h_vmem=$mem"
+			qsub_args="-N $type.$version.processBAM.$sample.$run_num.$identify $type.$version.convert_sam_bam.$sample.$run_num.$identify \
+						-pe threaded $threads -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/processBAM.sh $align_dir $sample $run_info
 			### mayo, external  	
 			### not just doing alignment so split the bam files and put unmapped reads in $bamfile.extra.bam 
@@ -312,7 +313,8 @@ then
 			then
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^extract_reads_bam' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.extract_reads_bam.$sample.$run_num.$identify -hold_jid $type.$version.processBAM.$sample.$run_num.$identify -l h_vmem=$mem"
+				qsub_args="-N $type.$version.extract_reads_bam.$sample.$run_num.$identify \
+						-hold_jid $type.$version.processBAM.$sample.$run_num.$identify -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $igv
 			fi
 		#########################################
@@ -357,12 +359,14 @@ then
 			### Sort, index, deduplicate the bam files 
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^processBAM' | cut -d '=' -f2)
-			qsub_args="-N $type.$version.processBAM.$sample.$run_num.$identify -hold_jid $type.$version.fastqc.$sample.$run_num.$identify -l h_vmem=$mem pe threaded $threads"
+			qsub_args="-N $type.$version.processBAM.$sample.$run_num.$identify \
+					-hold_jid $type.$version.fastqc.$sample.$run_num.$identify -l h_vmem=$mem pe threaded $threads"
 			qsub $args $qsub_args $script_path/processBAM.sh $align_dir $sample $run_info
 			### Split on chromsomes and store unmapped reads for igv
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^extract_reads_bam' | cut -d '=' -f2)
-			qsub_args="-N $type.$version.extract_reads_bam.$sample.$run_num.$identify -hold_jid $type.$version.processBAM.$sample.$run_num.$identify -l h_vmem=$mem"
+			qsub_args="-N $type.$version.extract_reads_bam.$sample.$run_num.$identify \
+						-hold_jid $type.$version.processBAM.$sample.$run_num.$identify -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/extract_reads_bam.sh $align_dir $bamfile $run_info $igv
 		fi    
 		############################
@@ -405,31 +409,36 @@ then
 				### Merge bam files within sample group, and create sample.sorted.bam in the realign dir
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^reformat_BAM' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.reformat_BAM.$sample.$run_num.$identify -hold_jid $type.$version.fastqc.$sample.$run_num.$identify -l h_vmem=$mem"
+				qsub_args="-N $type.$version.reformat_BAM.$sample.$run_num.$identify \
+							-hold_jid $type.$version.fastqc.$sample.$run_num.$identify -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/reformat_BAM.sh $realign_dir $sample $run_info	
 				$script_path/check_qstat.sh $limit
 				### Extract Unmapped Reads for IGV
 				mem=$( cat $memory_info | grep -w '^extract_reads_bam' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.extract_reads_bam.$sample.$run_num.$identify -hold_jid $type.$version.reformat_BAM.$sample.$run_num.$identify -l h_vmem=$mem"
+				qsub_args="-N $type.$version.extract_reads_bam.$sample.$run_num.$identify \
+							-hold_jid $type.$version.reformat_BAM.$sample.$run_num.$identify -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/extract_reads_bam.sh $realign_dir $bamfile $run_info $igv
 				$script_path/check_qstat.sh $limit
 				#### Split each sample.sorted.bam file by chromosome and store in the realign dir
 				mem=$( cat $memory_info | grep -w '^split_bam_chr' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.split_bam_chr.$sample.$run_num.$identify -hold_jid $type.$version.reformat_BAM.$sample.$run_num.$identify -t 1-$numchrs:1 -l h_vmem=$mem"
+				qsub_args="-N $type.$version.split_bam_chr.$sample.$run_num.$identify \
+						-hold_jid $type.$version.reformat_BAM.$sample.$run_num.$identify -t 1-$numchrs:1 -l h_vmem=$mem"
 				qsub $args $qsub_args $script_path/split_bam_chr.sh $realign_dir $sample $run_info
 				variant_id="$type.$version.split_bam_chr.$sample.$run_num.$identify"
 			else
 				### Not variant, must be mayo, external, realignment or realign-mayo -- so run realignment and recalibration
 				$script_path/check_qstat.sh $limit
 				mem=$( cat $memory_info | grep -w '^realign_recal' | cut -d '=' -f2)
-				qsub_args="-N $type.$version.realign_recal.$sample.$run_num.$identify -hold_jid $type.$version.processBAM.$sample.$run_num.$identify -t 1-$numchrs:1 -l h_vmem=$mem"
+				qsub_args="-N $type.$version.realign_recal.$sample.$run_num.$identify \
+						-hold_jid $type.$version.processBAM.$sample.$run_num.$identify -t 1-$numchrs:1 -l h_vmem=$mem"
 				qsub $gatk_args $qsub_args $script_path/realign_recal.sh $align_dir $bamfile $sample $realign_dir $run_info 1	
 				variant_id="$type.$version.realign_recal.$sample.$run_num.$identify"
 			fi
 			### IGV_BAM
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^igv_bam' | cut -d '=' -f2)
-			qsub_args="-N $type.$version.igv_bam.$sample.$run_num.$identify -hold_jid $variant_id,$type.$version.extract_reads_bam.$sample.$run_num.$identify -l h_vmem=$mem"
+			qsub_args="-N $type.$version.igv_bam.$sample.$run_num.$identify \
+					-hold_jid $variant_id,$type.$version.extract_reads_bam.$sample.$run_num.$identify -pe threaded $threads -l h_vmem=$mem"
 			qsub $args $qsub_args $script_path/igv_bam.sh $output_realign $igv $sample $output_align $run_info
 			### If we're just doing realignment, then jump to the next sample without doing anything else
 			if [ $stop_after_realignment == "YES" ]

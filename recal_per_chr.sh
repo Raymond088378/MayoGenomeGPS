@@ -147,8 +147,7 @@ fi
             cp $bams $output/chr${chr}.recalibrated.bam
             cp $bams.bai $output/chr${chr}.recalibrated.bam.bai
         else
-            INPUTARGS=`echo $bams | tr " " "\n" | awk '{print "INPUT="$1}'` 
-            $script_path/MergeBam.sh "$INPUTARGS" $output/chr${chr}.recalibrated.bam $output true $run_info 
+            $script_path/sortbam.sh "$bams" $output/chr${chr}.recalibrated.bam $output coordinate true $tool_info $memory_info yes yes
         fi
     else	
     	## recailbartion
@@ -169,7 +168,7 @@ fi
         then
             mv $output/chr${chr}.recalibrated.bam $output/chr${chr}.cleaned.bam
             mv $output/chr${chr}.recalibrated.bam.bai $output/chr${chr}.cleaned.bam.bai
-            $samtools/samtools flagstat $output/chr${chr}.cleaned.bam > $output/chr$chr.flagstat
+            $script_path/flagstat.sh $output/chr${chr}.cleaned.bam $output/chr$chr.flagstat $tool_info samtools
         fi		
     else
         $script_path/errorlog.sh output/chr${chr}.recalibrated.bam recal_per_chr.sh ERROR "does not exist"
