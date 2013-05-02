@@ -60,6 +60,8 @@ fi
         -et NO_ET \
         --out $output/$output_file.txt -vcf $output/$output_file $gatk_params $param $command_line_params
         rm $output/$output_file.txt
+       
+        mutectpid=$!
         
         if [[  `find . -name '*.log'` ]]
 		then
@@ -76,6 +78,12 @@ fi
 		else
             let check=1    
         fi
+        
+        if [[ $check -eq 0 ]]
+        then
+        	kill -9 $mutectpid
+    	fi
+    	
     done    
     cat $output/$output_file | sed -e 's/SS:/MUTX_SS:/g' | sed -e 's/SS=/MUTX_SS=/g' > $output/$output_file.tmp
     mv $output/$output_file.tmp $output/$output_file
