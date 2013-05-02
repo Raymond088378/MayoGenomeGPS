@@ -455,9 +455,8 @@ then
 			qsub $gatk_args $qsub_args $script_path/variants.sh $realign_dir $sample $variant_dir 1 $run_info
 			$script_path/check_qstat.sh $limit
 			mem=$( cat $memory_info | grep -w '^merge_variant_single' | cut -d '=' -f2)
-			
-			### TODO: Remove merge and perform in separate step after backfill operation
-			qsub_args="-N $type.$version.merge_variant_single.$sample.$run_num.$identify -pe threaded $threads -hold_jid $type.$version.variants.$sample.$run_num.$identify -l h_vmem=$mem"
+			qsub_args="-N $type.$version.merge_variant_single.$sample.$run_num.$identify -pe threaded $threads \
+					-hold_jid $type.$version.variants.$sample.$run_num.$identify -l h_vmem=$mem"
 			qsub $gatk_args $qsub_args $script_path/merge_variant_single.sh $output_variant $sample $RSample $run_info
 			$script_path/check_qstat.sh $limit
 			### ODOT 

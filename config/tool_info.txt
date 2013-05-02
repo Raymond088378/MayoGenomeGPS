@@ -122,7 +122,7 @@ NOVOSORTALGNOPT=--ram 3G --threads 4
 ## VQSR 
 VQSR_params_SNV=-an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an DP -nt 2 --maxGaussians 4 --percentBadVariants 0.05
 VQSR_params_INDEL=-an QD -an FS -an HaplotypeScore -an ReadPosRankSum --maxGaussians 4 -nt 2 --percentBadVariants 0.12 -std 10.0
-##realign
+##realignment
 IndelRealigner_params=--maxReadsForRealignment 20000 --maxReadsInMemory 150000
 RealignerTargetCreator_params=
 ## recalibration
@@ -132,6 +132,9 @@ PrintReads_params=
 UnifiedGenotyper_params=-maxAlleles 5
 SOMATIC_INDEL_params=--window_size 1000
 VCF_annotation_params=-A QualByDepth -A MappingQualityRankSumTest -A ReadPosRankSumTest -A HaplotypeScore -A DepthOfCoverage -A MappingQualityZero -A DepthPerAlleleBySample -A RMSMappingQuality -A FisherStrand -A ForwardReverseAlleleCounts 
+## coverage
+BaseCoverageDistribution_params=-fd
+#### GATK tools
 
 ### paramters
 CNVNATOR_BINSIZE=1000
