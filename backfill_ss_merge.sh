@@ -10,7 +10,7 @@
 
 function print_usage()
 {
-	
+	echo "Usage: backfill_ss_merge.sh <path/to/run_info.txt>"
 }
 
 function check_vars()
@@ -39,7 +39,7 @@ function exist_or_fail ()
 
 function load_configuration_or_fail ()
 {
-	local run_info=$1
+	run_info=$1
 		
 	if [[ ! -f $run_info ]]
 	then
@@ -56,6 +56,11 @@ function load_configuration_or_fail ()
 	local javapath=$( grep -w '^JAVA' $tool_info | cut -d '=' -f2)
     local samples=$( cat $run_info | grep -w '^SAMPLENAMES' | cut -d '=' -f2)
     
+    local PI=$( grep -w '^PI' $run_info | cut -d '=' -f2)
+    local tool=$( grep -w '^TYPE' $run_info | cut -d '=' -f2|tr "[A-Z]" "[a-z]")
+    local run_num=$( grep -w '^OUTPUT_FOLDER' $run_info | cut -d '=' -f2)
+    
+    
     exist_or_fail "$run_info:TOOL_INFO" "$tool_info" 
     exist_or_fail "$tool_info:WORKFLOW_PATH" "$script_path" 
     exist_or_fail "$run_info:MEMORY_INFO" "$memory_info"
@@ -63,18 +68,26 @@ function load_configuration_or_fail ()
     exist_or_fail "$tool_info:OUTPUT_FOLDER" "$run_num" 
     exist_or_fail "$tool_info:JAVA" "$javapath"
 	exist_or_fail "$run_info:SAMPLENAMES" "$samples";
+	exist_or_fail "$run_info:PI" "$PI";
+	exist_or_fail "$run_info:TYPE" "$tool";
+	exist_or_fail "$run_info:OUTPUT_FOLDER" "$run_num";
 	
 	local numsamples=$(grep -w '^SAMPLENAMES' $run_info | cut -d '=' -f2 | tr ":" "\n" | wc -l)
 
-	loca i=1	
+	local i=1	
 	for sample in `echo $samples | tr ":" "\n"`
 	do
 		sampleArray[$i]=$sample
 		let i=i+1
-	done	
+	done
+	
+	output_variant=$output/$PI/$tool/$run_num/variants/
+	output_IGV=$output/$PI/$tool/$run_num/IGV_BAM/
+		
 }
 
-load_configuration_or_fail
+check_vars $# 1
+load_configuration_or_fail $1
 
 ### Merge
 input_var=""
@@ -82,11 +95,16 @@ for i in $(seq 1 ${#sampleArray[@]})
 do
 	sample=${sampleArray[$i]}
 	vcf=$sample.variants.final.vcf
-	input_var="${input_var} -V $output/$vcf"
+	input_var="${input_var} -V $output_variant/$vcf"
 done
 
-$script_path/combinevcf.sh "$input_var" $output/backfill.final.vcf $run_info yes
+$script_path/combinevcf.sh "$input_var" $output_variant/backfill.final.vcf $run_info no
 
+if [ ! -s $output_variant/backfill.final.vcf ]
+then
+	$script_path/errorlog.sh $output_variant/backfill.final.vcf backfill_ss_merge.sh ERROR "Error: failed to create merged all sample variant file."
+    exit 1;
+fi
 
 
 
