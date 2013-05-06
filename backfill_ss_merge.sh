@@ -6,7 +6,6 @@
 # 4/24/2013
 # usage:
 # This should be submitted as single task to create a merged vcf for backfilling
-#
 ####
 
 function print_usage()
@@ -66,15 +65,27 @@ function load_configuration_or_fail ()
 	exist_or_fail "$run_info:SAMPLENAMES" "$samples";
 	
 	local numsamples=$(grep -w '^SAMPLENAMES' $run_info | cut -d '=' -f2 | tr ":" "\n" | wc -l)
-	
+
+	loca i=1	
 	for sample in `echo $samples | tr ":" "\n"`
 	do
-	
-			
-	done      
+		sampleArray[$i]=$sample
+		let i=i+1
+	done	
 }
 
 load_configuration_or_fail
+
+### Merge
+input_var=""
+for i in $(seq 1 ${#sampleArray[@]})
+do
+	sample=${sampleArray[$i]}
+	vcf=$sample.variants.final.vcf
+	input_var="${input_var} -V $output/$vcf"
+done
+
+$script_path/combinevcf.sh "$input_var" $output/backfill.final.vcf $run_info yes
 
 
 
